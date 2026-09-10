@@ -1,6 +1,20 @@
+# Supabase
 supabase/.branches
 supabase/.temp
-supabase/.env
+
+# env
 .env
-.env.local
+.env*.local
+
+# Next.js / Node
 node_modules/
+/.next/
+/out/
+/build
+*.tsbuildinfo
+next-env.d.ts
+npm-debug.log*
+
+# misc
+.DS_Store
+*.pem

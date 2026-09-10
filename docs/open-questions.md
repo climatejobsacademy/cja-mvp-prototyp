@@ -113,6 +113,27 @@ Attributliste in `data-model.md` hinauszugehen).
 `status = 'submitted'`), oder soll `field_capture.status` doch einen expliziten
 `pending`-Wert bekommen, der `submitted` ersetzt/ergänzt?
 
+## Q-FIELD-JOB-LEARNER-CONFIRM — Widerspruch zwischen access-matrix.md und design-specifications.md
+
+Beim Bauen des Praxistag-Flows entdeckt: `access-matrix.md` sagt für "Field
+job": Learner "write —". `design-specifications.md` (Abschnitt 2.1) sieht aber
+explizit einen Learner-Button "Einsatz erledigt" vor, der
+`field_job.status`/`durchgefuehrt_bestaetigt_am` setzt — ein direkter
+Widerspruch zwischen zwei bereits abgenommenen Dokumenten.
+
+**Umgesetzt als:** engstmögliche Lösung statt stillem Ignorieren einer der
+beiden Vorgaben — eine neue RLS-Policy `field_job_learner_confirm`
+(`0009_rls_policies.sql`) erlaubt Learnern ausschließlich den Übergang
+`status: geplant → durchgeführt` auf der eigenen Zeile, und die
+UPDATE-Grant für die `authenticated`-Rolle ist auf genau die zwei dafür
+nötigen Spalten (`status`, `durchgefuehrt_bestaetigt_am`) beschränkt — sonst
+bleibt "write —" für Learner bestehen (kein Zugriff auf `standort`,
+`instructor_id` etc.).
+**Frage:** Ist das die gewollte Auflösung des Widerspruchs, oder sollte
+`access-matrix.md` stattdessen so geändert werden, dass "Field job" für
+Learner "write Own (nur Bestätigung)" statt "—" heißt? Rein kosmetisch für die
+Matrix-Tabelle, ändert nichts an der Policy selbst.
+
 ## Reminder aus data-model.md selbst (nicht neu, aber hier verlinkt)
 
 - **Löschprotokoll DSGVO vs. AZAV** (4d): bewusst *nicht* in diesen Migrationen

@@ -217,15 +217,29 @@ create policy enrolment_admin_all on enrolment
 -- ============================================================
 -- Field job
 -- Matrix row: Learner read Own; write —. AfCJ admin read All; write All.
+--
+-- NACHTRAG (Claude Code, 2026-09-10, beim Bauen des Praxistag-Flows
+-- entdeckt): docs/design-specifications.md Abschnitt 2.1 sieht einen
+-- Learner-Button "Einsatz erledigt" vor, der genau auf
+-- field_job.status/durchgefuehrt_bestaetigt_am schreibt — das widerspricht
+-- wörtlich "write —" für Learner in dieser Zeile. Siehe docs/open-questions.md,
+-- Q-FIELD-JOB-LEARNER-CONFIRM. Bis das geklärt ist: engste mögliche Policy,
+-- nur die zwei für den Button nötigen Spalten, nur geplant -> durchgeführt.
 -- ============================================================
 alter table field_job enable row level security;
 revoke all on field_job from public, anon, authenticated;
 grant select on field_job to authenticated;
-grant insert, update, delete on field_job to authenticated;
+grant insert, delete on field_job to authenticated;
+grant update (status, durchgefuehrt_bestaetigt_am) on field_job to authenticated;
 
 create policy field_job_learner_select on field_job
   for select to authenticated
   using (learner_id = auth.uid());
+
+create policy field_job_learner_confirm on field_job
+  for update to authenticated
+  using (learner_id = auth.uid() and status = 'geplant')
+  with check (learner_id = auth.uid() and status = 'durchgeführt');
 
 create policy field_job_admin_all on field_job
   for all to authenticated

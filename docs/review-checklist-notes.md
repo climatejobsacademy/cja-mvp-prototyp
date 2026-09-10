@@ -50,6 +50,11 @@ Fünf Stichproben (davon eine "—"), Datei jeweils `supabase/migrations/0009_rl
 sind im Prototyp nicht erreichbar, weil diese Rollen nicht existieren — siehe
 `open-questions.md`, Q-FUTURE-ROLES.)
 
+**Nachtrag beim Bauen der App (2026-09-10):** "Field job" / Learner write "—"
+wurde um eine engstmögliche Ausnahme ergänzt (`field_job_learner_confirm`),
+weil `design-specifications.md` einen Learner-Bestätigungs-Button vorsieht, der
+genau das braucht — siehe `open-questions.md`, Q-FIELD-JOB-LEARNER-CONFIRM.
+
 ## ☑ Das Kompetenzprofil ist eine berechnete View, keine Tabelle
 
 `supabase/migrations/0006_progress_and_evidence.sql` — `create view
