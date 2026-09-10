@@ -122,6 +122,15 @@ Diese Regeln gelten für jede Entität unten, ohne dass sie pro Tabelle wiederho
 
 > Read `/docs/data-model.md` and `/docs/access-matrix.md`. Produce (1) an ER diagram in Mermaid, (2) migration files creating every entity marked "Prototype: Ja" with the listed attributes, and (3) RLS policies implementing the access matrix exactly. Do not add entities, roles or access beyond what's listed; if you believe something is missing, list it as a question instead of building it. Apply the translation rules in this document.
 
+**Nachtrag (Claude Code, 2026-09-10):** Die Notion-Seite "🎨 MVP April 2027:
+Design Specifications" kündigt in ihrem Abschnitt 6 an, dass diese Instruktion
+um den Verweis auf eine dritte Datei ergänzt wird, sobald sie fertig ist. Sie
+ist es — siehe `/docs/design-specifications.md`. Für alles, was UI/Screens/Flows
+betrifft, gilt zusätzlich zu obiger Instruktion: Design-Tokens und
+Komponentenbibliothek (shadcn/ui + Tailwind) aus `design-specifications.md`
+respektieren, die dort beschriebenen Flows umsetzen, nichts darüber hinaus
+erfinden, Lücken als Rückfrage markieren statt zu raten.
+
 ## Review-Checkliste vor dem Merge (aus 4e)
 
 - [ ] Jede mit "Prototyp: Ja" markierte Entität erscheint im Diagramm; nichts erscheint, das nicht gelistet ist (oder die KI hat es begründet)

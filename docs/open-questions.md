@@ -98,6 +98,21 @@ eigene Policies (z. B. Instructor: read/write Cohort statt Own/All) — die
 Cohort-Berechnung müsste dann über zugewiesene Kohorten des Instructors laufen,
 nicht über Enrolment.
 
+## Q-CAPTURE-PENDING-UI — "pending" existiert nicht als eigener Status
+
+`design-specifications.md` (Abschnitt 2.3) spricht im UI von Verifizierungs-
+Status "pending"/"verified"/"rejected". Im Schema gibt es kein `pending`:
+`field_capture.status` startet als `submitted` und wird erst durch eine
+`verification`-Zeile (via Trigger) zu `verified`/`rejected`. "Pending" ist also
+implizit "`field_capture.status = 'submitted'` und noch keine `verification`
+vorhanden", nicht ein eigener Datenbankwert.
+
+**Nichts geändert am Schema** (kein `pending`-Wert ergänzt, um nicht über die
+Attributliste in `data-model.md` hinauszugehen).
+**Frage:** Reicht diese Ableitung fürs Frontend (Anzeige "pending" wenn
+`status = 'submitted'`), oder soll `field_capture.status` doch einen expliziten
+`pending`-Wert bekommen, der `submitted` ersetzt/ergänzt?
+
 ## Reminder aus data-model.md selbst (nicht neu, aber hier verlinkt)
 
 - **Löschprotokoll DSGVO vs. AZAV** (4d): bewusst *nicht* in diesen Migrationen

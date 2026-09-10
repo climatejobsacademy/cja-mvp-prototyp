@@ -14,7 +14,8 @@ UX-Prototypen (React/Vite, gemockte Daten) liegen separat im Repo
 docs/
   data-model.md              Quelle: Entitäten, Attribute, Entscheidungen (4b/4d)
   access-matrix.md           Quelle: Rollen × Entität-Zugriffsmatrix (4c)
-  er-diagram.md              Generiertes ER-Diagramm (Mermaid), aus obigen zwei Dateien
+  design-specifications.md   Quelle: Design-System-Fundament + kritische User-Flows (4e-Ergänzung)
+  er-diagram.md              Generiertes ER-Diagramm (Mermaid), aus data-model.md/access-matrix.md
   open-questions.md          Stellen, an denen data-model.md/access-matrix.md keinen
                               eindeutigen Wert vorgeben — mit der getroffenen Annahme
   review-checklist-notes.md  Beantwortung der Review-Checkliste aus data-model.md (4e)
