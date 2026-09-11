@@ -115,6 +115,7 @@ select is(
 select throws_ok(
   $$ update field_job set problem_beschreibung = 'Werkzeug kaputt'
      where id = '00000000-0000-0000-0000-000000000051' $$,
+  '23514', NULL,
   'problem_beschreibung ohne ergebnis = problem verletzt den Constraint'
 );
 
