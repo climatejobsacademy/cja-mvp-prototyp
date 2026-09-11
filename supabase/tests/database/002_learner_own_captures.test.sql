@@ -106,12 +106,14 @@ select throws_ok(
   $$ insert into field_capture (organisation_id, learner_id, field_job_id, text, status)
      values ('00000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000001',
              '00000000-0000-0000-0000-000000000051', 'Versuch', 'verified') $$,
+  '42501', NULL,
   'Learner darf status beim Einfügen nicht selbst setzen (nur Rohinhalt ist beschreibbar)'
 );
 
 select throws_ok(
   $$ update field_capture set status = 'verified'
      where id = '00000000-0000-0000-0000-000000000071' $$,
+  '42501', NULL,
   'Learner darf status einer eigenen field_capture nicht direkt ändern'
 );
 
