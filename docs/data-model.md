@@ -71,6 +71,8 @@ Finalisiert 2026-09-09 (Vera) auf Basis der Praxistag-User-Journey — Malte kan
 
 Entschieden 2026-09-11 (Praxistag-Erfassung, ergänzt aus der Miro-Journey): Lernende durchlaufen pro Einsatz fünf Schritte — Tätigkeit wählen, Start-Content (inkl. Start-Fragen), Instruktion/Motivation (reines Weiterklicken, kein Datenschreiben), Abschluss-Content (inkl. Abschluss-Fragen), Verifizierungs-Hinweis. Dazwischen, vor den Abschluss-Fragen, bestätigt die Lernende explizit "erledigt" oder meldet "Problem" mit Freitext — deshalb `ergebnis`/`problem_beschreibung` an `field_job`, statt nur des bisherigen `durchgeführt_bestätigt_am`. Zugriff dafür bewusst eng: Learner darf an `field_job` ausschließlich `durchgeführt_bestätigt_am`, `ergebnis` und `problem_beschreibung` selbst schreiben, sonst nichts (siehe `access-matrix.md`). Die Start-/Abschluss-Fragen selbst sind Single-Choice mit 3–5 Antwortoptionen (`field_job_type_frage`), von AfCJ admin je Field Job Type und Phase angelegt; die Antworten der Lernenden landen in `field_capture`/`field_capture_antwort` (Group 4), nicht an `field_job`.
 
+Entschieden 2026-09-11 (Vera): `field_job.status` wechselt zu "durchgeführt", sobald `durchgeführt_bestätigt_am` gesetzt ist — unabhängig vom `ergebnis`. Für den Prototyp ausreichend, kann später feiner werden.
+
 ### Group 4 — Progress and evidence
 *(was ein Learner getan hat und was es belegt)*
 
