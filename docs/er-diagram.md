@@ -4,6 +4,11 @@
 > mit "Prototyp: Ja" markierte Entität. `target_group` und `guidance_conversation`
 > sind Later/Build-next und erscheinen bewusst nicht. `competency_evidence` ist
 > keine Tabelle, sondern eine berechnete View (siehe Fußnote).
+>
+> Aktualisiert 2026-09-11 für die Team-Entscheidungen dieses Datums (neue
+> `status`-Felder, `lesson_resource`, `field_job_type_frage`,
+> `field_capture_antwort`, `field_job.ergebnis`/`problem_beschreibung`,
+> `field_capture.phase`) — siehe `docs/open-questions.md`.
 
 ```mermaid
 erDiagram
@@ -42,12 +47,14 @@ erDiagram
         text name
         text kuerzel
         text beschreibung
+        text status "published/unpublished, seit 2026-09-11"
     }
     module {
         uuid id PK
         uuid programme_id FK
         text name
         int reihenfolge
+        text status "published/unpublished, seit 2026-09-11"
     }
     course {
         uuid id PK
@@ -56,14 +63,24 @@ erDiagram
         text name
         text typ
         int reihenfolge
+        text status "published/unpublished, seit 2026-09-11"
     }
     lesson {
         uuid id PK
         uuid course_id FK
         text name
         text content_type
-        jsonb inhalt
+        jsonb inhalt "nur noch scorm, repository siehe lesson_resource"
         int reihenfolge
+        text status "published/unpublished, seit 2026-09-11"
+    }
+    lesson_resource {
+        uuid id PK
+        uuid lesson_id FK
+        int reihenfolge
+        text typ "datei/link"
+        uuid file_asset_id FK "gesetzt bei typ=datei"
+        text external_url "gesetzt bei typ=link"
     }
     competency {
         uuid id PK
@@ -132,6 +149,15 @@ erDiagram
         uuid vorbereitung_content_id FK
         text nachbereitung_text
         uuid nachbereitung_content_id FK
+        text status "published/unpublished, seit 2026-09-11"
+    }
+    field_job_type_frage {
+        uuid id PK
+        uuid field_job_type_id FK
+        text phase "start/abschluss"
+        int reihenfolge
+        text frage_text
+        text_array antwortoptionen "3-5 feste Optionen"
     }
     field_job {
         uuid id PK
@@ -141,8 +167,10 @@ erDiagram
         uuid field_job_type_id FK
         uuid learner_id FK
         uuid instructor_id FK "leer im Prototyp"
-        text status
-        timestamptz durchgefuehrt_bestaetigt_am
+        text status "vom Trigger abgeleitet, seit 2026-09-11 kein Learner-Write mehr"
+        timestamptz durchgefuehrt_bestaetigt_am "Learner-Write"
+        text ergebnis "erledigt/problem, Learner-Write, seit 2026-09-11"
+        text problem_beschreibung "nur wenn ergebnis=problem, Learner-Write, seit 2026-09-11"
     }
 
     unit_progress {
@@ -166,10 +194,18 @@ erDiagram
         uuid organisation_id FK
         uuid learner_id FK
         uuid field_job_id FK
-        text text
+        text phase "start/abschluss, seit 2026-09-11"
+        text text "frei, optional/Later"
         jsonb media "schema-bereit, inaktiv"
         text status
         timestamptz eingereicht_am
+    }
+    field_capture_antwort {
+        uuid id PK
+        uuid organisation_id FK
+        uuid field_capture_id FK
+        uuid field_job_type_frage_id FK
+        text gewaehlte_option
     }
     field_capture_step_mapping {
         uuid id PK
@@ -214,6 +250,8 @@ erDiagram
     programme ||--o{ course : "(wenn kein Modul)"
     module ||--o{ course : ""
     course ||--o{ lesson : ""
+    lesson ||--o{ lesson_resource : ""
+    file_asset ||--o{ lesson_resource : "bei typ=datei"
     competency ||--o{ competency_step : ""
     lesson ||--o{ content_competency_mapping : ""
     competency_step ||--o{ content_competency_mapping : ""
@@ -234,6 +272,7 @@ erDiagram
     person ||--o{ field_job : "als Learner"
     file_asset ||--o{ field_job_type : "bild_oder_icon"
     lesson ||--o{ field_job_type : "vorbereitung/nachbereitung"
+    field_job_type ||--o{ field_job_type_frage : ""
 
     person ||--o{ unit_progress : ""
     lesson ||--o{ unit_progress : ""
@@ -242,6 +281,8 @@ erDiagram
 
     person ||--o{ field_capture : ""
     field_job ||--o{ field_capture : ""
+    field_capture ||--o{ field_capture_antwort : ""
+    field_job_type_frage ||--o{ field_capture_antwort : ""
     field_capture ||--o{ field_capture_step_mapping : ""
     competency_step ||--o{ field_capture_step_mapping : ""
     field_capture ||--o{ verification : ""

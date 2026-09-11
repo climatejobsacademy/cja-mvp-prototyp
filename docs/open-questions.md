@@ -5,7 +5,12 @@
 > einfach ergänzen." Diese Datei sammelt jede Stelle, an der Schema oder RLS eine
 > Annahme treffen mussten, weil `data-model.md`/`access-matrix.md` keinen
 > eindeutigen Wert vorgeben. Nichts davon blockiert den aktuellen Migrations-Stand —
-alles ist mit einer expliziten, im Code kommentierten Annahme umgesetzt.
+> alles ist mit einer expliziten, im Code kommentierten Annahme umgesetzt.
+>
+> **Update 2026-09-11:** Alle neun Fragen wurden mit dem Team geklärt — siehe
+> die aktualisierten `data-model.md`/`access-matrix.md` (Stand 2026-09-11) und
+> die "Entschieden 2026-09-11"-Markierung je Frage unten. Migrationen
+> `0010`–`0012` setzen die Entscheidungen um.
 
 ## Q-PUBLISHED — "nur veröffentlicht" für Qualification structure
 
@@ -21,6 +26,20 @@ mehreren dieser Entitäten geben? Falls ja: auf welcher Ebene (nur `course`? auc
 `lesson`?), und was passiert mit bereits laufenden Kohorten, wenn ein Kurs auf
 "Entwurf" zurückgesetzt wird?
 
+**Entschieden 2026-09-11:** `programme`, `module`, `course`, `lesson` und
+`field_job_type` bekommen alle ein binäres `status` (published/unpublished) —
+siehe `data-model.md`, Group 2, Entscheidungsabsatz unter der Group-2-Tabelle
+("Entschieden 2026-09-11: `programme`, `module`, `course`, `lesson` und
+`field_job_type` … bekommen alle ein binäres `status`-Feld"), sowie die
+jeweiligen Attribut-Spalten in den Group-2/3-Tabellen selbst.
+`competency`/`competency_step` bekommen **bewusst kein** eigenes Status-Feld
+(gleicher Absatz) — Sichtbarkeit läuft dort ausschließlich über
+`content_competency_mapping`. Was bei laufenden Kohorten passiert, wenn ein
+Kurs zurückgesetzt wird, ist damit nicht explizit geklärt — kein Blocker fürs
+Schema, ggf. später als Produktfrage relevant. Umgesetzt in
+`0010_content_status_and_lesson_resource.sql` (Spalten) und
+`0012_rls_updates_2026-09-11.sql` (Filter `status = 'published'` für Learner).
+
 ## Q-ENROLMENT-STATUS / Q-ATTENDANCE-STATUS — fehlende Wertelisten
 
 `enrolment.status` und `attendance.status` sind laut Übersetzungsregeln
@@ -33,6 +52,15 @@ als z. B. bei `unit_progress.status` oder `field_capture.status`).
 
 **Frage:** Passen diese Werte, oder gibt es bereits eine andere Konvention (z. B.
 aus dem Notion-Playbook), die hier gelten soll?
+
+**Entschieden 2026-09-11:** `enrolment.status` bleibt wie angenommen —
+`data-model.md`, Group 3, Zeile `enrolment`: "status (aktiv / abgeschlossen /
+abgebrochen)", identisch zur bisherigen Annahme, keine Migration nötig.
+`attendance.status` ändert sich dagegen auf **zwei** Werte —
+`data-model.md`, Group 4, Zeile `attendance`: "status (anwesend / nicht
+anwesend)", statt der bisher angenommenen drei Werte
+(`anwesend`/`abwesend`/`entschuldigt`). Umgesetzt in
+`0011_field_job_praxistag_erfassung.sql` (Constraint geändert).
 
 ## Q-LESSON-INHALT — Struktur von `lesson.inhalt`
 
@@ -49,6 +77,18 @@ wird doch eine eigene `lesson_content_item`-Tabelle (1 Lektion : n Dateien/Links
 gebraucht? Aktuell bewusst nicht gebaut, um nicht über die Attributliste
 hinauszugehen.
 
+**Entschieden 2026-09-11:** eigene Tabelle, wie vermutet — `data-model.md`,
+Group 2, neue Zeile `lesson_resource` ("Ein einzelner Datei- oder Link-Verweis
+an einer Repository-Lektion. Eine Lektion hat mindestens einen, oft mehrere,
+gemischt-typige Verweise") sowie der Entscheidungsabsatz darunter: "Entschieden
+2026-09-11: Repository-Lektionen können mehrere, gemischt-typige Verweise
+haben … deshalb eigene Entity `lesson_resource` statt eines einzelnen
+`inhalt`-Attributs, normalisiert statt als Liste in einer Spalte." `lesson.inhalt`
+bleibt als Spalte bestehen (jetzt nur noch für `scorm` relevant, bei
+`repository` unbefüllt) — kein Breaking Change am bestehenden Feld, nur nicht
+mehr genutzt für Repository-Content. Umgesetzt in
+`0010_content_status_and_lesson_resource.sql`.
+
 ## Q-FIELD-JOB-TYPE-ACCESS — kein Zeile in access-matrix.md
 
 `field_job_type` (die Katalog-Übungstypen) taucht in `access-matrix.md` nicht als
@@ -58,6 +98,16 @@ eigene Zeile auf — nur `field_job` (der konkrete Einsatz) hat eine Zeile.
 eingeloggten Rollen, write nur AfCJ admin (Katalogdaten, nicht personenbezogen).
 **Frage:** Ist das korrekt, oder sollte `field_job_type` denselben
 Sichtbarkeitsregeln wie `field_job` (Own/Cohort/Org) folgen?
+
+**Entschieden 2026-09-11:** wie Katalogdaten behandelt war richtig, jetzt mit
+eigener Matrixzeile statt stillschweigender Analogie — `access-matrix.md`,
+neue Zeile "Field job type, Field job type frage": "read All (nur published);
+write —" für alle Rollen außer AfCJ admin ("read All; write All"), plus
+Anmerkung: "'Field job type' … waren bisher nicht als eigene Zeilen
+dokumentiert … jetzt nachträglich ergänzt: beides lesend für alle offen,
+Schreiben ausschließlich AfCJ admin im Backend. 'Field job type' zusätzlich
+mit 'nur published'." Umgesetzt in `0012_rls_updates_2026-09-11.sql` (Filter
+`status = 'published'` statt bisher ungefiltertem `read All`).
 
 ## Q-FILE-ASSET — keine Zeile in access-matrix.md, gemischtes Ownership
 
@@ -75,6 +125,14 @@ eigene, vom referenzierenden Kontext abhängige RLS-Policy (Own für den
 hochladenden Learner, Cohort/Org/All je nach Rolle wie bei "Field capture —
 Rohinhalt") — das ist heute bewusst noch nicht gebaut.
 
+**Entschieden 2026-09-11:** read All / write nur AfCJ admin war richtig, jetzt
+mit eigener Matrixzeile — `access-matrix.md`, neue Zeile "File assets":
+"read All; write —" für alle Rollen außer AfCJ admin ("read All; write All"),
+gleiche Anmerkung wie bei Q-FIELD-JOB-TYPE-ACCESS oben. Kein Code-Änderung
+nötig, `0009_rls_policies.sql` setzte das schon exakt so um. Die Warnung zu
+künftigen Feld-Medien (Own-Policy sobald `field_capture.media` aktiv wird)
+bleibt unverändert bestehen, ist weiterhin nicht Teil dieses Prototyp-Standes.
+
 ## Q-PERSON-GESCHLECHT — Freitext oder feste Werteliste?
 
 `geschlecht` ist in `data-model.md` als einfaches Attribut gelistet, nicht als
@@ -84,6 +142,11 @@ eine feste Werteliste") wurde daher hier bewusst *nicht* angewendet.
 **Umgesetzt als:** `text`, nullable, ohne Check-Constraint.
 **Frage:** Soll es doch eine feste, kurze Werteliste geben (z. B. für Reporting),
 oder ist Freitext/optional hier gewollt?
+
+**Entschieden 2026-09-11:** feste Werteliste — `data-model.md`, Group 1, Zeile
+`person`: "geschlecht (feste Auswahl: männlich / weiblich / divers / keine
+Angabe)". Umgesetzt in `0011_field_job_praxistag_erfassung.sql` (Check-Constraint
+nachgerüstet).
 
 ## Q-FUTURE-ROLES — Instructor/Team Lead, AfCJ trainer, Manager
 
@@ -97,6 +160,13 @@ im Prototyp nicht erreichbar (keine Person hat diese Rolle).
 eigene Policies (z. B. Instructor: read/write Cohort statt Own/All) — die
 Cohort-Berechnung müsste dann über zugewiesene Kohorten des Instructors laufen,
 nicht über Enrolment.
+
+**Entschieden 2026-09-11:** für den Prototyp bestätigt, keine Änderung — 
+`data-model.md`, Group 1, Entscheidungsabsatz: "Nur zwei Rollen-Werte im
+Prototyp (Learner, AfCJ admin) — Instructor/Trainer/Manager existieren noch
+nicht als eigene Personen" (unverändert gegenüber der Vorversion). Das Team hat
+den Punkt besprochen und bewusst nicht vorgezogen — bleibt eine MVP-Frage, kein
+Prototyp-Blocker. Keine Migration nötig.
 
 ## Q-CAPTURE-PENDING-UI — "pending" existiert nicht als eigener Status
 
@@ -112,6 +182,14 @@ Attributliste in `data-model.md` hinauszugehen).
 **Frage:** Reicht diese Ableitung fürs Frontend (Anzeige "pending" wenn
 `status = 'submitted'`), oder soll `field_capture.status` doch einen expliziten
 `pending`-Wert bekommen, der `submitted` ersetzt/ergänzt?
+
+**Entschieden 2026-09-11:** Ableitung bleibt wie gebaut, kein eigener
+`pending`-Wert — `data-model.md`, Group 4, Zeile `field_capture` führt
+weiterhin nur "status (submitted/verified/rejected)" (unverändert). Die neuen
+Attribute an `field_capture` betreffen nur `phase` (start/abschluss, s.
+Q-FIELD-JOB-LEARNER-CONFIRM/Entscheidungsabsatz 2026-09-11 in Group 4) — der
+Status-Mechanismus selbst und damit diese Frage sind davon nicht berührt.
+Keine Migration nötig für diesen Punkt.
 
 ## Q-FIELD-JOB-LEARNER-CONFIRM — Widerspruch zwischen access-matrix.md und design-specifications.md
 
@@ -133,6 +211,22 @@ bleibt "write —" für Learner bestehen (kein Zugriff auf `standort`,
 `access-matrix.md` stattdessen so geändert werden, dass "Field job" für
 Learner "write Own (nur Bestätigung)" statt "—" heißt? Rein kosmetisch für die
 Matrix-Tabelle, ändert nichts an der Policy selbst.
+
+**Entschieden 2026-09-11:** genau in diese Richtung, und ausführlicher als
+zuvor umgesetzt — `access-matrix.md`, Zeile "Field job": "read Own; write Own
+(nur `durchgeführt_bestätigt_am`, `ergebnis`, `problem_beschreibung` — sonst
+nichts)" statt des bisherigen "—", plus Anmerkung: "'Field job' bekommt
+entgegen der ursprünglichen Annahme doch ein Learner-Write — aber bewusst eng
+auf drei Felder begrenzt … nicht auf die ganze Zeile." Dazu kamen inhaltlich
+zwei neue Spalten an `field_job` (`ergebnis`, `problem_beschreibung`, siehe
+`data-model.md` Group 3, Zeile `field_job` und den Entscheidungsabsatz
+"Entschieden 2026-09-11 (Praxistag-Erfassung …)" darunter) — die
+Learner-Write-Policy deckt jetzt drei statt der bisher zwei Spalten
+(`durchgeführt_bestätigt_am` war vorher mit `status` kombiniert; `status`
+selbst ist jetzt **nicht** mehr direkt vom Learner beschreibbar, sondern wird
+per Trigger aus `durchgeführt_bestätigt_am` abgeleitet — siehe
+`0011_field_job_praxistag_erfassung.sql` und
+`0012_rls_updates_2026-09-11.sql`).
 
 ## Reminder aus data-model.md selbst (nicht neu, aber hier verlinkt)
 
