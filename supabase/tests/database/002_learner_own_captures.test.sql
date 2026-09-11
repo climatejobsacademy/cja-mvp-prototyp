@@ -74,12 +74,23 @@ select is(
   'Learner A sieht die field_capture von Learner B nicht'
 );
 
+-- Postgres erlaubt eine datenverändernde CTE (UPDATE ... RETURNING) nur, wenn
+-- das WITH selbst die oberste Anweisung ist — nicht verschachtelt als
+-- Sub-Select-Ausdruck in einer anderen SELECT-Liste (wie zuvor hier
+-- versucht). Deshalb hier als eigene, oberste Anweisung ausgeführt und das
+-- Ergebnis über psql \gset in eine Variable geschrieben, die die Assertion
+-- danach separat referenziert — inhaltlich unverändert (weiterhin: 0 Zeilen
+-- betroffen).
+with updated as (
+  update field_capture set text = 'Übernommen von Learner A'
+  where id = '00000000-0000-0000-0000-000000000072'
+  returning 1
+)
+select count(*)::int as affected_rows from updated
+\gset
+
 select is(
-  (with updated as (
-    update field_capture set text = 'Übernommen von Learner A'
-    where id = '00000000-0000-0000-0000-000000000072'
-    returning 1
-  ) select count(*)::int from updated),
+  :affected_rows,
   0,
   'Learner A kann die field_capture von Learner B nicht ändern'
 );
@@ -95,12 +106,14 @@ select throws_ok(
   $$ insert into field_capture (organisation_id, learner_id, field_job_id, phase, text, status)
      values ('00000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000001',
              '00000000-0000-0000-0000-000000000051', 'start', 'Versuch', 'verified') $$,
+  '42501', NULL,
   'Learner darf status beim Einfügen nicht selbst setzen (nur Rohinhalt ist beschreibbar)'
 );
 
 select throws_ok(
   $$ update field_capture set status = 'verified'
      where id = '00000000-0000-0000-0000-000000000071' $$,
+  '42501', NULL,
   'Learner darf status einer eigenen field_capture nicht direkt ändern'
 );
 
