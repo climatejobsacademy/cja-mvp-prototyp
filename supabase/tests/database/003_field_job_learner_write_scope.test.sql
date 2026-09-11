@@ -66,33 +66,48 @@ select is(
 select throws_ok(
   $$ update field_job set standort = 'Werkstatt Nord'
      where id = '00000000-0000-0000-0000-000000000051' $$,
+  '42501', NULL,
   'Learner A darf standort nicht schreiben'
 );
 
 select throws_ok(
   $$ update field_job set instructor_id = '00000000-0000-0000-0000-000000000002'
      where id = '00000000-0000-0000-0000-000000000051' $$,
+  '42501', NULL,
   'Learner A darf instructor_id nicht schreiben'
 );
 
 select throws_ok(
   $$ update field_job set datum = current_date + 1
      where id = '00000000-0000-0000-0000-000000000051' $$,
+  '42501', NULL,
   'Learner A darf datum nicht schreiben'
 );
 
 select throws_ok(
   $$ update field_job set status = 'geplant'
      where id = '00000000-0000-0000-0000-000000000051' $$,
+  '42501', NULL,
   'Learner A darf status nicht direkt schreiben (nur über den Trigger abgeleitet)'
 );
 
+-- Postgres erlaubt eine datenverändernde CTE (UPDATE ... RETURNING) nur, wenn
+-- das WITH selbst die oberste Anweisung ist — nicht verschachtelt als
+-- Sub-Select-Ausdruck in einer anderen SELECT-Liste. Deshalb hier als eigene,
+-- oberste Anweisung ausgeführt und das Ergebnis über psql \gset in eine
+-- Variable geschrieben, die die Assertion danach separat referenziert —
+-- inhaltlich unverändert (weiterhin: 0 Zeilen betroffen). Gleiches Muster wie
+-- in 002_learner_own_captures.test.sql.
+with updated as (
+  update field_job set ergebnis = 'erledigt'
+  where id = '00000000-0000-0000-0000-000000000052'
+  returning 1
+)
+select count(*)::int as affected_rows from updated
+\gset
+
 select is(
-  (with updated as (
-    update field_job set ergebnis = 'erledigt'
-    where id = '00000000-0000-0000-0000-000000000052'
-    returning 1
-  ) select count(*)::int from updated),
+  :affected_rows,
   0,
   'Learner A kann field_job von Learner B nicht ändern, auch nicht in den drei erlaubten Feldern'
 );
