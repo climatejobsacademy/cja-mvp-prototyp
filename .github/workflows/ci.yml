@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node.js einrichten
+        uses: actions/setup-node@v4
+        with:
+          # Liest die Node-Version aus package.json ("engines.node") — eine
+          # Quelle der Wahrheit für CI und lokale Entwicklung.
+          node-version-file: "package.json"
+          cache: "npm"
+
+      - name: Dependencies installieren
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type-Check
+        run: npx tsc --noEmit
+
+      - name: Supabase CLI installieren
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Supabase lokal starten (Postgres + Migrationen aus supabase/migrations)
+        run: supabase start
+
+      - name: RLS-Tests (pgTAP, supabase/tests/database)
+        run: supabase test db
+
+      - name: Supabase stoppen
+        if: always()
+        run: supabase stop
