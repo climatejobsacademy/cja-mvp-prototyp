@@ -49,9 +49,9 @@ insert into field_job (id, organisation_id, datum, field_job_type_id, learner_id
   ('00000000-0000-0000-0000-000000000051', '00000000-0000-0000-0000-000000000011', current_date, '00000000-0000-0000-0000-000000000041', '00000000-0000-0000-0000-000000000001'),
   ('00000000-0000-0000-0000-000000000052', '00000000-0000-0000-0000-000000000011', current_date, '00000000-0000-0000-0000-000000000041', '00000000-0000-0000-0000-000000000002');
 
-insert into field_capture (id, organisation_id, learner_id, field_job_id, text) values
-  ('00000000-0000-0000-0000-000000000071', '00000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000051', 'Bericht von Learner A'),
-  ('00000000-0000-0000-0000-000000000072', '00000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000052', 'Bericht von Learner B');
+insert into field_capture (id, organisation_id, learner_id, field_job_id, phase, text) values
+  ('00000000-0000-0000-0000-000000000071', '00000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000051', 'abschluss', 'Bericht von Learner A'),
+  ('00000000-0000-0000-0000-000000000072', '00000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000052', 'abschluss', 'Bericht von Learner B');
 
 -- ------------------------------------------------------------
 -- Als Learner A
@@ -96,16 +96,16 @@ select is(
 );
 
 select lives_ok(
-  $$ insert into field_capture (organisation_id, learner_id, field_job_id, text)
+  $$ insert into field_capture (organisation_id, learner_id, field_job_id, phase, text)
      values ('00000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000001',
-             '00000000-0000-0000-0000-000000000051', 'Neuer Bericht') $$,
+             '00000000-0000-0000-0000-000000000051', 'start', 'Neuer Bericht') $$,
   'Learner A darf Rohinhalt (text) der eigenen field_capture einfügen'
 );
 
 select throws_ok(
-  $$ insert into field_capture (organisation_id, learner_id, field_job_id, text, status)
+  $$ insert into field_capture (organisation_id, learner_id, field_job_id, phase, text, status)
      values ('00000000-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000001',
-             '00000000-0000-0000-0000-000000000051', 'Versuch', 'verified') $$,
+             '00000000-0000-0000-0000-000000000051', 'start', 'Versuch', 'verified') $$,
   '42501', NULL,
   'Learner darf status beim Einfügen nicht selbst setzen (nur Rohinhalt ist beschreibbar)'
 );

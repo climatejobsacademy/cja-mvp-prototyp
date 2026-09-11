@@ -446,10 +446,13 @@ create trigger apply_verification_to_capture
 
 -- ============================================================
 -- file_asset
--- Nicht separat in der Matrix aufgeführt. Aktuell nur AfCJ-weiter Content aktiv
--- genutzt (Lektionen, field_job_type-Bilder, knowledge_source) -> read All,
--- write admin only. Siehe docs/open-questions.md, Q-FILE-ASSET, zur Governance
--- sobald Employer-/Learner-eigene Medien (field_capture.media) aktiv werden.
+-- Ursprünglich nicht separat in der Matrix aufgeführt (Q-FILE-ASSET); seit
+-- Entschieden 2026-09-11 eigene Matrixzeile "File assets": read All; write —
+-- für alle Rollen außer AfCJ admin (read All; write All) — exakt das, was
+-- hier schon stand, keine Code-Änderung nötig. Aktuell nur AfCJ-weiter Content
+-- aktiv genutzt (Lektionen, field_job_type-Bilder, knowledge_source). Siehe
+-- docs/open-questions.md, Q-FILE-ASSET, zur Governance sobald Employer-/
+-- Learner-eigene Medien (field_capture.media) aktiv werden.
 -- ============================================================
 alter table file_asset enable row level security;
 revoke all on file_asset from public, anon, authenticated;
