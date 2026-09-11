@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Anton, Geist_Mono, Work_Sans } from "next/font/google";
+import type { ReactNode } from "react";
 import "./globals.css";
 
 // Fließtext, UI-Labels, Formulare — docs/design-specifications.md, Abschnitt 1
@@ -25,7 +26,7 @@ export const metadata: Metadata = {
   description: "Lernplattform für Elektrofachkraft Erneuerbare Energien",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html
       lang="de"
