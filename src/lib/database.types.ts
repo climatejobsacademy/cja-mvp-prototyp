@@ -41,6 +41,8 @@ export type CompetencyStepTyp = "theoretisch" | "praktisch";
 export type EnrolmentStatus = "aktiv" | "abgeschlossen" | "abgebrochen";
 export type ScheduleArt = "live" | "asynchron" | "feld";
 export type FieldJobStatus = "geplant" | "durchgeführt";
+export type FieldJobErgebnis = "erledigt" | "problem";
+export type FieldCapturePhase = "start" | "abschluss";
 export type UnitProgressStatus = "offen" | "in Bearbeitung" | "abgeschlossen";
 export type AttendanceStatus = "anwesend" | "abwesend" | "entschuldigt";
 export type FieldCaptureStatus = "submitted" | "verified" | "rejected";
@@ -252,6 +254,10 @@ type FieldJobRow = Flatten<
     instructor_id: string | null;
     status: FieldJobStatus;
     durchgefuehrt_bestaetigt_am: string | null;
+    // Entschieden 2026-09-11 (0011_field_job_praxistag_erfassung.sql): Learner
+    // bestätigt "erledigt" oder meldet ein "problem" mit Freitext.
+    ergebnis: FieldJobErgebnis | null;
+    problem_beschreibung: string | null;
   }
 >;
 
@@ -299,6 +305,9 @@ type FieldCaptureRow = Flatten<
     organisation_id: string;
     learner_id: string;
     field_job_id: string;
+    // Entschieden 2026-09-11 (0011_field_job_praxistag_erfassung.sql): kein
+    // Default, jede Einreichung muss die Phase explizit angeben.
+    phase: FieldCapturePhase;
     text: string | null;
     media: Json | null;
     status: FieldCaptureStatus;
@@ -540,7 +549,16 @@ export type Database = {
             durchgefuehrt_bestaetigt_am?: string | null;
           }
         >,
-        Partial<FieldJobRow>
+        // Deckt sich mit dem Spalten-Grant in 0012_rls_updates_2026-09-11.sql:
+        // Learner dürfen nur diese drei Spalten schreiben. `status` bewusst
+        // nicht im Update-Typ — wird seit fn_derive_field_job_status (0011)
+        // per Trigger aus durchgefuehrt_bestaetigt_am abgeleitet, nicht mehr
+        // direkt vom Client gesetzt.
+        {
+          durchgefuehrt_bestaetigt_am?: string | null;
+          ergebnis?: FieldJobErgebnis | null;
+          problem_beschreibung?: string | null;
+        }
       >;
       schedule_entry: Table<
         ScheduleEntryRow,
@@ -599,6 +617,7 @@ export type Database = {
           organisation_id: string;
           learner_id: string;
           field_job_id: string;
+          phase: FieldCapturePhase;
           text?: string | null;
           media?: Json | null;
           eingereicht_am?: string;
