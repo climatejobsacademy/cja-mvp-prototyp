@@ -96,6 +96,7 @@ als einfache Prozent-Balken.
 | Braucht die Content Library vor Pilotstart eine eigene Spezifikation oder reicht zunächst eine generische Listen-Ansicht? | Abschnitt 2.4 | 2026-09-09 | Beantwortet 2026-09-09: Eigene kurze Spezifikation erstellt, siehe Abschnitt 2.4 |
 | Ab wann werden motivierende/gamifizierte Elemente (Fortschrittsbalken, Badges) ergänzt? | Abschnitt 1 | 2026-09-09 | Zurückgestellt auf MVP/V1 |
 | Gibt es durch AZAV-Förderung zusätzlich zu WCAG 2.1 AA noch eigene Barrierefreiheits-Vorgaben? | Abschnitt 1 | 2026-09-09 | WCAG 2.1 AA als Zielstandard entschieden; ob AZAV darüber hinaus etwas verlangt, offen — ggf. beim Fördergeber nachfragen |
+| Gilt das BFSG (Barrierefreiheitsstärkungsgesetz) für unser B2B-finanziertes, individuell genutztes Angebot? Falls ja: Pflicht zur Barrierefreiheitserklärung nach § 14 BFSG | Abschnitt 1 | An Rechtsberatung übergeben (2026-09-14), noch offen. WCAG 2.1 AA als Zielstandard gilt davon unabhängig. Details und Quellen: [Barrierefreiheit & Einwilligung — offene rechtliche Fragen](https://app.notion.com/p/3db48915565b81e4a5b0de82c5b4e52f) (Notion) |
 
 ## 5. Entscheidungs-Log
 
