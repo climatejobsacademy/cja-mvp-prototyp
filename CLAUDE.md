@@ -13,7 +13,7 @@ before building.
   field-workflow routes are mobile-first and installable (PWA)
 - shadcn/ui + Tailwind for components; design tokens and flows in
   /docs/design-specifications.md — respect them, don't invent new ones
-- Supabase: Postgres, Auth (magic link), Storage, pgvector. Region EU (Frankfurt).
+- Supabase: Postgres, Auth (magic link), Storage, pgvector. Region EU (Ireland).
 - Environments: dev and prod. Never run anything against prod unless explicitly told.
 
 ## Non-negotiable rules

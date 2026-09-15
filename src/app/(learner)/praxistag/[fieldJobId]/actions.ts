@@ -7,20 +7,36 @@ import { REFLEXIONS_FRAGEN } from "@/lib/praxistag-shared";
 import { createClient } from "@/lib/supabase/server";
 
 /**
- * Bestätigung nach Einsatz: ein Klick "Erledigt", kein Formular (Entscheidung
- * 2026-09-09, design-specifications.md 2.1). Siehe docs/open-questions.md,
- * Q-FIELD-JOB-LEARNER-CONFIRM zur RLS-Policy, die das für Learner überhaupt
- * erlaubt.
+ * Bestätigung nach Einsatz: Learner bestätigt "erledigt" (ein Klick) oder
+ * meldet ein "problem" mit Freitext-Beschreibung (Entscheidung 2026-09-11,
+ * data-model.md/access-matrix.md — löst die ursprüngliche
+ * Ein-Klick-Entscheidung vom 2026-09-09 ab). `status` wird hier bewusst NICHT
+ * mehr geschrieben: der Trigger fn_derive_field_job_status
+ * (0011_field_job_praxistag_erfassung.sql) leitet ihn aus
+ * durchgefuehrt_bestaetigt_am ab, weil der Learner-Spaltengrant seit
+ * 0012_rls_updates_2026-09-11.sql nur noch durchgefuehrt_bestaetigt_am,
+ * ergebnis und problem_beschreibung umfasst (siehe docs/open-questions.md,
+ * Q-FIELD-JOB-LEARNER-CONFIRM).
  */
-export async function confirmFieldJob(fieldJobId: string) {
+export async function confirmFieldJob(
+  fieldJobId: string,
+  ergebnis: "erledigt" | "problem",
+  problemBeschreibung?: string
+) {
   const learner = await requireCurrentLearner();
   const supabase = await createClient();
+
+  const beschreibung = problemBeschreibung?.trim() || null;
+  if (ergebnis === "problem" && !beschreibung) {
+    return { ok: false as const, error: "Bitte kurz beschreiben, worum es geht." };
+  }
 
   const { error } = await supabase
     .from("field_job")
     .update({
-      status: "durchgeführt",
       durchgefuehrt_bestaetigt_am: new Date().toISOString(),
+      ergebnis,
+      problem_beschreibung: ergebnis === "problem" ? beschreibung : null,
     })
     .eq("id", fieldJobId)
     .eq("learner_id", learner.personId);
@@ -60,6 +76,7 @@ export async function submitReflection(
     organisation_id: organisationId,
     learner_id: learner.personId,
     field_job_id: fieldJobId,
+    phase: "abschluss",
     text,
   });
 
