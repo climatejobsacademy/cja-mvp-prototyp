@@ -30,10 +30,14 @@ export default async function ContentLibraryPage() {
       )}
 
       {groups.map((group) => (
-        <section key={group.id ?? "ohne-modul"} className="flex flex-col gap-3">
+        <section
+          key={group.id ?? "ohne-modul"}
+          id={group.id ? `modul-${group.id}` : undefined}
+          className="flex flex-col gap-3"
+        >
           {group.name && <h2 className="text-sm font-medium text-eco-deep-green">{group.name}</h2>}
           {group.courses.map((course) => (
-            <Card key={course.id}>
+            <Card key={course.id} id={`kurs-${course.id}`}>
               <CardContent className="flex flex-col gap-3">
                 <div className="flex items-center justify-between gap-3">
                   <p className="font-medium text-eco-deep-green">{course.name}</p>

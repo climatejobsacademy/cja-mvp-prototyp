@@ -151,11 +151,16 @@ export function ScheduleTabs({
         </div>
         <ol className="flex flex-col gap-2">
           {programm.phasen.map((phase, i) => (
-            <li key={phase.id} className="flex items-center gap-3 rounded-lg border border-border p-3">
-              <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-medium text-secondary-foreground">
-                {i + 1}
-              </span>
-              <span className="text-sm text-eco-deep-green">{phase.name}</span>
+            <li key={phase.id}>
+              <Link
+                href={phase.typ === "module" ? `/content#modul-${phase.id}` : `/content#kurs-${phase.id}`}
+                className="flex items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:border-eco-green"
+              >
+                <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-medium text-secondary-foreground">
+                  {i + 1}
+                </span>
+                <span className="text-sm text-eco-deep-green">{phase.name}</span>
+              </Link>
             </li>
           ))}
           {programm.phasen.length === 0 && (
