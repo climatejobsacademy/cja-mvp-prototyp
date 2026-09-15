@@ -7,7 +7,7 @@ import { ArrowLeft, CheckCircle2, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { CaptureStatusBadge } from "@/components/status-badge";
-import { REFLEXIONS_FRAGEN, type FieldJobDetail } from "@/lib/praxistag-shared";
+import type { FieldJobDetail } from "@/lib/praxistag-shared";
 
 import { confirmFieldJob, submitReflection } from "./actions";
 
@@ -29,9 +29,10 @@ export function PraxistagFlow({
   const [step, setStep] = useState<Step>(initialStep(detail));
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-  const [antworten, setAntworten] = useState<string[]>(
-    Array(REFLEXIONS_FRAGEN.length).fill("")
-  );
+  // Keyed nach field_job_type_frage.id statt Array-Index, weil die Fragen
+  // jetzt dynamisch aus der DB kommen (queries/praxistag.ts), nicht mehr aus
+  // einer festen, immer gleich langen Konstante.
+  const [antworten, setAntworten] = useState<Record<string, string>>({});
   const [problemMeldung, setProblemMeldung] = useState(false);
   const [problemText, setProblemText] = useState("");
 
@@ -56,13 +57,17 @@ export function PraxistagFlow({
   }
 
   function handleReflexionAbsenden() {
-    if (antworten.some((a) => !a)) {
+    if (detail.reflexionsFragen.some((f) => !antworten[f.id])) {
       setError("Bitte alle Fragen beantworten.");
       return;
     }
     setError(null);
     startTransition(async () => {
-      const result = await submitReflection(detail.fieldJobId, organisationId, antworten);
+      const result = await submitReflection(
+        detail.fieldJobId,
+        organisationId,
+        detail.reflexionsFragen.map((f) => ({ fragId: f.id, gewaehlteOption: antworten[f.id] }))
+      );
       if (!result.ok) {
         setError(result.error);
         return;
@@ -165,18 +170,21 @@ export function PraxistagFlow({
         <Card>
           <CardContent className="flex flex-col gap-5">
             <h2 className="font-medium text-eco-deep-green">Reflexion</h2>
-            {REFLEXIONS_FRAGEN.map((f, i) => (
-              <fieldset key={f.frage} className="flex flex-col gap-2">
-                <legend className="text-sm font-medium text-eco-deep-green">{f.frage}</legend>
-                {f.optionen.map((option) => (
+            {detail.reflexionsFragen.length === 0 && (
+              <p className="text-sm text-muted-foreground">Keine Fragen hinterlegt.</p>
+            )}
+            {detail.reflexionsFragen.map((f) => (
+              <fieldset key={f.id} className="flex flex-col gap-2">
+                <legend className="text-sm font-medium text-eco-deep-green">{f.frageText}</legend>
+                {f.antwortoptionen.map((option) => (
                   <label key={option} className="flex items-center gap-2 text-sm">
                     <input
                       type="radio"
-                      name={`frage-${i}`}
+                      name={`frage-${f.id}`}
                       value={option}
-                      checked={antworten[i] === option}
+                      checked={antworten[f.id] === option}
                       onChange={() =>
-                        setAntworten((prev) => prev.map((a, idx) => (idx === i ? option : a)))
+                        setAntworten((prev) => ({ ...prev, [f.id]: option }))
                       }
                       className="accent-primary"
                     />

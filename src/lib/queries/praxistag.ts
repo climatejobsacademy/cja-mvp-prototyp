@@ -16,15 +16,29 @@ export async function getFieldJobDetail(
 
   if (!job || job.learner_id !== learnerId) return null;
 
-  const { data: type } = await supabase
-    .from("field_job_type")
-    .select(
-      "titel, beschreibung, vorbereitung_text, vorbereitung_content_id, nachbereitung_text, nachbereitung_content_id"
-    )
-    .eq("id", job.field_job_type_id)
-    .single();
+  const [{ data: type }, { data: fragen }] = await Promise.all([
+    supabase
+      .from("field_job_type")
+      .select(
+        "titel, beschreibung, vorbereitung_text, vorbereitung_content_id, nachbereitung_text, nachbereitung_content_id"
+      )
+      .eq("id", job.field_job_type_id)
+      .single(),
+    supabase
+      .from("field_job_type_frage")
+      .select("id, frage_text, antwortoptionen, reihenfolge")
+      .eq("field_job_type_id", job.field_job_type_id)
+      .eq("phase", "abschluss")
+      .order("reihenfolge", { ascending: true }),
+  ]);
 
   if (!type) return null;
+
+  const reflexionsFragen = (fragen ?? []).map((f) => ({
+    id: f.id,
+    frageText: f.frage_text,
+    antwortoptionen: f.antwortoptionen,
+  }));
 
   const { data: captures } = await supabase
     .from("field_capture")
@@ -47,6 +61,7 @@ export async function getFieldJobDetail(
     vorbereitungContentId: type.vorbereitung_content_id,
     nachbereitungText: type.nachbereitung_text,
     nachbereitungContentId: type.nachbereitung_content_id,
+    reflexionsFragen,
     capture,
   };
 }
