@@ -243,6 +243,19 @@ type FieldJobTypeRow = Flatten<
   }
 >;
 
+type FieldJobTypeFrageRow = Flatten<
+  Timestamps & {
+    id: string;
+    field_job_type_id: string;
+    // Gleicher Wertebereich wie field_capture.phase (siehe dort) — bewusst
+    // derselbe Typ, kein eigener Alias für dieselbe Domäne.
+    phase: FieldCapturePhase;
+    reihenfolge: number;
+    frage_text: string;
+    antwortoptionen: string[];
+  }
+>;
+
 type FieldJobRow = Flatten<
   Timestamps & {
     id: string;
@@ -312,6 +325,16 @@ type FieldCaptureRow = Flatten<
     media: Json | null;
     status: FieldCaptureStatus;
     eingereicht_am: string;
+  }
+>;
+
+type FieldCaptureAntwortRow = Flatten<
+  Timestamps & {
+    id: string;
+    organisation_id: string;
+    field_capture_id: string;
+    field_job_type_frage_id: string;
+    gewaehlte_option: string;
   }
 >;
 
@@ -534,6 +557,20 @@ export type Database = {
         >,
         Partial<FieldJobTypeRow>
       >;
+      field_job_type_frage: Table<
+        FieldJobTypeFrageRow,
+        Flatten<
+          Partial<Timestamps> & {
+            id?: string;
+            field_job_type_id: string;
+            phase: FieldCapturePhase;
+            reihenfolge: number;
+            frage_text: string;
+            antwortoptionen: string[];
+          }
+        >,
+        Partial<FieldJobTypeFrageRow>
+      >;
       field_job: Table<
         FieldJobRow,
         Flatten<
@@ -623,6 +660,19 @@ export type Database = {
           eingereicht_am?: string;
         },
         { text?: string | null; media?: Json | null }
+      >;
+      field_capture_antwort: Table<
+        FieldCaptureAntwortRow,
+        Flatten<
+          Partial<Timestamps> & {
+            id?: string;
+            organisation_id: string;
+            field_capture_id: string;
+            field_job_type_frage_id: string;
+            gewaehlte_option: string;
+          }
+        >,
+        Partial<FieldCaptureAntwortRow>
       >;
       field_capture_step_mapping: Table<
         FieldCaptureStepMappingRow,
