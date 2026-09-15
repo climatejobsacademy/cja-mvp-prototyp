@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BookOpen, ChevronLeft, ChevronRight, FileText, Video, Wrench } from "lucide-react";
@@ -31,13 +32,14 @@ export function ScheduleTabs({
   programm: ProgrammUebersicht;
 }) {
   const router = useRouter();
+  const [tab, setTab] = useState("tag");
 
   function gotoDate(datum: string) {
     router.push(`/schedule?datum=${datum}`);
   }
 
   return (
-    <Tabs defaultValue="tag">
+    <Tabs value={tab} onValueChange={setTab}>
       <TabsList>
         <TabsTrigger value="tag">Tag</TabsTrigger>
         <TabsTrigger value="woche">Woche</TabsTrigger>
@@ -117,7 +119,10 @@ export function ScheduleTabs({
         {woche.map((tag) => (
           <button
             key={tag.datum}
-            onClick={() => gotoDate(tag.datum)}
+            onClick={() => {
+              gotoDate(tag.datum);
+              setTab("tag");
+            }}
             className="rounded-lg border border-border p-3 text-left transition-colors hover:border-eco-green"
           >
             <p className="text-xs text-muted-foreground">{formatWeekday(tag.datum)}</p>
