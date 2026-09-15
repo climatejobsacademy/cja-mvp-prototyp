@@ -88,6 +88,13 @@ als einfache Prozent-Balken.
 > Fortschritts-Übersicht für AfCJ-Admin werden nach Prototyp-Start spezifiziert,
 > bis dahin ggf. übergangsweise direkt in Supabase erledigt.
 
+Ergänzung 2026-09-15: Admin-bezogene Build-now-Anforderungen, die sich vollständig
+über direkte Dateneingabe/-pflege abbilden lassen (Supabase Table Editor, Storage,
+SQL Editor, oder eine Terminal-Session mit Claude zur Datenauswertung/-aufbereitung),
+benötigen im Prototyp keine eigene Admin-Oberfläche. Gilt für die aktuelle
+Konstellation: zwei AfCJ-Admins (Vera, Malte), Kohorte von bis zu ca. 11 Lernenden.
+Betrifft SR-19, 20, 21, 22, 23 (Kuratierungsteil), 48, 55.
+
 ## 4. Offene Fragen
 
 | Frage | Betrifft | Seit wann offen | Status |
