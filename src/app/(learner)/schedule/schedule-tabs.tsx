@@ -115,31 +115,44 @@ export function ScheduleTabs({
         })}
       </TabsContent>
 
-      <TabsContent value="woche" className="grid grid-cols-1 gap-2 sm:grid-cols-7">
-        {woche.map((tag) => (
-          <button
-            key={tag.datum}
-            onClick={() => {
-              gotoDate(tag.datum);
-              setTab("tag");
-            }}
-            className="rounded-lg border border-border p-3 text-left transition-colors hover:border-eco-green"
-          >
-            <p className="text-xs text-muted-foreground">{formatWeekday(tag.datum)}</p>
-            <p className="text-sm font-medium text-eco-deep-green">{formatDayMonth(tag.datum)}</p>
-            {tag.art === "feld" && (
-              <Badge variant="outline" className="mt-1 gap-1">
-                <Wrench className="size-3" /> Praxistag
-              </Badge>
-            )}
-            {tag.art === "theorie" && (
-              <p className="mt-1 text-xs text-muted-foreground">
-                {tag.abgeschlosseneEintraege}/{tag.abgeschlosseneEintraege + tag.offeneEintraege} erledigt
-              </p>
-            )}
-            {tag.art === "frei" && <p className="mt-1 text-xs text-muted-foreground">frei</p>}
-          </button>
-        ))}
+      <TabsContent value="woche" className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <Button variant="ghost" size="icon-sm" onClick={() => gotoDate(addDays(selectedDate, -7))}>
+            <ChevronLeft />
+          </Button>
+          <p className="text-sm font-medium text-eco-deep-green">
+            {woche.length > 0 && `${formatDayMonth(woche[0].datum)} – ${formatDayMonth(woche[woche.length - 1].datum)}`}
+          </p>
+          <Button variant="ghost" size="icon-sm" onClick={() => gotoDate(addDays(selectedDate, 7))}>
+            <ChevronRight />
+          </Button>
+        </div>
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-7">
+          {woche.map((tag) => (
+            <button
+              key={tag.datum}
+              onClick={() => {
+                gotoDate(tag.datum);
+                setTab("tag");
+              }}
+              className="rounded-lg border border-border p-3 text-left transition-colors hover:border-eco-green"
+            >
+              <p className="text-xs text-muted-foreground">{formatWeekday(tag.datum)}</p>
+              <p className="text-sm font-medium text-eco-deep-green">{formatDayMonth(tag.datum)}</p>
+              {tag.art === "feld" && (
+                <Badge variant="outline" className="mt-1 gap-1">
+                  <Wrench className="size-3" /> Praxistag
+                </Badge>
+              )}
+              {tag.art === "theorie" && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {tag.abgeschlosseneEintraege}/{tag.abgeschlosseneEintraege + tag.offeneEintraege} erledigt
+                </p>
+              )}
+              {tag.art === "frei" && <p className="mt-1 text-xs text-muted-foreground">frei</p>}
+            </button>
+          ))}
+        </div>
       </TabsContent>
 
       <TabsContent value="programm" className="flex flex-col gap-4">
