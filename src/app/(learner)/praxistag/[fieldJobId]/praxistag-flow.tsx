@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, CheckCircle2, TriangleAlert } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,11 +32,21 @@ export function PraxistagFlow({
   const [antworten, setAntworten] = useState<string[]>(
     Array(REFLEXIONS_FRAGEN.length).fill("")
   );
+  const [problemMeldung, setProblemMeldung] = useState(false);
+  const [problemText, setProblemText] = useState("");
 
-  function handleBestaetigen() {
+  function handleBestaetigen(ergebnis: "erledigt" | "problem") {
+    if (ergebnis === "problem" && !problemText.trim()) {
+      setError("Bitte kurz beschreiben, worum es geht.");
+      return;
+    }
     setError(null);
     startTransition(async () => {
-      const result = await confirmFieldJob(detail.fieldJobId);
+      const result = await confirmFieldJob(
+        detail.fieldJobId,
+        ergebnis,
+        ergebnis === "problem" ? problemText.trim() : undefined
+      );
       if (!result.ok) {
         setError(result.error);
         return;
@@ -96,14 +106,57 @@ export function PraxistagFlow({
 
       {step === "bestaetigung" && (
         <Card>
-          <CardContent className="flex flex-col items-center gap-4 py-8 text-center">
-            <p className="text-sm text-muted-foreground">
+          <CardContent className="flex flex-col gap-4 py-8">
+            <p className="text-center text-sm text-muted-foreground">
               Führe die Aufgabe jetzt vor Ort durch. Bestätige hier, sobald du fertig bist.
             </p>
-            <Button onClick={handleBestaetigen} disabled={pending} size="lg">
-              <CheckCircle2 data-icon="inline-start" />
-              {pending ? "Wird bestätigt …" : "Einsatz erledigt"}
-            </Button>
+
+            {!problemMeldung ? (
+              <div className="flex flex-col items-center gap-2">
+                <Button onClick={() => handleBestaetigen("erledigt")} disabled={pending} size="lg">
+                  <CheckCircle2 data-icon="inline-start" />
+                  {pending ? "Wird bestätigt …" : "Erledigt"}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setProblemMeldung(true)}
+                  disabled={pending}
+                >
+                  <TriangleAlert data-icon="inline-start" />
+                  Problem melden
+                </Button>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                <label className="flex flex-col gap-1.5 text-sm font-medium" htmlFor="problem-beschreibung">
+                  Was ist passiert?
+                  <textarea
+                    id="problem-beschreibung"
+                    value={problemText}
+                    onChange={(e) => setProblemText(e.target.value)}
+                    rows={4}
+                    placeholder="Kurz beschreiben, worum es geht …"
+                    className="rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                  />
+                </label>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setProblemMeldung(false);
+                      setProblemText("");
+                      setError(null);
+                    }}
+                    disabled={pending}
+                  >
+                    Zurück
+                  </Button>
+                  <Button onClick={() => handleBestaetigen("problem")} disabled={pending}>
+                    {pending ? "Wird gesendet …" : "Problem absenden"}
+                  </Button>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
