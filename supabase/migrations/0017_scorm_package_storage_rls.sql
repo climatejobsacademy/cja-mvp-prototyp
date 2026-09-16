@@ -20,8 +20,5 @@ create policy scorm_packages_read_published on storage.objects
     )
   );
 
-comment on policy scorm_packages_read_published on storage.objects is
-  'Lernende duerfen die SCORM-Zip-Datei lesen (fuer eine Signed URL), wenn die zugehoerige Lektion published ist -- Ersatz fuer den in 0016 vorgesehenen Service-Role-Weg.';
-
 comment on column file_asset.storage_pfad is
   'Bucket-relativer Pfad, wie von storage.objects.name erwartet (kein Bucket-Name als Praefix, keine volle URL) -- verbindliche Konvention seit 0017, damit Storage-RLS-Policies wie scorm_packages_read_published korrekt matchen.';
