@@ -128,6 +128,16 @@ type FileAssetRow = Flatten<
   }
 >;
 
+type ScormPackageRow = Flatten<
+  Timestamps & {
+    id: string;
+    lesson_id: string;
+    file_asset_id: string;
+    entry_point_pfad: string;
+    manifest_titel: string | null;
+  }
+>;
+
 type ProgrammeRow = Flatten<
   Timestamps & {
     id: string;
@@ -435,6 +445,19 @@ export type Database = {
           }
         >,
         Partial<FileAssetRow>
+      >;
+      scorm_package: Table<
+        ScormPackageRow,
+        Flatten<
+          Partial<Timestamps> & {
+            id?: string;
+            lesson_id: string;
+            file_asset_id: string;
+            entry_point_pfad: string;
+            manifest_titel?: string | null;
+          }
+        >,
+        Partial<ScormPackageRow>
       >;
       programme: Table<
         ProgrammeRow,

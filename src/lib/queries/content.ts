@@ -118,6 +118,7 @@ export type LessonDetail = {
   inhalt: unknown;
   status: UnitProgressStatus;
   liveSession: { datum: string; start: string; ende: string; joinLink: string | null } | null;
+  scorm: { entryPointPfad: string; zipSignedUrl: string } | null;
 };
 
 export async function getLessonDetail(
@@ -159,6 +160,40 @@ export async function getLessonDetail(
     }
   }
 
+  // SCORM (SR-50/51/52, Architektur-Entscheidung 2026-09-16): Entry-Point und
+  // eine kurzlebige signierte URL fuers Zip laden. RLS greift zweifach --
+  // scorm_package ueber die published-lesson-Policy, storage.objects ueber
+  // scorm_packages_read_published (0017) -- kein Service-Role-Key noetig.
+  let scorm: LessonDetail["scorm"] = null;
+  if (lesson.content_type === "scorm") {
+    const { data: scormPackage } = await supabase
+      .from("scorm_package")
+      .select("entry_point_pfad, file_asset_id")
+      .eq("lesson_id", lessonId)
+      .maybeSingle();
+
+    if (scormPackage) {
+      const { data: fileAsset } = await supabase
+        .from("file_asset")
+        .select("storage_pfad")
+        .eq("id", scormPackage.file_asset_id)
+        .maybeSingle();
+
+      if (fileAsset) {
+        const { data: signed } = await supabase.storage
+          .from("scorm-packages")
+          .createSignedUrl(fileAsset.storage_pfad, 3600);
+
+        if (signed?.signedUrl) {
+          scorm = {
+            entryPointPfad: scormPackage.entry_point_pfad,
+            zipSignedUrl: signed.signedUrl,
+          };
+        }
+      }
+    }
+  }
+
   return {
     id: lesson.id,
     name: lesson.name,
@@ -166,5 +201,6 @@ export async function getLessonDetail(
     inhalt: lesson.inhalt,
     status: progress?.status ?? "offen",
     liveSession,
+    scorm,
   };
 }
