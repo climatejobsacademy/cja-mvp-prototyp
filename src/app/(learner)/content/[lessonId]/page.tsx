@@ -9,6 +9,7 @@ import { requireCurrentLearner } from "@/lib/queries/session";
 import { getLessonDetail } from "@/lib/queries/content";
 
 import { MarkCompleteButton } from "./mark-complete-button";
+import { ScormPlayer } from "./scorm-player";
 
 // Struktur von `lesson.inhalt`, siehe docs/open-questions.md (Q-LESSON-INHALT)
 // und supabase/migrations/0004_qualification_structure.sql.
@@ -43,12 +44,19 @@ export default async function LessonPage({
 
       {lesson.contentType === "scorm" && (
         <Card>
-          <CardContent className="flex flex-col items-center gap-4 py-12 text-center">
-            <p className="text-sm text-muted-foreground">
-              SCORM-Player-Platzhalter — im echten Betrieb wird hier das
-              SCORM-Paket eingebettet und der Fortschritt automatisch erfasst.
-            </p>
-            <MarkCompleteButton lessonId={lesson.id} done={done} />
+          <CardContent className="flex flex-col gap-3">
+            {lesson.scorm ? (
+              <ScormPlayer
+                lessonId={lesson.id}
+                entryPointPfad={lesson.scorm.entryPointPfad}
+                zipSignedUrl={lesson.scorm.zipSignedUrl}
+                done={done}
+              />
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Für diese Lektion ist noch kein SCORM-Paket hinterlegt.
+              </p>
+            )}
           </CardContent>
         </Card>
       )}
