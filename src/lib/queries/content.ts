@@ -16,10 +16,18 @@ export type CourseListItem = {
   abgeschlossen: boolean;
 };
 
+export type FieldJobTypeListItem = {
+  id: string;
+  titel: string;
+  beschreibung: string | null;
+  vorbereitungText: string | null;
+};
+
 export type ModuleGroup = {
   id: string | null; // null = Kurse hängen direkt am Programm, kein Modul
   name: string | null;
   courses: CourseListItem[];
+  praxisTypen: FieldJobTypeListItem[];
 };
 
 /**
@@ -34,7 +42,7 @@ export async function getContentLibrary(
 ): Promise<ModuleGroup[]> {
   const supabase = await createClient();
 
-  const [{ data: modules }, { data: coursesViaProgramme }] = await Promise.all([
+  const [{ data: modules }, { data: coursesViaProgramme }, { data: fieldJobTypesViaProgramme }] = await Promise.all([
     supabase
       .from("module")
       .select("id, name, reihenfolge")
@@ -43,6 +51,11 @@ export async function getContentLibrary(
     supabase
       .from("course")
       .select("id, name, reihenfolge, module_id")
+      .eq("programme_id", programmeId)
+      .order("reihenfolge", { ascending: true }),
+    supabase
+      .from("field_job_type")
+      .select("id, titel, beschreibung, vorbereitung_text, reihenfolge, module_id")
       .eq("programme_id", programmeId)
       .order("reihenfolge", { ascending: true }),
   ]);
@@ -56,7 +69,25 @@ export async function getContentLibrary(
         .order("reihenfolge", { ascending: true })
     : { data: [] as { id: string; name: string; reihenfolge: number; module_id: string | null }[] };
 
+  const { data: fieldJobTypesViaModule } = moduleIds.length
+    ? await supabase
+        .from("field_job_type")
+        .select("id, titel, beschreibung, vorbereitung_text, reihenfolge, module_id")
+        .in("module_id", moduleIds)
+        .order("reihenfolge", { ascending: true })
+    : {
+        data: [] as {
+          id: string;
+          titel: string;
+          beschreibung: string | null;
+          vorbereitung_text: string | null;
+          reihenfolge: number;
+          module_id: string | null;
+        }[],
+      };
+
   const allCourses = [...(coursesViaProgramme ?? []), ...(coursesViaModule ?? [])];
+  const allFieldJobTypes = [...(fieldJobTypesViaProgramme ?? []), ...(fieldJobTypesViaModule ?? [])];
   const courseIds = allCourses.map((c) => c.id);
 
   const { data: lessons } = courseIds.length
@@ -97,15 +128,31 @@ export async function getContentLibrary(
     };
   }
 
+  function buildPraxisTyp(fieldJobType: {
+    id: string;
+    titel: string;
+    beschreibung: string | null;
+    vorbereitung_text: string | null;
+  }): FieldJobTypeListItem {
+    return {
+      id: fieldJobType.id,
+      titel: fieldJobType.titel,
+      beschreibung: fieldJobType.beschreibung,
+      vorbereitungText: fieldJobType.vorbereitung_text,
+    };
+  }
+
   const groups: ModuleGroup[] = (modules ?? []).map((m) => ({
     id: m.id,
     name: m.name,
     courses: allCourses.filter((c) => c.module_id === m.id).map(buildCourse),
+    praxisTypen: allFieldJobTypes.filter((ft) => ft.module_id === m.id).map(buildPraxisTyp),
   }));
 
   const ungruppierteKurse = allCourses.filter((c) => !c.module_id).map(buildCourse);
-  if (ungruppierteKurse.length > 0) {
-    groups.push({ id: null, name: null, courses: ungruppierteKurse });
+  const ungruppiertePraxisTypen = allFieldJobTypes.filter((ft) => !ft.module_id).map(buildPraxisTyp);
+  if (ungruppierteKurse.length > 0 || ungruppiertePraxisTypen.length > 0) {
+    groups.push({ id: null, name: null, courses: ungruppierteKurse, praxisTypen: ungruppiertePraxisTypen });
   }
 
   return groups;

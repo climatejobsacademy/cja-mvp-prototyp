@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpen, FileText, Video } from "lucide-react";
+import { BookOpen, FileText, Video, Wrench } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -69,6 +69,29 @@ export default async function ContentLibraryPage() {
                     );
                   })}
                 </ul>
+              </CardContent>
+            </Card>
+          ))}
+          {group.praxisTypen.length > 0 && (
+            <h3 className="text-xs font-medium uppercase tracking-wide text-muted-foreground mt-2">
+              Praxis
+            </h3>
+          )}
+          {group.praxisTypen.map((praxisTyp) => (
+            <Card key={praxisTyp.id} id={`praxis-${praxisTyp.id}`}>
+              <CardContent className="flex items-start gap-3">
+                <Wrench className="mt-0.5 size-5 shrink-0 text-eco-green" aria-hidden="true" />
+                <div className="flex-1">
+                  <p className="font-medium text-eco-deep-green">{praxisTyp.titel}</p>
+                  {praxisTyp.beschreibung && (
+                    <p className="text-sm text-muted-foreground">{praxisTyp.beschreibung}</p>
+                  )}
+                  {praxisTyp.vorbereitungText && (
+                    <p className="mt-1 text-sm text-muted-foreground whitespace-pre-line">
+                      {praxisTyp.vorbereitungText}
+                    </p>
+                  )}
+                </div>
               </CardContent>
             </Card>
           ))}

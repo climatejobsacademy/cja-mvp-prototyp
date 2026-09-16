@@ -237,7 +237,16 @@ export type ProgrammPhase = {
   id: string;
   name: string;
   reihenfolge: number;
-  typ: "module" | "kurs";
+  typ: "module" | "kurs" | "praxis";
+  // Anker-Fragment für /content#<contentAnchor> (siehe schedule-tabs.tsx).
+  contentAnchor: string;
+  // Nur bei typ="module" gesetzt (SR-59): zwei unabhängige Icons an der
+  // Modul-Phase statt einer eigenen Praxis-Phase -- Theorie-Icon, wenn das
+  // Modul mindestens einen Kurs hat, Praxis-Icon, wenn es mindestens einen
+  // field_job_type hat (SR-58). Ein rein praktisches oder rein
+  // theoretisches Modul zeigt entsprechend nur eins der beiden.
+  hatTheorie?: boolean;
+  hatPraxis?: boolean;
 };
 
 export type ProgrammUebersicht = {
@@ -268,14 +277,33 @@ export async function getProgrammUebersicht(
     .eq("programme_id", programmeId)
     .order("reihenfolge", { ascending: true });
 
-  let phasen: ProgrammPhase[] = (modules ?? []).map((m) => ({
-    id: m.id,
-    name: m.name,
-    reihenfolge: m.reihenfolge,
-    typ: "module" as const,
-  }));
+  let phasen: ProgrammPhase[];
 
-  if (phasen.length === 0) {
+  if ((modules ?? []).length > 0) {
+    // Module vorhanden -> Kurse UND Field-Job-Typen eines Moduls tauchen
+    // nicht einzeln (und auch nicht als eigene gebündelte Praxis-Phase) im
+    // Programm-Überblick auf, sondern nur als zwei unabhängige Icons an der
+    // jeweiligen Modul-Phase (SR-59): Theorie-Icon, wenn das Modul
+    // mindestens einen Kurs hat, Praxis-Icon, wenn es mindestens einen
+    // field_job_type hat (SR-58).
+    const moduleIds = (modules ?? []).map((m) => m.id);
+    const [{ data: coursesViaModule }, { data: fieldJobTypesViaModule }] = await Promise.all([
+      supabase.from("course").select("id, module_id").in("module_id", moduleIds),
+      supabase.from("field_job_type").select("id, module_id").in("module_id", moduleIds),
+    ]);
+    const modulesMitKursen = new Set((coursesViaModule ?? []).map((c) => c.module_id));
+    const modulesMitPraxis = new Set((fieldJobTypesViaModule ?? []).map((ft) => ft.module_id));
+
+    phasen = (modules ?? []).map((m) => ({
+      id: m.id,
+      name: m.name,
+      reihenfolge: m.reihenfolge,
+      typ: "module" as const,
+      contentAnchor: `modul-${m.id}`,
+      hatTheorie: modulesMitKursen.has(m.id),
+      hatPraxis: modulesMitPraxis.has(m.id),
+    }));
+  } else {
     // Kein Modul vorhanden -> Kurse hängen direkt am Programm (Entscheidung
     // 2026-09-09, data-model.md Group 2) und dienen dann als Phasen.
     const { data: courses } = await supabase
@@ -288,7 +316,26 @@ export async function getProgrammUebersicht(
       name: c.name,
       reihenfolge: c.reihenfolge,
       typ: "kurs" as const,
+      contentAnchor: `kurs-${c.id}`,
     }));
+
+    // Field-Job-Typen ohne Modul hängen direkt am Programm (SR-58) und
+    // erscheinen -- anders als im Modul-Fall -- einzeln als eigene
+    // Praxis-Phasen, analog zu den einzeln aufgeführten Kursen hier.
+    const { data: fieldJobTypesViaProgramme } = await supabase
+      .from("field_job_type")
+      .select("id, titel, reihenfolge")
+      .eq("programme_id", programmeId)
+      .order("reihenfolge", { ascending: true });
+    phasen.push(
+      ...(fieldJobTypesViaProgramme ?? []).map((ft) => ({
+        id: ft.id,
+        name: ft.titel,
+        reihenfolge: ft.reihenfolge,
+        typ: "praxis" as const,
+        contentAnchor: `praxis-${ft.id}`,
+      }))
+    );
   }
 
   return {
