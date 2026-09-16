@@ -240,6 +240,11 @@ type FieldJobTypeRow = Flatten<
     vorbereitung_content_id: string | null;
     nachbereitung_text: string | null;
     nachbereitung_content_id: string | null;
+    // Entschieden 2026-09-16 (SR-58/0014): XOR mit programme_id, analog course.
+    module_id: string | null;
+    programme_id: string | null;
+    // Entschieden 2026-09-16 (SR-59/0015): analog module.reihenfolge/course.reihenfolge.
+    reihenfolge: number;
   }
 >;
 
@@ -553,6 +558,9 @@ export type Database = {
             vorbereitung_content_id?: string | null;
             nachbereitung_text?: string | null;
             nachbereitung_content_id?: string | null;
+            module_id?: string | null;
+            programme_id?: string | null;
+            reihenfolge: number;
           }
         >,
         Partial<FieldJobTypeRow>

@@ -42,8 +42,11 @@ insert into role_assignment (person_id, organisation_id, rolle) values
   ('00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000011', 'learner'),
   ('00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000012', 'afcj_admin');
 
-insert into field_job_type (id, titel) values
-  ('00000000-0000-0000-0000-000000000041', 'Werkstatt-Übung');
+insert into programme (id, name, kuerzel) values
+  ('00000000-0000-0000-0000-000000000021', 'EFK Erneuerbare Energien', 'EFK-EE');
+
+insert into field_job_type (id, titel, programme_id, reihenfolge) values
+  ('00000000-0000-0000-0000-000000000041', 'Werkstatt-Übung', '00000000-0000-0000-0000-000000000021', 1);
 
 insert into field_job (id, organisation_id, datum, field_job_type_id, learner_id) values
   ('00000000-0000-0000-0000-000000000051', '00000000-0000-0000-0000-000000000011', current_date, '00000000-0000-0000-0000-000000000041', '00000000-0000-0000-0000-000000000001'),

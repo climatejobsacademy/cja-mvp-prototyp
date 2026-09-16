@@ -58,9 +58,9 @@ insert into content_competency_mapping (lesson_id, competency_step_id) values
   ('00000000-0000-0000-0000-000000000031', '00000000-0000-0000-0000-000000000042'),
   ('00000000-0000-0000-0000-000000000032', '00000000-0000-0000-0000-000000000042');
 
-insert into field_job_type (id, titel, status) values
-  ('00000000-0000-0000-0000-000000000051', 'Veröffentlichter Field Job Type', 'published'),
-  ('00000000-0000-0000-0000-000000000052', 'Unveröffentlichter Field Job Type', 'unpublished');
+insert into field_job_type (id, titel, status, programme_id, reihenfolge) values
+  ('00000000-0000-0000-0000-000000000051', 'Veröffentlichter Field Job Type', 'published', '00000000-0000-0000-0000-000000000021', 1),
+  ('00000000-0000-0000-0000-000000000052', 'Unveröffentlichter Field Job Type', 'unpublished', '00000000-0000-0000-0000-000000000021', 2);
 
 -- ------------------------------------------------------------
 -- Als Learner A
