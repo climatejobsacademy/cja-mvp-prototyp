@@ -89,6 +89,12 @@ bleibt als Spalte bestehen (jetzt nur noch für `scorm` relevant, bei
 mehr genutzt für Repository-Content. Umgesetzt in
 `0010_content_status_and_lesson_resource.sql`.
 
+**Entschieden 2026-09-16 (SCORM-Architektur):** Die `scorm`-Hälfte dieser Frage
+ist jetzt ebenfalls beantwortet — `lesson.inhalt` ist ab jetzt auch für `scorm`
+endgültig ungenutzt, abgelöst durch die eigene 1:1-Tabelle `scorm_package`
+(`data-model.md`, Group 2). Siehe dort für Details; diese Frage gilt damit
+vollständig (nicht nur für `repository`) als geklärt.
+
 ## Q-FIELD-JOB-TYPE-ACCESS — kein Zeile in access-matrix.md
 
 `field_job_type` (die Katalog-Übungstypen) taucht in `access-matrix.md` nicht als
