@@ -163,21 +163,18 @@ export function ScheduleTabs({
           </p>
         </div>
         <ol className="flex flex-col gap-2">
-          {programm.phasen.map((phase, i) => (
+          {programm.phasen.map((phase) => (
             <li key={phase.id}>
               <Link
                 href={`/content#${phase.contentAnchor}`}
                 className="flex items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:border-eco-green"
               >
-                <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-secondary text-xs font-medium text-secondary-foreground">
-                  {i + 1}
-                </span>
                 <span className="flex-1 text-sm text-eco-deep-green">{phase.name}</span>
                 {phase.typ === "module" && phase.hatTheorie && (
                   <BookOpen className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                 )}
                 {phase.typ === "module" && phase.hatPraxis && (
-                  <Wrench className="size-4 shrink-0 text-eco-green" aria-hidden="true" />
+                  <Wrench className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                 )}
               </Link>
             </li>
