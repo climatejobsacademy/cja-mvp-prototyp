@@ -36,6 +36,7 @@ export type Sprache = "DE" | "UK";
 export type Rolle = "learner" | "afcj_admin";
 export type CourseTyp = "synchron" | "asynchron";
 export type ContentType = "scorm" | "live" | "repository";
+export type LessonResourceTyp = "datei" | "link";
 export type CompetencyQuelle = "TQ-ARP" | "EFKffT" | "EFK-EE";
 export type CompetencyStepTyp = "theoretisch" | "praktisch";
 export type EnrolmentStatus = "aktiv" | "abgeschlossen" | "abgebrochen";
@@ -175,6 +176,17 @@ type LessonRow = Flatten<
     content_type: ContentType;
     inhalt: Json | null;
     reihenfolge: number;
+  }
+>;
+
+type LessonResourceRow = Flatten<
+  Timestamps & {
+    id: string;
+    lesson_id: string;
+    reihenfolge: number;
+    typ: LessonResourceTyp;
+    file_asset_id: string | null;
+    external_url: string | null;
   }
 >;
 
@@ -501,6 +513,20 @@ export type Database = {
           }
         >,
         Partial<LessonRow>
+      >;
+      lesson_resource: Table<
+        LessonResourceRow,
+        Flatten<
+          Partial<Timestamps> & {
+            id?: string;
+            lesson_id: string;
+            reihenfolge: number;
+            typ: LessonResourceTyp;
+            file_asset_id?: string | null;
+            external_url?: string | null;
+          }
+        >,
+        Partial<LessonResourceRow>
       >;
       competency: Table<
         CompetencyRow,
