@@ -42,6 +42,20 @@ type Props = {
   done: boolean;
 };
 
+function waitForActiveWorker(registration: ServiceWorkerRegistration): Promise<ServiceWorker> {
+  if (registration.active) return Promise.resolve(registration.active);
+  const worker = registration.installing || registration.waiting;
+  if (!worker) return Promise.reject(new Error("Kein Service-Worker-Zustand gefunden."));
+  return new Promise((resolve, reject) => {
+    worker.addEventListener("statechange", () => {
+      if (worker.state === "activated") resolve(worker);
+      if (worker.state === "redundant") {
+        reject(new Error("Service Worker wurde redundant, bevor er aktiviert wurde."));
+      }
+    });
+  });
+}
+
 export function ScormPlayer({ lessonId, entryPointPfad, zipSignedUrl, done }: Props) {
   const [status, setStatus] = useState<"laedt" | "bereit" | "fehler">("laedt");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -50,15 +64,16 @@ export function ScormPlayer({ lessonId, entryPointPfad, zipSignedUrl, done }: Pr
 
   useEffect(() => {
     let cancelled = false;
+    const controller = new AbortController();
 
     async function setup() {
       try {
         const registration = await navigator.serviceWorker.register("/scorm-assets/sw-scorm.js", {
           scope: "/scorm-assets/",
         });
-        await navigator.serviceWorker.ready;
+        const activeWorker = await waitForActiveWorker(registration);
 
-        const response = await fetch(zipSignedUrl);
+        const response = await fetch(zipSignedUrl, { signal: controller.signal });
         if (!response.ok) throw new Error(`Zip-Download fehlgeschlagen (${response.status})`);
         const zipBytes = new Uint8Array(await response.arrayBuffer());
 
@@ -76,12 +91,13 @@ export function ScormPlayer({ lessonId, entryPointPfad, zipSignedUrl, done }: Pr
 
         if (cancelled) return;
 
-        const activeWorker = registration.active;
-        if (!activeWorker) throw new Error("Service Worker nicht aktiv.");
-
         await new Promise<void>((resolve, reject) => {
+          const timeoutId = setTimeout(() => {
+            reject(new Error("Timeout: Service Worker hat REGISTER_PACKAGE nicht innerhalb von 30s bestätigt."));
+          }, 30000);
           const channel = new MessageChannel();
           channel.port1.onmessage = (event) => {
+            clearTimeout(timeoutId);
             if (event.data?.type === "PACKAGE_REGISTERED") resolve();
             else reject(new Error("Unerwartete Service-Worker-Antwort."));
           };
@@ -120,6 +136,7 @@ export function ScormPlayer({ lessonId, entryPointPfad, zipSignedUrl, done }: Pr
 
     return () => {
       cancelled = true;
+      controller.abort();
       delete (window as unknown as { API?: Scorm12API }).API;
     };
   }, [lessonId, zipSignedUrl, done]);
