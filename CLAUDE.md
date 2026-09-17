@@ -39,12 +39,22 @@ before building.
 - Enums for status fields; no free-text status
 - Curriculum tables are AfCJ-owned: organization_id references the AfCJ org
 - One folder per screen under /app; shared components under /components
+- Async work started inside `useEffect` (fetch calls, subscriptions, etc.) must be
+  cancelled via `AbortController` in the effect's cleanup function, not just a
+  boolean flag. React StrictMode double-invokes effects in dev; without a real
+  abort, the stale first run keeps doing full network/CPU work in parallel with
+  the second, and an unresolved stale promise can look exactly like a hang.
 
 ## Way of working
 - One SR or one screen per PR. Small.
 - Before implementing: write a 5-line plan listing tables, policies and screens touched.
 - Definition of Done: /docs/definition-of-done.md
 - Product decision unclear → stop and ask. Do not assume.
+- Stacked PR (a branch built on another still-open PR's branch): before the final
+  merge, run `git merge origin/main` (or rebase) and wait for a fresh CI run
+  against that state. A green check on the original PR does not prove the
+  post-merge state is correct, and retargeting a PR's base does not by itself
+  trigger a new CI run.
 
 ## First build task (Schritt 4e Handover)
 Read /docs/data-model.md and /docs/access-matrix.md. Produce (1) an ER diagram in
