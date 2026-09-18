@@ -25,7 +25,7 @@ export default async function LoginPage({
           fill
           priority
           sizes="50vw"
-          className="object-cover"
+          className="object-contain"
         />
       </div>
       <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-6 px-4 py-16 md:w-1/2">
