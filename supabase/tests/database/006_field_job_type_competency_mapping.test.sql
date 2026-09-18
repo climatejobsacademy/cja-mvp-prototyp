@@ -90,16 +90,28 @@ select is(
 -- Trigger-Verhalten: field_job (published field_job_type) + field_capture
 -- des Learners anlegen -> field_capture_step_mapping muss automatisch
 -- entstehen, ohne dass die App sie selbst einfügt.
+--
+-- field_job wird bewusst als AfCJ admin angelegt, nicht als Learner: laut
+-- 0009_rls_policies.sql hat nur field_job_admin_all ein Insert-Recht auf
+-- field_job, der Learner-Grant deckt ausschließlich select
+-- (field_job_learner_select) und ein eng begrenztes confirm-update
+-- (field_job_learner_confirm) ab.
 -- ------------------------------------------------------------
+select set_config(
+  'request.jwt.claims',
+  json_build_object('sub', '00000000-0000-0000-0000-000000000202', 'role', 'authenticated')::text,
+  true
+);
+
+insert into field_job (id, organisation_id, datum, field_job_type_id, learner_id) values
+  ('00000000-0000-0000-0000-000000000261', '00000000-0000-0000-0000-000000000211', current_date, '00000000-0000-0000-0000-000000000241', '00000000-0000-0000-0000-000000000201');
+
 set local role authenticated;
 select set_config(
   'request.jwt.claims',
   json_build_object('sub', '00000000-0000-0000-0000-000000000201', 'role', 'authenticated')::text,
   true
 );
-
-insert into field_job (id, organisation_id, datum, field_job_type_id, learner_id) values
-  ('00000000-0000-0000-0000-000000000261', '00000000-0000-0000-0000-000000000211', current_date, '00000000-0000-0000-0000-000000000241', '00000000-0000-0000-0000-000000000201');
 
 insert into field_capture (id, organisation_id, learner_id, field_job_id, phase, text) values
   ('00000000-0000-0000-0000-000000000271', '00000000-0000-0000-0000-000000000211', '00000000-0000-0000-0000-000000000201', '00000000-0000-0000-0000-000000000261', 'abschluss', 'Testbericht');
