@@ -113,11 +113,18 @@ select set_config(
   true
 );
 
-insert into field_capture (id, organisation_id, learner_id, field_job_id, phase, text) values
-  ('00000000-0000-0000-0000-000000000271', '00000000-0000-0000-0000-000000000211', '00000000-0000-0000-0000-000000000201', '00000000-0000-0000-0000-000000000261', 'abschluss', 'Testbericht');
+-- Kein explizites id in der Spaltenliste: die spaltenbeschränkte Insert-Grant
+-- für Learner (0009/0013_fix_field_capture_phase_grant.sql) deckt id nicht ab
+-- -- genau wie im echten App-Insert (submitReflection(), actions.ts), das die
+-- DB per Default gen_random_uuid() erzeugen lässt. id wird stattdessen per
+-- RETURNING/\gset eingesammelt.
+insert into field_capture (organisation_id, learner_id, field_job_id, phase, text)
+  values ('00000000-0000-0000-0000-000000000211', '00000000-0000-0000-0000-000000000201', '00000000-0000-0000-0000-000000000261', 'abschluss', 'Testbericht')
+  returning id as capture_id
+\gset
 
 select is(
-  (select competency_step_id from field_capture_step_mapping where field_capture_id = '00000000-0000-0000-0000-000000000271'),
+  (select competency_step_id from field_capture_step_mapping where field_capture_id = :'capture_id'),
   '00000000-0000-0000-0000-000000000232',
   'Trigger derive_field_capture_step_mapping leitet den Teilschritt automatisch aus field_job_type_competency_mapping ab'
 );
