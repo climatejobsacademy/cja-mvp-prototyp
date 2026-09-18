@@ -38,7 +38,9 @@ export default async function SchedulePage({
     <div className="flex flex-col gap-4">
       <div>
         <h1 className="font-heading text-xl text-eco-deep-green">Mein Schedule</h1>
-        <p className="text-sm text-muted-foreground">{learner.programmeName}</p>
+        <p className="text-sm text-muted-foreground">
+          Hallo {learner.name.split(" ")[0]} · {learner.programmeName}
+        </p>
       </div>
       <ScheduleTabs selectedDate={selectedDate} tag={tag} woche={woche} programm={programm} />
     </div>

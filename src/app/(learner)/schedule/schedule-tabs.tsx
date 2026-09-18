@@ -8,8 +8,10 @@ import { BookOpen, ChevronLeft, ChevronRight, FileText, Video, Wrench } from "lu
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UnitProgressBadge } from "@/components/status-badge";
+import { cn } from "@/lib/utils";
 import type { ContentType } from "@/lib/database.types";
 import type { ProgrammUebersicht, TagesAgenda, WochenTag } from "@/lib/queries/schedule";
 
@@ -128,30 +130,47 @@ export function ScheduleTabs({
           </Button>
         </div>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-7">
-          {woche.map((tag) => (
-            <button
-              key={tag.datum}
-              onClick={() => {
-                gotoDate(tag.datum);
-                setTab("tag");
-              }}
-              className="rounded-lg border border-border p-3 text-left transition-colors hover:border-eco-green"
-            >
-              <p className="text-xs text-muted-foreground">{formatWeekday(tag.datum)}</p>
-              <p className="text-sm font-medium text-eco-deep-green">{formatDayMonth(tag.datum)}</p>
-              {tag.art === "feld" && (
-                <Badge variant="outline" className="mt-1 gap-1">
-                  <Wrench className="size-3" /> Praxistag
-                </Badge>
-              )}
-              {tag.art === "theorie" && (
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {tag.abgeschlosseneEintraege}/{tag.abgeschlosseneEintraege + tag.offeneEintraege} erledigt
-                </p>
-              )}
-              {tag.art === "frei" && <p className="mt-1 text-xs text-muted-foreground">frei</p>}
-            </button>
-          ))}
+          {woche.map((tag) => {
+            const gesamt = tag.abgeschlosseneEintraege + tag.offeneEintraege;
+            const prozent = gesamt > 0 ? Math.round((tag.abgeschlosseneEintraege / gesamt) * 100) : 0;
+            return (
+              <button
+                key={tag.datum}
+                onClick={() => {
+                  gotoDate(tag.datum);
+                  setTab("tag");
+                }}
+                className={cn(
+                  "rounded-lg border p-3 text-left transition-colors hover:border-eco-green",
+                  tag.art === "frei" ? "border-border/50" : "border-border"
+                )}
+              >
+                <p className="text-xs text-muted-foreground">{formatWeekday(tag.datum)}</p>
+                <p className="text-sm font-medium text-eco-deep-green">{formatDayMonth(tag.datum)}</p>
+                {tag.art === "feld" && (
+                  <Badge variant="outline" className="mt-1 gap-1">
+                    <Wrench className="size-3" /> Praxis
+                  </Badge>
+                )}
+                {tag.art === "theorie" && (
+                  <>
+                    <Badge variant="outline" className="mt-1 gap-1">
+                      <BookOpen className="size-3" /> Theorie
+                    </Badge>
+                    <Progress
+                      value={prozent}
+                      aria-label={`${formatWeekday(tag.datum)} ${formatDayMonth(tag.datum)}: ${prozent}% abgeschlossen`}
+                      className="mt-2"
+                    />
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {tag.abgeschlosseneEintraege}/{gesamt} erledigt
+                    </p>
+                  </>
+                )}
+                {tag.art === "frei" && <p className="mt-1 text-xs text-muted-foreground">frei</p>}
+              </button>
+            );
+          })}
         </div>
       </TabsContent>
 
