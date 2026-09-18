@@ -13,28 +13,16 @@ export default async function LoginPage({
   return (
     <div className="flex min-h-full flex-1 flex-col md:flex-row">
       {/*
-        Mobile: kompakter Banner-Streifen oben statt komplett ausgeblendet
-        (feste Höhe, object-cover + object-top -- Kopf/Helm bleibt sichtbar,
-        Rest wird beschnitten). Ab md ersetzt durch das große Seitenpanel
-        unten; beide teilen sich dieselbe Datei, nur Zuschnitt/Größe
-        unterscheiden sich. Harte Nebenbedingung: E-Mail-Feld + Button
-        müssen auf einem 375×667-Viewport ohne Scrollen sichtbar bleiben --
-        deshalb hier absichtlich kompaktere Abstände (py-8/gap-4) als bei md.
-      */}
-      <div className="relative h-32 w-full shrink-0 bg-off-white md:hidden">
-        <Image
-          src="/branding/login-hero.png"
-          alt="Illustration einer Elektrofachkraft mit Helm, Sicherheitsweste und Werkzeuggürtel"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-top"
-        />
-      </div>
-      {/*
-        Ab md: großes Seitenpanel statt Banner. Off-White als Hintergrund
-        der Fläche (docs/design-specifications.md Abschnitt 1, um
-        --off-white ergänzt), sichtbar bevor/falls login-hero.png fehlt.
+        Mobile-Banner (kompakter Streifen, object-cover + object-top) wurde
+        wieder entfernt (2026-09-18, Vera): bei dieser Bildkomposition
+        sitzen Gesicht/Augen deutlich unterhalb des Helm-Motivs, das lässt
+        sich in einem schmalen Querformat-Banner nicht sauber croppen --
+        wirkte wie ein Rendering-Fehler statt Branding. Bildpanel deshalb
+        wieder erst ab md sichtbar (wie vor dem Mobile-Banner-Versuch);
+        Mobile zeigt nur Wortmarke + Headline/Subline, kein Bild-Element,
+        kein Platzhalter. Off-White als Hintergrund der Fläche
+        (docs/design-specifications.md Abschnitt 1, um --off-white
+        ergänzt), sichtbar bevor/falls login-hero.png fehlt.
       */}
       <div className="relative hidden w-1/2 bg-off-white md:block">
         <Image
