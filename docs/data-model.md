@@ -80,6 +80,8 @@ Entschieden 2026-09-16 (SR-58/SR-59, Praxis-Anteile im Programm-Tab): `field_job
 
 Entschieden 2026-09-11 (Vera): `field_job.status` wechselt zu "durchgeführt", sobald `durchgeführt_bestätigt_am` gesetzt ist — unabhängig vom `ergebnis`. Für den Prototyp ausreichend, kann später feiner werden.
 
+Zurückgestellt 2026-09-18 (Vera): Werkstatt-Übung vs. echter Feld-Einsatz als eigene `field_job_type`-Unterscheidung, inklusive möglicher Differenzierung des Praxis-Flows selbst. Bewusst nicht spekulativ vorab modelliert — Entscheidung erst auf Basis echter Nutzer-Tests nach dem Piloten.
+
 ### Group 4 — Progress and evidence
 *(was ein Learner getan hat und was es belegt)*
 
