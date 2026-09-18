@@ -63,6 +63,15 @@ create policy field_job_type_competency_mapping_admin_all on field_job_type_comp
 -- nur den verifizierten Fall (v.entscheidung = 'verified'), bleibt also
 -- unveraendert korrekt, unabhaengig davon, wann die Mapping-Zeile entsteht.
 --
+-- WHEN (new.phase = 'abschluss'): SR-02 spricht woertlich von "einer
+-- abgeschlossenen Praxisaufgabe" -- das ist die Abschluss-Selbstauskunft
+-- (0011_field_job_praxistag_erfassung.sql), nicht die Start-Selbstauskunft
+-- vor dem Einsatz. Pro field_job koennen bis zu zwei field_capture-Zeilen
+-- entstehen (phase=start, phase=abschluss, siehe
+-- field_capture_unique_phase_per_job); ohne dieses Filter wuerde der
+-- Trigger auch bei der Start-Zeile feuern und eine zweite, ueberfluessige
+-- field_capture_step_mapping-Zeile fuer denselben field_job anlegen.
+--
 -- Security definer, weil weder Learner noch AfCJ admin per bestehendem Grant
 -- generischen Insert auf field_capture_step_mapping haben (Learner-Insert-
 -- Policy ist auf die eigene field_capture beschraenkt, siehe
@@ -93,9 +102,12 @@ $$;
 
 comment on function fn_derive_field_capture_step_mapping() is
   'Leitet field_capture_step_mapping automatisch aus field_job_type_competency_mapping '
-  'ab, sobald eine field_capture eingereicht wird -- schliesst SR-02, kein manuelles '
-  'Auswaehlen der Teilschritte durch AfCJ admin mehr noetig.';
+  'ab, sobald die Abschluss-Selbstauskunft (phase=abschluss) einer field_capture '
+  'eingereicht wird -- schliesst SR-02, kein manuelles Auswaehlen der Teilschritte '
+  'durch AfCJ admin mehr noetig.';
 
 create trigger derive_field_capture_step_mapping
   after insert on field_capture
-  for each row execute function fn_derive_field_capture_step_mapping();
+  for each row
+  when (new.phase = 'abschluss')
+  execute function fn_derive_field_capture_step_mapping();

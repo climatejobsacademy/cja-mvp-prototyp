@@ -3,14 +3,16 @@
 -- referenzierte field_job_type 'published' ist (analog lesson_resource/
 -- scorm_package) -- AfCJ admin sieht read All. Zusaetzlich: der Trigger
 -- derive_field_capture_step_mapping leitet field_capture_step_mapping
--- automatisch aus der Vorlage ab, sobald eine field_capture eingereicht wird.
+-- automatisch aus der Vorlage ab, sobald die Abschluss-Selbstauskunft
+-- (phase=abschluss) einer field_capture eingereicht wird -- die Start-
+-- Selbstauskunft (phase=start) loest ihn bewusst nicht aus (WHEN-Klausel).
 --
 -- Ausführen mit: supabase test db
 begin;
 
 create extension if not exists pgtap schema extensions;
 
-select plan(5);
+select plan(6);
 
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-000000000201', 'learner-fjtcm@example.test'),
@@ -127,6 +129,22 @@ select is(
   (select competency_step_id from field_capture_step_mapping where field_capture_id = :'capture_id'),
   '00000000-0000-0000-0000-000000000232',
   'Trigger derive_field_capture_step_mapping leitet den Teilschritt automatisch aus field_job_type_competency_mapping ab'
+);
+
+-- ------------------------------------------------------------
+-- WHEN-Klausel: die Start-Selbstauskunft (phase=start) desselben field_job
+-- darf den Trigger NICHT auslösen -- SR-02 spricht wörtlich von "einer
+-- abgeschlossenen Praxisaufgabe", das ist die Abschluss-Selbstauskunft.
+-- ------------------------------------------------------------
+insert into field_capture (organisation_id, learner_id, field_job_id, phase, text)
+  values ('00000000-0000-0000-0000-000000000211', '00000000-0000-0000-0000-000000000201', '00000000-0000-0000-0000-000000000261', 'start', 'Vorab-Bericht')
+  returning id as start_capture_id
+\gset
+
+select is(
+  (select count(*)::int from field_capture_step_mapping where field_capture_id = :'start_capture_id'),
+  0,
+  'Trigger derive_field_capture_step_mapping feuert nicht bei der Start-Selbstauskunft (phase=start)'
 );
 
 select * from finish();

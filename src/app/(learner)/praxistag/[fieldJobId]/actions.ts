@@ -70,12 +70,14 @@ export async function confirmFieldJob(
  *
  * Legt weiterhin bewusst keine field_capture_step_mapping selbst an: Seit
  * 0018_field_job_type_competency_mapping.sql (SR-02) übernimmt das der
- * DB-Trigger derive_field_capture_step_mapping automatisch beim Insert der
- * field_capture, abgeleitet aus field_job → field_job_type →
- * field_job_type_competency_mapping — die App muss dafür nichts mehr tun.
- * Voraussetzung bleibt, dass field_job_type_competency_mapping selbst
- * administrativ befüllt ist (Admin-Oberfläche ist zurückgestellt,
- * design-specifications.md Abschnitt 3); ohne das bleibt die Ableitung leer.
+ * DB-Trigger derive_field_capture_step_mapping automatisch beim Insert dieser
+ * Abschluss-Selbstauskunft (phase=abschluss — die WHEN-Klausel des Triggers
+ * greift genau hier, nicht bei der Start-Selbstauskunft), abgeleitet aus
+ * field_job → field_job_type → field_job_type_competency_mapping — die App
+ * muss dafür nichts mehr tun. Voraussetzung bleibt, dass
+ * field_job_type_competency_mapping selbst administrativ befüllt ist
+ * (Admin-Oberfläche ist zurückgestellt, design-specifications.md Abschnitt
+ * 3); ohne das bleibt die Ableitung leer.
  */
 export async function submitReflection(
   fieldJobId: string,
