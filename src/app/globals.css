@@ -16,6 +16,7 @@
   --color-eco-deep-green: var(--eco-deep-green);
   --color-lylac: var(--lylac);
   --color-coral: var(--coral);
+  --color-off-white: var(--off-white);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
   --color-warning: var(--warning);
@@ -71,6 +72,11 @@
   --eco-deep-green: #23321e;
   --lylac: #9164e1;
   --coral: #ffa573;
+  /* Off-White -- bisher nicht in design-specifications.md Abschnitt 1
+     erfasst, von Vera 2026-09-18 fürs Login-Bildpanel ergänzt (analog
+     climatejobsacademy.com). Nur als Hintergrundfläche gedacht, ersetzt
+     nicht --background (#ffffff bleibt der App-weite Standard). */
+  --off-white: #f5f5f0;
 
   /* Semantische Farben (Abschnitt 1): helle Hintergrundfläche + Eco Deep Green
      als Text-/Icon-Farbe — nie Coral/Charge Green direkt als Vordergrund.
