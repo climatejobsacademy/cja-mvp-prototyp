@@ -1,7 +1,14 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/login", "/auth/callback"];
+const PUBLIC_PATHS = [
+  "/login",
+  "/auth/callback",
+  // SR-60: gesetzlich vorgeschriebene Seiten, bewusst ohne Login erreichbar.
+  "/impressum",
+  "/datenschutz",
+  "/barrierefreiheit",
+];
 
 /**
  * Frischt die Auth-Session bei jedem Request auf (Supabase-Standardmuster für
