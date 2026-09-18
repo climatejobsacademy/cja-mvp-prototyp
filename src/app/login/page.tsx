@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 import { LoginForm } from "./login-form";
 
 export default async function LoginPage({
@@ -32,6 +34,22 @@ export default async function LoginPage({
         </p>
       )}
       <LoginForm />
+      {/*
+        SR-60: einziger aktuell öffentlicher, ohne Login erreichbarer
+        Einstiegspunkt -- die drei rechtlichen Standardseiten sind sonst
+        nirgends im Produkt verlinkt (kein App-weiter Footer vorhanden).
+      */}
+      <footer className="flex justify-center gap-3 text-xs text-muted-foreground">
+        <Link href="/impressum" className="hover:underline">
+          Impressum
+        </Link>
+        <Link href="/datenschutz" className="hover:underline">
+          Datenschutz
+        </Link>
+        <Link href="/barrierefreiheit" className="hover:underline">
+          Barrierefreiheit
+        </Link>
+      </footer>
     </main>
   );
 }
