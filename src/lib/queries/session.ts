@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 export type CurrentLearner = {
   personId: string;
   name: string;
+  email: string;
   enrolmentId: string;
   cohortId: string;
   organisationId: string;
@@ -88,6 +89,7 @@ export const requireCurrentLearner = cache(async (): Promise<CurrentLearner> => 
   return {
     personId: person.id,
     name: person.name,
+    email: user.email ?? "",
     enrolmentId: enrolment.id,
     cohortId: enrolment.cohort_id,
     organisationId: enrolment.organisation_id,

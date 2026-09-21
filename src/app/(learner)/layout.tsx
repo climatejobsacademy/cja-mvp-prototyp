@@ -8,11 +8,11 @@ export default async function LearnerLayout({
 }) {
   // Stellt sicher, dass jede Route unter (learner) eine Person mit aktiver
   // Einschreibung voraussetzt, bevor irgendeine Seite rendert.
-  await requireCurrentLearner();
+  const learner = await requireCurrentLearner();
 
   return (
     <div className="flex min-h-full flex-1 flex-col">
-      <AppNav />
+      <AppNav name={learner.name} email={learner.email} />
       <div className="mx-auto w-full max-w-2xl flex-1 px-4 py-6">{children}</div>
     </div>
   );

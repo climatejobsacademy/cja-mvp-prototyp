@@ -64,5 +64,13 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
+  // Verhindert, dass der Browser (bfcache) eine geschützte Seite nach dem
+  // Logout beim Zurück-Navigieren aus dem Cache statt per Request zeigt --
+  // ohne diesen Header könnte der alte, eingeloggte Zustand kurz sichtbar
+  // bleiben, bevor überhaupt wieder die Middleware läuft.
+  if (!isPublicPath) {
+    supabaseResponse.headers.set("Cache-Control", "no-store");
+  }
+
   return supabaseResponse;
 }
