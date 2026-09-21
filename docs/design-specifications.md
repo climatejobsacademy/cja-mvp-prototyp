@@ -82,6 +82,20 @@ als einfache Prozent-Balken.
 | Lektion öffnen — Repository | Öffnet verlinkte Datei/Link in neuem Tab oder als Download | `lesson` (content_type=repository) | — |
 | Filter/Suche | Für den Prototyp keine Filter/Suche, einfache Liste reicht bei überschaubarer Lektionsanzahl | — | Offen: Ab welcher Lektionsanzahl wird Suche/Filter nötig (spätestens MVP)? |
 
+## 2.5 Account-/Profil-Menü
+
+Ergänzt 2026-09-21 (Vera): Ersetzt den vorherigen eigenständigen "Abmelden"-Punkt
+in der Top-Nav (SR-16) durch ein reguläres Account-Menü.
+
+| Element | Spezifikation |
+|---|---|
+| Trigger | Kreis mit Initialen (aus Name, Fallback: erster Buchstabe der E-Mail-Adresse), rechtsbündig in der Top-Nav, letztes Element |
+| Dropdown-Inhalt (shadcn DropdownMenu) | 1. Kopfzeile, nicht klickbar: Name + E-Mail-Adresse — 2. Trennlinie — 3. Platzhalter/Kommentar im Code für spätere Einträge (Profil, Einstellungen/Sprache — nicht Teil des Prototyps) — 4. Trennlinie — 5. "Abmelden" als einzige aktive Aktion im Prototyp |
+
+Begründung: Standard-Pattern für Account-Menüs bei Top-Nav-Apps (Trigger oben
+rechts), Logout bewusst im Menü verschachtelt statt als eigenständiges
+Top-Nav-Element, da die Plattform regelmäßig und personalisiert genutzt wird.
+
 ## 3. Admin-Oberfläche (AfCJ)
 
 > Bewusst zurückgestellt (Entscheidung 2026-09-09): Fokus für den Prototyp liegt
@@ -125,6 +139,7 @@ Betrifft SR-19, 20, 21, 22, 23 (Kuratierungsteil), 48, 55.
 | 2026-09-09 | Abgeschlossene und laufende Kurse bleiben in der Content Library sichtbar, markiert mit Erfolgsfarbe/Badge bzw. Fortschrittsbalken | Orientierung für den Learner; nutzt bereits definierte semantische Farben | Abgeschlossene Kurse ausblenden |
 | 2026-09-09 | Live-Session-Aufzeichnungen im Prototyp nicht in die Plattform integriert | Aufzeichnung läuft ohnehin extern (z. B. Fathom); Einbindung erst bei Skalierung relevant | Aufzeichnungen direkt im Prototyp einbinden |
 | 2026-09-09 | Referenz-Plattformen/Vorbilder für den Prototyp nicht vertieft | Fehlende UX-Kapazität aktuell, bewusst auf nächste Phase verschoben | Jetzt noch selbst recherchieren |
+| 2026-09-21 | Account-/Profil-Menü (Initialen-Kreis, oben rechts) ersetzt den eigenständigen "Abmelden"-Punkt in der Top-Nav | Standard-Pattern für Top-Nav-Apps; Logout bewusst im Menü verschachtelt statt als eigenständiges Element, da die Plattform regelmäßig und personalisiert genutzt wird | Abmelden bleibt eigenständiger Top-Nav-Punkt |
 
 ## 6. Instruktion für Claude Code
 
