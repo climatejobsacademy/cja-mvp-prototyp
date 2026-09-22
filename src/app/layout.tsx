@@ -24,6 +24,19 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "AfCJ Qualifizierungsplattform",
   description: "Lernplattform für Elektrofachkraft Erneuerbare Energien",
+  openGraph: {
+    title: "AfCJ Qualifizierungsplattform",
+    description: "Deine Lernplattform der Academy for Climate Jobs",
+    // Echte Maße der Datei (sips -g pixelWidth -g pixelHeight), nicht das
+    // Social-Media-Standardmaß 1200x630 -- das Logo wurde nicht auf dieses
+    // Seitenverhältnis zugeschnitten.
+    images: [{ url: "/og-image.png", width: 1025, height: 832 }],
+    siteName: "Academy for Climate Jobs",
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
