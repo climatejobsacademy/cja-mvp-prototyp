@@ -27,10 +27,9 @@ export const metadata: Metadata = {
   openGraph: {
     title: "AfCJ Qualifizierungsplattform",
     description: "Deine Lernplattform der Academy for Climate Jobs",
-    // Echte Maße der Datei (sips -g pixelWidth -g pixelHeight), nicht das
-    // Social-Media-Standardmaß 1200x630 -- das Logo wurde nicht auf dieses
-    // Seitenverhältnis zugeschnitten.
-    images: [{ url: "/og-image.png", width: 1025, height: 832 }],
+    // Logo zentriert auf Off-White (#F5F5F0, design-specifications.md
+    // Abschnitt 1) freigestellt auf das Social-Media-Standardmaß 1200x630.
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
     siteName: "Academy for Climate Jobs",
   },
   twitter: {
