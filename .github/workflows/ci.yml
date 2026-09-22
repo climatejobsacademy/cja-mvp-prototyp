@@ -7,7 +7,7 @@ on:
       - main
 
 jobs:
-  ci:
+  lint-and-types:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -29,6 +29,13 @@ jobs:
 
       - name: Type-Check
         run: npx tsc --noEmit
+
+  rls-tests:
+    needs: lint-and-types
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Supabase CLI installieren
         uses: supabase/setup-cli@v1
