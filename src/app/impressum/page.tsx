@@ -32,8 +32,12 @@ export default function ImpressumPage() {
         Registernummer: HRB 42502
       </p>
 
-      <h2>Umsatzsteuer</h2>
-      <p>Die Akademie für Klimajobs UG ist nicht umsatzsteuerpflichtig.</p>
+      <h2>Umsatzsteuer-ID</h2>
+      <p>
+        Umsatzsteuer-Identifikationsnummer gemäß § 27a Umsatzsteuergesetz:
+        <br />
+        DE368320768
+      </p>
 
       <h2>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
       <p>
