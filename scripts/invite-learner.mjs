@@ -40,14 +40,19 @@ if (!supabaseUrl || !serviceRoleKey) {
   process.exit(1);
 }
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://learn.climatejobsacademy.com";
+// Bewusst fest verdrahtet, nicht aus NEXT_PUBLIC_SITE_URL gelesen: dieses
+// Skript lädt .env.local für die Supabase-Zugangsdaten, aber dort steht
+// NEXT_PUBLIC_SITE_URL lokal auf http://localhost:3000 (fürs App-Dev) --
+// eine Einladung soll aber immer auf Production zeigen, unabhängig davon,
+// von welchem Rechner/mit welcher lokalen .env sie verschickt wird.
+const INVITE_REDIRECT_URL = "https://learn.climatejobsacademy.com/auth/callback";
 
 const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
 
 const { data, error } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-  redirectTo: `${siteUrl}/auth/callback`,
+  redirectTo: INVITE_REDIRECT_URL,
   data: fullName ? { full_name: fullName } : undefined,
 });
 
