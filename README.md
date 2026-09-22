@@ -40,6 +40,11 @@ src/
 
 Admin-Oberfläche ist nicht Teil dieses Repos — design-specifications.md
 Abschnitt 3 stellt sie bewusst zurück (Fokus auf Learner-Flows im Prototyp).
+
+scripts/
+  invite-learner.mjs         SR-49: sendet die Einladungsmail für eine per
+                              Table Editor/SQL händisch angelegte person-Zeile
+                              (kein App-Code, siehe Kommentar in der Datei)
 ```
 
 ## Lokal starten
