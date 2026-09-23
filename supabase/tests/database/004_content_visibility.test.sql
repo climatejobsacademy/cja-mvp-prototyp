@@ -51,8 +51,13 @@ insert into lesson (id, course_id, name, content_type, reihenfolge, status) valu
 insert into competency (id, name, kompetenzbereich, quelle) values
   ('00000000-0000-0000-0000-000000000041', 'Testkompetenz', 'Elektro', 'EFK-EE');
 
+-- competency_id nur noch, weil die Spalte bis zur Drop-Column-Folgemigration
+-- not null ist -- maßgeblich ist competency_competency_step (SR-65, 0019).
 insert into competency_step (id, competency_id, name, typ) values
   ('00000000-0000-0000-0000-000000000042', '00000000-0000-0000-0000-000000000041', 'Teilschritt', 'theoretisch');
+
+insert into competency_competency_step (id, competency_id, competency_step_id) values
+  ('00000000-0000-0000-0000-000000000043', '00000000-0000-0000-0000-000000000041', '00000000-0000-0000-0000-000000000042');
 
 insert into content_competency_mapping (lesson_id, competency_step_id) values
   ('00000000-0000-0000-0000-000000000031', '00000000-0000-0000-0000-000000000042'),
