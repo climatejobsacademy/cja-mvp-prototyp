@@ -86,7 +86,7 @@ erDiagram
         uuid id PK
         text name
         text kompetenzbereich
-        text quelle
+        text quelle "veraltet seit 0020 (SR-66), entfällt"
     }
     competency_step {
         uuid id PK
@@ -94,6 +94,11 @@ erDiagram
         text name
         text typ
         text nachweistyp
+    }
+    competency_programme {
+        uuid id PK
+        uuid competency_id FK
+        uuid programme_id FK
     }
     competency_competency_step {
         uuid id PK
@@ -258,6 +263,8 @@ erDiagram
     lesson ||--o{ lesson_resource : ""
     file_asset ||--o{ lesson_resource : "bei typ=datei"
     competency ||--o{ competency_competency_step : ""
+    competency ||--o{ competency_programme : ""
+    programme ||--o{ competency_programme : ""
     competency_step ||--o{ competency_competency_step : ""
     lesson ||--o{ content_competency_mapping : ""
     competency_step ||--o{ content_competency_mapping : ""

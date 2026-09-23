@@ -195,6 +195,11 @@ type CompetencyRow = Flatten<
     id: string;
     name: string;
     kompetenzbereich: string;
+    /**
+     * @deprecated Seit 0020 (SR-66) nicht mehr als Programm-Zuordnung lesen --
+     * die läuft über `competency_programme` (N:M). Spalte entfällt mit der
+     * Drop-Column-Folgemigration.
+     */
     quelle: CompetencyQuelle;
   }
 >;
@@ -219,6 +224,14 @@ type ContentCompetencyMappingRow = Flatten<
     id: string;
     lesson_id: string;
     competency_step_id: string;
+  }
+>;
+
+type CompetencyProgrammeRow = Flatten<
+  Timestamps & {
+    id: string;
+    competency_id: string;
+    programme_id: string;
   }
 >;
 
@@ -563,6 +576,11 @@ export type Database = {
         CompetencyCompetencyStepRow,
         Flatten<Partial<Timestamps> & { id?: string; competency_id: string; competency_step_id: string }>,
         Partial<CompetencyCompetencyStepRow>
+      >;
+      competency_programme: Table<
+        CompetencyProgrammeRow,
+        Flatten<Partial<Timestamps> & { id?: string; competency_id: string; programme_id: string }>,
+        Partial<CompetencyProgrammeRow>
       >;
       content_competency_mapping: Table<
         ContentCompetencyMappingRow,
