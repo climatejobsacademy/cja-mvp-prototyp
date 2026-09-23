@@ -90,10 +90,15 @@ erDiagram
     }
     competency_step {
         uuid id PK
-        uuid competency_id FK
+        uuid competency_id FK "veraltet seit 0019 (SR-65), entfällt"
         text name
         text typ
         text nachweistyp
+    }
+    competency_competency_step {
+        uuid id PK
+        uuid competency_id FK
+        uuid competency_step_id FK
     }
     content_competency_mapping {
         uuid id PK
@@ -252,7 +257,8 @@ erDiagram
     course ||--o{ lesson : ""
     lesson ||--o{ lesson_resource : ""
     file_asset ||--o{ lesson_resource : "bei typ=datei"
-    competency ||--o{ competency_step : ""
+    competency ||--o{ competency_competency_step : ""
+    competency_step ||--o{ competency_competency_step : ""
     lesson ||--o{ content_competency_mapping : ""
     competency_step ||--o{ content_competency_mapping : ""
 

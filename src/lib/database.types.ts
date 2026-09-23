@@ -202,6 +202,11 @@ type CompetencyRow = Flatten<
 type CompetencyStepRow = Flatten<
   Timestamps & {
     id: string;
+    /**
+     * @deprecated Seit 0019 (SR-65) nicht mehr lesen -- Zuordnung zur
+     * Kompetenz läuft über `competency_competency_step` (N:M). Spalte
+     * entfällt mit der Drop-Column-Folgemigration.
+     */
     competency_id: string;
     name: string;
     typ: CompetencyStepTyp;
@@ -213,6 +218,14 @@ type ContentCompetencyMappingRow = Flatten<
   Timestamps & {
     id: string;
     lesson_id: string;
+    competency_step_id: string;
+  }
+>;
+
+type CompetencyCompetencyStepRow = Flatten<
+  Timestamps & {
+    id: string;
+    competency_id: string;
     competency_step_id: string;
   }
 >;
@@ -545,6 +558,11 @@ export type Database = {
           }
         >,
         Partial<CompetencyStepRow>
+      >;
+      competency_competency_step: Table<
+        CompetencyCompetencyStepRow,
+        Flatten<Partial<Timestamps> & { id?: string; competency_id: string; competency_step_id: string }>,
+        Partial<CompetencyCompetencyStepRow>
       >;
       content_competency_mapping: Table<
         ContentCompetencyMappingRow,
