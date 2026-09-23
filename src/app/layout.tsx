@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Anton, Geist_Mono, Work_Sans } from "next/font/google";
 import type { ReactNode } from "react";
+
+import { Footer } from "@/components/footer";
+
 import "./globals.css";
 
 // Fließtext, UI-Labels, Formulare — docs/design-specifications.md, Abschnitt 1
@@ -24,6 +27,18 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "AfCJ Qualifizierungsplattform",
   description: "Lernplattform für Elektrofachkraft Erneuerbare Energien",
+  openGraph: {
+    title: "AfCJ Qualifizierungsplattform",
+    description: "Deine Lernplattform der Academy for Climate Jobs",
+    // Logo zentriert auf Off-White (#F5F5F0, design-specifications.md
+    // Abschnitt 1) freigestellt auf das Social-Media-Standardmaß 1200x630.
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+    siteName: "Academy for Climate Jobs",
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["/og-image.png"],
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
@@ -32,7 +47,10 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
       lang="de"
       className={`${workSans.variable} ${anton.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <Footer />
+      </body>
     </html>
   );
 }
