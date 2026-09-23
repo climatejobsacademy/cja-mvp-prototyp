@@ -40,10 +40,10 @@ jobs:
       - name: Supabase CLI installieren
         uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.117.0
 
       - name: Supabase lokal starten (Postgres + Migrationen aus supabase/migrations)
-        run: supabase start
+        run: supabase start -x studio,edge-runtime,logflare,vector,mailpit,realtime,imgproxy,postgres-meta
 
       - name: RLS-Tests (pgTAP, supabase/tests/database)
         run: supabase test db
