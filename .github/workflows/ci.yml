@@ -48,6 +48,8 @@ jobs:
         run: supabase start -x studio,edge-runtime,logflare,vector,mailpit,realtime,imgproxy,postgres-meta
 
       - name: RLS-Tests (pgTAP, supabase/tests/database)
+        env:
+          SUPABASE_INTERNAL_IMAGE_REGISTRY: public.ecr.aws
         run: supabase test db
 
       - name: Supabase stoppen
