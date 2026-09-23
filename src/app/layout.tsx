@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Anton, Geist_Mono, Work_Sans } from "next/font/google";
 import type { ReactNode } from "react";
+
+import { Footer } from "@/components/footer";
+
 import "./globals.css";
 
 // Fließtext, UI-Labels, Formulare — docs/design-specifications.md, Abschnitt 1
@@ -44,7 +47,10 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
       lang="de"
       className={`${workSans.variable} ${anton.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <Footer />
+      </body>
     </html>
   );
 }
