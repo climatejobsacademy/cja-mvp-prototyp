@@ -423,6 +423,14 @@ type KnowledgeSourceRow = Flatten<
   }
 >;
 
+type CompetencyFulfilmentRow = Flatten<{
+  learner_id: string;
+  competency_id: string;
+  teilschritte_gesamt: number;
+  teilschritte_erfuellt: number;
+  erfuellt: boolean;
+}>;
+
 type CompetencyEvidenceRow = Flatten<{
   learner_id: string;
   competency_step_id: string;
@@ -813,6 +821,8 @@ export type Database = {
       // Berechnete View, kein Write (siehe 0006_progress_and_evidence.sql) —
       // absichtlich kein Insert/Update-Typ.
       competency_evidence: View<CompetencyEvidenceRow>;
+      // SR-68 (0021): AND-Logik je Learner und Kompetenz, ebenfalls kein Write.
+      competency_fulfilment: View<CompetencyFulfilmentRow>;
     };
     Functions: Record<string, never>;
   };
