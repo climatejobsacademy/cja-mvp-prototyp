@@ -88,9 +88,6 @@ export default async function LessonPage({
             ) : (
               <p className="text-sm text-muted-foreground">Kein Termin hinterlegt.</p>
             )}
-            <p className="text-xs text-muted-foreground">
-              Aufzeichnungen werden im Prototyp nicht in der Plattform wiedergegeben.
-            </p>
           </CardContent>
         </Card>
       )}
