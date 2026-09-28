@@ -195,6 +195,11 @@ type CompetencyRow = Flatten<
     id: string;
     name: string;
     kompetenzbereich: string;
+    /**
+     * @deprecated Seit 0020 (SR-66) nicht mehr als Programm-Zuordnung lesen --
+     * die läuft über `competency_programme` (N:M). Spalte entfällt mit der
+     * Drop-Column-Folgemigration.
+     */
     quelle: CompetencyQuelle;
   }
 >;
@@ -202,6 +207,11 @@ type CompetencyRow = Flatten<
 type CompetencyStepRow = Flatten<
   Timestamps & {
     id: string;
+    /**
+     * @deprecated Seit 0019 (SR-65) nicht mehr lesen -- Zuordnung zur
+     * Kompetenz läuft über `competency_competency_step` (N:M). Spalte
+     * entfällt mit der Drop-Column-Folgemigration.
+     */
     competency_id: string;
     name: string;
     typ: CompetencyStepTyp;
@@ -213,6 +223,22 @@ type ContentCompetencyMappingRow = Flatten<
   Timestamps & {
     id: string;
     lesson_id: string;
+    competency_step_id: string;
+  }
+>;
+
+type CompetencyProgrammeRow = Flatten<
+  Timestamps & {
+    id: string;
+    competency_id: string;
+    programme_id: string;
+  }
+>;
+
+type CompetencyCompetencyStepRow = Flatten<
+  Timestamps & {
+    id: string;
+    competency_id: string;
     competency_step_id: string;
   }
 >;
@@ -397,6 +423,14 @@ type KnowledgeSourceRow = Flatten<
   }
 >;
 
+type CompetencyFulfilmentRow = Flatten<{
+  learner_id: string;
+  competency_id: string;
+  teilschritte_gesamt: number;
+  teilschritte_erfuellt: number;
+  erfuellt: boolean;
+}>;
+
 type CompetencyEvidenceRow = Flatten<{
   learner_id: string;
   competency_step_id: string;
@@ -545,6 +579,16 @@ export type Database = {
           }
         >,
         Partial<CompetencyStepRow>
+      >;
+      competency_competency_step: Table<
+        CompetencyCompetencyStepRow,
+        Flatten<Partial<Timestamps> & { id?: string; competency_id: string; competency_step_id: string }>,
+        Partial<CompetencyCompetencyStepRow>
+      >;
+      competency_programme: Table<
+        CompetencyProgrammeRow,
+        Flatten<Partial<Timestamps> & { id?: string; competency_id: string; programme_id: string }>,
+        Partial<CompetencyProgrammeRow>
       >;
       content_competency_mapping: Table<
         ContentCompetencyMappingRow,
@@ -777,6 +821,8 @@ export type Database = {
       // Berechnete View, kein Write (siehe 0006_progress_and_evidence.sql) —
       // absichtlich kein Insert/Update-Typ.
       competency_evidence: View<CompetencyEvidenceRow>;
+      // SR-68 (0021): AND-Logik je Learner und Kompetenz, ebenfalls kein Write.
+      competency_fulfilment: View<CompetencyFulfilmentRow>;
     };
     Functions: Record<string, never>;
   };

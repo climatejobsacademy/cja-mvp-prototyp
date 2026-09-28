@@ -35,9 +35,22 @@ export async function getKompetenzFortschritt(learnerId: string): Promise<Compet
     .select("id, name, kompetenzbereich");
   const { data: steps } = await supabase
     .from("competency_step")
-    .select("id, competency_id, name, typ");
+    .select("id, name, typ");
+  // N:M seit SR-65 (0019): ein Teilschritt kann an mehreren Kompetenzen
+  // hängen und zählt dann in jeder davon mit.
+  const { data: competencySteps } = await supabase
+    .from("competency_competency_step")
+    .select("competency_id, competency_step_id");
 
-  if (!competencies || !steps) return [];
+  if (!competencies || !steps || !competencySteps) return [];
+
+  const stepById = new Map(steps.map((s) => [s.id, s]));
+  const stepIdsByCompetency = new Map<string, string[]>();
+  for (const cs of competencySteps) {
+    const list = stepIdsByCompetency.get(cs.competency_id) ?? [];
+    list.push(cs.competency_step_id);
+    stepIdsByCompetency.set(cs.competency_id, list);
+  }
 
   const stepIds = steps.map((s) => s.id);
 
@@ -105,7 +118,9 @@ export async function getKompetenzFortschritt(learnerId: string): Promise<Compet
   }
 
   const result: CompetencyView[] = competencies.map((c) => {
-    const mySteps = steps.filter((s) => s.competency_id === c.id);
+    const mySteps = (stepIdsByCompetency.get(c.id) ?? [])
+      .map((id) => stepById.get(id))
+      .filter((s) => s !== undefined);
     const stepViews: CompetencyStepView[] = mySteps.map((s) => ({
       id: s.id,
       name: s.name,
