@@ -88,7 +88,7 @@ export function ScheduleTabs({
           const Icon = FORMAT_ICON[eintrag.contentType];
           const liveJetzt = eintrag.liveSession && isNow(eintrag.liveSession.datum, eintrag.liveSession.start, eintrag.liveSession.ende);
           return (
-            <Card key={eintrag.scheduleEntryId}>
+            <Card key={eintrag.scheduleEntryId} className={eintrag.contentType === "live" ? "border-l-[3px] border-l-eco-green" : undefined}>
               <CardContent className="flex items-center gap-3 py-1">
                 <Icon className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
                 <div className="flex-1">
