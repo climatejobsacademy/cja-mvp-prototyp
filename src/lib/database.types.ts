@@ -219,6 +219,14 @@ type CompetencyStepRow = Flatten<
   }
 >;
 
+type FieldJobTypeCompetencyMappingRow = Flatten<
+  Timestamps & {
+    id: string;
+    field_job_type_id: string;
+    competency_step_id: string;
+  }
+>;
+
 type ContentCompetencyMappingRow = Flatten<
   Timestamps & {
     id: string;
@@ -584,6 +592,11 @@ export type Database = {
         CompetencyCompetencyStepRow,
         Flatten<Partial<Timestamps> & { id?: string; competency_id: string; competency_step_id: string }>,
         Partial<CompetencyCompetencyStepRow>
+      >;
+      field_job_type_competency_mapping: Table<
+        FieldJobTypeCompetencyMappingRow,
+        Flatten<Partial<Timestamps> & { id?: string; field_job_type_id: string; competency_step_id: string }>,
+        Partial<FieldJobTypeCompetencyMappingRow>
       >;
       competency_programme: Table<
         CompetencyProgrammeRow,
