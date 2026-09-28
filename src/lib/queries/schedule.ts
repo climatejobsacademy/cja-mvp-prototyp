@@ -14,6 +14,7 @@ export type FeldEintrag = {
 export type TheorieEintrag = {
   kind: "theorie";
   scheduleEntryId: string;
+  lessonId: string | null;
   art: "live" | "asynchron";
   titel: string;
   contentType: ContentType | "kurs";
@@ -132,6 +133,7 @@ export async function getTagesAgenda(
         theorie.push({
           kind: "theorie",
           scheduleEntryId: entry.id,
+          lessonId: lesson?.id ?? null,
           art: "live",
           titel: lesson?.name ?? course?.name ?? "Live-Termin",
           contentType: "live",
@@ -149,6 +151,7 @@ export async function getTagesAgenda(
         theorie.push({
           kind: "theorie",
           scheduleEntryId: entry.id,
+          lessonId: lesson.id,
           art: "asynchron",
           titel: lesson.name,
           contentType: lesson.content_type,
@@ -161,6 +164,7 @@ export async function getTagesAgenda(
         theorie.push({
           kind: "theorie",
           scheduleEntryId: entry.id,
+          lessonId: null,
           art: "asynchron",
           titel: course.name,
           contentType: "kurs",
