@@ -21,7 +21,7 @@ export default async function ContentLibraryPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-heading text-xl text-eco-deep-green">Content Library</h1>
+        <h1 className="font-heading text-xl text-eco-deep-green">Lernmaterialien</h1>
         <p className="text-sm text-muted-foreground">{learner.programmeName}</p>
       </div>
 
@@ -79,7 +79,7 @@ export default async function ContentLibraryPage() {
                                 <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                                 <span className="flex-1">{lesson.name}</span>
                                 {lesson.status === "abgeschlossen" && (
-                                  <Badge variant="success">Fertig</Badge>
+                                  <Badge variant="success">Abgeschlossen</Badge>
                                 )}
                               </Link>
                             </li>
