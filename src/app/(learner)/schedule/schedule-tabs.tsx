@@ -95,7 +95,7 @@ export function ScheduleTabs({
                   <p className="font-medium text-eco-deep-green">{eintrag.titel}</p>
                   {eintrag.liveSession && (
                     <p className="text-xs text-muted-foreground">
-                      {eintrag.liveSession.start}–{eintrag.liveSession.ende} Uhr
+                      {formatTime(eintrag.liveSession.start)}–{formatTime(eintrag.liveSession.ende)} Uhr
                     </p>
                   )}
                 </div>
@@ -205,6 +205,10 @@ export function ScheduleTabs({
       </TabsContent>
     </Tabs>
   );
+}
+
+function formatTime(t: string): string {
+  return t.slice(0, 5);
 }
 
 function addDays(dateStr: string, days: number): string {

@@ -45,7 +45,7 @@ export default async function KompetenzenPage() {
             <summary className="flex cursor-pointer list-none items-center gap-3 p-3">
               <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true" />
               <div className="min-w-0 flex-1">
-                <p className="truncate font-medium text-eco-deep-green">{k.name}</p>
+                <p className="line-clamp-2 font-medium text-eco-deep-green">{k.name}</p>
                 <p className="text-xs text-muted-foreground">{k.kompetenzbereich}</p>
                 {/*
                   SR-68: Balken + Zahl aus competency_fulfilment. Gleiche
