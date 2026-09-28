@@ -14,6 +14,9 @@ export type CompetencyView = {
   id: string;
   name: string;
   kompetenzbereich: string;
+  teilschritteErfuellt: number;
+  teilschritteGesamt: number;
+  erfuellt: boolean;
   fortschrittProzent: number;
   curriculumReihenfolge: number;
   steps: CompetencyStepView[];
@@ -53,6 +56,14 @@ export async function getKompetenzFortschritt(learnerId: string): Promise<Compet
   }
 
   const stepIds = steps.map((s) => s.id);
+
+  // SR-68 (0021): Erfüllungsstand je Kompetenz mit AND-Logik aus der DB. Die
+  // View liefert erst eine Zeile, wenn mindestens ein Teilschritt erfüllt ist.
+  const { data: fulfilment } = await supabase
+    .from("competency_fulfilment")
+    .select("competency_id, teilschritte_gesamt, teilschritte_erfuellt, erfuellt")
+    .eq("learner_id", learnerId);
+  const fulfilmentByCompetency = new Map((fulfilment ?? []).map((f) => [f.competency_id, f]));
 
   const [{ data: evidence }, { data: mappings }] = await Promise.all([
     supabase
@@ -127,7 +138,10 @@ export async function getKompetenzFortschritt(learnerId: string): Promise<Compet
       typ: s.typ,
       status: stepStatus(s.id),
     }));
-    const done = stepViews.filter((s) => s.status === "abgeschlossen").length;
+    // Keine Zeile in competency_fulfilment = noch kein Teilschritt erfüllt.
+    const f = fulfilmentByCompetency.get(c.id);
+    const gesamt = f?.teilschritte_gesamt ?? stepViews.length;
+    const erfuelltAnzahl = f?.teilschritte_erfuellt ?? 0;
     const order = Math.min(
       ...mySteps.map((s) => minOrderByStep.get(s.id) ?? Number.MAX_SAFE_INTEGER),
       Number.MAX_SAFE_INTEGER
@@ -136,7 +150,10 @@ export async function getKompetenzFortschritt(learnerId: string): Promise<Compet
       id: c.id,
       name: c.name,
       kompetenzbereich: c.kompetenzbereich,
-      fortschrittProzent: stepViews.length > 0 ? Math.round((done / stepViews.length) * 100) : 0,
+      teilschritteErfuellt: erfuelltAnzahl,
+      teilschritteGesamt: gesamt,
+      erfuellt: f?.erfuellt ?? false,
+      fortschrittProzent: gesamt > 0 ? Math.round((erfuelltAnzahl / gesamt) * 100) : 0,
       curriculumReihenfolge: order,
       steps: stepViews,
     };

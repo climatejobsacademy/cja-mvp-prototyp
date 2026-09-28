@@ -47,10 +47,21 @@ export default async function KompetenzenPage() {
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium text-eco-deep-green">{k.name}</p>
                 <p className="text-xs text-muted-foreground">{k.kompetenzbereich}</p>
+                {/*
+                  SR-68: Balken + Zahl aus competency_fulfilment. Gleiche
+                  Progress-Komponente wie Curriculum-Fortschritt und Content
+                  Library -- Indicator nutzt bg-primary = Eco Green
+                  (design-specifications.md 2.4, globals.css --primary).
+                */}
+                <Progress value={k.fortschrittProzent} className="mt-2">
+                  <div className="flex w-full justify-between">
+                    <ProgressLabel className="text-xs font-normal text-muted-foreground">
+                      {k.teilschritteErfuellt} / {k.teilschritteGesamt} Teilschritte
+                    </ProgressLabel>
+                    <ProgressValue className="text-xs" />
+                  </div>
+                </Progress>
               </div>
-              <span className="shrink-0 text-sm tabular-nums text-muted-foreground">
-                {k.fortschrittProzent}%
-              </span>
             </summary>
             <div className="flex flex-col gap-2 border-t border-border p-3">
               {k.steps.map((step) => (
