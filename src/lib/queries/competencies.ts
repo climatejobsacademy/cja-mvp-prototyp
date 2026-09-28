@@ -4,10 +4,10 @@ import type { CompetencyStepTyp } from "@/lib/database.types";
 export type StepStatus = "abgeschlossen" | "in Prüfung" | "abgelehnt" | "offen";
 
 /**
- * Zusatzinfo je Teilschritt: wie viele der zugeordneten Lektionen (theoretisch)
- * bzw. Praxisaufgaben (praktisch) schon abgeschlossen sind. Reine Anzeige --
- * erfüllt ist ein Teilschritt weiterhin schon ab dem ersten Nachweis
- * (competency_evidence). null, wenn nichts zugeordnet ist.
+ * Fortschritt je Teilschritt: wie viele der zugeordneten Lektionen (theoretisch)
+ * bzw. Praxisaufgaben (praktisch) schon abgeschlossen sind (SR-69). Bestimmt
+ * seit SR-70 auch den Status: abgeschlossen erst bei allen (AND). null, wenn
+ * nichts zugeordnet ist.
  */
 export type StepFortschritt = {
   abgeschlossen: number;
@@ -78,12 +78,8 @@ export async function getKompetenzFortschritt(learnerId: string): Promise<Compet
     .eq("learner_id", learnerId);
   const fulfilmentByCompetency = new Map((fulfilment ?? []).map((f) => [f.competency_id, f]));
 
-  const [{ data: evidence }, { data: mappings }, { data: praxisMappings }, { data: completedLessons }] =
+  const [{ data: mappings }, { data: praxisMappings }, { data: completedLessons }] =
     await Promise.all([
-      supabase
-        .from("competency_evidence")
-        .select("competency_step_id")
-        .eq("learner_id", learnerId),
       stepIds.length
         ? supabase
             .from("content_competency_mapping")
@@ -102,8 +98,6 @@ export async function getKompetenzFortschritt(learnerId: string): Promise<Compet
         .eq("learner_id", learnerId)
         .eq("status", "abgeschlossen"),
     ]);
-
-  const doneStepIds = new Set((evidence ?? []).map((e) => e.competency_step_id));
 
   // Verifizierungs-Zwischenstände (pending/abgelehnt) — nur relevant, wenn
   // administrativ bereits field_capture_step_mapping-Zeilen angelegt wurden
@@ -145,15 +139,20 @@ export async function getKompetenzFortschritt(learnerId: string): Promise<Compet
     if (current === undefined || order < current) minOrderByStep.set(m.competency_step_id, order);
   }
 
-  function stepStatus(stepId: string): StepStatus {
-    if (doneStepIds.has(stepId)) return "abgeschlossen";
+  function stepStatus(stepId: string, fortschritt: StepFortschritt | null): StepStatus {
+    // SR-70: abgeschlossen erst, wenn ALLE zugeordneten Lektionen bzw.
+    // Field-Job-Typen erfüllt sind -- gleiche Regel wie competency_fulfilment
+    // (0022). Teilschritte ohne Zuordnung bleiben offen.
+    if (fortschritt && fortschritt.gesamt > 0 && fortschritt.abgeschlossen === fortschritt.gesamt) {
+      return "abgeschlossen";
+    }
     const statuses = statusesByStep.get(stepId) ?? [];
     if (statuses.includes("submitted")) return "in Prüfung";
     if (statuses.length > 0 && statuses.every((s) => s === "rejected")) return "abgelehnt";
     return "offen";
   }
 
-  // Teilschritt-Fortschritt (Zusatzinfo): abgeschlossene Lektion =
+  // Teilschritt-Fortschritt (SR-69, seit SR-70 auch Status): abgeschlossene Lektion =
   // unit_progress.status 'abgeschlossen'; abgeschlossene Praxisaufgabe =
   // mindestens eine verifizierte Selbstauskunft (field_capture.status
   // 'verified') zu einem field_job dieses Typs -- nicht schon 'durchgeführt'.
@@ -198,13 +197,10 @@ export async function getKompetenzFortschritt(learnerId: string): Promise<Compet
     const mySteps = (stepIdsByCompetency.get(c.id) ?? [])
       .map((id) => stepById.get(id))
       .filter((s) => s !== undefined);
-    const stepViews: CompetencyStepView[] = mySteps.map((s) => ({
-      id: s.id,
-      name: s.name,
-      typ: s.typ,
-      status: stepStatus(s.id),
-      fortschritt: stepFortschritt(s.id, s.typ),
-    }));
+    const stepViews: CompetencyStepView[] = mySteps.map((s) => {
+      const fortschritt = stepFortschritt(s.id, s.typ);
+      return { id: s.id, name: s.name, typ: s.typ, status: stepStatus(s.id, fortschritt), fortschritt };
+    });
     // Keine Zeile in competency_fulfilment = noch kein Teilschritt erfüllt.
     const f = fulfilmentByCompetency.get(c.id);
     const gesamt = f?.teilschritte_gesamt ?? stepViews.length;
