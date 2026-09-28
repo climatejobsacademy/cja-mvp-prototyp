@@ -8,9 +8,9 @@ import { AccountMenu } from "@/components/nav/account-menu";
 import { cn } from "@/lib/utils";
 
 const ITEMS = [
-  { href: "/schedule", label: "Mein Schedule", icon: CalendarDays },
+  { href: "/schedule", label: "Stundenplan", icon: CalendarDays },
   { href: "/kompetenzen", label: "Kompetenzen", icon: Target },
-  { href: "/content", label: "Content Library", icon: BookOpen },
+  { href: "/content", label: "Lernmaterialien", icon: BookOpen },
 ];
 
 const NAV_ITEM_CLASSES =
@@ -32,7 +32,7 @@ export function AppNav({ name, email }: { name: string; email: string }) {
               <li key={href} className="flex-1 sm:flex-none">
                 <Link
                   href={href}
-                  className={cn(NAV_ITEM_CLASSES, active && "text-primary")}
+                  className={cn(NAV_ITEM_CLASSES, active && "text-primary bg-primary/10 rounded-lg")}
                   aria-current={active ? "page" : undefined}
                 >
                   <Icon className="size-5 sm:size-4" aria-hidden="true" />

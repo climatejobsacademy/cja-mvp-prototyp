@@ -14,6 +14,7 @@ export type FeldEintrag = {
 export type TheorieEintrag = {
   kind: "theorie";
   scheduleEntryId: string;
+  lessonId: string | null;
   art: "live" | "asynchron";
   titel: string;
   contentType: ContentType | "kurs";
@@ -113,13 +114,28 @@ export async function getTagesAgenda(
         : Promise.resolve({ data: [] as { id: string; lesson_id: string | null; course_id: string | null; datum: string; start: string; ende: string; join_link: string | null }[] }),
     ]);
 
+    // Live-Sessions können eigene lesson_id haben, die nicht auf dem
+    // schedule_entry steht. Diese Lessons nachladen, falls noch nicht dabei.
+    const liveSessionLessonIds = (liveSessions ?? [])
+      .map((s) => s.lesson_id)
+      .filter((id): id is string => !!id && !lessonIds.includes(id));
+    let allLessons = [...(lessons ?? [])];
+    if (liveSessionLessonIds.length > 0) {
+      const { data: extraLessons } = await supabase
+        .from("lesson")
+        .select("id, name, content_type")
+        .in("id", liveSessionLessonIds);
+      allLessons = [...allLessons, ...(extraLessons ?? [])];
+    }
+
     let progressByLesson = new Map<string, UnitProgressStatus>();
-    if (lessonIds.length > 0) {
+    const allLessonIdsForProgress = [...lessonIds, ...liveSessionLessonIds];
+    if (allLessonIdsForProgress.length > 0) {
       const { data: progress } = await supabase
         .from("unit_progress")
         .select("lesson_id, status")
         .eq("learner_id", learnerId)
-        .in("lesson_id", lessonIds);
+        .in("lesson_id", allLessonIdsForProgress);
       progressByLesson = new Map((progress ?? []).map((p) => [p.lesson_id, p.status]));
     }
 
@@ -127,11 +143,12 @@ export async function getTagesAgenda(
       if (entry.live_session_id) {
         const session = liveSessions?.find((s) => s.id === entry.live_session_id);
         if (!session) continue;
-        const lesson = session.lesson_id ? lessons?.find((l) => l.id === session.lesson_id) : null;
+        const lesson = session.lesson_id ? allLessons.find((l) => l.id === session.lesson_id) : null;
         const course = session.course_id ? courses?.find((c) => c.id === session.course_id) : null;
         theorie.push({
           kind: "theorie",
           scheduleEntryId: entry.id,
+          lessonId: lesson?.id ?? null,
           art: "live",
           titel: lesson?.name ?? course?.name ?? "Live-Termin",
           contentType: "live",
@@ -144,11 +161,12 @@ export async function getTagesAgenda(
           },
         });
       } else if (entry.lesson_id) {
-        const lesson = lessons?.find((l) => l.id === entry.lesson_id);
+        const lesson = allLessons.find((l) => l.id === entry.lesson_id);
         if (!lesson) continue;
         theorie.push({
           kind: "theorie",
           scheduleEntryId: entry.id,
+          lessonId: lesson.id,
           art: "asynchron",
           titel: lesson.name,
           contentType: lesson.content_type,
@@ -161,6 +179,7 @@ export async function getTagesAgenda(
         theorie.push({
           kind: "theorie",
           scheduleEntryId: entry.id,
+          lessonId: null,
           art: "asynchron",
           titel: course.name,
           contentType: "kurs",

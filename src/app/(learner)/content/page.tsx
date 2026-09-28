@@ -21,7 +21,7 @@ export default async function ContentLibraryPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-heading text-xl text-eco-deep-green">Content Library</h1>
+        <h1 className="font-heading text-xl text-eco-deep-green">Lernmaterialien</h1>
         <p className="text-sm text-muted-foreground">{learner.programmeName}</p>
       </div>
 
@@ -39,7 +39,7 @@ export default async function ContentLibraryPage() {
               <Card key={course.id} id={`kurs-${course.id}`}>
                 <CardContent className="flex flex-col gap-0 p-0">
                   <details className="group/course">
-                    <summary className="flex cursor-pointer list-none items-center gap-3 p-4">
+                    <summary className="flex cursor-pointer list-none items-center gap-3 rounded-t-lg p-4 transition-colors hover:bg-eco-green/5">
                       <ChevronDown
                         className="size-4 shrink-0 text-muted-foreground transition-transform group-open/course:rotate-180"
                         aria-hidden="true"
@@ -74,12 +74,12 @@ export default async function ContentLibraryPage() {
                             <li key={lesson.id}>
                               <Link
                                 href={`/content/${lesson.id}`}
-                                className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-eco-deep-green transition-colors hover:bg-secondary"
+                                className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-eco-deep-green transition-colors hover:bg-eco-green/10"
                               >
                                 <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                                 <span className="flex-1">{lesson.name}</span>
                                 {lesson.status === "abgeschlossen" && (
-                                  <Badge variant="success">Fertig</Badge>
+                                  <Badge variant="success">Abgeschlossen</Badge>
                                 )}
                               </Link>
                             </li>
@@ -126,7 +126,7 @@ export default async function ContentLibraryPage() {
             id={group.id ? `modul-${group.id}` : undefined}
             className="group/module rounded-lg border border-border"
           >
-            <summary className="flex cursor-pointer list-none items-center gap-3 p-3">
+            <summary className="flex cursor-pointer list-none items-center gap-3 rounded-t-lg p-3 transition-colors hover:bg-eco-green/5">
               <ChevronDown
                 className="size-4 shrink-0 text-muted-foreground transition-transform group-open/module:rotate-180"
                 aria-hidden="true"

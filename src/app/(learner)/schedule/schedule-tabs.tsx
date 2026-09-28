@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BookOpen, ChevronLeft, ChevronRight, FileText, Video, Wrench } from "lucide-react";
@@ -35,6 +35,7 @@ export function ScheduleTabs({
 }) {
   const router = useRouter();
   const [tab, setTab] = useState("tag");
+  const todayStr = new Date().toISOString().slice(0, 10);
 
   function gotoDate(datum: string) {
     router.push(`/schedule?datum=${datum}`);
@@ -67,7 +68,7 @@ export function ScheduleTabs({
 
         {tag.feld.map((eintrag) => (
           <Link key={eintrag.scheduleEntryId} href={`/praxistag/${eintrag.fieldJobId}`}>
-            <Card className="border-eco-green/30 transition-colors hover:border-eco-green">
+            <Card className="border-eco-green/30 transition-colors hover:bg-eco-green/10">
               <CardContent className="flex items-center gap-3 py-1">
                 <Wrench className="size-5 shrink-0 text-eco-green" aria-hidden="true" />
                 <div className="flex-1">
@@ -87,19 +88,23 @@ export function ScheduleTabs({
         {tag.theorie.map((eintrag) => {
           const Icon = FORMAT_ICON[eintrag.contentType];
           const liveJetzt = eintrag.liveSession && isNow(eintrag.liveSession.datum, eintrag.liveSession.start, eintrag.liveSession.ende);
-          return (
-            <Card key={eintrag.scheduleEntryId}>
+          const beitretenSichtbar = Boolean(liveJetzt && eintrag.liveSession?.joinLink);
+          // Karte führt zur Lektion -- außer solange "Jetzt beitreten" (selbst
+          // ein Link) sichtbar ist, sonst wäre es ein Link im Link.
+          const klickbar = eintrag.lessonId !== null && !beitretenSichtbar;
+          const card = (
+            <Card className={klickbar ? "transition-colors hover:bg-eco-green/10" : undefined}>
               <CardContent className="flex items-center gap-3 py-1">
                 <Icon className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
                 <div className="flex-1">
                   <p className="font-medium text-eco-deep-green">{eintrag.titel}</p>
                   {eintrag.liveSession && (
                     <p className="text-xs text-muted-foreground">
-                      {eintrag.liveSession.start}–{eintrag.liveSession.ende} Uhr
+                      {formatTime(eintrag.liveSession.start)}–{formatTime(eintrag.liveSession.ende)} Uhr
                     </p>
                   )}
                 </div>
-                {liveJetzt && eintrag.liveSession?.joinLink ? (
+                {beitretenSichtbar && eintrag.liveSession?.joinLink ? (
                   <a
                     href={eintrag.liveSession.joinLink}
                     target="_blank"
@@ -113,6 +118,13 @@ export function ScheduleTabs({
                 )}
               </CardContent>
             </Card>
+          );
+          return klickbar ? (
+            <Link key={eintrag.scheduleEntryId} href={`/content/${eintrag.lessonId}`}>
+              {card}
+            </Link>
+          ) : (
+            <Fragment key={eintrag.scheduleEntryId}>{card}</Fragment>
           );
         })}
       </TabsContent>
@@ -129,7 +141,7 @@ export function ScheduleTabs({
             <ChevronRight />
           </Button>
         </div>
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-7">
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-7">
           {woche.map((tag) => {
             const gesamt = tag.abgeschlosseneEintraege + tag.offeneEintraege;
             const prozent = gesamt > 0 ? Math.round((tag.abgeschlosseneEintraege / gesamt) * 100) : 0;
@@ -141,11 +153,12 @@ export function ScheduleTabs({
                   setTab("tag");
                 }}
                 className={cn(
-                  "rounded-lg border p-3 text-left transition-colors hover:border-eco-green",
-                  tag.art === "frei" ? "border-border/50" : "border-border"
+                  "rounded-lg border p-3 text-left transition-colors hover:bg-eco-green/10",
+                  tag.art === "frei" ? "border-border/50" : "border-border",
+                  tag.datum === todayStr && "border-eco-green bg-eco-green/5"
                 )}
               >
-                <p className="text-xs text-muted-foreground">{formatWeekday(tag.datum)}</p>
+                <p className="text-xs font-semibold text-eco-deep-green">{formatWeekday(tag.datum)}</p>
                 <p className="text-sm font-medium text-eco-deep-green">{formatDayMonth(tag.datum)}</p>
                 {tag.art === "feld" && (
                   <Badge variant="outline" className="mt-1 gap-1">
@@ -186,7 +199,7 @@ export function ScheduleTabs({
             <li key={phase.id}>
               <Link
                 href={`/content#${phase.contentAnchor}`}
-                className="flex items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:border-eco-green"
+                className="flex items-center gap-3 rounded-lg border border-border p-3 transition-colors hover:bg-eco-green/10"
               >
                 <span className="flex-1 text-sm text-eco-deep-green">{phase.name}</span>
                 {phase.typ === "module" && phase.hatTheorie && (
@@ -205,6 +218,10 @@ export function ScheduleTabs({
       </TabsContent>
     </Tabs>
   );
+}
+
+function formatTime(t: string): string {
+  return t.slice(0, 5);
 }
 
 function addDays(dateStr: string, days: number): string {

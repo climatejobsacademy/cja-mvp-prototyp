@@ -34,12 +34,12 @@ export default async function LessonPage({
         href="/content"
         className="flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-eco-deep-green"
       >
-        <ArrowLeft className="size-4" /> Zurück zur Content Library
+        <ArrowLeft className="size-4" /> Zurück zu den Lernmaterialien
       </Link>
 
       <div className="flex items-center gap-3">
         <h1 className="font-heading text-xl text-eco-deep-green">{lesson.name}</h1>
-        {done && <Badge variant="success">Fertig</Badge>}
+        {done && <Badge variant="success">Abgeschlossen</Badge>}
       </div>
 
       {lesson.contentType === "scorm" && (
@@ -72,7 +72,7 @@ export default async function LessonPage({
                     day: "2-digit",
                     month: "long",
                   })}
-                  , {lesson.liveSession.start}–{lesson.liveSession.ende} Uhr
+                  , {lesson.liveSession.start.slice(0, 5)}–{lesson.liveSession.ende.slice(0, 5)} Uhr
                 </p>
                 {lesson.liveSession.joinLink && (
                   <a
@@ -88,9 +88,6 @@ export default async function LessonPage({
             ) : (
               <p className="text-sm text-muted-foreground">Kein Termin hinterlegt.</p>
             )}
-            <p className="text-xs text-muted-foreground">
-              Aufzeichnungen werden im Prototyp nicht in der Plattform wiedergegeben.
-            </p>
           </CardContent>
         </Card>
       )}
