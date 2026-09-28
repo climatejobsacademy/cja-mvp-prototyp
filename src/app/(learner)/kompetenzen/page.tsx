@@ -68,7 +68,20 @@ export default async function KompetenzenPage() {
                 <div key={step.id} className="flex items-center justify-between gap-3">
                   <div className="flex min-w-0 items-center gap-2">
                     <StepTypBadge typ={step.typ} />
-                    <span className="truncate text-sm text-eco-deep-green">{step.name}</span>
+                    <div className="min-w-0">
+                      <span className="block truncate text-sm text-eco-deep-green">{step.name}</span>
+                      {/*
+                        Zusatzinfo nur, solange der Teilschritt noch nicht
+                        abgeschlossen/abgelehnt ist -- sonst reicht die Pill.
+                      */}
+                      {step.fortschritt &&
+                        (step.status === "offen" || step.status === "in Prüfung") && (
+                          <span className="block text-xs text-muted-foreground tabular-nums">
+                            {step.fortschritt.abgeschlossen} / {step.fortschritt.gesamt}{" "}
+                            {step.fortschritt.einheit}
+                          </span>
+                        )}
+                    </div>
                   </div>
                   <StepStatusBadge status={step.status} />
                 </div>
