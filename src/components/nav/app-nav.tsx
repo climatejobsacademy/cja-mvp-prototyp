@@ -23,18 +23,27 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-/** Anton-Wortmarke, 4 Zeilen, 10 px. */
+/** Anton-Wortmarke, 4 Zeilen, 10 px -- Link auf Home (zusätzlich zum Nav-Punkt). */
 function Wortmarke() {
   return (
-    <p className="shrink-0 font-heading text-[10px] leading-[1.05] text-eco-deep-green uppercase">
-      The
-      <br />
-      Academy
-      <br />
-      for climate
-      <br />
-      jobs
-    </p>
+    <Link
+      href="/home"
+      aria-label="The Academy for Climate Jobs – zur Startseite"
+      className={cn("flex min-h-11 shrink-0 items-center rounded-lg", FOKUS)}
+    >
+      <span
+        aria-hidden="true"
+        className="font-heading text-[10px] leading-[1.05] text-eco-deep-green uppercase"
+      >
+        The
+        <br />
+        Academy
+        <br />
+        for climate
+        <br />
+        jobs
+      </span>
+    </Link>
   );
 }
 
