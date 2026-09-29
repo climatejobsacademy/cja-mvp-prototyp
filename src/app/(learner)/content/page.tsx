@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { BookOpen, ChevronDown, FileText, Video, Wrench } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
+import { UnitProgressBadge } from "@/components/status-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { requireCurrentLearner } from "@/lib/queries/session";
@@ -36,7 +36,7 @@ export default async function ContentLibraryPage() {
         const body = (
           <div className="flex flex-col gap-3">
             {group.courses.map((course) => (
-              <Card key={course.id} id={`kurs-${course.id}`}>
+              <Card key={course.id} id={`kurs-${course.id}`} className="shadow-sm">
                 <CardContent className="flex flex-col gap-0 p-0">
                   <details className="group/course">
                     <summary className="flex cursor-pointer list-none items-center gap-3 rounded-t-lg p-4 transition-colors hover:bg-eco-green/5">
@@ -49,9 +49,9 @@ export default async function ContentLibraryPage() {
                         <div className="flex items-center justify-between gap-3">
                           <p className="font-medium text-eco-deep-green">{course.name}</p>
                           {course.abgeschlossen && (
-                            <Badge variant="success" className="gap-1 shrink-0">
-                              Abgeschlossen
-                            </Badge>
+                            <span className="shrink-0">
+                              <UnitProgressBadge status="abgeschlossen" />
+                            </span>
                           )}
                         </div>
                         <p className="text-xs text-muted-foreground">
@@ -78,9 +78,7 @@ export default async function ContentLibraryPage() {
                               >
                                 <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
                                 <span className="flex-1">{lesson.name}</span>
-                                {lesson.status === "abgeschlossen" && (
-                                  <Badge variant="success">Abgeschlossen</Badge>
-                                )}
+                                <UnitProgressBadge status={lesson.status} />
                               </Link>
                             </li>
                           );
@@ -124,7 +122,7 @@ export default async function ContentLibraryPage() {
           <details
             key={group.id ?? "ohne-modul"}
             id={group.id ? `modul-${group.id}` : undefined}
-            className="group/module rounded-lg border border-border"
+            className="group/module rounded-lg border border-border shadow-sm"
           >
             <summary className="flex cursor-pointer list-none items-center gap-3 rounded-t-lg p-3 transition-colors hover:bg-eco-green/5">
               <ChevronDown
