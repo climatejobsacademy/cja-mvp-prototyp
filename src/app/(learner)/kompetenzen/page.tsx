@@ -18,8 +18,6 @@ export default async function KompetenzenPage() {
     <div className="flex flex-col gap-6">
       <PageHeader title="Kompetenzen" />
 
-      <CurriculumCard fortschritt={curriculum} />
-
       <section aria-labelledby="alle-kompetenzen" className="flex flex-col gap-3">
         <h2 id="alle-kompetenzen" className="text-base font-semibold text-eco-deep-green">
           Alle Kompetenzen
@@ -87,6 +85,9 @@ export default async function KompetenzenPage() {
           </details>
         ))}
       </section>
+
+      {/* Sekundärer Kontext nach der Kompetenzliste (Entscheidung 2026-09-29). */}
+      <CurriculumCard fortschritt={curriculum} kompakt />
     </div>
   );
 }
