@@ -3,11 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, TreePalm } from "lucide-react";
+import { ChevronLeft, ChevronRight, RockingChair } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { SegmentProgress } from "@/components/segment-progress";
 import { UnitProgressBadge } from "@/components/status-badge";
 import { TypIcon, typFuerContentType, type Typ } from "@/components/typ-icon";
 import { cn } from "@/lib/utils";
@@ -120,7 +119,7 @@ export function ScheduleTabs({
           istWochenende(selectedDate) ? (
             <div className="flex flex-col items-center gap-3 py-8 text-center">
               <span className="flex size-14 items-center justify-center rounded-full bg-charge-green/30">
-                <TreePalm className="size-6 text-eco-deep-green" aria-hidden="true" />
+                <RockingChair className="size-6 text-eco-deep-green" aria-hidden="true" />
               </span>
               <p className="text-[15px] font-semibold text-eco-deep-green">Wochenende</p>
               <p className="text-sm text-muted-foreground">Zeit zum Durchatmen – bis Montag!</p>
@@ -197,7 +196,6 @@ export function ScheduleTabs({
         </div>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-7">
           {woche.map((t) => {
-            const gesamt = t.abgeschlosseneEintraege + t.offeneEintraege;
             return (
               <button
                 key={t.datum}
@@ -222,26 +220,12 @@ export function ScheduleTabs({
                 ) : (
                   istWochenende(t.datum) ? (
                     <span className="flex items-center gap-1 text-[13px] text-muted-foreground">
-                      <TreePalm className="size-3.5 text-eco-deep-green" aria-hidden="true" />
+                      <RockingChair className="size-3.5 text-eco-deep-green" aria-hidden="true" />
                       Wochenende
                     </span>
                   ) : (
                     <span className="text-[13px] text-muted-foreground">frei</span>
                   )
-                )}
-                {t.art === "theorie" && gesamt > 0 && (
-                  <>
-                    <SegmentProgress
-                      className="mt-1"
-                      value={t.abgeschlosseneEintraege}
-                      max={gesamt}
-                      label={`${t.abgeschlosseneEintraege} von ${gesamt} Einträgen abgeschlossen`}
-                    />
-                    {/* K2: Zähltext bleibt sichtbar. */}
-                    <span className="text-[13px] text-muted-foreground tabular-nums" aria-hidden="true">
-                      {t.abgeschlosseneEintraege}/{gesamt} abgeschlossen
-                    </span>
-                  </>
                 )}
               </button>
             );
