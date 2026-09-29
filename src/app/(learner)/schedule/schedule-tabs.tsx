@@ -36,7 +36,7 @@ const TAB_TRIGGER =
   "h-11 flex-none rounded-full border-0 px-5 text-[15px] text-muted-foreground hover:bg-eco-green/10 hover:text-eco-deep-green after:hidden data-active:bg-eco-deep-green data-active:text-white data-active:hover:bg-eco-deep-green data-active:hover:text-white group-data-[variant=default]/tabs-list:data-active:shadow-none";
 
 const PFEIL =
-  "size-11 rounded-full text-muted-foreground hover:bg-eco-green/10 hover:text-eco-deep-green [&_svg]:size-5";
+  "size-11 rounded-lg text-muted-foreground hover:bg-eco-green/10 hover:text-eco-deep-green [&_svg]:size-5";
 
 /** Karten-Inhalt: Icon-Kachel · Titel + Meta · Badge · Chevron (nur mit Ziel). */
 function EintragInhalt({
