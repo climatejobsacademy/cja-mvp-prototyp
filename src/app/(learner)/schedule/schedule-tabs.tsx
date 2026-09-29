@@ -35,8 +35,6 @@ const CONTAINER = "rounded-xl border border-border";
 const TAB_TRIGGER =
   "h-11 flex-none rounded-full border-0 px-5 text-[15px] text-muted-foreground hover:bg-eco-green/10 hover:text-eco-deep-green after:hidden data-active:bg-eco-deep-green data-active:text-white data-active:hover:bg-eco-deep-green data-active:hover:text-white group-data-[variant=default]/tabs-list:data-active:shadow-none";
 
-const ROEMISCH = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
-
 const PFEIL =
   "size-11 rounded-full text-muted-foreground hover:bg-eco-green/10 hover:text-eco-deep-green [&_svg]:size-5";
 
@@ -86,15 +84,12 @@ export function ScheduleTabs({
   const router = useRouter();
   const [tab, setTab] = useState("tag");
   const todayStr = new Date().toISOString().slice(0, 10);
-  // Meta-Zeile je Phase: Module nummeriert wie auf der Programm-Seite (/content).
+  // Meta-Zeile nur für Kurs-/Praxis-Phasen (Programme ohne Module); Module
+  // tragen ihre Einordnung ("Woche x – …") im Namen.
   const phasenLabel = new Map(
     programm.phasen.map((phase) => [
       phase.id,
-      phase.typ === "module"
-        ? `Modul ${ROEMISCH[programm.phasen.filter((p) => p.typ === "module").indexOf(phase)] ?? ""}`.trim()
-        : phase.typ === "kurs"
-          ? "Kurs"
-          : "Praxisaufgabe",
+      phase.typ === "module" ? null : phase.typ === "kurs" ? "Kurs" : "Praxisaufgabe",
     ])
   );
 
@@ -163,7 +158,11 @@ export function ScheduleTabs({
           );
 
           return klickbar ? (
-            <Link key={eintrag.scheduleEntryId} href={`/content/${eintrag.lessonId}`} className={KLICKBARE_KARTE}>
+            <Link
+              key={eintrag.scheduleEntryId}
+              href={`/content/${eintrag.lessonId}?von=stundenplan&datum=${selectedDate}`}
+              className={KLICKBARE_KARTE}
+            >
               <EintragInhalt icon={icon} titel={eintrag.titel} meta={meta} rechts={rechts} mitPfeil />
             </Link>
           ) : (
@@ -247,7 +246,9 @@ export function ScheduleTabs({
               {/* Gleicher Aufbau wie der Modulkopf auf der Programm-Seite (/content). */}
               <Link href={`/content#${phase.contentAnchor}`} className={cn(KLICKBARE_KARTE, "flex min-h-14 items-center gap-3 px-4 py-3")}>
                 <span className="flex min-w-0 flex-1 flex-col">
-                  <span className="text-[13px] text-muted-foreground">{phasenLabel.get(phase.id)}</span>
+                  {phasenLabel.get(phase.id) && (
+                    <span className="text-[13px] text-muted-foreground">{phasenLabel.get(phase.id)}</span>
+                  )}
                   <span className="text-[15px] font-semibold text-eco-deep-green">{phase.name}</span>
                 </span>
                 {phase.typ === "module" && phase.hatTheorie && (

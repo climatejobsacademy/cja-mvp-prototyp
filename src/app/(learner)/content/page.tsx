@@ -21,8 +21,6 @@ const TYP: Record<ContentType, { icon: typeof BookOpen; label: string | null }> 
 const HOVER =
   "outline-none transition-[background-color] duration-150 hover:bg-eco-green/10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-eco-green motion-reduce:transition-none";
 
-const ROEMISCH = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
-
 /** Einheit (= Kurs) als aufklappbare Zeile mit Segmenten, darin die Lektionen. */
 function Einheit({ course }: { course: CourseListItem }) {
   const done = course.lessons.filter((l) => l.status === "abgeschlossen").length;
@@ -71,12 +69,12 @@ function Einheit({ course }: { course: CourseListItem }) {
   );
 }
 
-/** Praxisaufgaben je Modul (SR-59): informativ, nicht klickbar. */
+/** Praxisaufgaben je Modul (SR-59): informativ, nicht klickbar. Der Vorbereitungstext
+ * gehört in den Praxis-Flow, nicht hierher (Entscheidung 2026-09-29). */
 function Praxisaufgaben({ group }: { group: ModuleGroup }) {
   if (group.praxisTypen.length === 0) return null;
   return (
     <>
-      <p className="border-t border-border px-4 py-2.5 text-xs text-muted-foreground">Praxisaufgaben</p>
       {group.praxisTypen.map((p) => (
         <div
           key={p.id}
@@ -87,9 +85,6 @@ function Praxisaufgaben({ group }: { group: ModuleGroup }) {
           <div className="flex min-w-0 flex-col gap-1">
             <p className="text-sm font-medium text-eco-deep-green">{p.titel}</p>
             {p.beschreibung && <p className="text-[13px] text-muted-foreground">{p.beschreibung}</p>}
-            {p.vorbereitungText && (
-              <p className="text-[13px] whitespace-pre-line text-muted-foreground">{p.vorbereitungText}</p>
-            )}
           </div>
         </div>
       ))}
@@ -101,10 +96,6 @@ export default async function ContentLibraryPage() {
   const learner = await requireCurrentLearner();
   const groups = await getContentLibrary(learner.programmeId, learner.personId);
   const sichtbar = groups.filter((g) => g.courses.length > 0 || g.praxisTypen.length > 0);
-  // Modulnummer = Position unter den Modulen (Reihenfolge aus getContentLibrary).
-  const modulNummer = new Map(
-    sichtbar.filter((g) => g.name).map((g, i) => [g.id, ROEMISCH[i] ?? String(i + 1)])
-  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -154,7 +145,6 @@ export default async function ContentLibraryPage() {
           >
             <summary className={cn("flex min-h-14 cursor-pointer list-none items-center gap-3 px-4 py-3", HOVER)}>
               <div className="flex min-w-0 flex-1 flex-col">
-                <p className="text-[13px] text-muted-foreground">Modul {modulNummer.get(group.id)}</p>
                 <h2 className="text-[15px] font-semibold text-eco-deep-green">{group.name}</h2>
               </div>
               {/* Theorie-/Praxis-Icons wie im Stundenplan-Programm (SR-59). */}
