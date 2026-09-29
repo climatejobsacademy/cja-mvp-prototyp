@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { BookOpen, Calendar, ChevronRight, FileText, Target, Video, Wrench } from "lucide-react";
+import { BookOpen, Calendar, ChevronRight, FileText, Video, Wrench } from "lucide-react";
 
+import { CurriculumCard } from "@/components/curriculum-card";
 import { LinkRow } from "@/components/link-row";
 import { PageHeader } from "@/components/page-header";
-import { SegmentProgress } from "@/components/segment-progress";
 import { cn } from "@/lib/utils";
 import { getCurriculumFortschritt } from "@/lib/queries/competencies";
 import { getNaechsterTermin, getTagesAgenda } from "@/lib/queries/schedule";
@@ -151,36 +151,7 @@ export default async function HomePage() {
           </div>
         </section>
 
-        <section aria-labelledby="curriculum" className={KARTE}>
-          <div className="flex flex-col gap-3 p-4">
-            <div className="flex items-center gap-2">
-              <Target className="size-[18px] shrink-0 text-eco-deep-green" aria-hidden="true" />
-              <h2 id="curriculum" className="text-[15px] font-semibold text-eco-deep-green">
-                Curriculum-Fortschritt
-              </h2>
-            </div>
-            <p className="text-eco-deep-green">
-              <span className="text-[40px] font-bold tracking-tight">{curriculum.prozent}</span>
-              <span className="text-xl text-muted-foreground"> %</span>
-            </p>
-            <SegmentProgress
-              size="curriculum"
-              value={curriculum.abgeschlosseneLektionen}
-              max={curriculum.gesamtLektionen}
-              label={`${curriculum.abgeschlosseneLektionen} von ${curriculum.gesamtLektionen} Lektionen`}
-            />
-            {/* K2 (2026-09-29): Zähltext bleibt sichtbar. */}
-            {curriculum.gesamtLektionen > 0 && (
-              <p className="text-[13px] text-muted-foreground" aria-hidden="true">
-                {curriculum.abgeschlosseneLektionen}/{curriculum.gesamtLektionen} Lektionen
-              </p>
-            )}
-          </div>
-
-          <div className="mt-auto">
-            <LinkRow href="/kompetenzen">Zu den Kompetenzen</LinkRow>
-          </div>
-        </section>
+        <CurriculumCard fortschritt={curriculum} link={{ href: "/kompetenzen", label: "Zu den Kompetenzen" }} />
       </div>
     </div>
   );
