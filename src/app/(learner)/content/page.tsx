@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, ChevronDown, ChevronRight, FileText, Video, Wrench } from "lucide-react";
+import { ArrowRight, BookOpen, ChevronDown, ChevronRight } from "lucide-react";
 
 import { PageHeader } from "@/components/page-header";
 import { SegmentProgress } from "@/components/segment-progress";
 import { UnitProgressBadge } from "@/components/status-badge";
+import { TypIcon, typFuerContentType } from "@/components/typ-icon";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { requireCurrentLearner } from "@/lib/queries/session";
@@ -12,16 +13,14 @@ import type { ContentType } from "@/lib/database.types";
 
 // Lektionstypen laut Handoff-Wording. "repository" ist dort nicht vorgesehen
 // -- für diese Lektionen steht statt des Typs der Lektionsname.
-const TYP: Record<ContentType, { icon: typeof BookOpen; label: string | null }> = {
-  live: { icon: Video, label: "Live-Termin" },
-  scorm: { icon: BookOpen, label: "Selbstlernmodul" },
-  repository: { icon: FileText, label: null },
+const TYP: Record<ContentType, { label: string | null }> = {
+  live: { label: "Live-Termin" },
+  scorm: { label: "Selbstlernmodul" },
+  repository: { label: null },
 };
 
 const HOVER =
   "outline-none transition-[background-color] duration-150 hover:bg-eco-green/10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-eco-green motion-reduce:transition-none";
-
-const ROEMISCH = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
 
 /** Einheit (= Kurs) als aufklappbare Zeile mit Segmenten, darin die Lektionen. */
 function Einheit({ course }: { course: CourseListItem }) {
@@ -48,7 +47,7 @@ function Einheit({ course }: { course: CourseListItem }) {
       </summary>
       <ul>
         {course.lessons.map((lesson) => {
-          const { icon: Icon, label } = TYP[lesson.contentType];
+          const { label } = TYP[lesson.contentType];
           return (
             <li key={lesson.id}>
               <Link
@@ -58,7 +57,7 @@ function Einheit({ course }: { course: CourseListItem }) {
                   HOVER
                 )}
               >
-                <Icon className="size-[18px] shrink-0 text-muted-foreground" aria-hidden="true" />
+                <TypIcon typ={typFuerContentType(lesson.contentType)} />
                 <span className="min-w-0 grow basis-32 text-sm text-eco-deep-green">{label ?? lesson.name}</span>
                 <UnitProgressBadge status={lesson.status} />
                 <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
@@ -71,28 +70,40 @@ function Einheit({ course }: { course: CourseListItem }) {
   );
 }
 
-/** Praxisaufgaben je Modul (SR-59): informativ, nicht klickbar. */
+/** Praxisaufgaben je Modul (SR-59): informativ, nicht klickbar. Der Vorbereitungstext
+ * gehört in den Praxis-Flow, nicht hierher (Entscheidung 2026-09-29). */
 function Praxisaufgaben({ group }: { group: ModuleGroup }) {
   if (group.praxisTypen.length === 0) return null;
   return (
     <>
-      <p className="border-t border-border px-4 py-2.5 text-xs text-muted-foreground">Praxisaufgaben</p>
-      {group.praxisTypen.map((p) => (
-        <div
-          key={p.id}
-          id={`praxis-${p.id}`}
-          className="flex min-h-14 items-start gap-3 border-t border-border px-4 py-3"
-        >
-          <Wrench className="mt-0.5 size-[18px] shrink-0 text-muted-foreground" aria-hidden="true" />
-          <div className="flex min-w-0 flex-col gap-1">
-            <p className="text-sm font-medium text-eco-deep-green">{p.titel}</p>
-            {p.beschreibung && <p className="text-[13px] text-muted-foreground">{p.beschreibung}</p>}
-            {p.vorbereitungText && (
-              <p className="text-[13px] whitespace-pre-line text-muted-foreground">{p.vorbereitungText}</p>
-            )}
+      {group.praxisTypen.map((p) => {
+        const inhalt = (
+          <>
+            <TypIcon typ="praxis" />
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
+              <p className="text-sm font-medium text-eco-deep-green">{p.titel}</p>
+              {p.beschreibung && <p className="text-[13px] text-muted-foreground">{p.beschreibung}</p>}
+            </div>
+          </>
+        );
+        // Mit eigenem Praxistag direkt in den Praxis-Flow, sonst Info-Zeile
+        // ohne Hover und Pfeil ("Ohne Zielseite kein Hover und kein Pfeil").
+        return p.fieldJobId ? (
+          <Link
+            key={p.id}
+            id={`praxis-${p.id}`}
+            href={`/praxistag/${p.fieldJobId}?von=programm`}
+            className={cn("flex min-h-14 items-center gap-3 border-t border-border px-4 py-3", HOVER)}
+          >
+            {inhalt}
+            <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+          </Link>
+        ) : (
+          <div key={p.id} id={`praxis-${p.id}`} className="flex min-h-14 items-start gap-3 border-t border-border px-4 py-3">
+            {inhalt}
           </div>
-        </div>
-      ))}
+        );
+      })}
     </>
   );
 }
@@ -101,10 +112,6 @@ export default async function ContentLibraryPage() {
   const learner = await requireCurrentLearner();
   const groups = await getContentLibrary(learner.programmeId, learner.personId);
   const sichtbar = groups.filter((g) => g.courses.length > 0 || g.praxisTypen.length > 0);
-  // Modulnummer = Position unter den Modulen (Reihenfolge aus getContentLibrary).
-  const modulNummer = new Map(
-    sichtbar.filter((g) => g.name).map((g, i) => [g.id, ROEMISCH[i] ?? String(i + 1)])
-  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -112,7 +119,7 @@ export default async function ContentLibraryPage() {
 
       {sichtbar.length === 0 && (
         <div className="flex flex-col items-center gap-4 rounded-xl border-2 border-dashed border-border px-5 py-10 text-center md:py-16">
-          <span className="flex size-14 items-center justify-center rounded-full bg-eco-green/10">
+          <span className="flex size-14 items-center justify-center rounded-xl bg-eco-green/10">
             <BookOpen className="size-6 text-eco-green" aria-hidden="true" />
           </span>
           <h2 className="text-xl font-semibold text-eco-deep-green">Noch keine Programminhalte freigeschaltet</h2>
@@ -154,15 +161,14 @@ export default async function ContentLibraryPage() {
           >
             <summary className={cn("flex min-h-14 cursor-pointer list-none items-center gap-3 px-4 py-3", HOVER)}>
               <div className="flex min-w-0 flex-1 flex-col">
-                <p className="text-[13px] text-muted-foreground">Modul {modulNummer.get(group.id)}</p>
                 <h2 className="text-[15px] font-semibold text-eco-deep-green">{group.name}</h2>
               </div>
               {/* Theorie-/Praxis-Icons wie im Stundenplan-Programm (SR-59). */}
               {group.courses.length > 0 && (
-                <BookOpen className="size-[18px] shrink-0 text-muted-foreground" aria-label="Theorie" />
+                <TypIcon typ="theorie" groesse="klein" label="Theorie" />
               )}
               {group.praxisTypen.length > 0 && (
-                <Wrench className="size-[18px] shrink-0 text-muted-foreground" aria-label="Praxis" />
+                <TypIcon typ="praxis" groesse="klein" label="Praxis" />
               )}
               <ChevronDown
                 className="size-5 shrink-0 text-muted-foreground transition-transform group-open/module:rotate-180 motion-reduce:transition-none"

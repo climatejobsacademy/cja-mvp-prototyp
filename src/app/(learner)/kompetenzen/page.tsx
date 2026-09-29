@@ -1,9 +1,10 @@
-import { BookOpen, ChevronDown, Wrench } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 import { CurriculumCard } from "@/components/curriculum-card";
 import { PageHeader } from "@/components/page-header";
 import { SegmentProgress } from "@/components/segment-progress";
 import { StepStatusBadge } from "@/components/status-badge";
+import { TypIcon } from "@/components/typ-icon";
 import { requireCurrentLearner } from "@/lib/queries/session";
 import { getCurriculumFortschritt, getKompetenzFortschritt } from "@/lib/queries/competencies";
 
@@ -54,17 +55,18 @@ export default async function KompetenzenPage() {
 
             {/* Aufgeklappt: Info-Zeilen, nicht klickbar (kein Hover, kein Pfeil). */}
             {k.steps.map((step) => {
-              const Icon = step.typ === "praktisch" ? Wrench : BookOpen;
               const typLabel = step.typ === "praktisch" ? "Praxis" : "Theorie";
               return (
                 <div
                   key={step.id}
                   className="flex min-h-14 flex-wrap items-center gap-x-3 gap-y-2 border-t border-border px-4 py-2.5"
                 >
-                  <Icon className="size-[18px] shrink-0 text-muted-foreground" aria-hidden="true" />
+                  <TypIcon typ={step.typ === "praktisch" ? "praxis" : "theorie"} />
                   <div className="min-w-0 grow basis-40">
                     <p className="text-sm font-medium text-eco-deep-green">
-                      {step.name} · {typLabel}
+                      {step.name}
+                      {/* Typ steht sichtbar nur als Icon, für Screenreader als Text. */}
+                      <span className="sr-only"> · {typLabel}</span>
                     </p>
                     {/* SR-69: Zusatzinfo nur bei offen / in Prüfung. */}
                     {step.fortschritt && (step.status === "offen" || step.status === "in Prüfung") && (

@@ -41,7 +41,7 @@ export function CurriculumCard({
         </div>
         {!kompakt && (
           <p className="text-eco-deep-green">
-            <span className="text-[40px] font-bold tracking-tight">{prozent}</span>
+            <span className="text-[40px] font-bold tracking-tight text-eco-green">{prozent}</span>
             <span className="text-xl text-muted-foreground"> %</span>
           </p>
         )}
