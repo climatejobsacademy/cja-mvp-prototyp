@@ -69,7 +69,8 @@ function Einheit({ course }: { course: CourseListItem }) {
   );
 }
 
-/** Praxisaufgaben je Modul (SR-59): informativ, nicht klickbar. */
+/** Praxisaufgaben je Modul (SR-59): informativ, nicht klickbar. Der Vorbereitungstext
+ * gehört in den Praxis-Flow, nicht hierher (Entscheidung 2026-09-29). */
 function Praxisaufgaben({ group }: { group: ModuleGroup }) {
   if (group.praxisTypen.length === 0) return null;
   return (
@@ -85,9 +86,6 @@ function Praxisaufgaben({ group }: { group: ModuleGroup }) {
           <div className="flex min-w-0 flex-col gap-1">
             <p className="text-sm font-medium text-eco-deep-green">{p.titel}</p>
             {p.beschreibung && <p className="text-[13px] text-muted-foreground">{p.beschreibung}</p>}
-            {p.vorbereitungText && (
-              <p className="text-[13px] whitespace-pre-line text-muted-foreground">{p.vorbereitungText}</p>
-            )}
           </div>
         </div>
       ))}
