@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/page-header";
 import { requireCurrentLearner } from "@/lib/queries/session";
 import { getProgrammUebersicht, getTagesAgenda, getWochenUebersicht } from "@/lib/queries/schedule";
 
@@ -36,12 +37,7 @@ export default async function SchedulePage({
 
   return (
     <div className="flex flex-col gap-4">
-      <div>
-        <h1 className="font-heading text-xl text-eco-deep-green">Mein Stundenplan</h1>
-        <p className="text-sm text-muted-foreground">
-          Hallo {learner.name.split(" ")[0]} · {learner.programmeName}
-        </p>
-      </div>
+      <PageHeader title="Stundenplan" />
       <ScheduleTabs selectedDate={selectedDate} tag={tag} woche={woche} programm={programm} />
     </div>
   );

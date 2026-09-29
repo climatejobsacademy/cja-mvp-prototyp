@@ -4,6 +4,7 @@ import { BookOpen, ChevronDown, FileText, Video, Wrench } from "lucide-react";
 import { UnitProgressBadge } from "@/components/status-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { PageHeader } from "@/components/page-header";
 import { requireCurrentLearner } from "@/lib/queries/session";
 import { getContentLibrary } from "@/lib/queries/content";
 import type { ContentType } from "@/lib/database.types";
@@ -20,10 +21,7 @@ export default async function ContentLibraryPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-heading text-xl text-eco-deep-green">Lernmaterialien</h1>
-        <p className="text-sm text-muted-foreground">{learner.programmeName}</p>
-      </div>
+      <PageHeader title="Lernmaterialien" />
 
       {groups.length === 0 && (
         <p className="text-sm text-muted-foreground">Noch keine Kurse hinterlegt.</p>

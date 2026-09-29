@@ -2,6 +2,7 @@ import { ChevronDown } from "lucide-react";
 
 import { Progress, ProgressLabel, ProgressValue } from "@/components/ui/progress";
 import { StepStatusBadge, StepTypBadge } from "@/components/status-badge";
+import { PageHeader } from "@/components/page-header";
 import { requireCurrentLearner } from "@/lib/queries/session";
 import { getCurriculumFortschritt, getKompetenzFortschritt } from "@/lib/queries/competencies";
 
@@ -14,10 +15,7 @@ export default async function KompetenzenPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-heading text-xl text-eco-deep-green">Kompetenzen</h1>
-        <p className="text-sm text-muted-foreground">{learner.programmeName}</p>
-      </div>
+      <PageHeader title="Kompetenzen" />
 
       <section aria-labelledby="curriculum-fortschritt" className="flex flex-col gap-2">
         <h2 id="curriculum-fortschritt" className="text-sm font-medium text-eco-deep-green">
