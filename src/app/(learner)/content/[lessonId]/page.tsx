@@ -15,6 +15,8 @@ import { ScormPlayer } from "./scorm-player";
 // und supabase/migrations/0004_qualification_structure.sql.
 type RepositoryInhalt = { items?: { url?: string; file_asset_id?: string }[] };
 
+const TYP_LABEL: Record<string, string> = { live: "Live-Termin", scorm: "Selbstlernmodul" };
+
 /**
  * Zurück-Link je nach Herkunft: aus dem Stundenplan zurück zum selben Tag,
  * von Home zurück nach Home, sonst (Reiter Programm, Direktaufruf) zum Programm.
@@ -54,9 +56,15 @@ export default async function LessonPage({
         <ArrowLeft className="size-4" /> {zurueck.label}
       </Link>
 
-      <div className="flex items-center gap-3">
-        <h1 className="font-heading text-xl text-eco-deep-green">{lesson.name}</h1>
-        <UnitProgressBadge status={lesson.status} />
+      <div className="flex flex-col gap-1">
+        {/* Typ als Meta-Zeile -- die Lektionsnamen tragen ihn seit 2026-09-29 nicht mehr. */}
+        {TYP_LABEL[lesson.contentType] && (
+          <p className="text-[13px] text-muted-foreground">{TYP_LABEL[lesson.contentType]}</p>
+        )}
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="font-heading text-xl text-eco-deep-green">{lesson.name}</h1>
+          <UnitProgressBadge status={lesson.status} />
+        </div>
       </div>
 
       {lesson.contentType === "scorm" && (
