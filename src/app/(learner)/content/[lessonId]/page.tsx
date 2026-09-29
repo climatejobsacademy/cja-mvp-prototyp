@@ -34,7 +34,7 @@ export default async function LessonPage({
         href="/content"
         className="flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-eco-deep-green"
       >
-        <ArrowLeft className="size-4" /> Zurück zu den Lernmaterialien
+        <ArrowLeft className="size-4" /> Zurück zum Programm
       </Link>
 
       <div className="flex items-center gap-3">
