@@ -15,12 +15,29 @@ import { ScormPlayer } from "./scorm-player";
 // und supabase/migrations/0004_qualification_structure.sql.
 type RepositoryInhalt = { items?: { url?: string; file_asset_id?: string }[] };
 
+/**
+ * Zurück-Link je nach Herkunft: aus dem Stundenplan zurück zum selben Tag,
+ * von Home zurück nach Home, sonst (Reiter Programm, Direktaufruf) zum Programm.
+ */
+function zurueckZiel(von?: string, datum?: string): { href: string; label: string } {
+  if (von === "stundenplan") {
+    const tag = datum && /^\d{4}-\d{2}-\d{2}$/.test(datum) ? `?datum=${datum}` : "";
+    return { href: `/schedule${tag}`, label: "Zurück zum Stundenplan" };
+  }
+  if (von === "home") return { href: "/home", label: "Zurück zu Home" };
+  return { href: "/content", label: "Zurück zum Programm" };
+}
+
 export default async function LessonPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ lessonId: string }>;
+  searchParams: Promise<{ von?: string; datum?: string }>;
 }) {
   const { lessonId } = await params;
+  const { von, datum } = await searchParams;
+  const zurueck = zurueckZiel(von, datum);
   const learner = await requireCurrentLearner();
   const lesson = await getLessonDetail(lessonId, learner.personId);
 
@@ -31,10 +48,10 @@ export default async function LessonPage({
   return (
     <div className="flex flex-col gap-4">
       <Link
-        href="/content"
+        href={zurueck.href}
         className="flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-eco-deep-green"
       >
-        <ArrowLeft className="size-4" /> Zurück zum Programm
+        <ArrowLeft className="size-4" /> {zurueck.label}
       </Link>
 
       <div className="flex items-center gap-3">
