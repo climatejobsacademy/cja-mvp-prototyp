@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#e7e7e2;font-family:'Work Sans',ui-sans-serif,system-ui,sans-serif;-webkit-font-smoothing:antialiased}a{color:#239669}a:hover{color:#23321E}code{font-size:12px;color:#239669}</style>
+</helmet>
+<section id="turn-2" style="padding:64px;display:flex;flex-direction:column;gap:48px">
+  <div style="display:flex;flex-direction:column;gap:8px;max-width:960px">
+    <div style="font-size:13px;font-weight:600;color:#239669;letter-spacing:0.04em;text-transform:uppercase">Prototyp-Richtung 2a · Minimal · Desktop + Mobile</div>
+    <h1 style="margin:0;font-family:Anton,Impact,sans-serif;font-weight:400;font-size:44px;color:#23321E">Home, Stundenplan, Kompetenzen, Lernmaterialien, Leerer Zustand</h1>
+    <p style="margin:0;font-size:16px;line-height:1.55;color:#52525b;text-wrap:pretty">Nutzt nur Markenfarben, Tailwind-Opacity-Modifier und shadcn-Bausteine (Card, Badge, Button, Tabs, Collapsible). Icons: lucide. Breakpoint: unter <code>md</code> wird die Top-Nav zur Bottom-Nav (<code>fixed inset-x-0 bottom-0 md:hidden</code>). Alle Touch-Ziele ≥ 44 px (<code>h-11</code> / <code>min-h-11</code>). Neu: Tab „Home“ als Mischung der drei Bereiche.</p>
+  </div>
+  <div id="regeln" style="display:flex;flex-direction:column;gap:20px;padding:32px;background:#fff;border-radius:16px;max-width:1800px;box-sizing:border-box;color:#23321E">
+    <div style="font-size:13px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase">Konsistenz-Regeln · gelten auf allen Screens</div>
+    <h2 style="margin:0;font-family:Anton,Impact,sans-serif;font-weight:400;font-size:32px">Ein Hover, ein Rand, ein Grau, eine Sprache</h2>
+    <div style="display:grid;grid-template-columns:220px minmax(0,1.3fr) minmax(0,1fr) minmax(0,1fr);column-gap:20px;font-size:14px;border-top:1px solid #e4e4e7">
+        <div style="padding:10px 0;border-bottom:1px solid #e4e4e7;font-weight:600">Klickbare Karte</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;color:#3f3f46">border · rounded-xl · shadow-sm · Chevron rechts</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7"><code>hover:bg-eco-green/10 hover:shadow-md</code></div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;color:#71717a">Stundenplan-Karten</div>
+        <div style="padding:10px 0;border-bottom:1px solid #e4e4e7;font-weight:600">Klickbare Zeile in Karte</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;color:#3f3f46">border-t · min-h-14 · Chevron rechts</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7"><code>hover:bg-eco-green/10</code></div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;color:#71717a">Heute-Zeilen, Lektionen, Einheiten</div>
+        <div style="padding:10px 0;border-bottom:1px solid #e4e4e7;font-weight:600">Aufklapp-Kopf</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;color:#3f3f46">Chevron rechts, oben/unten</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7"><code>hover:bg-eco-green/10</code></div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;color:#71717a">Kompetenz-Karten, Modul I, Einheiten</div>
+        <div style="padding:10px 0;border-bottom:1px solid #e4e4e7;font-weight:600">Container (nicht klickbar)</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;color:#3f3f46">border · rounded-xl · kein Schatten</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7"><code>—</code></div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;color:#71717a">Heute, Curriculum-Fortschritt, Modul II (gesperrt), Kompetenzschritte — ohne Ziel kein Hover, kein Pfeil</div>
+        <div style="padding:10px 0;border-bottom:1px solid #e4e4e7;font-weight:600">Ghost-Button / Nav / Tab inaktiv</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;color:#3f3f46">text-muted-foreground</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7"><code>hover:bg-eco-green/10 hover:text-eco-deep-green</code></div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;color:#71717a">Pfeile, Nav, Woche/Programm, Avatar</div>
+        <div style="padding:10px 0;border-bottom:1px solid #e4e4e7;font-weight:600">Aktiv</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;color:#3f3f46">Nav: bg-eco-green/10 font-semibold, Icon eco-green · Tab: bg-eco-deep-green text-white</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7"><code>—</code></div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;color:#71717a"></div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:12px 32px;font-size:13px;line-height:1.6;color:#3f3f46">
+      <span><b style="color:#23321E">Rand</b> nur <code>border</code> (#e4e4e7), auch für Trennlinien</span>
+      <span><b style="color:#23321E">Grau</b> nur <code>text-muted-foreground</code> (#71717a)</span>
+      <span><b style="color:#23321E">Radius</b> Karten <code>rounded-xl</code> · Buttons <code>rounded-lg</code> · Badges/Tabs <code>rounded-full</code></span>
+      <span><b style="color:#23321E">Icon-Kachel</b> <code>size-10 rounded-[10px] bg-muted</code></span>
+      <span><b style="color:#23321E">Typo</b> H1 Anton 40/32 · Sektion <code>text-base font-semibold</code> · Kartentitel <code>text-[15px] font-semibold</code> · Zeilentitel <code>text-sm font-medium</code> · Meta <code>text-[13px] text-muted-foreground</code> · Label über Titel <code>text-xs</code> · Buttons <code>h-11 text-[15px] font-medium</code> · Links <code>text-sm font-medium</code> · kein Uppercase</span>
+      <span><b style="color:#23321E">Abstände</b> Karten <code>p-4</code> · Zeilen <code>min-h-14 px-4</code> · Icons: Kopf/Zeile 18 px, Kachel 20 px, Badge 14 px</span>
+      <span><b style="color:#23321E">Datum</b> Überschriften „Di, 29. September“ · im Fließtext „Mi, 30.09.“ · Zeiten „13:00–17:00“</span>
+      <span><b style="color:#23321E">Zahlen</b> Segmente ohne Zähl-Text daneben — Wert per <code>sr-only</code> („1 von 2 Lektionen“) für Screenreader. Sichtbare Zahl nur beim Curriculum-Prozent.</span>
+      <span><b style="color:#23321E">Übergang</b> <code>transition-[background-color,box-shadow] duration-150</code></span>
+    </div>
+    <div style="display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);column-gap:20px;font-size:14px;border-top:1px solid #e4e4e7">
+        <div style="padding:10px 0;border-bottom:1px solid #e4e4e7;font-weight:600">abgeschlossen</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;color:#3f3f46">statt „erledigt“ — Badge, Zähler, Kennzahlen</div>
+        <div style="padding:10px 0;border-bottom:1px solid #e4e4e7;font-weight:600">Offen · Abgeschlossen · Ausstehend · ab TT.MM.</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;color:#3f3f46">die einzigen drei Status, immer Badge mit Icon</div>
+        <div style="padding:10px 0;border-bottom:1px solid #e4e4e7;font-weight:600">Lektionen · Kompetenzschritte · Praxisaufgaben</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;color:#3f3f46">Zähl-Einheiten, wo Zahlen sichtbar bleiben (Modulkopf „1/8 Lektionen“); sonst Segmente ohne Text</div>
+        <div style="padding:10px 0;border-bottom:1px solid #e4e4e7;font-weight:600">Live-Termin · Selbstlernmodul</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;color:#3f3f46">Lektionstypen, gleiche Icons (Video, BookOpen)</div>
+        <div style="padding:10px 0;border-bottom:1px solid #e4e4e7;font-weight:600">Zum Stundenplan · Zu den Kompetenzen</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;color:#3f3f46">Link-Muster „Zum/Zur …“ + Pfeil</div>
+        <div style="padding:10px 0;border-bottom:1px solid #e4e4e7;font-weight:600">Seitentitel = Nav-Label</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;color:#3f3f46">„Stundenplan“ statt „Mein Stundenplan“; Home: „Hallo Vera“; Sektionen wiederholen den Seitentitel nicht („Alle Kompetenzen“)</div>
+    </div>
+  </div>
+  <div id="a11y" style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start;padding:32px;background:#fff;border-radius:16px;max-width:1800px;box-sizing:border-box">
+    <div style="flex:1 1 520px;min-width:0;display:flex;flex-direction:column;gap:16px;color:#23321E">
+      <div style="font-size:13px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase">Barrierefreiheit · WCAG 2.2 AA · Prototyp-Richtung 2a</div>
+      <h2 style="margin:0;font-family:Anton,Impact,sans-serif;font-weight:400;font-size:32px">Eco Green für Flächen, Deep Green für Text</h2>
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) 96px 32px;column-gap:12px;font-size:14px;border-top:1px solid #e4e4e7">
+        <div style="padding:10px 0;border-bottom:1px solid #e4e4e7;display:flex;align-items:center;gap:10px"><span style="width:32px;height:22px;flex-shrink:0;border-radius:4px;border:1px solid #e4e4e7;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:#239669;color:#fff">Aa</span>Weiß auf Eco Green (alte Buttons)</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;display:flex;align-items:center;font-variant-numeric:tabular-nums">3,7:1</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;display:flex;align-items:center;font-weight:700;color:#c2410c">✕</div>
+        <div style="padding:10px 0;border-bottom:1px solid #e4e4e7;display:flex;align-items:center;gap:10px"><span style="width:32px;height:22px;flex-shrink:0;border-radius:4px;border:1px solid #e4e4e7;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:#fff;color:#239669">Aa</span>Eco Green als Text auf Weiß</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;display:flex;align-items:center;font-variant-numeric:tabular-nums">3,7:1</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;display:flex;align-items:center;font-weight:700;color:#c2410c">✕</div>
+        <div style="padding:10px 0;border-bottom:1px solid #e4e4e7;display:flex;align-items:center;gap:10px"><span style="width:32px;height:22px;flex-shrink:0;border-radius:4px;border:1px solid #e4e4e7;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:#fff;color:#71717a">Aa</span>#a1a1aa (Icons) → jetzt #71717a</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;display:flex;align-items:center;font-variant-numeric:tabular-nums">2,6 → 4,8</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;display:flex;align-items:center;font-weight:700;color:#23321E">✓</div>
+        <div style="padding:10px 0;border-bottom:1px solid #e4e4e7;display:flex;align-items:center;gap:10px"><span style="width:32px;height:22px;flex-shrink:0;border-radius:4px;border:1px solid #e4e4e7;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:#e9f4f0;color:#71717a">Aa</span>Grau auf Hover-Fläche Eco Green/10 (nur kurzzeitig)</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;display:flex;align-items:center;font-variant-numeric:tabular-nums">4,3:1</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;display:flex;align-items:center;font-weight:700;color:#23321E">✓</div>
+        <div style="padding:10px 0;border-bottom:1px solid #e4e4e7;display:flex;align-items:center;gap:10px"><span style="width:32px;height:22px;flex-shrink:0;border-radius:4px;border:1px solid #e4e4e7;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:#23321E;color:#fff">Aa</span>Weiß auf Deep Green (aktiver Tab, Buttons)</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;display:flex;align-items:center;font-variant-numeric:tabular-nums">13:1</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;display:flex;align-items:center;font-weight:700;color:#23321E">✓</div>
+        <div style="padding:10px 0;border-bottom:1px solid #e4e4e7;display:flex;align-items:center;gap:10px"><span style="width:32px;height:22px;flex-shrink:0;border-radius:4px;border:1px solid #e4e4e7;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:#23321E;color:#a2e500">Aa</span>Charge Green auf Deep Green</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;display:flex;align-items:center;font-variant-numeric:tabular-nums">9,6:1</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;display:flex;align-items:center;font-weight:700;color:#23321E">✓</div>
+        <div style="padding:10px 0;border-bottom:1px solid #e4e4e7;display:flex;align-items:center;gap:10px"><span style="width:32px;height:22px;flex-shrink:0;border-radius:4px;border:1px solid #e4e4e7;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;background:#fff;color:#23321E">Aa</span>Deep Green als Text (Links, Labels)</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;display:flex;align-items:center;font-variant-numeric:tabular-nums">13:1</div><div style="padding:10px 0;border-bottom:1px solid #e4e4e7;display:flex;align-items:center;font-weight:700;color:#23321E">✓</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:13px;line-height:1.6;color:#3f3f46">
+        <div><b style="color:#23321E">Buttons</b> <code>bg-eco-deep-green text-white hover:bg-eco-deep-green/90</code> · <b style="color:#23321E">Fokus</b> <code>focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-eco-green focus-visible:ring-offset-2</code> (Ring ist Grafik, 3:1 reicht)</div>
+        <div><b style="color:#23321E">Semantik</b> <code>&lt;nav aria-label="Hauptnavigation"&gt;</code> + <code>aria-current="page"</code> · Aufklapp-Karten über shadcn Collapsible (<code>aria-expanded</code>) · Segmentbalken <code>role="progressbar" aria-valuenow={1} aria-valuemax={20}</code>, Segmente <code>aria-hidden</code> · eine <code>h1</code> je Seite, Sektionen <code>h2</code></div>
+        <div><b style="color:#23321E">Bedienung</b> Touch-Ziele ≥ 44 px · Status immer Icon + Text · <code>motion-reduce:transition-none</code> · 200 % Zoom / 320 px ohne horizontales Scrollen</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:24px;align-items:flex-start">
+      <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;font-weight:600;color:#52525b">Fokus-Beispiel</span><dc-import name="AppScreen" page="home" mobile="{{ true }}" focus="{{ true }}" hint-size="390px,844px"></dc-import></div>
+      
+    </div>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:96px;align-items:flex-start">
+
+    <div id="2a" style="display:flex;flex-direction:column;gap:40px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <span style="background:#23321E;color:#fff;font-size:13px;font-weight:700;padding:4px 10px;border-radius:6px">2a</span>
+        <span style="font-size:22px;font-weight:600;color:#23321E">Minimal — weiß, Eco Green nur als Akzent</span>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="font-size:14px;font-weight:600;color:#52525b">Login — Foto-Varianten</div>
+        <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+          <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;font-weight:600;color:#52525b">Werkstatt</span><dc-import name="Login" photo="werkstatt" hint-size="1280px,820px"></dc-import></div>
+          <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;font-weight:600;color:#52525b">Werkstatt · Mobile</span><dc-import name="Login" photo="werkstatt" mobile="{{ true }}" hint-size="390px,844px"></dc-import></div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+          <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;font-weight:600;color:#52525b">Detail</span><dc-import name="Login" photo="detail" hint-size="1280px,820px"></dc-import></div>
+          <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;font-weight:600;color:#52525b">Detail · Mobile</span><dc-import name="Login" photo="detail" mobile="{{ true }}" hint-size="390px,844px"></dc-import></div>
+        </div>
+        <p style="margin:0;max-width:1710px;font-size:13px;line-height:1.6;color:#3f3f46"><b style="color:#23321E">Foto:</b> eingerückt im Off-White-Panel statt randlos (<code>p-6 · rounded-xl object-cover</code>, mobil <code>h-[220px] rounded-2xl</code>). Bild ist austauschbar über eine Prop <code>photo="illustration | werkstatt | detail"</code> — neue Fotos brauchen nur <code>src</code>, <code>alt</code> und einen Bildausschnitt (<code>object-position</code>).</p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="font-size:14px;font-weight:600;color:#52525b">Login</div>
+        <div style="display:flex;gap:40px;align-items:flex-start">
+          <dc-import name="Login" hint-size="1280px,820px"></dc-import>
+          <dc-import name="Login" mobile="{{ true }}" hint-size="390px,844px"></dc-import>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+          <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;font-weight:600;color:#52525b">Fokus</span><dc-import name="Login" mobile="{{ true }}" state="focus" hint-size="390px,844px"></dc-import></div>
+          <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;font-weight:600;color:#52525b">Fehler</span><dc-import name="Login" mobile="{{ true }}" state="error" hint-size="390px,844px"></dc-import></div>
+          <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;font-weight:600;color:#52525b">Link gesendet</span><dc-import name="Login" mobile="{{ true }}" state="sent" hint-size="390px,844px"></dc-import></div>
+        </div>
+        <p style="margin:0;max-width:1710px;font-size:13px;line-height:1.6;color:#3f3f46"><b style="color:#23321E">Login:</b> Off-White nur im Bildbereich, Formularseite weiß (<code>md:grid-cols-[46%_1fr]</code>, mobil Bild oben <code>h-[260px]</code>). Input und Button <code>h-11</code> (vorher ca. 32 / 28 px), Button <code>bg-eco-deep-green</code>. Unterzeilen zu einer Zeile zusammengefasst. Footer-Links <code>min-h-11 px-2.5 rounded-lg hover:bg-eco-green/10</code>. Fehler: <code>border-2 border-coral</code> + Icon + Text (Farbe allein reicht nicht). Gesendet: Bestätigungskarte ersetzt das Formular.</p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="font-size:14px;font-weight:600;color:#52525b">Home</div>
+        <div style="display:flex;gap:40px;align-items:flex-start">
+          <dc-import name="AppScreen" page="home" hint-size="1280px,900px"></dc-import>
+          <dc-import name="AppScreen" page="home" mobile="{{ true }}" hint-size="390px,844px"></dc-import>
+        </div>
+        <p style="margin:0;max-width:1710px;font-size:13px;line-height:1.6;color:#3f3f46"><b style="color:#23321E">Home:</b> Zwei Fragen: Was steht heute an? Wie weit bin ich? Heute-Zeilen nur Uhrzeit + Titel; Fortschritt nur Prozent + Segmente. Jeder Block verlinkt in seinen Tab. <code>grid gap-4 md:grid-cols-2</code> · Link-Zeilen am Kartenende <code>min-h-12 border-t hover:bg-eco-green/10</code> + <code>ArrowRight text-eco-green</code></p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="font-size:14px;font-weight:600;color:#52525b">Avatar-Menü geöffnet</div>
+        <div style="display:flex;gap:40px;align-items:flex-start">
+          <dc-import name="AppScreen" page="home" menu="{{ true }}" hint-size="1280px,900px"></dc-import>
+          <dc-import name="AppScreen" page="home" mobile="{{ true }}" menu="{{ true }}" hint-size="390px,844px"></dc-import>
+        </div>
+        <p style="margin:0;max-width:1710px;font-size:13px;line-height:1.6;color:#3f3f46"><b style="color:#23321E">Kopfleiste:</b> Logo · Programm (<code>text-[13px] text-muted-foreground</code>, mit Trennlinie; nur mobil <code>truncate</code>) · Reiter rechtsbündig (<code>ml-auto</code>) · Avatar. <b style="color:#23321E">Avatar-Menü:</b> shadcn <code>DropdownMenu</code> — Name + E-Mail, Programm, Kohorte, Abmelden. Offener Trigger <code>bg-eco-green/10</code> + Fokus-Ring. Programm und Kohorte sind Info-Zeilen ohne Hover, nur „Abmelden“ ist ein Menüpunkt.</p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="font-size:14px;font-weight:600;color:#52525b">Home — heute keine Kurse</div>
+        <div style="display:flex;gap:40px;align-items:flex-start">
+          <dc-import name="AppScreen" page="home" no-today="{{ true }}" hint-size="1280px,900px"></dc-import>
+          <dc-import name="AppScreen" page="home" mobile="{{ true }}" no-today="{{ true }}" hint-size="390px,844px"></dc-import>
+        </div>
+        <p style="margin:0;max-width:1710px;font-size:13px;line-height:1.6;color:#3f3f46"><b style="color:#23321E">Leer-Variante:</b> Karte „Heute“ bleibt stehen (kein Layout-Sprung), eine Zeile Text + nächster Termin, Link „Zum Stundenplan“ bleibt. Nächster Termin als eine graue Zeile.</p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="font-size:14px;font-weight:600;color:#52525b">Stundenplan</div>
+        <div style="display:flex;gap:40px;align-items:flex-start">
+          <dc-import name="AppScreen" page="stundenplan" hint-size="1280px,900px"></dc-import>
+          <dc-import name="AppScreen" page="stundenplan" mobile="{{ true }}" hint-size="390px,844px"></dc-import>
+        </div>
+        <p style="margin:0;max-width:1710px;font-size:13px;line-height:1.6;color:#3f3f46"><b style="color:#23321E">Header:</b> nur Anton-H1, Abschluss per Linie <code>border-b pb-5</code>. Programm steht dauerhaft in der Kopfleiste neben dem Logo, Kohorte im Avatar-Menü. · <b style="color:#23321E">Karten:</b> Titel + Typ/Uhrzeit + Status, kein Themen-Label; Badge bricht mobil unter den Text: <code>flex flex-wrap gap-x-4 gap-y-2</code> + Textblock <code>basis-64 grow</code></p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="font-size:14px;font-weight:600;color:#52525b">Kompetenzen</div>
+        <div style="display:flex;gap:40px;align-items:flex-start">
+          <dc-import name="AppScreen" page="kompetenzen" hint-size="1280px,900px"></dc-import>
+          <dc-import name="AppScreen" page="kompetenzen" mobile="{{ true }}" hint-size="390px,844px"></dc-import>
+        </div>
+        <p style="margin:0;max-width:1710px;font-size:13px;line-height:1.6;color:#3f3f46"><b style="color:#23321E">Fortschritt:</b> Große Zahl + 20 Segmente (1 Segment = 1 Lektion) — bei 5 % sieht man trotzdem, dass es losgegangen ist. <code>flex gap-0.5 &gt; div.h-2.flex-1.rounded-sm</code> · Kompetenz-Karten mit Segmenten je Kompetenzschritt; ganze Kopfzeile ist der Collapsible-Trigger.</p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="font-size:14px;font-weight:600;color:#52525b">Lernmaterialien</div>
+        <div style="display:flex;gap:40px;align-items:flex-start">
+          <dc-import name="AppScreen" page="material" hint-size="1280px,900px"></dc-import>
+          <dc-import name="AppScreen" page="material" mobile="{{ true }}" hint-size="390px,844px"></dc-import>
+        </div>
+        <p style="margin:0;max-width:1710px;font-size:13px;line-height:1.6;color:#3f3f46"><b style="color:#23321E">Struktur:</b> „Grundlagen der Elektrotechnik (…)“ wird Thema-Label, der Klammerinhalt wird Titel; Lektionen heißen nur „Live-Termin“ / „Selbstlernmodul“. Eine Karte je Modul statt Karte-in-Karte, Einheiten als Zeilen (<code>divide-y</code>). Katalog-Charakter: keine tagesbezogenen Hinweise (die gehören zu Home/Stundenplan); gesperrte Module bleiben sichtbar, ohne Hover.</p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="font-size:14px;font-weight:600;color:#52525b">Praxis-Flow · Ende: Reflexion</div>
+        <div style="display:flex;gap:40px;align-items:flex-start">
+          <dc-import name="AppScreen" page="reflexion" hint-size="1280px,900px"></dc-import>
+          <dc-import name="AppScreen" page="reflexion" mobile="{{ true }}" hint-size="390px,844px"></dc-import>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start">
+          <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;font-weight:600;color:#52525b">Keine Fragen hinterlegt</span><dc-import name="AppScreen" page="reflexion" rstate="leer" mobile="{{ true }}" hint-size="390px,844px"></dc-import></div>
+          <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:13px;font-weight:600;color:#52525b">Abgeschlossen</span><dc-import name="AppScreen" page="reflexion" rstate="gesendet" mobile="{{ true }}" hint-size="390px,844px"></dc-import></div>
+        </div>
+        <p style="margin:0;max-width:1710px;font-size:13px;line-height:1.6;color:#3f3f46"><b style="color:#23321E">Vorher:</b> „Zurück zum Schedule“ (Englisch), Titel mit Klammer, Eco-Green-Button, Absenden ohne Fragen. <b style="color:#23321E">Jetzt:</b> Zurück-Link „‹ Stundenplan“ (Ghost, <code>min-h-11</code>) · H1 nur Aufgabenname · Schrittbalken (letzter Schritt, <code>sr-only</code> „Schritt 3 von 3“) · Karte „Reflexion“ mit Multiple-Choice je Frage (<code>RadioGroup</code>, ganze Zeile klickbar <code>min-h-11 rounded-lg border</code>, gewählt <code>border-eco-deep-green bg-eco-green/10</code>) · Primär-Button <code>bg-eco-deep-green</code>, mobil <code>w-full</code>. Ohne Fragen: Info-Zeile, kein Absenden. Abschluss: Bestätigungskarte (Muster Login „Link gesendet“) + „Zum Stundenplan“ (outline).</p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="font-size:14px;font-weight:600;color:#52525b">Leerer Zustand</div>
+        <div style="display:flex;gap:40px;align-items:flex-start">
+          <dc-import name="AppScreen" page="leer" hint-size="1280px,900px"></dc-import>
+          <dc-import name="AppScreen" page="leer" mobile="{{ true }}" hint-size="390px,844px"></dc-import>
+        </div>
+        <p style="margin:0;max-width:1710px;font-size:13px;line-height:1.6;color:#3f3f46"><b style="color:#23321E">Leer:</b> Beantwortet warum · wann · was jetzt. <code>border-2 border-dashed rounded-xl px-5 py-10 md:py-16 text-center</code> · nur sekundäre Aktion <code>variant="outline" w-full md:w-auto</code></p>
+      </div>
+    </div>
+
+  </div>
+</section>
+</x-dc>
+</body>
+</html>

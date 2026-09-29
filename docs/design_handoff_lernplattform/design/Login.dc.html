@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</helmet>
+<div style="width:{{ L.frameW }};height:{{ L.frameH }};background:#fff;border-radius:{{ L.radius }};overflow:hidden;display:flex;flex-direction:column;box-shadow:0 1px 3px rgba(0,0,0,.08),0 12px 32px rgba(0,0,0,.08);font-family:'Work Sans',ui-sans-serif,system-ui,sans-serif;color:#23321E">
+  <div style="flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:{{ L.dir }}">
+
+    <sc-if value="{{ isIllu }}" hint-placeholder-val="{{ true }}">
+      <div style="flex:{{ L.imgFlex }};height:{{ L.imgH }};background:#f5f5f0;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;padding-top:{{ L.imgPadTop }}">
+        <img src="login-hero.png" alt="" style="display:block;height:100%;width:auto;max-width:100%;object-fit:contain;object-position:bottom"></img>
+      </div>
+    </sc-if>
+    <sc-if value="{{ isPhoto }}">
+      <div style="flex:{{ L.imgFlex }};height:{{ L.photoH }};box-sizing:border-box;background:#f5f5f0;padding:{{ L.photoPad }};display:flex">
+        <img src="{{ photoSrc }}" alt="{{ photoAlt }}" style="display:block;flex:1;min-width:0;width:100%;height:100%;border-radius:{{ L.photoRadius }};object-fit:cover;object-position:{{ photoPos }}"></img>
+      </div>
+    </sc-if>
+
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:{{ L.formPad }}">
+      <div style="width:100%;max-width:380px;display:flex;flex-direction:column;gap:32px">
+        <div style="display:flex;flex-direction:column;align-items:{{ L.hdAlign }};gap:8px;text-align:{{ L.hdText }}">
+          <h1 style="margin:0;font-family:Anton,Impact,sans-serif;font-weight:400;font-size:{{ L.h1 }};line-height:1.1">The Academy for Climate Jobs</h1>
+          <p style="margin:0;font-size:15px;color:#71717a">Qualifizierungsplattform · Fachkräfte für die Energiewende</p>
+        </div>
+
+        <sc-if value="{{ isForm }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <label style="font-size:14px;font-weight:500">E-Mail-Adresse</label>
+              <div style="height:44px;box-sizing:border-box;border-radius:8px;padding:0 12px;display:flex;align-items:center;font-size:15px;background:#fff;border:{{ S.inputBorder }};box-shadow:{{ S.inputRing }};color:{{ S.inputColor }}">{{ S.value }}</div>
+              <sc-if value="{{ isError }}">
+                <div style="display:flex;align-items:flex-start;gap:8px;font-size:13px;line-height:1.45"><dc-import name="Icon" n="circle-alert" c="#F07167" s="16" hint-size="16px,16px"></dc-import><span>Diese E-Mail-Adresse ist nicht registriert. Bitte prüfe die Schreibweise oder wende dich an deine Ansprechperson.</span></div>
+              </sc-if>
+            </div>
+            <div style="height:44px;border-radius:8px;background:#23321E;color:#fff;font-size:15px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:background-color .15s" style-hover="background:rgba(35,50,30,0.9)"><dc-import name="Icon" n="mail" c="#fff" s="18" hint-size="18px,18px"></dc-import>Login-Link anfordern</div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isSent }}">
+          <div style="display:flex;flex-direction:column;gap:16px;padding:16px;border:1px solid #e4e4e7;border-radius:12px">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:40px;height:40px;flex-shrink:0;border-radius:10px;background:rgba(35,150,105,0.10);display:flex;align-items:center;justify-content:center"><dc-import name="Icon" n="mail-check" c="#239669" s="20" hint-size="20px,20px"></dc-import></div>
+              <h2 style="margin:0;font-size:15px;font-weight:600">Login-Link gesendet</h2>
+            </div>
+            <p style="margin:0;font-size:14px;line-height:1.5;color:#3f3f46">Wir haben einen Link an <b style="color:#23321E;font-weight:600">vera.schulz@betrieb.de</b> geschickt. Er ist 15 Minuten gültig.</p>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <div style="height:44px;padding:0 16px;border:1px solid #e4e4e7;border-radius:8px;font-size:15px;font-weight:500;display:flex;align-items:center;cursor:pointer;transition:background-color .15s" style-hover="background:rgba(35,150,105,0.10)">Erneut senden</div>
+              <div style="height:44px;padding:0 16px;border-radius:8px;font-size:15px;font-weight:500;color:#71717a;display:flex;align-items:center;cursor:pointer;transition:background-color .15s" style-hover="background:rgba(35,150,105,0.10);color:#23321E">Andere E-Mail-Adresse</div>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex-shrink:0;border-top:1px solid #e4e4e7;display:flex;flex-direction:{{ L.ftDir }};align-items:center;justify-content:space-between;gap:{{ L.ftGap }};padding:{{ L.ftPad }}">
+    <div style="font-family:Anton,Impact,sans-serif;font-size:10px;line-height:1.05;text-transform:uppercase">The<br>Academy<br>for climate<br>jobs</div>
+    <nav style="display:flex;flex-wrap:wrap;justify-content:center;gap:4px">
+      <sc-for list="{{ links }}" as="l" hint-placeholder-count="3">
+        <div style="min-height:44px;padding:0 10px;border-radius:8px;font-size:13px;color:#71717a;display:flex;align-items:center;cursor:pointer;transition:background-color .15s" style-hover="background:rgba(35,150,105,0.10);color:#23321E">{{ l }}</div>
+      </sc-for>
+    </nav>
+    <span style="font-size:12px;color:#71717a;text-align:center">© 2026 The Academy for Climate Jobs</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:820},&quot;photo&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;illustration&quot;,&quot;werkstatt&quot;,&quot;detail&quot;],&quot;default&quot;:&quot;illustration&quot;,&quot;tsType&quot;:&quot;'illustration' | 'werkstatt' | 'detail'&quot;},&quot;state&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;focus&quot;,&quot;error&quot;,&quot;sent&quot;],&quot;default&quot;:&quot;default&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;mobile&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const m = !!this.props.mobile, st = this.props.state ?? 'default', ph = this.props.photo ?? 'illustration';
+    const P = {
+      werkstatt: { src: 'login-foto-werkstatt.jpg', alt: 'Teilnehmerin prüft eine gelötete Platine in der Praxisübung', pos: m ? '62% 30%' : '64% center' },
+      detail: { src: 'login-foto-detail.jpg', alt: 'Hände verdrahten einen Schalter in der Praxisübung', pos: m ? '38% 45%' : '40% center' },
+    }[ph];
+    const L = m ? {
+      frameW: '390px', frameH: '844px', radius: '32px', dir: 'column', imgFlex: '0 0 auto', imgH: '260px', imgPadTop: '16px',
+      photoH: '236px', photoPad: '16px 16px 0', photoRadius: '16px',
+      formPad: '28px 20px 32px', hdAlign: 'center', hdText: 'center', h1: '32px', ftDir: 'column', ftGap: '8px', ftPad: '16px 16px 24px',
+    } : {
+      frameW: '1280px', frameH: '820px', radius: '12px', dir: 'row', imgFlex: '0 0 46%', imgH: 'auto', imgPadTop: '40px',
+      photoH: 'auto', photoPad: '24px', photoRadius: '12px',
+      formPad: '48px', hdAlign: 'flex-start', hdText: 'left', h1: '40px', ftDir: 'row', ftGap: '16px', ftPad: '12px 40px',
+    };
+    const S = {
+      default: { value: 'name@betrieb.de', inputColor: '#71717a', inputBorder: '1px solid #e4e4e7', inputRing: 'none' },
+      focus: { value: 'vera.schulz@betrieb.de', inputColor: '#23321E', inputBorder: '1px solid #23321E', inputRing: '0 0 0 2px #fff, 0 0 0 4px #239669' },
+      error: { value: 'vera.schulz@betreib.de', inputColor: '#23321E', inputBorder: '2px solid #F07167', inputRing: 'none' },
+      sent: { value: '', inputColor: '#23321E', inputBorder: '1px solid #e4e4e7', inputRing: 'none' },
+    }[st];
+    return { isIllu: !P, isPhoto: !!P, photoSrc: P ? P.src : '', photoAlt: P ? P.alt : '', photoPos: P ? P.pos : 'center', L, S, isForm: st !== 'sent', isSent: st === 'sent', isError: st === 'error', links: ['Impressum', 'Datenschutz', 'Barrierefreiheit'] };
+  }
+}
+</script>
+</body>
+</html>

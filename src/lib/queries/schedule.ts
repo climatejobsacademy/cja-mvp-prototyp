@@ -202,6 +202,51 @@ export type WochenTag = {
 
 /** Wochenübersicht (Mo–So der Woche von `anyDateInWeek`) mit Typ-Kennzeichnung
  * und einem einfachen Abschluss-Indikator je Tag (design-specifications.md 2.2). */
+export type NaechsterTermin = {
+  datum: string;
+  /** Startzeit HH:MM:SS, nur bei Live-Terminen vorhanden. */
+  start: string | null;
+};
+
+/**
+ * Nächster Stundenplan-Eintrag nach `nachDatum` (Home, Leer-Variante
+ * "Heute"). Uhrzeit nur, wenn der Eintrag eine Live-Session ist -- andere
+ * Einträge haben kein Zeitfeld.
+ */
+export async function getNaechsterTermin(
+  organisationId: string,
+  cohortId: string,
+  enrolmentId: string,
+  nachDatum: string
+): Promise<NaechsterTermin | null> {
+  const supabase = await createClient();
+
+  const { data: entry } = await supabase
+    .from("schedule_entry")
+    .select("datum, live_session_id")
+    .eq("organisation_id", organisationId)
+    .gt("datum", nachDatum)
+    .or(`cohort_id.eq.${cohortId},enrolment_id.eq.${enrolmentId}`)
+    .order("datum", { ascending: true })
+    .order("reihenfolge", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (!entry) return null;
+
+  let start: string | null = null;
+  if (entry.live_session_id) {
+    const { data: session } = await supabase
+      .from("live_session")
+      .select("start")
+      .eq("id", entry.live_session_id)
+      .maybeSingle();
+    start = session?.start ?? null;
+  }
+
+  return { datum: entry.datum, start };
+}
+
 export async function getWochenUebersicht(
   organisationId: string,
   cohortId: string,

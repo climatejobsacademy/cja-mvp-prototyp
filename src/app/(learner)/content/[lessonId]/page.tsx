@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
+import { UnitProgressBadge } from "@/components/status-badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { requireCurrentLearner } from "@/lib/queries/session";
@@ -39,7 +39,7 @@ export default async function LessonPage({
 
       <div className="flex items-center gap-3">
         <h1 className="font-heading text-xl text-eco-deep-green">{lesson.name}</h1>
-        {done && <Badge variant="success">Abgeschlossen</Badge>}
+        <UnitProgressBadge status={lesson.status} />
       </div>
 
       {lesson.contentType === "scorm" && (

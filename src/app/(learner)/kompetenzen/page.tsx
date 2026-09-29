@@ -1,7 +1,9 @@
-import { ChevronDown } from "lucide-react";
+import { BookOpen, ChevronDown, Wrench } from "lucide-react";
 
-import { Progress, ProgressLabel, ProgressValue } from "@/components/ui/progress";
-import { StepStatusBadge, StepTypBadge } from "@/components/status-badge";
+import { CurriculumCard } from "@/components/curriculum-card";
+import { PageHeader } from "@/components/page-header";
+import { SegmentProgress } from "@/components/segment-progress";
+import { StepStatusBadge } from "@/components/status-badge";
 import { requireCurrentLearner } from "@/lib/queries/session";
 import { getCurriculumFortschritt, getKompetenzFortschritt } from "@/lib/queries/competencies";
 
@@ -14,85 +16,78 @@ export default async function KompetenzenPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-heading text-xl text-eco-deep-green">Kompetenzen</h1>
-        <p className="text-sm text-muted-foreground">{learner.programmeName}</p>
-      </div>
+      <PageHeader title="Kompetenzen" />
 
-      <section aria-labelledby="curriculum-fortschritt" className="flex flex-col gap-2">
-        <h2 id="curriculum-fortschritt" className="text-sm font-medium text-eco-deep-green">
-          Curriculum-Fortschritt
-        </h2>
-        <Progress value={curriculum.prozent}>
-          <div className="flex w-full justify-between">
-            <ProgressLabel>
-              {curriculum.abgeschlosseneLektionen} von {curriculum.gesamtLektionen} Lektionen
-            </ProgressLabel>
-            <ProgressValue />
-          </div>
-        </Progress>
-      </section>
-
-      <section aria-labelledby="kompetenz-fortschritt" className="flex flex-col gap-3">
-        <h2 id="kompetenz-fortschritt" className="text-sm font-medium text-eco-deep-green">
-          Kompetenz-Fortschritt
+      <section aria-labelledby="alle-kompetenzen" className="flex flex-col gap-3">
+        <h2 id="alle-kompetenzen" className="text-base font-semibold text-eco-deep-green">
+          Alle Kompetenzen
         </h2>
         {kompetenzen.length === 0 && (
           <p className="text-sm text-muted-foreground">Noch keine Kompetenzen hinterlegt.</p>
         )}
         {kompetenzen.map((k) => (
-          <details key={k.id} className="group rounded-lg border border-border">
-            <summary className="flex cursor-pointer list-none items-center gap-3 p-3">
-              <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true" />
-              <div className="min-w-0 flex-1">
-                <p className="line-clamp-2 font-medium text-eco-deep-green">{k.name}</p>
+          // Collapsible-Karte (Handoff 2a): shadow-sm, Kopf ist der Trigger.
+          <details key={k.id} className="group overflow-hidden rounded-xl border border-border shadow-sm">
+            <summary className="flex cursor-pointer list-none items-center gap-3 p-4 outline-none transition-[background-color] duration-150 hover:bg-eco-green/10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-eco-green motion-reduce:transition-none">
+              <div className="flex min-w-0 flex-1 flex-col gap-1">
                 <p className="text-xs text-muted-foreground">{k.kompetenzbereich}</p>
-                {/*
-                  SR-68: Balken + Zahl aus competency_fulfilment. Gleiche
-                  Progress-Komponente wie Curriculum-Fortschritt und Content
-                  Library -- Indicator nutzt bg-primary = Eco Green
-                  (design-specifications.md 2.4, globals.css --primary).
-                */}
-                <Progress value={k.fortschrittProzent} className="mt-2">
-                  <div className="flex w-full justify-between">
-                    <ProgressLabel className="text-xs font-normal text-muted-foreground">
-                      {k.teilschritteErfuellt} / {k.teilschritteGesamt} Teilschritte
-                    </ProgressLabel>
-                    <ProgressValue className="text-xs" />
-                  </div>
-                </Progress>
+                <h3 className="line-clamp-2 text-[15px] font-semibold text-eco-deep-green">{k.name}</h3>
+                {/* SR-68: Segmente je Kompetenzschritt aus competency_fulfilment,
+                    Zähltext bleibt sichtbar (K2). */}
+                <SegmentProgress
+                  className="mt-1"
+                  value={k.teilschritteErfuellt}
+                  max={k.teilschritteGesamt}
+                  label={`${k.teilschritteErfuellt} von ${k.teilschritteGesamt} Kompetenzschritten abgeschlossen`}
+                />
+                {k.teilschritteGesamt > 0 && (
+                  <p className="text-[13px] text-muted-foreground tabular-nums" aria-hidden="true">
+                    {k.teilschritteErfuellt}/{k.teilschritteGesamt} Kompetenzschritte
+                  </p>
+                )}
               </div>
+              <ChevronDown
+                className="size-5 shrink-0 text-muted-foreground transition-transform group-open:rotate-180 motion-reduce:transition-none"
+                aria-hidden="true"
+              />
             </summary>
-            <div className="flex flex-col gap-2 border-t border-border p-3">
-              {k.steps.map((step) => (
-                <div key={step.id} className="flex items-center justify-between gap-3">
-                  <div className="flex min-w-0 items-center gap-2">
-                    <StepTypBadge typ={step.typ} />
-                    <div className="min-w-0">
-                      <span className="block truncate text-sm text-eco-deep-green">{step.name}</span>
-                      {/*
-                        Zusatzinfo nur, solange der Teilschritt noch nicht
-                        abgeschlossen/abgelehnt ist -- sonst reicht die Pill.
-                      */}
-                      {step.fortschritt &&
-                        (step.status === "offen" || step.status === "in Prüfung") && (
-                          <span className="block text-xs text-muted-foreground tabular-nums">
-                            {step.fortschritt.abgeschlossen} / {step.fortschritt.gesamt}{" "}
-                            {step.fortschritt.einheit}
-                          </span>
-                        )}
-                    </div>
+
+            {/* Aufgeklappt: Info-Zeilen, nicht klickbar (kein Hover, kein Pfeil). */}
+            {k.steps.map((step) => {
+              const Icon = step.typ === "praktisch" ? Wrench : BookOpen;
+              const typLabel = step.typ === "praktisch" ? "Praxis" : "Theorie";
+              return (
+                <div
+                  key={step.id}
+                  className="flex min-h-14 flex-wrap items-center gap-x-3 gap-y-2 border-t border-border px-4 py-2.5"
+                >
+                  <Icon className="size-[18px] shrink-0 text-muted-foreground" aria-hidden="true" />
+                  <div className="min-w-0 grow basis-40">
+                    <p className="text-sm font-medium text-eco-deep-green">
+                      {step.name} · {typLabel}
+                    </p>
+                    {/* SR-69: Zusatzinfo nur bei offen / in Prüfung. */}
+                    {step.fortschritt && (step.status === "offen" || step.status === "in Prüfung") && (
+                      <p className="text-[13px] text-muted-foreground tabular-nums">
+                        {step.fortschritt.abgeschlossen}/{step.fortschritt.gesamt} {step.fortschritt.einheit}
+                      </p>
+                    )}
                   </div>
                   <StepStatusBadge status={step.status} />
                 </div>
-              ))}
-              {k.steps.length === 0 && (
-                <p className="text-sm text-muted-foreground">Keine Teilschritte hinterlegt.</p>
-              )}
-            </div>
+              );
+            })}
+            {k.steps.length === 0 && (
+              <p className="border-t border-border p-4 text-sm text-muted-foreground">
+                Keine Kompetenzschritte hinterlegt.
+              </p>
+            )}
           </details>
         ))}
       </section>
+
+      {/* Sekundärer Kontext nach der Kompetenzliste (Entscheidung 2026-09-29). */}
+      <CurriculumCard fortschritt={curriculum} kompakt />
     </div>
   );
 }

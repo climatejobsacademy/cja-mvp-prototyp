@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</helmet>
+<div style="width:{{ L.frameW }};height:{{ L.frameH }};min-height:{{ L.minH }};background:#fff;border-radius:{{ L.radius }};overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 1px 3px rgba(0,0,0,.08),0 12px 32px rgba(0,0,0,.08);font-family:'Work Sans',ui-sans-serif,system-ui,sans-serif;color:#23321E">
+
+  <sc-if value="{{ isDesktop }}" hint-placeholder-val="{{ true }}">
+    <div style="height:64px;flex-shrink:0;border-bottom:1px solid #e4e4e7;display:flex;align-items:center;gap:16px;padding:0 32px">
+      <div style="flex:0 0 auto;display:flex;align-items:center;gap:16px"><div style="font-family:Anton,Impact,sans-serif;font-size:10px;line-height:1.05;text-transform:uppercase;flex-shrink:0">The<br>Academy<br>for climate<br>jobs</div><div style="min-width:0;display:flex;align-items:center;gap:8px;padding-left:16px;border-left:1px solid #e4e4e7;height:32px"><dc-import name="Icon" n="graduation-cap" c="#71717a" s="16" hint-size="16px,16px"></dc-import><span style="font-size:13px;color:#71717a;white-space:nowrap">Elektrofachkraft Erneuerbare Energien</span></div></div>
+      <nav style="margin-left:auto;display:flex;align-items:center;gap:4px">
+        <sc-for list="{{ nav }}" as="n" hint-placeholder-count="4">
+          <div style="display:flex;align-items:center;gap:8px;height:44px;padding:0 14px;border-radius:8px;font-size:15px;cursor:pointer;transition:background-color .15s;font-weight:{{ n.weight }};background:{{ n.bg }};color:{{ n.color }}" style-hover="background:rgba(35,150,105,0.10);color:#23321E"><dc-import name="Icon" n="{{ n.icon }}" c="{{ n.iconColor }}" s="18" hint-size="18px,18px"></dc-import>{{ n.label }}</div>
+        </sc-for>
+      </nav>
+      <div style="display:flex"><div style="width:44px;height:44px;flex-shrink:0;border-radius:9999px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;cursor:pointer;transition:background-color .15s;background:{{ avatarBg }};box-shadow:{{ avatarRing }}" style-hover="background:rgba(35,150,105,0.10)">V</div></div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ isMobile }}">
+    <div style="height:60px;flex-shrink:0;border-bottom:1px solid #e4e4e7;display:flex;align-items:center;gap:12px;padding:0 16px">
+      <div style="font-family:Anton,Impact,sans-serif;font-size:10px;line-height:1.05;text-transform:uppercase;flex-shrink:0">The<br>Academy<br>for climate<br>jobs</div>
+      <div style="flex:1;min-width:0;display:flex"><div style="min-width:0;display:flex;align-items:center;gap:8px;padding-left:16px;border-left:1px solid #e4e4e7;height:32px"><dc-import name="Icon" n="graduation-cap" c="#71717a" s="16" hint-size="16px,16px"></dc-import><span style="font-size:12px;color:#71717a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Elektrofachkraft Erneuerbare Energien</span></div></div>
+      <div style="width:44px;height:44px;flex-shrink:0;border-radius:9999px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;cursor:pointer;transition:background-color .15s;background:{{ avatarBg }};box-shadow:{{ avatarRing }}" style-hover="background:rgba(35,150,105,0.10)">V</div>
+    </div>
+  </sc-if>
+
+  <div style="flex:1;min-height:0;overflow-y:auto;display:flex;justify-content:center;padding:{{ L.pad }}">
+    <div style="width:{{ L.contW }};display:flex;flex-direction:column;gap:24px">
+
+      <div style="display:flex;flex-direction:{{ L.hdrDir }};align-items:{{ L.hdrAlign }};justify-content:space-between;gap:16px;padding-bottom:20px;border-bottom:1px solid #e4e4e7">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <sc-if value="{{ backLabel }}"><div style="align-self:flex-start;display:flex;align-items:center;gap:4px;min-height:44px;padding:0 8px;margin-left:-8px;border-radius:8px;font-size:14px;font-weight:500;color:#71717a;cursor:pointer;transition:background-color .15s" style-hover="background:rgba(35,150,105,0.10);color:#23321E"><dc-import name="Icon" n="chevron-left" c="#71717a" s="16" hint-size="16px,16px"></dc-import>{{ backLabel }}</div></sc-if>
+          <h1 style="margin:0;font-family:Anton,Impact,sans-serif;font-weight:400;font-size:{{ L.h1 }};line-height:1.1">{{ h.title }}</h1>
+        </div>
+      </div>
+
+
+
+      <sc-if value="{{ pHome }}">
+        <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:stretch">
+          <div style="flex:1 1 300px;min-width:0;border:1px solid #e4e4e7;border-radius:12px;overflow:hidden;display:flex;flex-direction:column">
+            <div style="display:flex;align-items:center;gap:10px;padding:16px"><dc-import name="Icon" n="calendar" s="18" hint-size="18px,18px"></dc-import><h2 style="margin:0;font-size:15px;font-weight:600">Heute</h2><span style="margin-left:auto;font-size:13px;color:#71717a">Di, 29. September</span></div>
+            <sc-if value="{{ noToday }}">
+              <div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:16px;border-top:1px solid #e4e4e7">
+                <span style="font-size:14px;font-weight:500">Heute finden keine Kurse statt.</span>
+                <span style="font-size:13px;color:#71717a">Nächster Termin: Mi, 30.09., 13:00</span>
+              </div>
+            </sc-if>
+            <sc-for list="{{ todayRows }}" as="t" hint-placeholder-count="2">
+              <div style="display:flex;align-items:center;gap:12px;min-height:56px;padding:0 16px;border-top:1px solid #e4e4e7;cursor:pointer;transition:background-color .15s" style-hover="background:rgba(35,150,105,0.10)">
+                <span style="width:52px;flex-shrink:0;font-size:13px;font-weight:600;font-variant-numeric:tabular-nums">{{ t.time }}</span>
+                <dc-import name="Icon" n="{{ t.icon }}" s="18" hint-size="18px,18px"></dc-import>
+                <span style="flex:1;min-width:0;font-size:14px;font-weight:500;line-height:1.35">{{ t.title }}</span>
+                <dc-import name="Icon" n="chevron-right" c="#71717a" s="20" hint-size="20px,20px"></dc-import>
+              </div>
+            </sc-for>
+            <div style="margin-top:auto;display:flex;align-items:center;gap:6px;min-height:48px;padding:0 16px;border-top:1px solid #e4e4e7;font-size:14px;font-weight:500;cursor:pointer;transition:background-color .15s;box-shadow:{{ focusRingInset }}" style-hover="background:rgba(35,150,105,0.10)">Zum Stundenplan<dc-import name="Icon" n="arrow-right" c="#239669" s="16" hint-size="16px,16px"></dc-import></div>
+          </div>
+          <div style="flex:1 1 300px;min-width:0;border:1px solid #e4e4e7;border-radius:12px;overflow:hidden;display:flex;flex-direction:column">
+            <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;align-items:center;gap:10px"><dc-import name="Icon" n="target" s="18" hint-size="18px,18px"></dc-import><h2 style="margin:0;font-size:15px;font-weight:600">Curriculum-Fortschritt</h2></div>
+              <div style="display:flex;align-items:baseline;gap:10px"><span style="font-size:40px;line-height:1;font-weight:700;letter-spacing:-0.02em">5<span style="font-size:20px;color:#71717a"> %</span></span></div>
+              <div style="display:flex;gap:3px"><sc-for list="{{ curSegs }}" as="s" hint-placeholder-count="20"><div style="flex:1;height:8px;border-radius:2px;background:{{ s.bg }}"></div></sc-for></div>
+            </div>
+            <div style="margin-top:auto;display:flex;align-items:center;gap:6px;min-height:48px;padding:0 16px;border-top:1px solid #e4e4e7;font-size:14px;font-weight:500;cursor:pointer;transition:background-color .15s" style-hover="background:rgba(35,150,105,0.10)">Zu den Kompetenzen<dc-import name="Icon" n="arrow-right" c="#239669" s="16" hint-size="16px,16px"></dc-import></div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ pStd }}">
+        <div style="display:flex;gap:4px">
+          <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+            <div style="height:44px;padding:0 20px;border-radius:9999px;font-size:15px;font-weight:500;display:flex;align-items:center;cursor:pointer;transition:background-color .15s;background:{{ t.bg }};color:{{ t.color }}" style-hover="{{ t.hover }}">{{ t.label }}</div>
+          </sc-for>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div style="width:44px;height:44px;border-radius:9999px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background-color .15s" style-hover="background:rgba(35,150,105,0.10)"><dc-import name="Icon" n="chevron-left" s="20" hint-size="20px,20px"></dc-import></div>
+          <span style="font-size:15px;font-weight:600">{{ L.dateLabel }}</span>
+          <div style="width:44px;height:44px;border-radius:9999px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background-color .15s" style-hover="background:rgba(35,150,105,0.10)"><dc-import name="Icon" n="chevron-right" s="20" hint-size="20px,20px"></dc-import></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <sc-for list="{{ dayCards }}" as="d" hint-placeholder-count="2">
+            <div style="display:flex;align-items:center;gap:14px;padding:16px;border:1px solid #e4e4e7;border-radius:12px;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.05);cursor:pointer;transition:background-color .15s,box-shadow .15s" style-hover="background:rgba(35,150,105,0.10);box-shadow:0 4px 6px -1px rgba(0,0,0,.1),0 2px 4px -2px rgba(0,0,0,.1)">
+              <div style="width:40px;height:40px;flex-shrink:0;border-radius:10px;background:#f4f4f5;display:flex;align-items:center;justify-content:center"><dc-import name="Icon" n="{{ d.icon }}" s="20" hint-size="20px,20px"></dc-import></div>
+              <div style="flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px">
+                <div style="flex:1 1 240px;min-width:0;display:flex;flex-direction:column;gap:2px">
+                  <span style="font-size:15px;font-weight:600;line-height:1.35">{{ d.title }}</span>
+                  <span style="font-size:13px;color:#71717a">{{ d.meta }}</span>
+                </div>
+                <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:9999px;font-size:13px;font-weight:500;white-space:nowrap;border:{{ d.b.border }};background:{{ d.b.bg }}"><dc-import name="Icon" n="{{ d.b.icon }}" s="14" hint-size="14px,14px"></dc-import>{{ d.b.label }}</span>
+              </div>
+              <dc-import name="Icon" n="chevron-right" c="#71717a" s="20" hint-size="20px,20px"></dc-import>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ pKom }}">
+        <div style="border:1px solid #e4e4e7;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;align-items:center;gap:10px"><dc-import name="Icon" n="target" s="18" hint-size="18px,18px"></dc-import><h2 style="margin:0;font-size:15px;font-weight:600">Curriculum-Fortschritt</h2></div>
+          <span style="font-size:40px;line-height:1;font-weight:700;letter-spacing:-0.02em">5<span style="font-size:20px;color:#71717a"> %</span></span>
+          <div style="display:flex;gap:3px"><sc-for list="{{ curSegs }}" as="s" hint-placeholder-count="20"><div style="flex:1;height:8px;border-radius:2px;background:{{ s.bg }}"></div></sc-for></div>
+        </div>
+        <h2 style="margin:0;font-size:16px;font-weight:600">Alle Kompetenzen</h2>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <sc-for list="{{ comps }}" as="c" hint-placeholder-count="3">
+            <div style="border:1px solid #e4e4e7;border-radius:12px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.05)">
+              <div style="display:flex;align-items:center;gap:12px;padding:16px;cursor:pointer;transition:background-color .15s" style-hover="background:rgba(35,150,105,0.10)">
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:10px">
+                  <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:12px;color:#71717a">{{ c.cat }}</span><span style="font-size:15px;font-weight:600;line-height:1.35;text-wrap:pretty">{{ c.title }}</span></div>
+                  <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;max-width:200px;display:flex;gap:3px"><sc-for list="{{ c.segs }}" as="s" hint-placeholder-count="2"><div style="flex:1;height:6px;border-radius:2px;background:{{ s.bg }}"></div></sc-for></div></div>
+                </div>
+                <dc-import name="Icon" n="{{ c.chev }}" c="#71717a" s="20" hint-size="20px,20px"></dc-import>
+              </div>
+              <sc-if value="{{ c.expanded }}">
+                <sc-for list="{{ c.steps }}" as="s" hint-placeholder-count="2">
+                  <div style="display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 16px;border-top:1px solid #e4e4e7">
+                    <dc-import name="Icon" n="{{ s.icon }}" s="18" hint-size="18px,18px"></dc-import>
+                    <div style="flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px">
+                      <div style="flex:1 1 160px;min-width:0;display:flex;flex-direction:column"><span style="font-size:14px;font-weight:500">{{ s.name }}</span></div>
+                      <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:9999px;font-size:13px;font-weight:500;white-space:nowrap;border:{{ s.b.border }};background:{{ s.b.bg }}"><dc-import name="Icon" n="{{ s.b.icon }}" s="14" hint-size="14px,14px"></dc-import>{{ s.b.label }}</span>
+                    </div>
+                  </div>
+                </sc-for>
+              </sc-if>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ pMat }}">
+        <div style="border:1px solid #e4e4e7;border-radius:12px;overflow:hidden;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.05)">
+          <div style="display:flex;align-items:center;gap:12px;min-height:56px;padding:12px 16px;cursor:pointer;transition:background-color .15s" style-hover="background:rgba(35,150,105,0.10)">
+            <span style="font-size:13px;color:#71717a">Modul I</span>
+            <h2 style="margin:0;font-size:15px;font-weight:600">Theorie &amp; Praxis</h2>
+            <span style="margin-left:auto;font-size:13px;color:#71717a;white-space:nowrap">1/8 Lektionen</span>
+            <dc-import name="Icon" n="chevron-up" c="#71717a" s="20" hint-size="20px,20px"></dc-import>
+          </div>
+          <div style="padding:10px 16px;border-top:1px solid #e4e4e7;font-size:12px;color:#71717a">Grundlagen der Elektrotechnik</div>
+          <sc-for list="{{ units }}" as="u" hint-placeholder-count="4">
+            <div style="display:flex;align-items:center;gap:12px;min-height:64px;padding:10px 16px;box-sizing:border-box;border-top:1px solid #e4e4e7;cursor:pointer;transition:background-color .15s" style-hover="background:rgba(35,150,105,0.10)">
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px">
+                <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px"><span style="font-size:14px;font-weight:500;line-height:1.35">{{ u.title }}</span></div>
+                <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;max-width:200px;display:flex;gap:3px"><sc-for list="{{ u.segs }}" as="s" hint-placeholder-count="2"><div style="flex:1;height:6px;border-radius:2px;background:{{ s.bg }}"></div></sc-for></div></div>
+              </div>
+              <dc-import name="Icon" n="{{ u.chev }}" c="#71717a" s="20" hint-size="20px,20px"></dc-import>
+            </div>
+            <sc-if value="{{ u.expanded }}">
+              <sc-for list="{{ u.lessons }}" as="l" hint-placeholder-count="2">
+                <div style="display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 16px 8px 32px;border-top:1px solid #e4e4e7;cursor:pointer;transition:background-color .15s" style-hover="background:rgba(35,150,105,0.10)">
+                  <dc-import name="Icon" n="{{ l.icon }}" s="18" hint-size="18px,18px"></dc-import>
+                  <div style="flex:1;min-width:0;display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px">
+                    <span style="flex:1 1 120px;font-size:14px;font-weight:500">{{ l.type }}</span>
+                    <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:9999px;font-size:13px;font-weight:500;white-space:nowrap;border:{{ l.b.border }};background:{{ l.b.bg }}"><dc-import name="Icon" n="{{ l.b.icon }}" s="14" hint-size="14px,14px"></dc-import>{{ l.b.label }}</span>
+                  </div>
+                  <dc-import name="Icon" n="chevron-right" c="#71717a" s="20" hint-size="20px,20px"></dc-import>
+                </div>
+              </sc-for>
+            </sc-if>
+          </sc-for>
+        </div>
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;min-height:56px;padding:12px 16px;box-sizing:border-box;border:1px solid #e4e4e7;border-radius:12px">
+          <span style="font-size:13px;color:#71717a">Modul II</span>
+          <h2 style="margin:0;font-size:15px;font-weight:600;color:#71717a">Installation &amp; Schutztechnik</h2>
+          <span style="margin-left:auto;display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:rgba(184,169,232,0.30);border:1px solid transparent;border-radius:9999px;font-size:13px;font-weight:500;white-space:nowrap"><dc-import name="Icon" n="clock" s="14" hint-size="14px,14px"></dc-import>Ausstehend · ab 26.10.</span>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ pRef }}">
+        <div style="display:flex;gap:3px;max-width:200px"><sc-for list="{{ flowSegs }}" as="s" hint-placeholder-count="3"><div style="flex:1;height:6px;border-radius:2px;background:{{ s.bg }}"></div></sc-for></div>
+        <sc-if value="{{ refForm }}" hint-placeholder-val="{{ true }}">
+          <div style="border:1px solid #e4e4e7;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:20px">
+            <div style="display:flex;align-items:center;gap:10px"><dc-import name="Icon" n="message-square-text" s="18" hint-size="18px,18px"></dc-import><h2 style="margin:0;font-size:15px;font-weight:600">Reflexion</h2></div>
+            <sc-for list="{{ questions }}" as="q" hint-placeholder-count="2">
+              <div role="radiogroup" style="display:flex;flex-direction:column;gap:8px">
+                <span style="font-size:14px;font-weight:500;line-height:1.4">{{ q.text }}</span>
+                <sc-for list="{{ q.options }}" as="o" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:center;gap:12px;min-height:44px;padding:10px 12px;box-sizing:border-box;border-radius:8px;cursor:pointer;transition:background-color .15s;border:{{ o.border }};background:{{ o.bg }};box-shadow:{{ o.ring }}" style-hover="background:rgba(35,150,105,0.10)">
+                    <div style="width:18px;height:18px;flex-shrink:0;box-sizing:border-box;border-radius:9999px;display:flex;align-items:center;justify-content:center;background:#fff;border:{{ o.radioBorder }}"><div style="width:8px;height:8px;border-radius:9999px;background:{{ o.dot }}"></div></div>
+                    <span style="font-size:14px;line-height:1.4">{{ o.label }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-for>
+            <div style="width:{{ L.btnW }};align-self:flex-start;height:44px;padding:0 18px;box-sizing:border-box;border-radius:8px;background:#23321E;color:#fff;font-size:15px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:8px;opacity:{{ submitOpacity }};cursor:{{ submitCursor }}" aria-disabled="{{ submitDisabled }}"><dc-import name="Icon" n="send" c="#fff" s="18" hint-size="18px,18px"></dc-import>Reflexion absenden</div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ refEmpty }}">
+          <div style="border:1px solid #e4e4e7;border-radius:12px;overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:16px"><dc-import name="Icon" n="message-square-text" s="18" hint-size="18px,18px"></dc-import><h2 style="margin:0;font-size:15px;font-weight:600">Reflexion</h2></div>
+            <div style="padding:16px;border-top:1px solid #e4e4e7;font-size:14px;color:#71717a">Für diese Übung sind keine Reflexionsfragen hinterlegt.</div>
+          </div>
+        </sc-if>
+        <sc-if value="{{ refSent }}">
+          <div style="border:1px solid #e4e4e7;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="width:40px;height:40px;flex-shrink:0;border-radius:10px;background:rgba(35,150,105,0.10);display:flex;align-items:center;justify-content:center"><dc-import name="Icon" n="circle-check" c="#239669" s="20" hint-size="20px,20px"></dc-import></div>
+              <h2 style="margin:0;font-size:15px;font-weight:600">Praxisaufgabe abgeschlossen</h2>
+            </div>
+            <p style="margin:0;font-size:14px;line-height:1.5;color:#3f3f46">Deine Reflexion ist abgesendet.</p>
+            <div style="width:{{ L.btnW }};align-self:flex-start;height:44px;padding:0 18px;box-sizing:border-box;border:1px solid #e4e4e7;border-radius:8px;font-size:15px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;transition:background-color .15s" style-hover="background:rgba(35,150,105,0.10)">Zum Stundenplan<dc-import name="Icon" n="arrow-right" c="#239669" s="16" hint-size="16px,16px"></dc-import></div>
+          </div>
+        </sc-if>
+      </sc-if>
+
+      <sc-if value="{{ pLeer }}">
+        <div style="border:2px dashed #e4e4e7;border-radius:12px;display:flex;flex-direction:column;align-items:center;gap:16px;padding:{{ L.emptyPad }};text-align:center">
+          <div style="width:56px;height:56px;border-radius:9999px;background:rgba(35,150,105,0.10);display:flex;align-items:center;justify-content:center"><dc-import name="Icon" n="book-open" c="#239669" s="26" hint-size="26px,26px"></dc-import></div>
+          <h2 style="margin:0;font-size:20px;font-weight:600">Noch keine Lernmaterialien freigeschaltet</h2>
+          <div style="width:{{ L.btnW }};height:44px;padding:0 18px;box-sizing:border-box;border:1px solid #e4e4e7;border-radius:8px;font-size:15px;font-weight:500;display:flex;align-items:center;justify-content:center;gap:6px;margin-top:4px;cursor:pointer;transition:background-color .15s" style-hover="background:rgba(35,150,105,0.10)">Zum Stundenplan<dc-import name="Icon" n="arrow-right" c="#239669" s="16" hint-size="16px,16px"></dc-import></div>
+        </div>
+      </sc-if>
+
+    </div>
+  </div>
+
+  <sc-if value="{{ isMobile }}">
+    <div style="flex-shrink:0;border-top:1px solid #e4e4e7;display:flex;padding:6px 8px 22px;background:#fff">
+      <sc-for list="{{ nav }}" as="n" hint-placeholder-count="4">
+        <div style="flex:1;min-height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:12px;cursor:pointer;font-weight:{{ n.weight }};color:{{ n.color }}"><div style="width:56px;height:30px;border-radius:9999px;display:flex;align-items:center;justify-content:center;transition:background-color .15s;background:{{ n.bg }}" style-hover="background:rgba(35,150,105,0.10)"><dc-import name="Icon" n="{{ n.icon }}" c="{{ n.iconColor }}" s="20" hint-size="20px,20px"></dc-import></div>{{ n.label }}</div>
+      </sc-for>
+    </div>
+  </sc-if>
+  <sc-if value="{{ menuOpen }}">
+    <div style="position:absolute;top:{{ L.menuTop }};right:{{ L.menuRight }};width:{{ L.menuW }};background:#fff;border:1px solid #e4e4e7;border-radius:12px;box-shadow:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1);overflow:hidden;z-index:10">
+      <div style="display:flex;align-items:center;gap:12px;padding:16px">
+        <div style="width:40px;height:40px;flex-shrink:0;border-radius:9999px;background:#f4f4f5;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600">V</div>
+        <div style="min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:600">Vera Schulz</span><span style="font-size:13px;color:#71717a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">vera.schulz@betrieb.de</span></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px;padding:16px;border-top:1px solid #e4e4e7">
+        <div style="display:flex;align-items:flex-start;gap:12px"><dc-import name="Icon" n="graduation-cap" s="18" hint-size="18px,18px"></dc-import><div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:12px;color:#71717a">Programm</span><span style="font-size:14px;font-weight:500;line-height:1.35">Elektrofachkraft Erneuerbare Energien</span></div></div>
+        <div style="display:flex;align-items:flex-start;gap:12px"><dc-import name="Icon" n="users" s="18" hint-size="18px,18px"></dc-import><div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:12px;color:#71717a">Kohorte</span><span style="font-size:14px;font-weight:500;line-height:1.35">Herbst 2026</span></div></div>
+      </div>
+      <div style="border-top:1px solid #e4e4e7;padding:4px">
+        <div style="display:flex;align-items:center;gap:12px;min-height:44px;padding:0 12px;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer;transition:background-color .15s" style-hover="background:rgba(35,150,105,0.10)"><dc-import name="Icon" n="log-out" s="18" hint-size="18px,18px"></dc-import>Abmelden</div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:900},&quot;page&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;home&quot;,&quot;stundenplan&quot;,&quot;kompetenzen&quot;,&quot;material&quot;,&quot;leer&quot;,&quot;reflexion&quot;],&quot;default&quot;:&quot;home&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;rstate&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;fragen&quot;,&quot;leer&quot;,&quot;gesendet&quot;],&quot;default&quot;:&quot;fragen&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;mobile&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;menu&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;noToday&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;focus&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const eco = '#239669', deep = '#23321E', grey = '#71717a';
+    const page = this.props.page ?? 'home', mobile = !!this.props.mobile, focus = !!this.props.focus;
+    const active = { home: 'Home', stundenplan: 'Stundenplan', kompetenzen: 'Kompetenzen', material: 'Lernmaterialien', leer: 'Lernmaterialien', reflexion: 'Stundenplan' }[page];
+    const nav = [['Home', 'house'], ['Stundenplan', 'calendar'], ['Kompetenzen', 'target'], ['Lernmaterialien', 'book-open']].map(([l, i]) => {
+      const on = l === active;
+      return { label: l, icon: i, bg: on ? 'rgba(35,150,105,0.10)' : 'transparent', color: on ? deep : grey, iconColor: on ? eco : grey, weight: on ? 600 : 500 };
+    });
+    const L = {
+      frameW: mobile ? '390px' : '1280px', frameH: mobile ? '844px' : 'auto', minH: mobile ? '0' : '820px', radius: mobile ? '32px' : '12px',
+      contW: mobile ? '100%' : '768px', pad: mobile ? '20px 16px 32px' : '40px 0 64px', h1: mobile ? '32px' : '40px',
+      hdrDir: mobile ? 'column' : 'row', hdrAlign: mobile ? 'flex-start' : 'flex-end',
+      dateLabel: 'Di, 29. September', btnW: mobile ? '100%' : 'auto',
+      emptyPad: mobile ? '40px 20px' : '64px 32px',
+      menuTop: mobile ? '60px' : '64px', menuRight: mobile ? '12px' : '24px', menuW: mobile ? '300px' : '300px',
+    };
+    const H = { home: { title: 'Hallo Vera' }, stundenplan: { title: 'Stundenplan' }, kompetenzen: { title: 'Kompetenzen' }, material: { title: 'Lernmaterialien' }, leer: { title: 'Lernmaterialien' }, reflexion: { title: 'Übungen an den ETS-Boards' } }[page];
+    const badge = s => ({
+      'Offen': { label: s, bg: 'transparent', border: '1px solid #e4e4e7', icon: 'circle-dashed' },
+      'Abgeschlossen': { label: s, bg: 'rgba(35,150,105,0.10)', border: '1px solid transparent', icon: 'circle-check' },
+    })[s];
+    const segs = (d, t) => Array.from({ length: t }, (_, i) => ({ bg: i < d ? eco : '#e4e4e7' }));
+    const comps = [
+      { title: 'Arbeitsplatz an elektrischen Anlagen nach den fünf Sicherheitsregeln spannungsfrei herstellen und sichern', cat: 'Arbeitssicherheit & Schutzmaßnahmen', d: 0, t: 2, expanded: true, steps: [
+        { icon: 'book-open', name: 'Kompetenzschritt 1 · Theorie', meta: '1/2 Lektionen', b: badge('Offen') },
+        { icon: 'wrench', name: 'Kompetenzschritt 2 · Praxis', meta: '0/1 Praxisaufgaben', b: badge('Offen') } ] },
+      { title: 'Elektrische Grundgrößen messen, berechnen und bewerten', cat: 'Grundlagen der Elektrotechnik', d: 0, t: 3 },
+      { title: 'PV-Module fachgerecht montieren und verschalten', cat: 'Photovoltaik', d: 0, t: 4 },
+    ].map(c => ({ ...c, frac: c.d + '/' + c.t, segs: segs(c.d, c.t), chev: c.expanded ? 'chevron-up' : 'chevron-down', expanded: !!c.expanded, steps: c.steps || [] }));
+    const units = [
+      { title: 'Grundeinheiten U, R, I, P, W, Schaltungen', d: 1, expanded: true, lessons: [
+        { icon: 'video', type: 'Live-Termin', b: badge('Offen') }, { icon: 'book-open', type: 'Selbstlernmodul', b: badge('Abgeschlossen') } ] },
+      { title: 'Schaltungen, Einführung Elektrischer Bauteile', d: 0, today: true },
+      { title: 'Der elektrische Widerstand', d: 0 },
+      { title: 'Messen elektrischer Größen', d: 0 },
+    ].map((u, i) => ({ ...u, no: String(i + 1).padStart(2, '0'), frac: u.d + '/2', segs: segs(u.d, 2),
+      chev: u.expanded ? 'chevron-up' : 'chevron-down', lessons: u.lessons || [], today: !!u.today, expanded: !!u.expanded }));
+    const tabs = ['Tag', 'Woche', 'Programm'].map((l, i) => ({ label: l, bg: i ? 'transparent' : deep, color: i ? grey : '#fff',
+      hover: i ? 'background:rgba(35,150,105,0.10);color:#23321E' : 'background:#23321E' }));
+    return {
+      isMobile: mobile, isDesktop: !mobile, nav, L, h: H, tabs,
+      pHome: page === 'home', pStd: page === 'stundenplan', pKom: page === 'kompetenzen', pMat: page === 'material', pLeer: page === 'leer',
+      showNext: page === 'home',
+      menuOpen: !!this.props.menu, avatarBg: this.props.menu ? 'rgba(35,150,105,0.10)' : '#f4f4f5', avatarRing: this.props.menu ? '0 0 0 2px #fff, 0 0 0 4px #239669' : 'none',
+      
+      nextShadow: focus ? '0 0 0 2px #fff, 0 0 0 4px #239669' : '0 1px 2px rgba(0,0,0,.05)',
+      focusRingInset: focus ? 'inset 0 0 0 2px #239669' : 'none',
+      noToday: !!this.props.noToday,
+      flowSegs: segs(3, 3), pRef: page === 'reflexion', backLabel: page === 'reflexion' ? 'Stundenplan' : '',
+      refForm: page === 'reflexion' && (this.props.rstate ?? 'fragen') === 'fragen',
+      refEmpty: page === 'reflexion' && this.props.rstate === 'leer',
+      refSent: page === 'reflexion' && this.props.rstate === 'gesendet',
+      submitDisabled: 'true', submitOpacity: 0.5, submitCursor: 'not-allowed',
+      questions: [
+        { text: 'Wie sicher fühlst du dich beim Aufbau einer Reihen- und Parallelschaltung?', sel: 1, options: ['Sehr sicher', 'Eher sicher', 'Eher unsicher', 'Unsicher'] },
+        { text: 'Wie hilfreich war die Übung am ETS-Board für dein Verständnis?', sel: -1, options: ['Sehr hilfreich', 'Teilweise hilfreich', 'Nicht hilfreich'] },
+      ].map((q, qi) => ({ text: q.text, options: q.options.map((l, i) => {
+        const on = i === q.sel;
+        return { label: l, border: on ? '1px solid #23321E' : '1px solid #e4e4e7', bg: on ? 'rgba(35,150,105,0.10)' : '#fff',
+          radioBorder: on ? '2px solid #23321E' : '1px solid #71717a', dot: on ? '#23321E' : 'transparent',
+          ring: focus && qi === 0 && on ? '0 0 0 2px #fff, 0 0 0 4px #239669' : 'none' };
+      }) })),
+      nextLabel: this.props.noToday ? 'Als Nächstes · Mi, 30.09., 13:00' : 'Als Nächstes · heute, 13:00',
+      todayRows: this.props.noToday ? [] : [
+        { time: '13:00', icon: 'video', title: 'Schaltungen, Einführung Elektrischer Bauteile' },
+        { time: 'flexibel', icon: 'book-open', title: 'Grundeinheiten U, R, I, P, W, Schaltungen' },
+      ],
+      dayCards: [
+        { icon: 'video', title: 'Schaltungen, Einführung Elektrischer Bauteile', meta: 'Live-Termin · 13:00–17:00', b: badge('Offen') },
+        { icon: 'book-open', title: 'Grundeinheiten U, R, I, P, W, Schaltungen', meta: 'Selbstlernmodul · flexibel', b: badge('Offen') },
+      ],
+      curSegs: segs(1, 20), comps, units,
+    };
+  }
+}
+</script>
+</body>
+</html>
