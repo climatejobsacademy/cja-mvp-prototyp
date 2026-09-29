@@ -102,12 +102,12 @@ export function AppNav({
                         "flex h-11 items-center gap-2 rounded-lg px-3.5 text-[15px] transition-[background-color,box-shadow] duration-150 motion-reduce:transition-none",
                         FOKUS,
                         active
-                          ? "bg-eco-green/10 font-semibold text-eco-deep-green"
+                          ? "bg-charge-green/35 font-semibold text-eco-deep-green"
                           : "text-muted-foreground hover:bg-eco-green/10 hover:text-eco-deep-green"
                       )}
                     >
                       <Icon
-                        className={cn("size-[18px] shrink-0", active && "text-eco-green")}
+                        className={cn("size-[18px] shrink-0", active && "text-eco-deep-green")}
                         aria-hidden="true"
                       />
                       {label}
@@ -150,11 +150,11 @@ export function AppNav({
                   <span
                     className={cn(
                       "flex h-[30px] w-14 items-center justify-center rounded-full transition-[background-color] duration-150 motion-reduce:transition-none",
-                      active && "bg-eco-green/10"
+                      active && "bg-charge-green/35"
                     )}
                   >
                     <Icon
-                      className={cn("size-5", active && "text-eco-green")}
+                      className={cn("size-5", active && "text-eco-deep-green")}
                       aria-hidden="true"
                     />
                   </span>

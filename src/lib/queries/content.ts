@@ -21,6 +21,8 @@ export type FieldJobTypeListItem = {
   titel: string;
   beschreibung: string | null;
   vorbereitungText: string | null;
+  /** Praxistag des Learners zu dieser Aufgabe (nächster offener, sonst letzter) -- null, wenn keiner existiert. */
+  fieldJobId: string | null;
 };
 
 export type ModuleGroup = {
@@ -128,6 +130,27 @@ export async function getContentLibrary(
     };
   }
 
+  // Praxistage des Learners je Aufgabe, damit die Praxisaufgaben im Reiter
+  // Programm direkt in den Praxis-Flow führen: bevorzugt der nächste noch
+  // geplante Einsatz ab heute, sonst der früheste geplante, sonst der letzte.
+  const heute = new Date().toISOString().slice(0, 10);
+  const typeIds = allFieldJobTypes.map((ft) => ft.id);
+  const { data: meineEinsaetze } = typeIds.length
+    ? await supabase
+        .from("field_job")
+        .select("id, datum, status, field_job_type_id")
+        .eq("learner_id", learnerId)
+        .in("field_job_type_id", typeIds)
+        .order("datum", { ascending: true })
+    : { data: [] as { id: string; datum: string; status: string; field_job_type_id: string }[] };
+
+  function einsatzFuer(typeId: string): string | null {
+    const eigene = (meineEinsaetze ?? []).filter((j) => j.field_job_type_id === typeId);
+    const offen = eigene.filter((j) => j.status === "geplant");
+    const naechster = offen.find((j) => j.datum >= heute) ?? offen[0] ?? eigene[eigene.length - 1];
+    return naechster?.id ?? null;
+  }
+
   function buildPraxisTyp(fieldJobType: {
     id: string;
     titel: string;
@@ -139,6 +162,7 @@ export async function getContentLibrary(
       titel: fieldJobType.titel,
       beschreibung: fieldJobType.beschreibung,
       vorbereitungText: fieldJobType.vorbereitung_text,
+      fieldJobId: einsatzFuer(fieldJobType.id),
     };
   }
 

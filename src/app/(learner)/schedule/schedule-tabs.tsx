@@ -3,12 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BookOpen, ChevronLeft, ChevronRight, FileText, Video, Wrench } from "lucide-react";
+import { ChevronLeft, ChevronRight, Armchair } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { SegmentProgress } from "@/components/segment-progress";
 import { UnitProgressBadge } from "@/components/status-badge";
+import { TypIcon, typFuerContentType, type Typ } from "@/components/typ-icon";
 import { cn } from "@/lib/utils";
 import type { ContentType } from "@/lib/database.types";
 import type { ProgrammUebersicht, TagesAgenda, WochenTag } from "@/lib/queries/schedule";
@@ -16,11 +16,11 @@ import type { ProgrammUebersicht, TagesAgenda, WochenTag } from "@/lib/queries/s
 // Typen laut Handoff-Wording (Live-Termin · Selbstlernmodul); "repository"
 // und Kurs-Einträge sind dort nicht vorgesehen und bekommen ihr Icon ohne
 // eigenes Typ-Label.
-const TYP: Record<ContentType | "kurs", { icon: typeof BookOpen; label: string | null }> = {
-  live: { icon: Video, label: "Live-Termin" },
-  scorm: { icon: BookOpen, label: "Selbstlernmodul" },
-  repository: { icon: FileText, label: null },
-  kurs: { icon: BookOpen, label: null },
+const TYP_LABEL: Record<ContentType | "kurs", string | null> = {
+  live: "Live-Termin",
+  scorm: "Selbstlernmodul",
+  repository: null,
+  kurs: null,
 };
 
 // Interaktions-Regeln (Handoff 2a).
@@ -36,17 +36,17 @@ const TAB_TRIGGER =
   "h-11 flex-none rounded-full border-0 px-5 text-[15px] text-muted-foreground hover:bg-eco-green/10 hover:text-eco-deep-green after:hidden data-active:bg-eco-deep-green data-active:text-white data-active:hover:bg-eco-deep-green data-active:hover:text-white group-data-[variant=default]/tabs-list:data-active:shadow-none";
 
 const PFEIL =
-  "size-11 rounded-full text-muted-foreground hover:bg-eco-green/10 hover:text-eco-deep-green [&_svg]:size-5";
+  "size-11 rounded-lg text-muted-foreground hover:bg-eco-green/10 hover:text-eco-deep-green [&_svg]:size-5";
 
 /** Karten-Inhalt: Icon-Kachel · Titel + Meta · Badge · Chevron (nur mit Ziel). */
 function EintragInhalt({
-  icon: Icon,
+  typ,
   titel,
   meta,
   rechts,
   mitPfeil,
 }: {
-  icon: typeof BookOpen;
+  typ: Typ;
   titel: string;
   meta: string | null;
   rechts?: React.ReactNode;
@@ -54,9 +54,7 @@ function EintragInhalt({
 }) {
   return (
     <div className="flex items-center gap-3 p-4">
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-[10px] bg-muted">
-        <Icon className="size-5 text-eco-deep-green" aria-hidden="true" />
-      </span>
+      <TypIcon typ={typ} groesse="gross" />
       {/* Badge bricht mobil unter den Text. */}
       <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-2">
         <div className="min-w-0 grow basis-60">
@@ -118,17 +116,28 @@ export function ScheduleTabs({
         </div>
 
         {tag.feld.length === 0 && tag.theorie.length === 0 && (
-          <p className="py-8 text-center text-sm text-muted-foreground">Für diesen Tag ist nichts geplant.</p>
+          istWochenende(selectedDate) ? (
+            <div className="flex flex-col items-center gap-3 py-8 text-center">
+              <span className="flex size-14 items-center justify-center rounded-xl bg-charge-green/30">
+                <Armchair className="size-6 text-eco-deep-green" aria-hidden="true" />
+              </span>
+              <p className="text-[15px] font-semibold text-eco-deep-green">Wochenende</p>
+              <p className="text-sm text-muted-foreground">Zeit zum Durchatmen – bis Montag!</p>
+            </div>
+          ) : (
+            <p className="py-8 text-center text-sm text-muted-foreground">Für diesen Tag ist nichts geplant.</p>
+          )
         )}
 
         {tag.feld.map((eintrag) => (
           <Link key={eintrag.scheduleEntryId} href={`/praxistag/${eintrag.fieldJobId}`} className={KLICKBARE_KARTE}>
-            <EintragInhalt icon={Wrench} titel={eintrag.titel} meta="Praxistag" mitPfeil />
+            <EintragInhalt typ="praxis" titel={eintrag.titel} meta="Praxistag" mitPfeil />
           </Link>
         ))}
 
         {tag.theorie.map((eintrag) => {
-          const { icon, label } = TYP[eintrag.contentType];
+          const label = TYP_LABEL[eintrag.contentType];
+          const typ = eintrag.contentType === "kurs" ? "kurs" : typFuerContentType(eintrag.contentType);
           const zeit = eintrag.liveSession
             ? `${formatTime(eintrag.liveSession.start)}–${formatTime(eintrag.liveSession.ende)}`
             : null;
@@ -163,11 +172,11 @@ export function ScheduleTabs({
               href={`/content/${eintrag.lessonId}?von=stundenplan&datum=${selectedDate}`}
               className={KLICKBARE_KARTE}
             >
-              <EintragInhalt icon={icon} titel={eintrag.titel} meta={meta} rechts={rechts} mitPfeil />
+              <EintragInhalt typ={typ} titel={eintrag.titel} meta={meta} rechts={rechts} mitPfeil />
             </Link>
           ) : (
             <div key={eintrag.scheduleEntryId} className={CONTAINER}>
-              <EintragInhalt icon={icon} titel={eintrag.titel} meta={meta} rechts={rechts} mitPfeil={false} />
+              <EintragInhalt typ={typ} titel={eintrag.titel} meta={meta} rechts={rechts} mitPfeil={false} />
             </div>
           );
         })}
@@ -187,8 +196,6 @@ export function ScheduleTabs({
         </div>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-7">
           {woche.map((t) => {
-            const gesamt = t.abgeschlosseneEintraege + t.offeneEintraege;
-            const TypIcon = t.art === "feld" ? Wrench : BookOpen;
             return (
               <button
                 key={t.datum}
@@ -200,32 +207,26 @@ export function ScheduleTabs({
                   KLICKBARE_KARTE,
                   "flex min-h-11 flex-col gap-1 p-3 text-left",
                   t.art === "frei" && "border-border/50",
-                  t.datum === todayStr && "border-eco-green bg-eco-green/5"
+                  t.datum === todayStr && "border-eco-green bg-charge-green/20"
                 )}
               >
                 <span className="text-xs font-semibold text-eco-deep-green">{formatWochentag(t.datum)}</span>
                 <span className="text-sm font-medium text-eco-deep-green">{formatKurz(t.datum)}</span>
                 {t.art !== "frei" ? (
                   <span className="flex items-center gap-1 text-[13px] text-muted-foreground">
-                    <TypIcon className="size-3.5" aria-hidden="true" />
+                    <TypIcon typ={t.art === "feld" ? "praxis" : "theorie"} groesse="klein" />
                     {t.art === "feld" ? "Praxis" : "Theorie"}
                   </span>
                 ) : (
-                  <span className="text-[13px] text-muted-foreground">frei</span>
-                )}
-                {t.art === "theorie" && gesamt > 0 && (
-                  <>
-                    <SegmentProgress
-                      className="mt-1"
-                      value={t.abgeschlosseneEintraege}
-                      max={gesamt}
-                      label={`${t.abgeschlosseneEintraege} von ${gesamt} Einträgen abgeschlossen`}
-                    />
-                    {/* K2: Zähltext bleibt sichtbar. */}
-                    <span className="text-[13px] text-muted-foreground tabular-nums" aria-hidden="true">
-                      {t.abgeschlosseneEintraege}/{gesamt} abgeschlossen
+                  istWochenende(t.datum) ? (
+                    // Nur das Icon, gut sichtbar; Text für Screenreader.
+                    <span className="mt-1 flex size-8 items-center justify-center rounded-lg bg-charge-green/40">
+                      <Armchair className="size-[18px] text-eco-deep-green" aria-hidden="true" />
+                      <span className="sr-only">Wochenende</span>
                     </span>
-                  </>
+                  ) : (
+                    <span className="text-[13px] text-muted-foreground">frei</span>
+                  )
                 )}
               </button>
             );
@@ -252,10 +253,10 @@ export function ScheduleTabs({
                   <span className="text-[15px] font-semibold text-eco-deep-green">{phase.name}</span>
                 </span>
                 {phase.typ === "module" && phase.hatTheorie && (
-                  <BookOpen className="size-[18px] shrink-0 text-muted-foreground" aria-label="Theorie" />
+                  <TypIcon typ="theorie" groesse="klein" label="Theorie" />
                 )}
                 {phase.typ === "module" && phase.hatPraxis && (
-                  <Wrench className="size-[18px] shrink-0 text-muted-foreground" aria-label="Praxis" />
+                  <TypIcon typ="praxis" groesse="klein" label="Praxis" />
                 )}
                 <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
               </Link>
@@ -268,6 +269,12 @@ export function ScheduleTabs({
       </TabsContent>
     </Tabs>
   );
+}
+
+/** Samstag oder Sonntag (Datum als JJJJ-MM-TT, in UTC wie addDays). */
+function istWochenende(dateStr: string): boolean {
+  const tag = new Date(`${dateStr}T00:00:00Z`).getUTCDay();
+  return tag === 0 || tag === 6;
 }
 
 function formatTime(t: string): string {

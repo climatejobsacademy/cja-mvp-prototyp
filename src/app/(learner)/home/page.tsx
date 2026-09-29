@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { BookOpen, Calendar, ChevronRight, FileText, Video, Wrench } from "lucide-react";
+import { Calendar, ChevronRight } from "lucide-react";
 
 import { CurriculumCard } from "@/components/curriculum-card";
 import { LinkRow } from "@/components/link-row";
+import { TypIcon, typFuerContentType, type Typ } from "@/components/typ-icon";
 import { PageHeader } from "@/components/page-header";
 import { cn } from "@/lib/utils";
 import { getCurriculumFortschritt } from "@/lib/queries/competencies";
@@ -38,7 +39,7 @@ type HeuteZeile = {
   key: string;
   zeit: string;
   sortierung: string;
-  icon: typeof BookOpen;
+  typ: Typ;
   titel: string;
   href: string | null;
 };
@@ -59,14 +60,12 @@ export default async function HomePage() {
   const zeilen: HeuteZeile[] = [
     ...tag.theorie.map((e) => {
       const zeit = e.liveSession ? e.liveSession.start.slice(0, 5) : "flexibel";
-      const icon =
-        e.contentType === "live" ? Video : e.contentType === "repository" ? FileText : BookOpen;
       return {
         key: e.scheduleEntryId,
         zeit,
         // Termine mit Uhrzeit zuerst, chronologisch; flexible danach.
         sortierung: e.liveSession ? e.liveSession.start : "99",
-        icon,
+        typ: typFuerContentType(e.contentType),
         titel: e.titel,
         href: e.lessonId ? `/content/${e.lessonId}?von=home` : null,
       };
@@ -76,7 +75,7 @@ export default async function HomePage() {
       key: e.scheduleEntryId,
       zeit: "",
       sortierung: "98",
-      icon: Wrench,
+      typ: "praxis" as const,
       titel: e.titel,
       href: `/praxistag/${e.fieldJobId}`,
     })),
@@ -101,13 +100,12 @@ export default async function HomePage() {
           {zeilen.length > 0 ? (
             <ul>
               {zeilen.map((z) => {
-                const Icon = z.icon;
                 const inhalt = (
                   <>
                     <span className="w-[52px] shrink-0 text-[13px] font-semibold tabular-nums text-eco-deep-green">
                       {z.zeit}
                     </span>
-                    <Icon className="size-[18px] shrink-0 text-muted-foreground" aria-hidden="true" />
+                    <TypIcon typ={z.typ} />
                     <span className="min-w-0 flex-1 text-sm font-medium text-eco-deep-green">{z.titel}</span>
                     {z.href && (
                       <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
