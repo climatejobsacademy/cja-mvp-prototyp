@@ -36,7 +36,7 @@ export async function sendMagicLink(formData: FormData) {
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithOtp({
+  await supabase.auth.signInWithOtp({
     email,
     options: {
       emailRedirectTo: `${getSiteUrl()}/auth/callback`,
@@ -46,9 +46,10 @@ export async function sendMagicLink(formData: FormData) {
     },
   });
 
-  if (error) {
-    return { ok: false as const, error: error.message };
-  }
-
+  // K3 (Entscheidung 2026-09-29): dieselbe neutrale Rückmeldung für alle
+  // Fälle -- auch wenn Supabase die Adresse nicht kennt (shouldCreateUser:
+  // false) oder den Versand ablehnt. Keine Aussage, ob ein Account
+  // existiert (keine Konto-Aufzählung). Bewusst kein Logging der Adresse
+  // (CLAUDE.md Regel 9).
   return { ok: true as const };
 }

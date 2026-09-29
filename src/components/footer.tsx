@@ -19,19 +19,24 @@ export function Footer() {
           height={40}
           className="h-10 w-auto md:justify-self-start"
         />
-        <nav aria-label="Rechtliches" className="flex gap-3 text-xs text-muted-foreground">
-          <Link href="/impressum" className="hover:underline">
-            Impressum
-          </Link>
-          <Link href="/datenschutz" className="hover:underline">
-            Datenschutz
-          </Link>
-          <Link href="/barrierefreiheit" className="hover:underline">
-            Barrierefreiheit
-          </Link>
+        {/* Handoff 2a: Links als Touch-Ziele (min-h-11), Hover hellgrün. */}
+        <nav aria-label="Rechtliches" className="flex flex-wrap justify-center gap-1">
+          {[
+            { href: "/impressum", label: "Impressum" },
+            { href: "/datenschutz", label: "Datenschutz" },
+            { href: "/barrierefreiheit", label: "Barrierefreiheit" },
+          ].map(({ href, label }) => (
+            <Link
+              key={href}
+              href={href}
+              className="inline-flex min-h-11 items-center rounded-lg px-2.5 text-[13px] text-muted-foreground outline-none hover:bg-eco-green/10 hover:text-eco-deep-green focus-visible:ring-2 focus-visible:ring-eco-green focus-visible:ring-offset-2"
+            >
+              {label}
+            </Link>
+          ))}
         </nav>
-        <p className="text-center text-xs text-muted-foreground md:justify-self-end md:text-right">
-          © {new Date().getFullYear()} The Academy for Climate Jobs. Alle Rechte vorbehalten.
+        <p className="text-center text-[13px] text-muted-foreground md:justify-self-end md:text-right">
+          © {new Date().getFullYear()} The Academy for Climate Jobs
         </p>
       </div>
     </footer>
