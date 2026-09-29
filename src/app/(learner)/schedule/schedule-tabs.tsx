@@ -16,12 +16,14 @@ import type { ProgrammUebersicht, TagesAgenda, WochenTag } from "@/lib/queries/s
 // Typen laut Handoff-Wording (Live-Termin · Selbstlernmodul); "repository"
 // und Kurs-Einträge sind dort nicht vorgesehen und bekommen ihr Icon ohne
 // eigenes Typ-Label.
-const TYP: Record<ContentType | "kurs", { icon: typeof BookOpen; label: string | null }> = {
-  live: { icon: Video, label: "Live-Termin" },
-  scorm: { icon: BookOpen, label: "Selbstlernmodul" },
-  repository: { icon: FileText, label: null },
-  kurs: { icon: BookOpen, label: null },
+const TYP: Record<ContentType | "kurs", { icon: typeof BookOpen; label: string | null; flaeche: string }> = {
+  live: { icon: Video, label: "Live-Termin", flaeche: "bg-lylac/20" },
+  scorm: { icon: BookOpen, label: "Selbstlernmodul", flaeche: "bg-eco-green/15" },
+  repository: { icon: FileText, label: null, flaeche: "bg-muted" },
+  kurs: { icon: BookOpen, label: null, flaeche: "bg-muted" },
 };
+// Praxistag: helle Coral-Fläche (Coral nur als Fläche, Icon bleibt Deep Green).
+const PRAXIS_FLAECHE = "bg-coral/25";
 
 // Interaktions-Regeln (Handoff 2a).
 const FOKUS =
@@ -43,12 +45,14 @@ const PFEIL =
 /** Karten-Inhalt: Icon-Kachel · Titel + Meta · Badge · Chevron (nur mit Ziel). */
 function EintragInhalt({
   icon: Icon,
+  flaeche,
   titel,
   meta,
   rechts,
   mitPfeil,
 }: {
   icon: typeof BookOpen;
+  flaeche: string;
   titel: string;
   meta: string | null;
   rechts?: React.ReactNode;
@@ -56,7 +60,7 @@ function EintragInhalt({
 }) {
   return (
     <div className="flex items-center gap-3 p-4">
-      <span className="flex size-10 shrink-0 items-center justify-center rounded-[10px] bg-muted">
+      <span className={cn("flex size-10 shrink-0 items-center justify-center rounded-[10px]", flaeche)}>
         <Icon className="size-5 text-eco-deep-green" aria-hidden="true" />
       </span>
       {/* Badge bricht mobil unter den Text. */}
@@ -128,12 +132,12 @@ export function ScheduleTabs({
 
         {tag.feld.map((eintrag) => (
           <Link key={eintrag.scheduleEntryId} href={`/praxistag/${eintrag.fieldJobId}`} className={KLICKBARE_KARTE}>
-            <EintragInhalt icon={Wrench} titel={eintrag.titel} meta="Praxistag" mitPfeil />
+            <EintragInhalt icon={Wrench} flaeche={PRAXIS_FLAECHE} titel={eintrag.titel} meta="Praxistag" mitPfeil />
           </Link>
         ))}
 
         {tag.theorie.map((eintrag) => {
-          const { icon, label } = TYP[eintrag.contentType];
+          const { icon, label, flaeche } = TYP[eintrag.contentType];
           const zeit = eintrag.liveSession
             ? `${formatTime(eintrag.liveSession.start)}–${formatTime(eintrag.liveSession.ende)}`
             : null;
@@ -164,11 +168,11 @@ export function ScheduleTabs({
 
           return klickbar ? (
             <Link key={eintrag.scheduleEntryId} href={`/content/${eintrag.lessonId}`} className={KLICKBARE_KARTE}>
-              <EintragInhalt icon={icon} titel={eintrag.titel} meta={meta} rechts={rechts} mitPfeil />
+              <EintragInhalt icon={icon} flaeche={flaeche} titel={eintrag.titel} meta={meta} rechts={rechts} mitPfeil />
             </Link>
           ) : (
             <div key={eintrag.scheduleEntryId} className={CONTAINER}>
-              <EintragInhalt icon={icon} titel={eintrag.titel} meta={meta} rechts={rechts} mitPfeil={false} />
+              <EintragInhalt icon={icon} flaeche={flaeche} titel={eintrag.titel} meta={meta} rechts={rechts} mitPfeil={false} />
             </div>
           );
         })}
@@ -201,7 +205,7 @@ export function ScheduleTabs({
                   KLICKBARE_KARTE,
                   "flex min-h-11 flex-col gap-1 p-3 text-left",
                   t.art === "frei" && "border-border/50",
-                  t.datum === todayStr && "border-eco-green bg-eco-green/5"
+                  t.datum === todayStr && "border-eco-green bg-charge-green/20"
                 )}
               >
                 <span className="text-xs font-semibold text-eco-deep-green">{formatWochentag(t.datum)}</span>

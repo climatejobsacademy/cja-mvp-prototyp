@@ -39,6 +39,7 @@ type HeuteZeile = {
   zeit: string;
   sortierung: string;
   icon: typeof BookOpen;
+  flaeche: string;
   titel: string;
   href: string | null;
 };
@@ -61,12 +62,16 @@ export default async function HomePage() {
       const zeit = e.liveSession ? e.liveSession.start.slice(0, 5) : "flexibel";
       const icon =
         e.contentType === "live" ? Video : e.contentType === "repository" ? FileText : BookOpen;
+      // Getönte Kachel je Typ, wie im Stundenplan.
+      const flaeche =
+        e.contentType === "live" ? "bg-lylac/20" : e.contentType === "scorm" ? "bg-eco-green/15" : "bg-muted";
       return {
         key: e.scheduleEntryId,
         zeit,
         // Termine mit Uhrzeit zuerst, chronologisch; flexible danach.
         sortierung: e.liveSession ? e.liveSession.start : "99",
         icon,
+        flaeche,
         titel: e.titel,
         href: e.lessonId ? `/content/${e.lessonId}` : null,
       };
@@ -77,6 +82,7 @@ export default async function HomePage() {
       zeit: "",
       sortierung: "98",
       icon: Wrench,
+      flaeche: "bg-coral/25",
       titel: e.titel,
       href: `/praxistag/${e.fieldJobId}`,
     })),
@@ -107,7 +113,9 @@ export default async function HomePage() {
                     <span className="w-[52px] shrink-0 text-[13px] font-semibold tabular-nums text-eco-deep-green">
                       {z.zeit}
                     </span>
-                    <Icon className="size-[18px] shrink-0 text-muted-foreground" aria-hidden="true" />
+                    <span className={cn("flex size-8 shrink-0 items-center justify-center rounded-lg", z.flaeche)}>
+                      <Icon className="size-[18px] text-eco-deep-green" aria-hidden="true" />
+                    </span>
                     <span className="min-w-0 flex-1 text-sm font-medium text-eco-deep-green">{z.titel}</span>
                     {z.href && (
                       <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
