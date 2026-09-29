@@ -32,7 +32,10 @@ export function StatusBadge({
   className?: string;
 }) {
   return (
-    <Badge variant={variant} className={cn("gap-1", className)}>
+    <Badge
+      variant={variant}
+      className={cn("gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium", className)}
+    >
       <Icon aria-hidden="true" />
       {label}
     </Badge>
@@ -97,10 +100,16 @@ export function StepStatusBadge({ status }: { status: keyof typeof STEP_STATUS }
 }
 
 /** Theoretisch/praktisch — nie nur über Farbe, siehe StatusBadge oben. */
-export function StepTypBadge({ typ }: { typ: "theoretisch" | "praktisch" }) {
+export function StepTypBadge({
+  typ,
+  className,
+}: {
+  typ: "theoretisch" | "praktisch";
+  className?: string;
+}) {
   return typ === "praktisch" ? (
-    <StatusBadge label="Praxis" icon={Wrench} variant="outline" />
+    <StatusBadge label="Praxis" icon={Wrench} variant="outline" className={className} />
   ) : (
-    <StatusBadge label="Theorie" icon={BookOpen} variant="outline" />
+    <StatusBadge label="Theorie" icon={BookOpen} variant="outline" className={className} />
   );
 }

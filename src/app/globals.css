@@ -88,7 +88,7 @@
   --info: #ede6fa;
   --info-foreground: var(--eco-deep-green);
 
-  --background: var(--off-white); /* #f5f5f0 — Cards bleiben #ffffff, Seite hebt sich ab */
+  --background: #ffffff;
   --foreground: var(--eco-deep-green);
   --card: #ffffff;
   --card-foreground: var(--eco-deep-green);

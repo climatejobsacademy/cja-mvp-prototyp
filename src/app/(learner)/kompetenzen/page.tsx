@@ -41,7 +41,7 @@ export default async function KompetenzenPage() {
           <p className="text-sm text-muted-foreground">Noch keine Kompetenzen hinterlegt.</p>
         )}
         {kompetenzen.map((k) => (
-          <details key={k.id} className="group rounded-lg border border-border">
+          <details key={k.id} className="group rounded-lg border border-border shadow-sm">
             <summary className="flex cursor-pointer list-none items-center gap-3 p-3">
               <ChevronDown className="size-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true" />
               <div className="min-w-0 flex-1">
