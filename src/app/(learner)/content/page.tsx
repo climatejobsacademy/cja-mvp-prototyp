@@ -1,143 +1,178 @@
 import Link from "next/link";
-import { BookOpen, ChevronDown, FileText, Video, Wrench } from "lucide-react";
+import { ArrowRight, BookOpen, ChevronDown, ChevronRight, FileText, Video, Wrench } from "lucide-react";
 
+import { PageHeader } from "@/components/page-header";
+import { SegmentProgress } from "@/components/segment-progress";
 import { UnitProgressBadge } from "@/components/status-badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { requireCurrentLearner } from "@/lib/queries/session";
-import { getContentLibrary } from "@/lib/queries/content";
+import { getContentLibrary, type CourseListItem, type ModuleGroup } from "@/lib/queries/content";
 import type { ContentType } from "@/lib/database.types";
 
-const FORMAT_ICON: Record<ContentType, typeof BookOpen> = {
-  scorm: BookOpen,
-  live: Video,
-  repository: FileText,
+// Lektionstypen laut Handoff-Wording. "repository" ist dort nicht vorgesehen
+// -- für diese Lektionen steht statt des Typs der Lektionsname.
+const TYP: Record<ContentType, { icon: typeof BookOpen; label: string | null }> = {
+  live: { icon: Video, label: "Live-Termin" },
+  scorm: { icon: BookOpen, label: "Selbstlernmodul" },
+  repository: { icon: FileText, label: null },
 };
+
+const HOVER =
+  "outline-none transition-[background-color] duration-150 hover:bg-eco-green/10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-eco-green motion-reduce:transition-none";
+
+const ROEMISCH = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
+
+/** Einheit (= Kurs) als aufklappbare Zeile mit Segmenten, darin die Lektionen. */
+function Einheit({ course }: { course: CourseListItem }) {
+  const done = course.lessons.filter((l) => l.status === "abgeschlossen").length;
+  const gesamt = course.lessons.length;
+
+  return (
+    <details id={`kurs-${course.id}`} className="group/course border-t border-border">
+      <summary className={cn("flex min-h-16 cursor-pointer list-none items-center gap-3 px-4 py-3", HOVER)}>
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+          <p className="text-sm font-medium text-eco-deep-green">{course.name}</p>
+          <SegmentProgress value={done} max={gesamt} label={`${done} von ${gesamt} Lektionen abgeschlossen`} />
+          {/* K2: Zähltext bleibt sichtbar. */}
+          {gesamt > 0 && (
+            <p className="text-[13px] text-muted-foreground tabular-nums" aria-hidden="true">
+              {done}/{gesamt} Lektionen
+            </p>
+          )}
+        </div>
+        <ChevronDown
+          className="size-5 shrink-0 text-muted-foreground transition-transform group-open/course:rotate-180 motion-reduce:transition-none"
+          aria-hidden="true"
+        />
+      </summary>
+      <ul>
+        {course.lessons.map((lesson) => {
+          const { icon: Icon, label } = TYP[lesson.contentType];
+          return (
+            <li key={lesson.id}>
+              <Link
+                href={`/content/${lesson.id}`}
+                className={cn(
+                  "flex min-h-14 flex-wrap items-center gap-x-3 gap-y-2 border-t border-border py-2.5 pr-4 pl-8",
+                  HOVER
+                )}
+              >
+                <Icon className="size-[18px] shrink-0 text-muted-foreground" aria-hidden="true" />
+                <span className="min-w-0 grow basis-32 text-sm text-eco-deep-green">{label ?? lesson.name}</span>
+                <UnitProgressBadge status={lesson.status} />
+                <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+    </details>
+  );
+}
+
+/** Praxisaufgaben je Modul (SR-59): informativ, nicht klickbar. */
+function Praxisaufgaben({ group }: { group: ModuleGroup }) {
+  if (group.praxisTypen.length === 0) return null;
+  return (
+    <>
+      <p className="border-t border-border px-4 py-2.5 text-xs text-muted-foreground">Praxisaufgaben</p>
+      {group.praxisTypen.map((p) => (
+        <div
+          key={p.id}
+          id={`praxis-${p.id}`}
+          className="flex min-h-14 items-start gap-3 border-t border-border px-4 py-3"
+        >
+          <Wrench className="mt-0.5 size-[18px] shrink-0 text-muted-foreground" aria-hidden="true" />
+          <div className="flex min-w-0 flex-col gap-1">
+            <p className="text-sm font-medium text-eco-deep-green">{p.titel}</p>
+            {p.beschreibung && <p className="text-[13px] text-muted-foreground">{p.beschreibung}</p>}
+            {p.vorbereitungText && (
+              <p className="text-[13px] whitespace-pre-line text-muted-foreground">{p.vorbereitungText}</p>
+            )}
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
 
 export default async function ContentLibraryPage() {
   const learner = await requireCurrentLearner();
   const groups = await getContentLibrary(learner.programmeId, learner.personId);
+  const sichtbar = groups.filter((g) => g.courses.length > 0 || g.praxisTypen.length > 0);
+  // Modulnummer = Position unter den Modulen (Reihenfolge aus getContentLibrary).
+  const modulNummer = new Map(
+    sichtbar.filter((g) => g.name).map((g, i) => [g.id, ROEMISCH[i] ?? String(i + 1)])
+  );
 
   return (
     <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="font-heading text-xl text-eco-deep-green">Lernmaterialien</h1>
-        <p className="text-sm text-muted-foreground">{learner.programmeName}</p>
-      </div>
+      <PageHeader title="Lernmaterialien" />
 
-      {groups.length === 0 && (
-        <p className="text-sm text-muted-foreground">Noch keine Kurse hinterlegt.</p>
+      {sichtbar.length === 0 && (
+        <div className="flex flex-col items-center gap-4 rounded-xl border-2 border-dashed border-border px-5 py-10 text-center md:py-16">
+          <span className="flex size-14 items-center justify-center rounded-full bg-eco-green/10">
+            <BookOpen className="size-6 text-eco-green" aria-hidden="true" />
+          </span>
+          <h2 className="text-xl font-semibold text-eco-deep-green">Noch keine Lernmaterialien freigeschaltet</h2>
+          <Link
+            href="/schedule"
+            className={cn(
+              buttonVariants({ variant: "outline" }),
+              "h-11 w-full rounded-lg text-[15px] font-medium hover:bg-eco-green/10 md:w-auto"
+            )}
+          >
+            Zum Stundenplan
+            <ArrowRight className="size-[18px]" aria-hidden="true" />
+          </Link>
+        </div>
       )}
 
-      {groups.map((group) => {
-        const hatTheorie = group.courses.length > 0;
-        const hatPraxis = group.praxisTypen.length > 0;
-
-        const body = (
-          <div className="flex flex-col gap-3">
-            {group.courses.map((course) => (
-              <Card key={course.id} id={`kurs-${course.id}`} className="shadow-sm">
-                <CardContent className="flex flex-col gap-0 p-0">
-                  <details className="group/course">
-                    <summary className="flex cursor-pointer list-none items-center gap-3 rounded-t-lg p-4 transition-colors hover:bg-eco-green/5">
-                      <ChevronDown
-                        className="size-4 shrink-0 text-muted-foreground transition-transform group-open/course:rotate-180"
-                        aria-hidden="true"
-                      />
-                      <BookOpen className="mt-0.5 size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-3">
-                          <p className="font-medium text-eco-deep-green">{course.name}</p>
-                          {course.abgeschlossen && (
-                            <span className="shrink-0">
-                              <UnitProgressBadge status="abgeschlossen" />
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                          {course.lessons.length} {course.lessons.length === 1 ? "Lektion" : "Lektionen"}
-                        </p>
-                        {!course.abgeschlossen && course.lessons.length > 0 && (
-                          <Progress
-                            value={course.fortschrittProzent}
-                            aria-label={`${course.name}: ${course.fortschrittProzent}% abgeschlossen`}
-                            className="mt-2"
-                          />
-                        )}
-                      </div>
-                    </summary>
-                    <div className="border-t border-border p-4 pt-3">
-                      <ul className="flex flex-col gap-1">
-                        {course.lessons.map((lesson) => {
-                          const Icon = FORMAT_ICON[lesson.contentType];
-                          return (
-                            <li key={lesson.id}>
-                              <Link
-                                href={`/content/${lesson.id}`}
-                                className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-eco-deep-green transition-colors hover:bg-eco-green/10"
-                              >
-                                <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-                                <span className="flex-1">{lesson.name}</span>
-                                <UnitProgressBadge status={lesson.status} />
-                              </Link>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    </div>
-                  </details>
-                </CardContent>
-              </Card>
-            ))}
-            {group.praxisTypen.map((praxisTyp) => (
-              <Card key={praxisTyp.id} id={`praxis-${praxisTyp.id}`}>
-                <CardContent className="flex items-start gap-3">
-                  <Wrench className="mt-0.5 size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
-                  <div className="flex-1">
-                    <p className="font-medium text-eco-deep-green">{praxisTyp.titel}</p>
-                    {praxisTyp.beschreibung && (
-                      <p className="text-sm text-muted-foreground">{praxisTyp.beschreibung}</p>
-                    )}
-                    {praxisTyp.vorbereitungText && (
-                      <p className="mt-1 text-sm text-muted-foreground whitespace-pre-line">
-                        {praxisTyp.vorbereitungText}
-                      </p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        );
-
+      {sichtbar.map((group) => {
+        // Kurse direkt am Programm (kein Modul): Container ohne Modulkopf.
         if (!group.name) {
           return (
-            <section key={group.id ?? "ohne-modul"} id={group.id ? `modul-${group.id}` : undefined}>
-              {body}
+            <section
+              key="ohne-modul"
+              aria-label="Kurse"
+              className="overflow-hidden rounded-xl border border-border [&>*:first-child]:border-t-0"
+            >
+              {group.courses.map((course) => (
+                <Einheit key={course.id} course={course} />
+              ))}
+              <Praxisaufgaben group={group} />
             </section>
           );
         }
 
         return (
           <details
-            key={group.id ?? "ohne-modul"}
+            key={group.id}
             id={group.id ? `modul-${group.id}` : undefined}
-            className="group/module rounded-lg border border-border shadow-sm"
+            className="group/module overflow-hidden rounded-xl border border-border shadow-sm"
           >
-            <summary className="flex cursor-pointer list-none items-center gap-3 rounded-t-lg p-3 transition-colors hover:bg-eco-green/5">
+            <summary className={cn("flex min-h-14 cursor-pointer list-none items-center gap-3 px-4 py-3", HOVER)}>
+              <div className="flex min-w-0 flex-1 flex-col">
+                <p className="text-[13px] text-muted-foreground">Modul {modulNummer.get(group.id)}</p>
+                <h2 className="text-[15px] font-semibold text-eco-deep-green">{group.name}</h2>
+              </div>
+              {/* Theorie-/Praxis-Icons wie im Stundenplan-Programm (SR-59). */}
+              {group.courses.length > 0 && (
+                <BookOpen className="size-[18px] shrink-0 text-muted-foreground" aria-label="Theorie" />
+              )}
+              {group.praxisTypen.length > 0 && (
+                <Wrench className="size-[18px] shrink-0 text-muted-foreground" aria-label="Praxis" />
+              )}
               <ChevronDown
-                className="size-4 shrink-0 text-muted-foreground transition-transform group-open/module:rotate-180"
+                className="size-5 shrink-0 text-muted-foreground transition-transform group-open/module:rotate-180 motion-reduce:transition-none"
                 aria-hidden="true"
               />
-              <span className="flex-1 text-sm font-medium text-eco-deep-green">{group.name}</span>
-              {hatTheorie && (
-                <BookOpen className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-              )}
-              {hatPraxis && (
-                <Wrench className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-              )}
             </summary>
-            <div className="border-t border-border p-3">{body}</div>
+            {group.courses.map((course) => (
+              <Einheit key={course.id} course={course} />
+            ))}
+            <Praxisaufgaben group={group} />
           </details>
         );
       })}

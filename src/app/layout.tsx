@@ -47,7 +47,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
       lang="de"
       className={`${workSans.variable} ${anton.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col has-[[data-bottom-nav]]:pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:has-[[data-bottom-nav]]:pb-0">
         {children}
         <Footer />
       </body>

@@ -12,6 +12,7 @@ export type CurrentLearner = {
   organisationId: string;
   programmeId: string;
   programmeName: string;
+  cohortName: string;
 };
 
 /**
@@ -68,7 +69,7 @@ export const requireCurrentLearner = cache(async (): Promise<CurrentLearner> => 
 
   const { data: cohort, error: cohortError } = await supabase
     .from("cohort")
-    .select("programme_id")
+    .select("programme_id, name")
     .eq("id", enrolment.cohort_id)
     .single();
 
@@ -95,5 +96,6 @@ export const requireCurrentLearner = cache(async (): Promise<CurrentLearner> => 
     organisationId: enrolment.organisation_id,
     programmeId: programme.id,
     programmeName: programme.name,
+    cohortName: cohort.name,
   };
 });
