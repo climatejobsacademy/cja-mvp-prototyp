@@ -13,7 +13,7 @@ const ITEMS = [
   { href: "/home", label: "Home", icon: House },
   { href: "/schedule", label: "Stundenplan", icon: Calendar },
   { href: "/kompetenzen", label: "Kompetenzen", icon: Target },
-  { href: "/content", label: "Lernmaterialien", icon: BookOpen },
+  { href: "/content", label: "Programm", icon: BookOpen },
 ];
 
 const FOKUS =
