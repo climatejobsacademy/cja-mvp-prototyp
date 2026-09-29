@@ -75,7 +75,7 @@ export default async function LoginPage({
 
       <main className="flex items-center justify-center px-4 py-8 md:px-8 md:py-16">
         <div className="flex w-full max-w-[380px] flex-col gap-8">
-          <div className="flex flex-col gap-2 text-center md:text-left">
+          <div className="flex flex-col gap-2 text-center">
             <h1 className="font-heading text-[32px] leading-tight text-eco-deep-green md:text-[40px]">
               The Academy for Climate Jobs
             </h1>
