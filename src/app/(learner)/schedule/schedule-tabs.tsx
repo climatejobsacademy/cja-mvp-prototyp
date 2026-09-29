@@ -86,7 +86,7 @@ export function ScheduleTabs({
   const router = useRouter();
   const [tab, setTab] = useState("tag");
   const todayStr = new Date().toISOString().slice(0, 10);
-  // Meta-Zeile je Phase: Module nummeriert wie in den Lernmaterialien.
+  // Meta-Zeile je Phase: Module nummeriert wie auf der Programm-Seite (/content).
   const phasenLabel = new Map(
     programm.phasen.map((phase) => [
       phase.id,
@@ -244,7 +244,7 @@ export function ScheduleTabs({
         <ol className="flex flex-col gap-3">
           {programm.phasen.map((phase) => (
             <li key={phase.id}>
-              {/* Gleicher Aufbau wie der Modulkopf in den Lernmaterialien. */}
+              {/* Gleicher Aufbau wie der Modulkopf auf der Programm-Seite (/content). */}
               <Link href={`/content#${phase.contentAnchor}`} className={cn(KLICKBARE_KARTE, "flex min-h-14 items-center gap-3 px-4 py-3")}>
                 <span className="flex min-w-0 flex-1 flex-col">
                   <span className="text-[13px] text-muted-foreground">{phasenLabel.get(phase.id)}</span>
