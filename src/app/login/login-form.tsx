@@ -25,19 +25,13 @@ export function LoginForm() {
 
   if (state?.ok && state !== ausgeblendet) {
     return (
-      <div className="flex flex-col gap-4 rounded-xl border border-border p-4" role="status">
+      <div className="flex flex-col items-center gap-4 rounded-xl border border-border p-4 text-center" role="status">
         <span className="flex size-10 items-center justify-center rounded-[10px] bg-eco-green/10">
           <MailCheck className="size-5 text-eco-green" aria-hidden="true" />
         </span>
-        <div className="flex flex-col gap-1">
-          <p className="text-[15px] font-semibold text-eco-deep-green">Prüfe dein Postfach</p>
-          {/* K3: neutral, keine Aussage darüber, ob die Adresse registriert ist. */}
-          <p className="text-sm text-muted-foreground">
-            Falls diese E-Mail-Adresse bei uns registriert ist, haben wir dir gerade einen Einmallink
-            geschickt. Bitte prüfe dein Postfach.
-          </p>
-        </div>
-        <div className="flex flex-col gap-2 sm:flex-row">
+        {/* K3: neutral, keine Aussage darüber, ob die Adresse registriert ist. */}
+        <p className="text-[15px] font-semibold text-eco-deep-green">Prüfe dein Postfach</p>
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
           <form action={formAction} className="contents">
             <input type="hidden" name="email" value={email} />
             <button type="submit" disabled={pending} className={`${SEKUNDAER} w-full sm:w-auto`}>
