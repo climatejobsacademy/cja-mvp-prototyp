@@ -13,8 +13,8 @@ const LOGIN_BILD: "illustration" | "werkstatt" | "detail" = "illustration";
 
 const BILDER = {
   illustration: {
-    src: "/branding/login-hero.png",
-    alt: "Illustration einer Elektrofachkraft mit Helm, Sicherheitsweste und Werkzeuggürtel",
+    src: "/branding/Plattform_Bild_hell.png",
+    alt: "Zwei Fachkräfte vor hellem Hintergrund, mit gezeichnetem Schutzhelm, Warnweste und Werkzeuggürtel",
     foto: false,
     // Ausschnitt mobil / Desktop
     position: "object-bottom",
