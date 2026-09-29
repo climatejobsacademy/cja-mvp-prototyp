@@ -64,7 +64,9 @@ export default async function KompetenzenPage() {
                   <Icon className="size-[18px] shrink-0 text-muted-foreground" aria-hidden="true" />
                   <div className="min-w-0 grow basis-40">
                     <p className="text-sm font-medium text-eco-deep-green">
-                      {step.name} · {typLabel}
+                      {step.name}
+                      {/* Typ steht sichtbar nur als Icon, für Screenreader als Text. */}
+                      <span className="sr-only"> · {typLabel}</span>
                     </p>
                     {/* SR-69: Zusatzinfo nur bei offen / in Prüfung. */}
                     {step.fortschritt && (step.status === "offen" || step.status === "in Prüfung") && (
