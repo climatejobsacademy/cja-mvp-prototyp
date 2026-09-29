@@ -33,6 +33,11 @@ jobs:
   rls-tests:
     needs: lint-and-types
     runs-on: ubuntu-latest
+    # packages: read reicht, um mit dem automatischen GITHUB_TOKEN öffentliche
+    # Images von ghcr.io angemeldet zu laden.
+    permissions:
+      contents: read
+      packages: read
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -42,14 +47,21 @@ jobs:
         with:
           version: 2.117.0
 
+      # Angemeldete Downloads statt anonymer: die anonymen Kontingente von
+      # ghcr.io und public.ecr.aws haben rls-tests am 23.09. und 29.09.
+      # mehrfach blockiert (toomanyrequests). setup-cli setzt die Registry
+      # bereits auf ghcr.io.
+      - name: Bei ghcr.io anmelden
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Supabase lokal starten (Postgres + Migrationen aus supabase/migrations)
-        env:
-          SUPABASE_INTERNAL_IMAGE_REGISTRY: public.ecr.aws
         run: supabase start -x studio,edge-runtime,logflare,vector,mailpit,realtime,imgproxy,postgres-meta
 
       - name: RLS-Tests (pgTAP, supabase/tests/database)
-        env:
-          SUPABASE_INTERNAL_IMAGE_REGISTRY: public.ecr.aws
         run: supabase test db
 
       - name: Supabase stoppen
