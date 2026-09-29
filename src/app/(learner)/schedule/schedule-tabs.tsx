@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, TreePalm } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -117,7 +117,17 @@ export function ScheduleTabs({
         </div>
 
         {tag.feld.length === 0 && tag.theorie.length === 0 && (
-          <p className="py-8 text-center text-sm text-muted-foreground">Für diesen Tag ist nichts geplant.</p>
+          istWochenende(selectedDate) ? (
+            <div className="flex flex-col items-center gap-3 py-8 text-center">
+              <span className="flex size-14 items-center justify-center rounded-full bg-charge-green/30">
+                <TreePalm className="size-6 text-eco-deep-green" aria-hidden="true" />
+              </span>
+              <p className="text-[15px] font-semibold text-eco-deep-green">Wochenende</p>
+              <p className="text-sm text-muted-foreground">Zeit zum Durchatmen – bis Montag!</p>
+            </div>
+          ) : (
+            <p className="py-8 text-center text-sm text-muted-foreground">Für diesen Tag ist nichts geplant.</p>
+          )
         )}
 
         {tag.feld.map((eintrag) => (
@@ -210,7 +220,14 @@ export function ScheduleTabs({
                     {t.art === "feld" ? "Praxis" : "Theorie"}
                   </span>
                 ) : (
-                  <span className="text-[13px] text-muted-foreground">frei</span>
+                  istWochenende(t.datum) ? (
+                    <span className="flex items-center gap-1 text-[13px] text-muted-foreground">
+                      <TreePalm className="size-3.5 text-eco-deep-green" aria-hidden="true" />
+                      Wochenende
+                    </span>
+                  ) : (
+                    <span className="text-[13px] text-muted-foreground">frei</span>
+                  )
                 )}
                 {t.art === "theorie" && gesamt > 0 && (
                   <>
@@ -267,6 +284,12 @@ export function ScheduleTabs({
       </TabsContent>
     </Tabs>
   );
+}
+
+/** Samstag oder Sonntag (Datum als JJJJ-MM-TT, in UTC wie addDays). */
+function istWochenende(dateStr: string): boolean {
+  const tag = new Date(`${dateStr}T00:00:00Z`).getUTCDay();
+  return tag === 0 || tag === 6;
 }
 
 function formatTime(t: string): string {
