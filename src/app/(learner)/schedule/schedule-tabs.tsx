@@ -219,9 +219,10 @@ export function ScheduleTabs({
                   </span>
                 ) : (
                   istWochenende(t.datum) ? (
-                    <span className="flex items-center gap-1 text-[13px] text-muted-foreground">
-                      <RockingChair className="size-3.5 text-eco-deep-green" aria-hidden="true" />
-                      Wochenende
+                    // Nur das Icon, gut sichtbar; Text für Screenreader.
+                    <span className="mt-1 flex size-8 items-center justify-center rounded-full bg-charge-green/40">
+                      <RockingChair className="size-[18px] text-eco-deep-green" aria-hidden="true" />
+                      <span className="sr-only">Wochenende</span>
                     </span>
                   ) : (
                     <span className="text-[13px] text-muted-foreground">frei</span>
