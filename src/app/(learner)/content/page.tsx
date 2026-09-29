@@ -23,11 +23,6 @@ const HOVER =
 
 const ROEMISCH = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
 
-function lektionenZaehlen(courses: CourseListItem[]) {
-  const lessons = courses.flatMap((c) => c.lessons);
-  return { done: lessons.filter((l) => l.status === "abgeschlossen").length, gesamt: lessons.length };
-}
-
 /** Einheit (= Kurs) als aufklappbare Zeile mit Segmenten, darin die Lektionen. */
 function Einheit({ course }: { course: CourseListItem }) {
   const done = course.lessons.filter((l) => l.status === "abgeschlossen").length;
@@ -135,8 +130,6 @@ export default async function ContentLibraryPage() {
       )}
 
       {sichtbar.map((group) => {
-        const { done, gesamt } = lektionenZaehlen(group.courses);
-
         // Kurse direkt am Programm (kein Modul): Container ohne Modulkopf.
         if (!group.name) {
           return (
@@ -170,11 +163,6 @@ export default async function ContentLibraryPage() {
               )}
               {group.praxisTypen.length > 0 && (
                 <Wrench className="size-[18px] shrink-0 text-muted-foreground" aria-label="Praxis" />
-              )}
-              {gesamt > 0 && (
-                <span className="shrink-0 text-[13px] text-muted-foreground tabular-nums">
-                  {done}/{gesamt} Lektionen
-                </span>
               )}
               <ChevronDown
                 className="size-5 shrink-0 text-muted-foreground transition-transform group-open/module:rotate-180 motion-reduce:transition-none"
