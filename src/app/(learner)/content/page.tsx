@@ -75,7 +75,6 @@ function Praxisaufgaben({ group }: { group: ModuleGroup }) {
   if (group.praxisTypen.length === 0) return null;
   return (
     <>
-      <p className="border-t border-border px-4 py-2.5 text-xs text-muted-foreground">Praxisaufgaben</p>
       {group.praxisTypen.map((p) => (
         <div
           key={p.id}
