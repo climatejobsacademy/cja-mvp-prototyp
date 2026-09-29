@@ -39,7 +39,7 @@ export default async function ContentLibraryPage() {
               <Card key={course.id} id={`kurs-${course.id}`} className="shadow-sm">
                 <CardContent className="flex flex-col gap-0 p-0">
                   <details className="group/course">
-                    <summary className="flex cursor-pointer list-none items-center gap-3 rounded-t-lg p-4 transition-colors hover:bg-eco-green/5">
+                    <summary className="flex cursor-pointer list-none items-center gap-3 rounded-t-lg p-4 transition-[background-color] duration-150 hover:bg-eco-green/10 motion-reduce:transition-none outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-eco-green">
                       <ChevronDown
                         className="size-4 shrink-0 text-muted-foreground transition-transform group-open/course:rotate-180"
                         aria-hidden="true"
@@ -124,7 +124,7 @@ export default async function ContentLibraryPage() {
             id={group.id ? `modul-${group.id}` : undefined}
             className="group/module rounded-lg border border-border shadow-sm"
           >
-            <summary className="flex cursor-pointer list-none items-center gap-3 rounded-t-lg p-3 transition-colors hover:bg-eco-green/5">
+            <summary className="flex cursor-pointer list-none items-center gap-3 rounded-t-lg p-3 transition-[background-color] duration-150 hover:bg-eco-green/10 motion-reduce:transition-none outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-eco-green">
               <ChevronDown
                 className="size-4 shrink-0 text-muted-foreground transition-transform group-open/module:rotate-180"
                 aria-hidden="true"
