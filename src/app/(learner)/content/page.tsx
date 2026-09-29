@@ -164,6 +164,13 @@ export default async function ContentLibraryPage() {
                 <p className="text-[13px] text-muted-foreground">Modul {modulNummer.get(group.id)}</p>
                 <h2 className="text-[15px] font-semibold text-eco-deep-green">{group.name}</h2>
               </div>
+              {/* Theorie-/Praxis-Icons wie im Stundenplan-Programm (SR-59). */}
+              {group.courses.length > 0 && (
+                <BookOpen className="size-[18px] shrink-0 text-muted-foreground" aria-label="Theorie" />
+              )}
+              {group.praxisTypen.length > 0 && (
+                <Wrench className="size-[18px] shrink-0 text-muted-foreground" aria-label="Praxis" />
+              )}
               {gesamt > 0 && (
                 <span className="shrink-0 text-[13px] text-muted-foreground tabular-nums">
                   {done}/{gesamt} Lektionen
