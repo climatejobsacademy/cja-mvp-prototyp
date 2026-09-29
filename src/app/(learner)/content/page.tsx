@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, ChevronDown, ChevronRight, FileText, Video, Wrench } from "lucide-react";
+import { ArrowRight, BookOpen, ChevronDown, ChevronRight } from "lucide-react";
 
 import { PageHeader } from "@/components/page-header";
 import { SegmentProgress } from "@/components/segment-progress";
 import { UnitProgressBadge } from "@/components/status-badge";
+import { TypIcon, typFuerContentType } from "@/components/typ-icon";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { requireCurrentLearner } from "@/lib/queries/session";
@@ -12,10 +13,10 @@ import type { ContentType } from "@/lib/database.types";
 
 // Lektionstypen laut Handoff-Wording. "repository" ist dort nicht vorgesehen
 // -- für diese Lektionen steht statt des Typs der Lektionsname.
-const TYP: Record<ContentType, { icon: typeof BookOpen; label: string | null }> = {
-  live: { icon: Video, label: "Live-Termin" },
-  scorm: { icon: BookOpen, label: "Selbstlernmodul" },
-  repository: { icon: FileText, label: null },
+const TYP: Record<ContentType, { label: string | null }> = {
+  live: { label: "Live-Termin" },
+  scorm: { label: "Selbstlernmodul" },
+  repository: { label: null },
 };
 
 const HOVER =
@@ -46,7 +47,7 @@ function Einheit({ course }: { course: CourseListItem }) {
       </summary>
       <ul>
         {course.lessons.map((lesson) => {
-          const { icon: Icon, label } = TYP[lesson.contentType];
+          const { label } = TYP[lesson.contentType];
           return (
             <li key={lesson.id}>
               <Link
@@ -56,7 +57,7 @@ function Einheit({ course }: { course: CourseListItem }) {
                   HOVER
                 )}
               >
-                <Icon className="size-[18px] shrink-0 text-muted-foreground" aria-hidden="true" />
+                <TypIcon typ={typFuerContentType(lesson.contentType)} />
                 <span className="min-w-0 grow basis-32 text-sm text-eco-deep-green">{label ?? lesson.name}</span>
                 <UnitProgressBadge status={lesson.status} />
                 <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
@@ -81,7 +82,7 @@ function Praxisaufgaben({ group }: { group: ModuleGroup }) {
           id={`praxis-${p.id}`}
           className="flex min-h-14 items-start gap-3 border-t border-border px-4 py-3"
         >
-          <Wrench className="mt-0.5 size-[18px] shrink-0 text-muted-foreground" aria-hidden="true" />
+          <TypIcon typ="praxis" />
           <div className="flex min-w-0 flex-col gap-1">
             <p className="text-sm font-medium text-eco-deep-green">{p.titel}</p>
             {p.beschreibung && <p className="text-[13px] text-muted-foreground">{p.beschreibung}</p>}
@@ -149,10 +150,10 @@ export default async function ContentLibraryPage() {
               </div>
               {/* Theorie-/Praxis-Icons wie im Stundenplan-Programm (SR-59). */}
               {group.courses.length > 0 && (
-                <BookOpen className="size-[18px] shrink-0 text-muted-foreground" aria-label="Theorie" />
+                <TypIcon typ="theorie" groesse="klein" label="Theorie" />
               )}
               {group.praxisTypen.length > 0 && (
-                <Wrench className="size-[18px] shrink-0 text-muted-foreground" aria-label="Praxis" />
+                <TypIcon typ="praxis" groesse="klein" label="Praxis" />
               )}
               <ChevronDown
                 className="size-5 shrink-0 text-muted-foreground transition-transform group-open/module:rotate-180 motion-reduce:transition-none"

@@ -3,12 +3,13 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BookOpen, ChevronLeft, ChevronRight, FileText, Video, Wrench } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SegmentProgress } from "@/components/segment-progress";
 import { UnitProgressBadge } from "@/components/status-badge";
+import { TypIcon, typFuerContentType, type Typ } from "@/components/typ-icon";
 import { cn } from "@/lib/utils";
 import type { ContentType } from "@/lib/database.types";
 import type { ProgrammUebersicht, TagesAgenda, WochenTag } from "@/lib/queries/schedule";
@@ -16,14 +17,12 @@ import type { ProgrammUebersicht, TagesAgenda, WochenTag } from "@/lib/queries/s
 // Typen laut Handoff-Wording (Live-Termin · Selbstlernmodul); "repository"
 // und Kurs-Einträge sind dort nicht vorgesehen und bekommen ihr Icon ohne
 // eigenes Typ-Label.
-const TYP: Record<ContentType | "kurs", { icon: typeof BookOpen; label: string | null; flaeche: string }> = {
-  live: { icon: Video, label: "Live-Termin", flaeche: "bg-lylac/20" },
-  scorm: { icon: BookOpen, label: "Selbstlernmodul", flaeche: "bg-eco-green/15" },
-  repository: { icon: FileText, label: null, flaeche: "bg-muted" },
-  kurs: { icon: BookOpen, label: null, flaeche: "bg-muted" },
+const TYP_LABEL: Record<ContentType | "kurs", string | null> = {
+  live: "Live-Termin",
+  scorm: "Selbstlernmodul",
+  repository: null,
+  kurs: null,
 };
-// Praxistag: helle Coral-Fläche (Coral nur als Fläche, Icon bleibt Deep Green).
-const PRAXIS_FLAECHE = "bg-coral/25";
 
 // Interaktions-Regeln (Handoff 2a).
 const FOKUS =
@@ -42,15 +41,13 @@ const PFEIL =
 
 /** Karten-Inhalt: Icon-Kachel · Titel + Meta · Badge · Chevron (nur mit Ziel). */
 function EintragInhalt({
-  icon: Icon,
-  flaeche,
+  typ,
   titel,
   meta,
   rechts,
   mitPfeil,
 }: {
-  icon: typeof BookOpen;
-  flaeche: string;
+  typ: Typ;
   titel: string;
   meta: string | null;
   rechts?: React.ReactNode;
@@ -58,9 +55,7 @@ function EintragInhalt({
 }) {
   return (
     <div className="flex items-center gap-3 p-4">
-      <span className={cn("flex size-10 shrink-0 items-center justify-center rounded-[10px]", flaeche)}>
-        <Icon className="size-5 text-eco-deep-green" aria-hidden="true" />
-      </span>
+      <TypIcon typ={typ} groesse="gross" />
       {/* Badge bricht mobil unter den Text. */}
       <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-2">
         <div className="min-w-0 grow basis-60">
@@ -127,12 +122,13 @@ export function ScheduleTabs({
 
         {tag.feld.map((eintrag) => (
           <Link key={eintrag.scheduleEntryId} href={`/praxistag/${eintrag.fieldJobId}`} className={KLICKBARE_KARTE}>
-            <EintragInhalt icon={Wrench} flaeche={PRAXIS_FLAECHE} titel={eintrag.titel} meta="Praxistag" mitPfeil />
+            <EintragInhalt typ="praxis" titel={eintrag.titel} meta="Praxistag" mitPfeil />
           </Link>
         ))}
 
         {tag.theorie.map((eintrag) => {
-          const { icon, label, flaeche } = TYP[eintrag.contentType];
+          const label = TYP_LABEL[eintrag.contentType];
+          const typ = eintrag.contentType === "kurs" ? "kurs" : typFuerContentType(eintrag.contentType);
           const zeit = eintrag.liveSession
             ? `${formatTime(eintrag.liveSession.start)}–${formatTime(eintrag.liveSession.ende)}`
             : null;
@@ -167,11 +163,11 @@ export function ScheduleTabs({
               href={`/content/${eintrag.lessonId}?von=stundenplan&datum=${selectedDate}`}
               className={KLICKBARE_KARTE}
             >
-              <EintragInhalt icon={icon} flaeche={flaeche} titel={eintrag.titel} meta={meta} rechts={rechts} mitPfeil />
+              <EintragInhalt typ={typ} titel={eintrag.titel} meta={meta} rechts={rechts} mitPfeil />
             </Link>
           ) : (
             <div key={eintrag.scheduleEntryId} className={CONTAINER}>
-              <EintragInhalt icon={icon} flaeche={flaeche} titel={eintrag.titel} meta={meta} rechts={rechts} mitPfeil={false} />
+              <EintragInhalt typ={typ} titel={eintrag.titel} meta={meta} rechts={rechts} mitPfeil={false} />
             </div>
           );
         })}
@@ -192,7 +188,6 @@ export function ScheduleTabs({
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-7">
           {woche.map((t) => {
             const gesamt = t.abgeschlosseneEintraege + t.offeneEintraege;
-            const TypIcon = t.art === "feld" ? Wrench : BookOpen;
             return (
               <button
                 key={t.datum}
@@ -211,7 +206,7 @@ export function ScheduleTabs({
                 <span className="text-sm font-medium text-eco-deep-green">{formatKurz(t.datum)}</span>
                 {t.art !== "frei" ? (
                   <span className="flex items-center gap-1 text-[13px] text-muted-foreground">
-                    <TypIcon className="size-3.5" aria-hidden="true" />
+                    <TypIcon typ={t.art === "feld" ? "praxis" : "theorie"} groesse="klein" />
                     {t.art === "feld" ? "Praxis" : "Theorie"}
                   </span>
                 ) : (
@@ -256,10 +251,10 @@ export function ScheduleTabs({
                   <span className="text-[15px] font-semibold text-eco-deep-green">{phase.name}</span>
                 </span>
                 {phase.typ === "module" && phase.hatTheorie && (
-                  <BookOpen className="size-[18px] shrink-0 text-muted-foreground" aria-label="Theorie" />
+                  <TypIcon typ="theorie" groesse="klein" label="Theorie" />
                 )}
                 {phase.typ === "module" && phase.hatPraxis && (
-                  <Wrench className="size-[18px] shrink-0 text-muted-foreground" aria-label="Praxis" />
+                  <TypIcon typ="praxis" groesse="klein" label="Praxis" />
                 )}
                 <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
               </Link>
