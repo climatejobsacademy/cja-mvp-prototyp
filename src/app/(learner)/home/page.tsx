@@ -73,7 +73,7 @@ export default async function HomePage() {
         icon,
         flaeche,
         titel: e.titel,
-        href: e.lessonId ? `/content/${e.lessonId}` : null,
+        href: e.lessonId ? `/content/${e.lessonId}?von=home` : null,
       };
     }),
     // Praxistage haben kein Zeitfeld -- Spalte bleibt leer.
