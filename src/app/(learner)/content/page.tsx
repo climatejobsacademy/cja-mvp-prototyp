@@ -119,7 +119,7 @@ export default async function ContentLibraryPage() {
 
       {sichtbar.length === 0 && (
         <div className="flex flex-col items-center gap-4 rounded-xl border-2 border-dashed border-border px-5 py-10 text-center md:py-16">
-          <span className="flex size-14 items-center justify-center rounded-full bg-eco-green/10">
+          <span className="flex size-14 items-center justify-center rounded-xl bg-eco-green/10">
             <BookOpen className="size-6 text-eco-green" aria-hidden="true" />
           </span>
           <h2 className="text-xl font-semibold text-eco-deep-green">Noch keine Programminhalte freigeschaltet</h2>

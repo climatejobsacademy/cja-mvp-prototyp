@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, RockingChair } from "lucide-react";
+import { ChevronLeft, ChevronRight, Armchair } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -118,8 +118,8 @@ export function ScheduleTabs({
         {tag.feld.length === 0 && tag.theorie.length === 0 && (
           istWochenende(selectedDate) ? (
             <div className="flex flex-col items-center gap-3 py-8 text-center">
-              <span className="flex size-14 items-center justify-center rounded-full bg-charge-green/30">
-                <RockingChair className="size-6 text-eco-deep-green" aria-hidden="true" />
+              <span className="flex size-14 items-center justify-center rounded-xl bg-charge-green/30">
+                <Armchair className="size-6 text-eco-deep-green" aria-hidden="true" />
               </span>
               <p className="text-[15px] font-semibold text-eco-deep-green">Wochenende</p>
               <p className="text-sm text-muted-foreground">Zeit zum Durchatmen – bis Montag!</p>
@@ -220,8 +220,8 @@ export function ScheduleTabs({
                 ) : (
                   istWochenende(t.datum) ? (
                     // Nur das Icon, gut sichtbar; Text für Screenreader.
-                    <span className="mt-1 flex size-8 items-center justify-center rounded-full bg-charge-green/40">
-                      <RockingChair className="size-[18px] text-eco-deep-green" aria-hidden="true" />
+                    <span className="mt-1 flex size-8 items-center justify-center rounded-lg bg-charge-green/40">
+                      <Armchair className="size-[18px] text-eco-deep-green" aria-hidden="true" />
                       <span className="sr-only">Wochenende</span>
                     </span>
                   ) : (
