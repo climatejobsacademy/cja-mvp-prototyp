@@ -76,19 +76,34 @@ function Praxisaufgaben({ group }: { group: ModuleGroup }) {
   if (group.praxisTypen.length === 0) return null;
   return (
     <>
-      {group.praxisTypen.map((p) => (
-        <div
-          key={p.id}
-          id={`praxis-${p.id}`}
-          className="flex min-h-14 items-start gap-3 border-t border-border px-4 py-3"
-        >
-          <TypIcon typ="praxis" />
-          <div className="flex min-w-0 flex-col gap-1">
-            <p className="text-sm font-medium text-eco-deep-green">{p.titel}</p>
-            {p.beschreibung && <p className="text-[13px] text-muted-foreground">{p.beschreibung}</p>}
+      {group.praxisTypen.map((p) => {
+        const inhalt = (
+          <>
+            <TypIcon typ="praxis" />
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
+              <p className="text-sm font-medium text-eco-deep-green">{p.titel}</p>
+              {p.beschreibung && <p className="text-[13px] text-muted-foreground">{p.beschreibung}</p>}
+            </div>
+          </>
+        );
+        // Mit eigenem Praxistag direkt in den Praxis-Flow, sonst Info-Zeile
+        // ohne Hover und Pfeil ("Ohne Zielseite kein Hover und kein Pfeil").
+        return p.fieldJobId ? (
+          <Link
+            key={p.id}
+            id={`praxis-${p.id}`}
+            href={`/praxistag/${p.fieldJobId}?von=programm`}
+            className={cn("flex min-h-14 items-center gap-3 border-t border-border px-4 py-3", HOVER)}
+          >
+            {inhalt}
+            <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+          </Link>
+        ) : (
+          <div key={p.id} id={`praxis-${p.id}`} className="flex min-h-14 items-start gap-3 border-t border-border px-4 py-3">
+            {inhalt}
           </div>
-        </div>
-      ))}
+        );
+      })}
     </>
   );
 }

@@ -57,9 +57,11 @@ function initialStep(detail: FieldJobDetail): Step {
 export function PraxistagFlow({
   detail,
   organisationId,
+  zurueck,
 }: {
   detail: FieldJobDetail;
   organisationId: string;
+  zurueck: { href: string; label: string };
 }) {
   const [step, setStep] = useState<Step>(initialStep(detail));
   const [error, setError] = useState<string | null>(null);
@@ -118,13 +120,13 @@ export function PraxistagFlow({
       <div className="flex flex-col gap-2">
         {/* Zurück-Link (Handoff: Ghost über der H1, "‹ Stundenplan"). */}
         <Link
-          href="/schedule"
+          href={zurueck.href}
           className={cn(
             "-ml-2 inline-flex min-h-11 w-fit items-center gap-1 rounded-lg px-2 text-sm font-medium text-muted-foreground hover:bg-eco-green/10 hover:text-eco-deep-green",
             FOKUS
           )}
         >
-          <ChevronLeft className="size-4" aria-hidden="true" /> Stundenplan
+          <ChevronLeft className="size-4" aria-hidden="true" /> {zurueck.label}
         </Link>
         <PageHeader title={detail.titel} />
       </div>
