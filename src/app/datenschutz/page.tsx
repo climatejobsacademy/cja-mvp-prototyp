@@ -169,7 +169,14 @@ export default function DatenschutzPage() {
         <a href="https://www.saechsdsb.de/">www.saechsdsb.de</a>
       </p>
 
-      <p>Stand: 30.09.2026</p>
+      <h2>Stand dieser Erklärung</h2>
+      <p>
+        Diese Datenschutzerklärung gilt für{" "}
+        <a href="https://learn.climatejobsacademy.com/">
+          https://learn.climatejobsacademy.com/
+        </a>{" "}
+        und wurde zuletzt am 30.09.2026 aktualisiert.
+      </p>
     </main>
   );
 }
