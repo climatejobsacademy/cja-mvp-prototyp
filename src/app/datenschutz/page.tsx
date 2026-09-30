@@ -4,8 +4,7 @@ export default function DatenschutzPage() {
   // Offen vor Veröffentlichung:
   // (1) DPF-Zertifizierung von Vercel auf dataprivacyframework.gov gegenprüfen,
   //     Text bei Wechsel oder Pro-Upgrade anpassen.
-  // (2) Microsoft-Teams-Formulierung bei Live-Sessions von Vera bestätigen lassen.
-  // (3) Brevo-Vertragspartner laut Auftragsverarbeitungsvertrag prüfen und bei
+  // (2) Brevo-Vertragspartner laut Auftragsverarbeitungsvertrag prüfen und bei
   //     Bedarf im Text ergänzen.
   return (
     <main className="prose mx-auto px-4 py-12">
@@ -60,15 +59,6 @@ export default function DatenschutzPage() {
       <p>
         Derzeit können Lernende keine Dateien oder Medien auf die Plattform
         hochladen. Sollte sich das ändern, ergänzen wir diese Erklärung vorab.
-      </p>
-
-      <h2>Live-Sessions</h2>
-      <p>
-        Live-Sessions finden über externe Videokonferenzdienste statt (derzeit
-        Microsoft Teams). Auf der Plattform speichern wir den Termin, den
-        Zugangslink und Ihre Anwesenheit. Für die Verarbeitung im jeweiligen
-        Videokonferenzdienst gelten dessen Datenschutzhinweise.
-        Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.
       </p>
 
       <h2>E-Mail-Versand</h2>
