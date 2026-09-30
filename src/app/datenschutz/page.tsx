@@ -103,6 +103,72 @@ export default function DatenschutzPage() {
         lit. c DSGVO ab.
       </p>
 
+      <h2>Cookies und Session-Management</h2>
+      <p>
+        Die Plattform verwendet ausschließlich technisch notwendige Cookies,
+        die Ihre Anmeldung aufrechterhalten (Anmelde-Cookie mit einer Laufzeit
+        von bis zu 400 Tagen sowie ein kurzlebiges Cookie während des
+        Anmeldevorgangs). Es werden keine Tracking- oder Analyse-Cookies
+        eingesetzt. Rechtsgrundlage: § 25 Abs. 2 Nr. 2 TDDDG sowie Art. 6 Abs.
+        1 lit. b DSGVO.
+      </p>
+
+      <h2>Technische Protokolle</h2>
+      <p>
+        Beim Aufruf der Plattform verarbeiten der Hosting-Anbieter und der
+        Authentifizierungsdienst technische Daten (IP-Adresse, Zeitpunkt,
+        aufgerufene Seite, Browser und Betriebssystem), um Betrieb und
+        Sicherheit zu gewährleisten. Die Speicherdauer richtet sich nach den
+        Vorgaben dieser Anbieter. Eigene Zugriffsprotokolle führen wir nicht.
+        Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO.
+      </p>
+
+      <h2>Keine automatisierte Entscheidung, keine KI-Verarbeitung</h2>
+      <p>
+        Es findet derzeit weder eine automatisierte Entscheidungsfindung noch
+        eine Verarbeitung Ihrer Daten durch KI-Dienste statt. Ändert sich das,
+        aktualisieren wir diese Erklärung vorab.
+      </p>
+
+      <h2>Speicherdauer</h2>
+      <p>
+        Wir speichern Ihre Daten, solange Ihr Nutzerkonto besteht und der Zweck
+        der Qualifizierung und ihres Nachweises es erfordert. Darüber hinaus
+        speichern wir Daten nur, soweit gesetzliche oder förderrechtliche
+        Aufbewahrungspflichten es verlangen. Löschanfragen richten Sie bitte
+        per E-Mail an info@climatejobsacademy.com. Wir prüfen sie und
+        beantworten sie innerhalb der gesetzlichen Frist von einem Monat (Art.
+        12 Abs. 3 DSGVO).
+      </p>
+
+      <h2>Weitergabe an Dritte</h2>
+      <p>
+        Personenbezogene Daten werden nicht verkauft oder zu Werbezwecken
+        weitergegeben. Eine Weitergabe erfolgt ausschließlich an die
+        technischen Dienstleister Vercel (Hosting), Supabase (Datenbank) und
+        Brevo (E-Mail-Versand) sowie, soweit gesetzlich vorgeschrieben, an
+        Behörden.
+      </p>
+
+      <h2>Ihre Rechte</h2>
+      <p>
+        Sie haben das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung (Art.
+        16), Löschung (Art. 17), Einschränkung der Verarbeitung (Art. 18) und
+        Datenübertragbarkeit (Art. 20). Soweit wir Daten auf Grundlage
+        berechtigter Interessen (Art. 6 Abs. 1 lit. f DSGVO) verarbeiten, können
+        Sie dem aus Gründen, die sich aus Ihrer besonderen Situation ergeben,
+        widersprechen (Art. 21 DSGVO). Zur Ausübung dieser Rechte:{" "}
+        <a href="mailto:info@climatejobsacademy.com">info@climatejobsacademy.com</a>
+      </p>
+
+      <h2>Beschwerderecht</h2>
+      <p>
+        Sie haben das Recht, sich bei einer Datenschutz-Aufsichtsbehörde zu
+        beschweren, zum Beispiel bei der Sächsischen Datenschutz- und
+        Transparenzbeauftragten, Devrientstraße 5, 01067 Dresden,{" "}
+        <a href="https://www.saechsdsb.de/">www.saechsdsb.de</a>
+      </p>
+
       <p>Stand: 30.09.2026</p>
     </main>
   );
