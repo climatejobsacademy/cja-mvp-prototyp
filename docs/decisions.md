@@ -152,8 +152,8 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 ### 2026-09-28 – Resend wird durch Brevo ersetzt
 - **Entscheidung:** Der E-Mail-Versand (Magic Link, Einladungen) wechselt von Resend zu Brevo.
 - **Begründung:** E-Mail-Adressen und Magic-Link-Token sollen nicht in ein Drittland übertragen werden.
-- **Status:** gültig, Umsetzung offen. Der Versand ist nicht im Code eingebunden, sondern über die SMTP-Einstellungen von Supabase Auth.
-- **Belegt:** **aus Projektdoku übernommen**
+- **Status:** gültig, umgesetzt am 30.09.2026. Der Versand ist nicht im Code eingebunden, sondern über die SMTP-Einstellungen von Supabase Auth: Host `smtp-relay.brevo.com`, Port 587, Absender `info@climatejobsacademy.com`. DNS-Einträge (DKIM, DMARC, Brevo-Code) sind gesetzt, der Testlogin auf learn.climatejobsacademy.com war erfolgreich. Resend-Domain, API-Keys und DNS-Einträge sind entfernt.
+- **Belegt:** **aus Projektdoku übernommen**; Umsetzung laut Angabe von Vera vom 30.09.2026 (Supabase-Dashboard, DNS und Brevo nicht im Repo einsehbar)
 
 ### 2026-09-28 – Off-White als App-Hintergrund
 - **Entscheidung:** `--background` wird Off-White `#F5F5F0`.

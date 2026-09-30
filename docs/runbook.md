@@ -74,9 +74,9 @@ sind). Die Meldung beweist also nicht, dass eine Mail verschickt wurde.
 5. Supabase → **Logs** → Auth-Protokolle zur notierten Uhrzeit ansehen: Steht
    dort ein Fehler beim Versand?
 6. Den E-Mail-Dienst prüfen. Die Mails verschickt nicht die App, sondern
-   Supabase über einen externen Versanddienst (bisher Resend, Umstellung auf
-   Brevo ist beschlossen). TODO Vera: klären, wo man das Versandprotokoll des
-   Dienstes einsieht und wer Zugang hat.
+   Supabase über einen externen Versanddienst (Brevo, seit 30.09.2026). Das
+   Versandprotokoll steht in Brevo unter Transactional → Logs. TODO Vera:
+   klären, wer Zugang hat.
 7. Hat die Person viele Links kurz hintereinander angefordert? Supabase begrenzt,
    wie viele Mails in einem Zeitraum verschickt werden. TODO Vera: klären, welche
    Grenzen eingestellt sind und wo man sie einsieht.
