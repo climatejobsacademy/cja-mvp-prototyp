@@ -12,10 +12,11 @@ Stand: 30.09.2026.
 
 ## Bevor du anfängst: vier Regeln
 
-1. **Es gibt nur eine Datenbank, und die enthält echte Daten.** Die App, die
-   Vorschau-Versionen und die lokale Entwicklung nutzen dasselbe
-   Supabase-Projekt. In Supabase deshalb nur **ansehen**, nichts ändern,
-   löschen oder per SQL ausführen, solange es nicht abgesprochen ist.
+1. **Production enthält echte Daten.** Seit 02.10.2026 nutzt die App
+   (learn.climatejobsacademy.com) das Supabase-Projekt in **Frankfurt**.
+   Vorschau-Versionen und lokale Entwicklung nutzen das Projekt in **Irland**
+   (Staging). In beiden Projekten nur **ansehen**, nichts ändern, löschen oder
+   per SQL ausführen, solange es nicht abgesprochen ist.
 2. **Keine Schlüssel weitergeben.** Keine Keys, Passwörter oder Tokens aus
    Supabase, Vercel oder GitHub in Chats, Tickets oder Dokumente kopieren.
 3. **Keine Personendaten in Fehlermeldungen.** E-Mail-Adressen oder Namen von
@@ -31,7 +32,7 @@ Stand: 30.09.2026.
 |---|---|---|
 | Die App | https://learn.climatejobsacademy.com | Selbst ausprobieren |
 | Vercel | Vercel-Dashboard, Projekt `cja-mvp-prototyp`, Bereiche **Deployments** und **Logs** | Läuft die aktuelle Version? Fehler beim Laden von Seiten? Zurückrollen |
-| Supabase | Supabase-Dashboard, Projekt **Prototyp-MVP** (Region EU/Irland) | Accounts (**Authentication → Users**), Daten (**Table Editor**), Protokolle (**Logs**) |
+| Supabase | Supabase-Dashboard: Production = Projekt in Frankfurt (Ref `vqfnmkcfjsudsujiuoqm`), Staging = Projekt **Prototyp-MVP** in Irland (Ref `keijrwvegmwgpvprpoxa`) | Accounts (**Authentication → Users**), Daten (**Table Editor**), Protokolle (**Logs**) |
 | GitHub Actions | https://github.com/climatejobsacademy/cja-mvp-prototyp/actions | Automatische Prüfungen (`lint-and-types`, `rls-tests`) bei jedem Pull Request |
 | Statusseiten der Anbieter | https://status.supabase.com und https://www.vercel-status.com | Hat der Anbieter gerade selbst eine Störung? |
 
@@ -259,6 +260,19 @@ Fehler zeigen oder Daten fehlen.
 **Abbrechen und informieren:** sofort, sobald ein Migrationsfehler vermutet
 wird.
 
+**Gut zu wissen: nicht alles entsteht per Migration.** Die automatische
+Zugriffsregel-Absicherung („Enable automatic RLS“: Event-Trigger `ensure_rls`
+mit der Funktion `public.rls_auto_enable()`) ist in keiner Migration enthalten.
+Sie entstand im Projekt in Irland über die Dashboard-Option und wurde am
+01.10.2026 im Frankfurter Projekt per SQL nachgebaut (out-of-band). Ein
+Vergleich der Migrationen zeigt sie deshalb nicht. Wer ein neues Projekt
+aufsetzt, muss sie zusätzlich einrichten.
+
+Am 02.10.2026 lesend abgeglichen: In Frankfurt und Irland sind RLS-Policies
+(71), RLS-Status aller 31 Tabellen in `public` (überall aktiv), Event-Trigger
+(7, darunter `ensure_rls`) und die Definition von `rls_auto_enable()`
+identisch. Wie man so einen Abgleich lesend macht: siehe Anhang.
+
 TODO Vera: klären, welche Backups der aktuelle Supabase-Tarif enthält, wer eine
 Wiederherstellung auslösen darf und ob sie schon einmal geprobt wurde (Asana:
 „Backup-Konzept für Supabase prüfen“).
@@ -302,3 +316,51 @@ davon weiß.
 Technischer Hintergrund für die Technik: Die Zugriffsregeln liegen als
 Row-Level-Security in `supabase/migrations`, die Tests in
 `supabase/tests/database` laufen bei jedem Pull Request (`rls-tests`).
+
+---
+
+## Anhang für die Technik: lesend auf die Datenbank zugreifen
+
+Gilt für beide Projekte. Jede Abfrage nennt das Ziel ausdrücklich (Ref bzw.
+Pooler-Host), und gegen Production nur nach Absprache.
+
+**Schlüssel und Passwörter liegen im macOS-Schlüsselbund**, nie in Dateien
+oder Chats. Einträge (nur Namen):
+
+| Eintrag | Inhalt |
+|---|---|
+| `cja-fra-anon` | anon key Frankfurt (Legacy API Keys → `anon` `public`) |
+| `cja-db-fra` | Datenbank-Passwort Frankfurt |
+| `cja-db-irl` | Datenbank-Passwort Irland |
+
+**Schlüssel ablegen, ohne ihn in einen Chat zu kopieren:** Im Dashboard den
+Copy-Button nutzen (nicht markieren), dann im eigenen Terminal:
+
+```bash
+security add-generic-password -U -s <eintrag> -a "$USER" -w "$(pbpaste | tr -d '[:space:]')"
+```
+
+Danach nur die Form prüfen, nie den Wert ausgeben. Ein JWT-Schlüssel hat drei
+durch Punkte getrennte Teile:
+
+```bash
+security find-generic-password -s <eintrag> -w | awk -F. '{print "teile=" NF, "zeichen=" length($0)}'
+```
+
+**Lesend per `psql` über den Session-Pooler** (Port 5432, Benutzer
+`postgres.<ref>`, Host im Dashboard unter „Connect“): Passwort nur über
+`PGPASSWORD` aus dem Schlüsselbund übergeben. **`PGOPTIONS='-c
+default_transaction_read_only=on'` greift über den Pooler nicht** (geprüft am
+02.10.2026). Read-only deshalb als erste Anweisung in der Session setzen und
+prüfen:
+
+```sql
+set session characteristics as transaction read only;
+select current_setting('transaction_read_only');  -- muss 'on' sein
+```
+
+**`supabase db query --linked --project-ref <ref>` ist nicht ganz
+nebenwirkungsfrei:** Die CLI legt dafür im Zielprojekt eine temporäre
+Login-Rolle `cli_login_postgres` an bzw. erneuert sie (läuft nach kurzer Zeit
+von selbst ab). Schema und Daten bleiben unverändert, für einen streng
+lesenden Zugriff ist `psql` über den Pooler trotzdem die bessere Wahl.
