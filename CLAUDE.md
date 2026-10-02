@@ -13,8 +13,13 @@ before building.
   field-workflow routes are mobile-first and installable (PWA)
 - shadcn/ui + Tailwind for components; design tokens and flows in
   /docs/design-specifications.md — respect them, don't invent new ones
-- Supabase: Postgres, Auth (magic link), Storage, pgvector. Region EU (Ireland).
-- Environments: dev and prod. Never run anything against prod unless explicitly told.
+- Supabase: Postgres, Auth (magic link), Storage, pgvector. Region EU: Production
+  in Frankfurt (AWS eu-central-1, ref vqfnmkcfjsudsujiuoqm), Staging in Ireland
+  (AWS eu-west-1, ref keijrwvegmwgpvprpoxa).
+- Environments: Production = Supabase Frankfurt, served by Vercel Production
+  (`main` → learn.climatejobsacademy.com). Staging = Supabase Ireland, used by
+  Vercel Preview deployments. Never run anything against Production unless
+  explicitly told; every remote DB action names its `--project-ref` explicitly.
 
 ## Non-negotiable rules
 1. Multi-tenancy: every employer-owned table has organization_id. No exceptions.
@@ -25,13 +30,19 @@ before building.
 6. The competency profile is a view over competency_evidence. No table stores it,
    no UI edits it. Evidence rows are written only by: unit completion, confirmed
    attendance, approved verification.
-7. Confirmed attendance and verification rows are immutable (enforced by trigger).
+7. Confirmed attendance and verification rows must be treated as immutable. No
+   trigger enforces this yet (AfCJ admins can update/delete them via
+   `*_admin_all` policies) — never write code that updates or deletes them, and
+   don't assume the database will stop it.
 8. Field guidance answers only from knowledge_chunk rows of verified sources and
    returns the source ids with every answer. Nothing found → fixed fallback message.
    Never answer installation questions from general model knowledge.
 9. No personal data in logs. Media never leaves Supabase Storage except for the
    LLM call needed for drafting, and only for that call.
 10. No secrets in code.
+11. No Vercel-proprietary services (KV, Postgres, Blob, Edge Config, Analytics
+    etc.) and no Supabase Branching or GitHub auto-deploy of migrations.
+    Migrations are applied to each Supabase project deliberately, one at a time.
 
 ## Conventions
 - snake_case, English, singular table names (field_job, competency_evidence)
