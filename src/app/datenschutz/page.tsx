@@ -2,8 +2,8 @@ export const metadata = { title: "Datenschutzerklärung" };
 
 export default function DatenschutzPage() {
   // Offen vor Veröffentlichung:
-  // (1) DPF-Zertifizierung von Vercel auf dataprivacyframework.gov gegenprüfen,
-  //     Text bei Wechsel oder Pro-Upgrade anpassen.
+  // (1) DPF-Zertifizierung von Vercel auf dataprivacyframework.gov gegenprüfen
+  //     (Pro-Upgrade erledigt, 02.10.2026), Text bei Anbieterwechsel anpassen.
   // (2) Brevo-Vertragspartner laut Auftragsverarbeitungsvertrag prüfen und bei
   //     Bedarf im Text ergänzen.
   return (
