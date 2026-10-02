@@ -121,7 +121,7 @@ export default function DatenschutzPage() {
         Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO.
       </p>
 
-      <h2>Keine automatisierte Entscheidung, keine KI-Verarbeitung</h2>
+      <h2>Keine automatisierte Entscheidung, keine KI-Dienste</h2>
       <p>
         Es findet derzeit keine automatisierte Entscheidungsfindung statt, und
         wir setzen auf der Plattform keine KI-Dienste ein. Ändert sich das,
