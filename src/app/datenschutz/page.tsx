@@ -1,9 +1,8 @@
 export const metadata = { title: "Datenschutzerklärung" };
 
 export default function DatenschutzPage() {
-  // Offen vor Veröffentlichung:
-  // (1) DPF-Zertifizierung von Vercel auf dataprivacyframework.gov gegenprüfen
-  //     (Pro-Upgrade erledigt, 02.10.2026), Text bei Anbieterwechsel anpassen.
+  // Optional, nach Veröffentlichung:
+  // (1) DPF-Zertifizierung von Vercel optional prüfen und ergänzen.
   return (
     <main className="prose mx-auto px-4 py-12">
       <h1>Datenschutzerklärung</h1>
@@ -61,8 +60,8 @@ export default function DatenschutzPage() {
 
       <h2>E-Mail-Versand</h2>
       <p>
-        Für den Versand der Anmelde-E-Mails (Einmallink bzw. Magic Link) nutzen
-        wir Brevo, einen Dienst der Brevo GmbH, Köpenicker Str. 126, 10179
+        Für den Versand der Anmelde- und Einladungs-E-Mails (Einmallink bzw.
+        Magic Link) nutzen wir Brevo, einen Dienst der Brevo GmbH, Köpenicker Str. 126, 10179
         Berlin. Brevo verarbeitet die Daten in unserem Auftrag als
         Auftragsverarbeiter nach Art. 28 DSGVO; die Datenschutzvereinbarung ist
         Bestandteil der Nutzungsbedingungen von Brevo. Verarbeitet werden Ihre
@@ -80,13 +79,14 @@ export default function DatenschutzPage() {
 
       <h2>Hosting</h2>
       <p>
-        Die Plattform wird über Vercel (Vercel Inc., USA) bereitgestellt.
+        Die Anwendung wird bei der Vercel Inc., USA, gehostet.
         Serverseitige Funktionen laufen in der EU (Frankfurt). Beim Aufruf der
         Plattform verarbeitet Vercel technische Verbindungsdaten wie Ihre
         IP-Adresse; einzelne Anfragen können dabei über das weltweit verteilte
         Netzwerk von Vercel laufen. Die Übermittlung in die USA stützt sich auf
-        den Angemessenheitsbeschluss der EU-Kommission zum EU-US Data Privacy
-        Framework (Art. 45 DSGVO), unter dem Vercel zertifiziert ist.
+        die EU-Standardvertragsklauseln nach Art. 46 Abs. 2 lit. c DSGVO, die in
+        die Datenverarbeitungsvereinbarung (DPA) von Vercel eingebunden sind (
+        <a href="https://vercel.com/legal/dpa">vercel.com/legal/dpa</a>).
         Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (sicherer und effizienter
         Betrieb der Plattform).
       </p>
