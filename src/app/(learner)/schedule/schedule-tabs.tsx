@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UnitProgressBadge } from "@/components/status-badge";
 import { TypIcon, typFuerContentType, type Typ } from "@/components/typ-icon";
+import { heuteInBerlin, jetztInBerlin } from "@/lib/date";
 import { cn } from "@/lib/utils";
 import type { ContentType } from "@/lib/database.types";
 import type { ProgrammUebersicht, TagesAgenda, WochenTag } from "@/lib/queries/schedule";
@@ -81,7 +82,7 @@ export function ScheduleTabs({
 }) {
   const router = useRouter();
   const [tab, setTab] = useState("tag");
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = heuteInBerlin();
   // Meta-Zeile nur für Kurs-/Praxis-Phasen (Programme ohne Module); Module
   // tragen ihre Einordnung ("Woche x – …") im Namen.
   const phasenLabel = new Map(
@@ -313,9 +314,15 @@ function formatKurz(dateStr: string): string {
   });
 }
 
+/** Läuft die Session gerade? Datum und Uhrzeiten sind Berliner Ortszeit; der
+ *  Vergleich läuft als Text "JJJJ-MM-TTTHH:MM:SS", daher auf Server und im
+ *  Browser gleich (keine Abhängigkeit von der Zone der Laufzeitumgebung). */
 function isNow(datum: string, start: string, ende: string): boolean {
-  const now = new Date();
-  const startDt = new Date(`${datum}T${start}`);
-  const endDt = new Date(`${datum}T${ende}`);
-  return now >= startDt && now <= endDt;
+  const jetzt = jetztInBerlin();
+  return jetzt >= `${datum}T${mitSekunden(start)}` && jetzt <= `${datum}T${mitSekunden(ende)}`;
+}
+
+/** "09:00" → "09:00:00"; "09:00:00" bleibt. */
+function mitSekunden(zeit: string): string {
+  return zeit.length === 5 ? `${zeit}:00` : zeit.slice(0, 8);
 }

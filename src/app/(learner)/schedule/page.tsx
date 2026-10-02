@@ -1,12 +1,9 @@
 import { PageHeader } from "@/components/page-header";
+import { heuteInBerlin } from "@/lib/date";
 import { requireCurrentLearner } from "@/lib/queries/session";
 import { getProgrammUebersicht, getTagesAgenda, getWochenUebersicht } from "@/lib/queries/schedule";
 
 import { ScheduleTabs } from "./schedule-tabs";
-
-function today(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 export default async function SchedulePage({
   searchParams,
@@ -14,7 +11,7 @@ export default async function SchedulePage({
   searchParams: Promise<{ datum?: string }>;
 }) {
   const { datum } = await searchParams;
-  const selectedDate = datum ?? today();
+  const selectedDate = datum ?? heuteInBerlin();
   const learner = await requireCurrentLearner();
 
   const [tag, woche, programm] = await Promise.all([
