@@ -62,7 +62,7 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 ### 2026-09-15 – Supabase-Region EU (Irland)
 - **Entscheidung:** Das Supabase-Projekt „Prototyp-MVP“ liegt in `eu-west-1` (Irland); CLAUDE.md wurde von Frankfurt auf Irland korrigiert.
 - **Begründung:** Korrektur der Dokumentation an den tatsächlichen Projektstand.
-- **Status:** gültig. Am 30.09. per `supabase projects list` erneut bestätigt. Achtung: Der Entwurf der Datenschutzerklärung nennt noch Frankfurt.
+- **Status:** ersetzt durch 2026-10-02 (Umzug nach Frankfurt). Das Projekt in Irland bleibt als Staging bestehen.
 - **Belegt:** PR #8; `CLAUDE.md`, Abschnitt Stack
 
 ### 2026-09-15 – SR-Triage: Admin-Anforderungen ohne eigene Oberfläche, Pilot deutschsprachig
@@ -200,3 +200,9 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Begründung:** Eine Quelle je Informationsart; Code-Kontext und Projektdoku sollen nicht auseinanderlaufen.
 - **Status:** gültig
 - **Belegt:** **aus Projektdoku übernommen**
+
+### 2026-10-02 – Production zieht von Irland nach Frankfurt
+- **Entscheidung:** Production läuft ab 02.10.2026 auf einem neuen Supabase-Projekt in Frankfurt (`eu-central-1`, Ref `vqfnmkcfjsudsujiuoqm`). Das bisherige Projekt in Irland (`keijrwvegmwgpvprpoxa`) wird Staging und bedient die Vercel-Preview-Deployments. Vercel läuft auf dem Pro-Tarif, Function Region weiterhin `fra1`. Gegen den Supabase Team-Plan wurde entschieden. Die Hosting-Aufstellung wird im Review im Januar 2027 (MVP) erneut geprüft.
+- **Begründung:** Datenresidenz in Deutschland und Vertrauen; Datenbank und serverseitige Funktionen liegen damit in derselben Region. Gründe gegen den Team-Plan: TODO Vera: ergänzen.
+- **Status:** gültig; ersetzt 2026-09-15 (Supabase-Region EU/Irland)
+- **Belegt:** Region `eu-central-1` über den Pooler-Host des Frankfurter Projekts; Auto-RLS am 02.10.2026 lesend gegen Irland abgeglichen (`runbook.md`, Abschnitt 5); `CLAUDE.md`, Abschnitt Stack. Vercel Pro, die Umstellung der Production-Variablen und der Verzicht auf den Team-Plan **aus Projektdoku übernommen** (Vercel- und Supabase-Tarife nicht im Repo einsehbar).
