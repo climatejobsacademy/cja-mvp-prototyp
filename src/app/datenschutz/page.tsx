@@ -87,7 +87,7 @@ export default function DatenschutzPage() {
       <p>
         Alle Nutzerdaten, Lernfortschritte und Nachweise werden in Supabase
         (Supabase Inc., USA) gespeichert. Der Datenbankserver befindet sich in
-        der EU (Irland). Mit Supabase besteht ein Auftragsverarbeitungsvertrag.
+        der EU (Frankfurt). Mit Supabase besteht ein Auftragsverarbeitungsvertrag.
         Da der Anbieter seinen Konzernsitz in den USA hat, sichern wir mögliche
         Zugriffe zusätzlich durch Standardvertragsklauseln nach Art. 46 Abs. 2
         lit. c DSGVO ab.
@@ -165,7 +165,7 @@ export default function DatenschutzPage() {
         <a href="https://learn.climatejobsacademy.com/">
           https://learn.climatejobsacademy.com/
         </a>{" "}
-        und wurde zuletzt am 30.09.2026 aktualisiert.
+        und wurde zuletzt am 02.10.2026 aktualisiert.
       </p>
     </main>
   );
