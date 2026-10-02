@@ -123,8 +123,8 @@ export default function DatenschutzPage() {
 
       <h2>Keine automatisierte Entscheidung, keine KI-Verarbeitung</h2>
       <p>
-        Es findet derzeit weder eine automatisierte Entscheidungsfindung noch
-        eine Verarbeitung Ihrer Daten durch KI-Dienste statt. Ändert sich das,
+        Es findet derzeit keine automatisierte Entscheidungsfindung statt, und
+        wir setzen auf der Plattform keine KI-Dienste ein. Ändert sich das,
         aktualisieren wir diese Erklärung vorab.
       </p>
 
