@@ -4,8 +4,6 @@ export default function DatenschutzPage() {
   // Offen vor Veröffentlichung:
   // (1) DPF-Zertifizierung von Vercel auf dataprivacyframework.gov gegenprüfen
   //     (Pro-Upgrade erledigt, 02.10.2026), Text bei Anbieterwechsel anpassen.
-  // (2) Brevo-Vertragspartner laut Auftragsverarbeitungsvertrag prüfen und bei
-  //     Bedarf im Text ergänzen.
   return (
     <main className="prose mx-auto px-4 py-12">
       <h1>Datenschutzerklärung</h1>
@@ -63,11 +61,20 @@ export default function DatenschutzPage() {
 
       <h2>E-Mail-Versand</h2>
       <p>
-        Für den Versand von Einmallinks und Einladungen nutzen wir Brevo. Dabei
-        wird Ihre E-Mail-Adresse an Brevo übermittelt. Brevo hat seinen Sitz in
-        der EU; Details regelt der mit Brevo geschlossene
-        Auftragsverarbeitungsvertrag. Rechtsgrundlage: Art. 6 Abs. 1 lit. b
-        DSGVO.
+        Für den Versand der Anmelde-E-Mails (Einmallink bzw. Magic Link) nutzen
+        wir Brevo, einen Dienst der Brevo GmbH, Köpenicker Str. 126, 10179
+        Berlin. Brevo verarbeitet die Daten in unserem Auftrag als
+        Auftragsverarbeiter nach Art. 28 DSGVO; die Datenschutzvereinbarung ist
+        Bestandteil der Nutzungsbedingungen von Brevo. Verarbeitet werden Ihre
+        E-Mail-Adresse und technische Versanddaten (Zeitpunkt, Betreff,
+        Zustellstatus).
+        {/* TODO Vera: Tracking in Brevo ausgeschaltet? Dann Satz so lassen, sonst Öffnungs-/Klickdaten inkl. IP ergänzen */}
+        {" "}Die Verarbeitung erfolgt in Rechenzentren innerhalb der EU
+        (Frankreich, Deutschland, Belgien). Brevo setzt außerdem
+        Unterauftragsverarbeiter ein, die auch in Drittländern sitzen können
+        (zum Beispiel Cloudflare); Übermittlungen dorthin stützen sich auf
+        EU-Standardvertragsklauseln bzw. das EU-US Data Privacy Framework.
+        Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.
       </p>
 
       <h2>Hosting</h2>
