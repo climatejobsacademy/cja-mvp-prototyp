@@ -61,8 +61,8 @@ export default function DatenschutzPage() {
       <h2>E-Mail-Versand</h2>
       <p>
         Für den Versand der Anmelde- und Einladungs-E-Mails (Einmallink bzw.
-        Magic Link) nutzen wir Brevo, einen Dienst der Brevo GmbH, Köpenicker Str. 126, 10179
-        Berlin. Brevo verarbeitet die Daten in unserem Auftrag als
+        Magic Link) nutzen wir Brevo, einen Dienst der Brevo GmbH, Köpenicker
+        Str. 126, 10179 Berlin. Brevo verarbeitet die Daten in unserem Auftrag als
         Auftragsverarbeiter nach Art. 28 DSGVO; die Datenschutzvereinbarung ist
         Bestandteil der Nutzungsbedingungen von Brevo. Verarbeitet werden Ihre
         E-Mail-Adresse und technische Versanddaten (Zeitpunkt, Betreff,
