@@ -67,8 +67,9 @@ export default function DatenschutzPage() {
         Auftragsverarbeiter nach Art. 28 DSGVO; die Datenschutzvereinbarung ist
         Bestandteil der Nutzungsbedingungen von Brevo. Verarbeitet werden Ihre
         E-Mail-Adresse und technische Versanddaten (Zeitpunkt, Betreff,
-        Zustellstatus).
-        {/* TODO Vera: Tracking in Brevo ausgeschaltet? Dann Satz so lassen, sonst Öffnungs-/Klickdaten inkl. IP ergänzen */}
+        Zustellstatus). Öffnungs- und Klickstatistiken werden anonymisiert,
+        ohne Zuordnung zu einzelnen Personen, erfasst.
+        {/* TODO Vera: Aussage zu IP-Adresse beim anonymen Tracking prüfen (Brevo-Hilfeartikel nennt sie nicht), ggf. Brevo-Support fragen */}
         {" "}Die Verarbeitung erfolgt in Rechenzentren innerhalb der EU
         (Frankreich, Deutschland, Belgien). Brevo setzt außerdem
         Unterauftragsverarbeiter ein, die auch in Drittländern sitzen können
