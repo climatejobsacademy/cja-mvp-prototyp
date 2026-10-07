@@ -176,6 +176,42 @@ type LessonRow = Flatten<
     content_type: ContentType;
     inhalt: Json | null;
     reihenfolge: number;
+    chat_aktiv: boolean;
+  }
+>;
+
+// Fragen-Thread pro Lektion (0024, SR folgt (Fragen-Thread)). Learner dürfen
+// organisation_id und updated_at nicht lesen (Spalten-Grant); Row enthält nur
+// die lesbaren Spalten.
+type LektionBeitragRow = {
+  id: string;
+  created_at: string;
+  lesson_id: string;
+  cohort_id: string;
+  parent_id: string | null;
+  person_id: string | null;
+  autor_anzeigename: string | null;
+  text: string | null;
+  geloescht_am: string | null;
+};
+
+type KohorteModerationRow = Flatten<
+  Timestamps & {
+    id: string;
+    cohort_id: string;
+    person_id: string;
+    created_by: string | null;
+  }
+>;
+
+type ModerationsprotokollAktion = "geloescht_autor" | "geloescht_moderation";
+
+type ModerationsprotokollRow = Flatten<
+  Timestamps & {
+    id: string;
+    beitrag_id: string;
+    person_id: string | null;
+    aktion: ModerationsprotokollAktion;
   }
 >;
 
@@ -553,10 +589,24 @@ export type Database = {
             content_type: ContentType;
             inhalt?: Json | null;
             reihenfolge: number;
+            chat_aktiv?: boolean;
           }
         >,
         Partial<LessonRow>
       >;
+      // Insert nur mit diesen vier Spalten (Spalten-Grant); person_id,
+      // organisation_id und autor_anzeigename setzt der Trigger. Kein Update.
+      lektion_beitrag: Table<
+        LektionBeitragRow,
+        { lesson_id: string; cohort_id: string; parent_id?: string | null; text: string },
+        Record<string, never>
+      >;
+      kohorte_moderation: Table<
+        KohorteModerationRow,
+        Flatten<Partial<Timestamps> & { id?: string; cohort_id: string; person_id: string; created_by?: string | null }>,
+        Partial<KohorteModerationRow>
+      >;
+      moderationsprotokoll: Table<ModerationsprotokollRow, Record<string, never>, Record<string, never>>;
       lesson_resource: Table<
         LessonResourceRow,
         Flatten<
@@ -839,6 +889,9 @@ export type Database = {
       // SR-68 (0021): AND-Logik je Learner und Kompetenz, ebenfalls kein Write.
       competency_fulfilment: View<CompetencyFulfilmentRow>;
     };
-    Functions: Record<string, never>;
+    Functions: {
+      // Soft-Delete eines Beitrags (0024): Autor:in eigene, Moderation alle der Kohorte.
+      fn_beitrag_loeschen: { Args: { p_beitrag_id: string }; Returns: undefined };
+    };
   };
 };
