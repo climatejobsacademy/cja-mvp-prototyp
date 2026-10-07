@@ -64,6 +64,7 @@ supabase test db    # führt die pgTAP-Tests in supabase/tests/database/ aus
 npm install
 cp .env.example .env.local   # mit den Werten aus `supabase start` (lokal) oder aus Staging befüllen
 npm run dev
+npm test             # Unit-Tests für Hilfsfunktionen (node:test, src/lib/*.test.ts)
 ```
 
 Entwickelt wird lokal oder gegen **Staging** (Supabase Irland, Ref
