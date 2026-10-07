@@ -21,6 +21,15 @@ Nur Kleinbuchstaben a–z, Ziffern und Bindestriche, Ordner mit `/`, eine Endung
 
 Der lesbare Name mit Umlauten und Leerzeichen kommt in den **Titel**. Den Dateinamen für Lernende leitet die App aus dem Objektnamen ab.
 
+### Getestet auf Staging (2026-10-07, Dashboard-Upload in `lesson-resources`)
+
+| Datei | Ergebnis |
+|---|---|
+| PDF, PNG, DOCX, PPTX, XLSX | angenommen; die MIME-Typen der Office-Formate kommen beim Dashboard-Upload richtig an |
+| `Test Ä ö.pdf` | abgelehnt: „File name is invalid“. Umlaute im Objektnamen sind ungültig. |
+| SVG | abgelehnt: „Mime type image/svg+xml is not supported“ |
+| `test image.png` | angenommen. Leerzeichen gehen im Dashboard zwar, die Konvention oben gilt trotzdem; die SQL-Vorlage lehnt solche Namen ab. |
+
 ## Ablauf
 
 Immer zuerst auf Staging (Irland, `keijrwvegmwgpvprpoxa`), Production (Frankfurt, `vqfnmkcfjsudsujiuoqm`) erst nach Freigabe.
