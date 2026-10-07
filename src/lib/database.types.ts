@@ -187,6 +187,7 @@ type LessonResourceRow = Flatten<
     typ: LessonResourceTyp;
     file_asset_id: string | null;
     external_url: string | null;
+    titel: string;
   }
 >;
 
@@ -566,6 +567,7 @@ export type Database = {
             typ: LessonResourceTyp;
             file_asset_id?: string | null;
             external_url?: string | null;
+            titel: string;
           }
         >,
         Partial<LessonResourceRow>
