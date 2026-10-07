@@ -53,3 +53,28 @@ Die Vorlage prüft vorher, dass die Lektion existiert, ein Titel gesetzt ist, de
 ## Entfernen
 
 Eine Zuordnung entfernen: Zeile in `lesson_resource` löschen. Die Datei selbst bleibt im Bucket und in `file_asset`, bis sie dort bewusst gelöscht wird.
+
+## Anzeige für Lernende (PR 2)
+
+- **Platzierung:** SCORM-Lektion: Abschnitt „Materialien“ über dem Player. Live-Lektion: unter den Angaben zur Session. Repository-Lektion: die Liste ist der Hauptinhalt; ohne Materialien steht dort „Für diese Lektion sind noch keine Materialien hinterlegt.“ Bei SCORM und Live erscheint ohne Materialien kein Abschnitt.
+- **Je Zeile:** Titel, Dateiname (aus dem Objektnamen), Format, Größe. Aktionen: „Vorschau“ (nur PDF und Bilder, neuer Tab) und „Download“. Office-Dateien haben nur „Download“.
+- **Links:** nur `https://`-Links, mit Hinweis „externer Link“ und „Öffnen“ in einem neuen Tab. Andere Adressen werden nicht angezeigt. Nichts wird vom externen Anbieter eingebettet.
+- **Signierte Links:** entstehen erst beim Klick (`/content/<lektion>/material/<material>?aktion=vorschau|download`), gelten 1 Stunde, laufen mit der Sitzung der angemeldeten Person über die Storage-Policy aus 0023. Kein Service-Role-Key.
+- **„heruntergeladen“:** nur in diesem Browser-Tab (sessionStorage), nicht in der Datenbank.
+- **Größe:** aus den Storage-Metadaten über `list()` je Ordner (Grenze explizit 1000 Objekte statt der Standardgrenze von 100).
+
+## Abnahme auf Staging
+
+Voraussetzung: Materialien an der TEST Live-Session, der SCORM-Testlektion und der TEST Repository-Lektion (Testdaten-Skripte aus der Sitzung, nur Staging). Preview-Deployment des PR öffnen (Vercel Preview nutzt Staging).
+
+1. **vera+testlearner2** (Test-Kohorte, EFK-EE) anmelden.
+   - TEST Live-Session öffnen: Abschnitt „Materialien“ unter dem Termin, sechs Zeilen in der Reihenfolge PDF, Bild, Word, PowerPoint, Excel, Link, je mit Dateiname, Format, Größe.
+   - „Vorschau“ bei PDF und Bild öffnet einen neuen Tab mit der Datei. Bei Word, PowerPoint, Excel gibt es nur „Download“.
+   - „Download“ lädt die Datei mit ihrem Dateinamen herunter; die Zeile zeigt danach „heruntergeladen“. Neuer Tab oder neue Sitzung: Marker ist weg.
+   - „Öffnen“ beim Link öffnet https://example.com in einem neuen Tab.
+   - SCORM-Testlektion: Materialien über dem Player. TEST Repository-Lektion: Liste als Hauptinhalt, darunter „Als abgeschlossen markieren“.
+   - Tastatur: mit Tab durch die Aktionen, Enter löst aus, Fokus-Ring sichtbar.
+2. **vera+testlearner** (Energiehelden, ebenfalls EFK-EE): sieht dieselben Materialien, weil beide im selben Programm eingeschrieben sind. Der Fall „ohne Einschreibung“ ist auf Staging mit diesen Konten nicht nachstellbar und durch den pgTAP-Test 012 aus PR 1 abgedeckt.
+3. **Unveröffentlicht:** Lektion im Dashboard auf `unpublished` setzen → Seite nicht erreichbar bzw. ohne Materialien; ein vorher kopierter Link `/content/<lektion>/material/<material>` liefert 404. Danach wieder auf `published`.
+4. **Ablauf nach einer Stunde:** Bei „Vorschau“ die Adresse des neuen Tabs (signierter Link) kopieren, nach mehr als einer Stunde erneut aufrufen → Supabase meldet einen abgelaufenen Link. Ein neuer Klick auf „Vorschau“ erzeugt einen neuen, gültigen Link.
+5. **Ohne Anmeldung:** `/content/<lektion>/material/<material>` in einem privaten Fenster → Weiterleitung auf `/login`.
