@@ -12,12 +12,12 @@ Stand 2026-10-07, SR folgt (Notion führt die Anforderung als SR-68, im Repo ist
 
 ## Namenskonvention für Dateien im Bucket
 
-Nur Kleinbuchstaben a–z, Ziffern und Bindestriche, Ordner mit `/`, eine Endung. Keine Umlaute, kein ß, keine Leerzeichen.
+Nur Kleinbuchstaben a–z, Ziffern und Bindestriche, eine Endung. Keine Umlaute, kein ß, keine Leerzeichen, keine Ordner (siehe Ablauf, Schritt 2).
 
 | Statt | So |
 |---|---|
 | `Datenblatt Wechselrichter Ä1.pdf` | `datenblatt-wechselrichter-a1.pdf` |
-| `Modul 2/Übung Löten.pptx` | `modul-2/uebung-loeten.pptx` |
+| `Modul 2 Übung Löten.pptx` | `modul-2-uebung-loeten.pptx` |
 
 Der lesbare Name mit Umlauten und Leerzeichen kommt in den **Titel**. Den Dateinamen für Lernende leitet die App aus dem Objektnamen ab.
 
@@ -35,8 +35,9 @@ Der lesbare Name mit Umlauten und Leerzeichen kommt in den **Titel**. Den Datein
 Immer zuerst auf Staging (Irland, `keijrwvegmwgpvprpoxa`), Production (Frankfurt, `vqfnmkcfjsudsujiuoqm`) erst nach Freigabe.
 
 1. **Datei umbenennen** nach der Konvention oben.
-2. **Hochladen**: Supabase-Dashboard → Storage → Bucket `lesson-resources` → ggf. Ordner öffnen → Upload. Zu große oder nicht erlaubte Dateien lehnt der Bucket ab.
-3. **Objektnamen kopieren**: der Pfad im Bucket ohne Bucket-Namen, z. B. `modul-2/uebung-loeten.pptx`.
+2. **Hochladen**: Supabase-Dashboard → Storage → Bucket `lesson-resources` → Upload, direkt ins Wurzelverzeichnis. Zu große oder nicht erlaubte Dateien lehnt der Bucket ab.
+   - Beim Hochladen in einen Ordner entstanden auf Staging Objektnamen mit doppeltem Schrägstrich (test//...); die Ursache ist nicht geprüft. Im Dashboard deshalb direkt ins Wurzelverzeichnis hochladen und keine Ordner anlegen.
+3. **Objektnamen kopieren**: der Name im Bucket ohne Bucket-Namen, z. B. `uebung-loeten.pptx`.
 4. **Lektions-ID heraussuchen**: Table Editor → `lesson`.
 5. **SQL-Vorlage ausführen**: Inhalt von `scripts/sql/lernmaterial_anlegen.sql` in den SQL Editor kopieren, im Block „EINGABEN“ Lektions-ID, Titel und Pfad eintragen (für einen Video-Link stattdessen `p_link` setzen und `p_pfad := null`), ausführen.
    - Der erste Lauf ist ein **Probelauf**: Er endet absichtlich mit der Meldung „PROBELAUF ok, nichts gespeichert …“ und zeigt Lektion, Titel, Position, Format und Größe.
@@ -44,6 +45,10 @@ Immer zuerst auf Staging (Irland, `keijrwvegmwgpvprpoxa`), Production (Frankfurt
 6. **Prüfen**: Table Editor → `lesson_resource`, neue Zeile mit Titel und Position.
 
 Die Vorlage prüft vorher, dass die Lektion existiert, ein Titel gesetzt ist, der Objektname der Konvention folgt und die Datei wirklich im Bucket liegt. Dateiname und Format übernimmt sie aus dem Bucket. Hängt dieselbe Datei schon an einer anderen Lektion, verwendet sie den vorhandenen `file_asset`-Eintrag wieder.
+
+## Hinweise
+
+- Bei Links prüft die Datenbank nur, dass `external_url` gesetzt ist. Die https-Prüfung liegt in der Vorlage und in der Anzeige (PR 2), nicht in der Datenbank.
 
 ## Entfernen
 
