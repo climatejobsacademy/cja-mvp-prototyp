@@ -892,6 +892,9 @@ export type Database = {
     Functions: {
       // Soft-Delete eines Beitrags (0024): Autor:in eigene, Moderation alle der Kohorte.
       fn_beitrag_loeschen: { Args: { p_beitrag_id: string }; Returns: undefined };
+      // Sichtbarkeit und Schreibrecht im Thread (0024), gleiche Regel wie die Policies.
+      fn_kann_beitraege_lesen: { Args: { p_lesson_id: string; p_cohort_id: string }; Returns: boolean };
+      fn_kann_beitrag_schreiben: { Args: { p_lesson_id: string; p_cohort_id: string }; Returns: boolean };
     };
   };
 };
