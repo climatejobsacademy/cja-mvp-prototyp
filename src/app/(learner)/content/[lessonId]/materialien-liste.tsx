@@ -5,45 +5,14 @@ import { CircleCheck, Download, ExternalLink, Eye, FileText, Link2 } from "lucid
 
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { erstelleDownloadMarker, markierteIds } from "@/lib/download-marker";
 import type { Material } from "@/lib/queries/materialien";
 
-// "heruntergeladen" gilt nur für die laufende Browser-Sitzung (sessionStorage),
-// nichts davon geht in die Datenbank (Entscheidung 2026-10-07).
-const MARKER_PREFIX = "lernmaterial-heruntergeladen:";
-
-// Marker als kleiner externer Store, damit React ihn ohne setState im Effekt
-// liest; auf dem Server gibt es keine Marker.
-const zuhoerer = new Set<() => void>();
-
-function abonnieren(zuhoeren: () => void) {
-  zuhoerer.add(zuhoeren);
-  return () => {
-    zuhoerer.delete(zuhoeren);
-  };
-}
-
-function markerLesen(): string {
-  try {
-    const ids: string[] = [];
-    for (let i = 0; i < window.sessionStorage.length; i++) {
-      const key = window.sessionStorage.key(i);
-      if (key?.startsWith(MARKER_PREFIX)) ids.push(key.slice(MARKER_PREFIX.length));
-    }
-    return ids.sort().join(",");
-  } catch {
-    // sessionStorage nicht verfügbar (z. B. privater Modus): ohne Marker weiter.
-    return "";
-  }
-}
-
-function markerSetzen(id: string) {
-  try {
-    window.sessionStorage.setItem(MARKER_PREFIX + id, "1");
-  } catch {
-    // siehe markerLesen
-  }
-  for (const zuhoeren of zuhoerer) zuhoeren();
-}
+// "heruntergeladen" nur für die laufende Browser-Sitzung (sessionStorage),
+// nichts davon geht in die Datenbank. Logik in src/lib/download-marker.ts.
+const downloadMarker = erstelleDownloadMarker(() =>
+  typeof window === "undefined" ? null : window.sessionStorage
+);
 
 const AKTION = cn(buttonVariants({ variant: "outline" }), "h-11 gap-2 px-3 sm:h-9");
 
@@ -63,8 +32,9 @@ export function MaterialienListe({
   materialien: Material[];
   ueberschrift?: string;
 }) {
-  const markiert = useSyncExternalStore(abonnieren, markerLesen, () => "");
-  const heruntergeladen = new Set(markiert ? markiert.split(",") : []);
+  const heruntergeladen = markierteIds(
+    useSyncExternalStore(downloadMarker.abonnieren, downloadMarker.lesen, () => "")
+  );
 
   const basis = `/content/${lessonId}/material`;
 
@@ -120,7 +90,13 @@ export function MaterialienListe({
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={`Download: ${m.titel}`}
-                    onClick={() => markerSetzen(m.id)}
+                    // Linksklick, Strg/Cmd-Klick und Enter lösen click aus,
+                    // der Mittelklick nur auxclick. Der Marker blockiert den
+                    // Download nicht (kein preventDefault).
+                    onClick={() => downloadMarker.setzen(m.id)}
+                    onAuxClick={(e) => {
+                      if (e.button === 1) downloadMarker.setzen(m.id);
+                    }}
                     className={AKTION}
                   >
                     <Download aria-hidden="true" /> Download
