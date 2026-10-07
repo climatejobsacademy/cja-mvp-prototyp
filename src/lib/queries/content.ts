@@ -1,3 +1,4 @@
+import { heuteInBerlin } from "@/lib/date";
 import { createClient } from "@/lib/supabase/server";
 import type { ContentType, UnitProgressStatus } from "@/lib/database.types";
 
@@ -133,7 +134,7 @@ export async function getContentLibrary(
   // Praxistage des Learners je Aufgabe, damit die Praxisaufgaben im Reiter
   // Programm direkt in den Praxis-Flow führen: bevorzugt der nächste noch
   // geplante Einsatz ab heute, sonst der früheste geplante, sonst der letzte.
-  const heute = new Date().toISOString().slice(0, 10);
+  const heute = heuteInBerlin();
   const typeIds = allFieldJobTypes.map((ft) => ft.id);
   const { data: meineEinsaetze } = typeIds.length
     ? await supabase

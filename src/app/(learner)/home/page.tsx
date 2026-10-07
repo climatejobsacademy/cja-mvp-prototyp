@@ -5,16 +5,11 @@ import { CurriculumCard } from "@/components/curriculum-card";
 import { LinkRow } from "@/components/link-row";
 import { TypIcon, typFuerContentType, type Typ } from "@/components/typ-icon";
 import { PageHeader } from "@/components/page-header";
+import { heuteInBerlin } from "@/lib/date";
 import { cn } from "@/lib/utils";
 import { getCurriculumFortschritt } from "@/lib/queries/competencies";
 import { getNaechsterTermin, getTagesAgenda } from "@/lib/queries/schedule";
 import { requireCurrentLearner } from "@/lib/queries/session";
-
-// Wie der Stundenplan (schedule/page.tsx): Datum in UTC, damit beide Seiten
-// denselben Tag als "heute" nehmen.
-function today(): string {
-  return new Date().toISOString().slice(0, 10);
-}
 
 function kurzerWochentag(date: Date): string {
   return date.toLocaleDateString("de-DE", { weekday: "short", timeZone: "UTC" }).replace(".", "");
@@ -49,7 +44,9 @@ const ZEILE_BASIS = "flex min-h-14 items-center gap-3 border-t border-border px-
 
 export default async function HomePage() {
   const learner = await requireCurrentLearner();
-  const heute = today();
+  // Wie der Stundenplan (schedule/page.tsx) über heuteInBerlin(), damit beide
+  // Seiten denselben Tag als "heute" nehmen, und zwar den Berliner.
+  const heute = heuteInBerlin();
 
   const [tag, curriculum, naechster] = await Promise.all([
     getTagesAgenda(learner.organisationId, learner.cohortId, learner.enrolmentId, learner.personId, heute),
