@@ -3,14 +3,15 @@
 -- Schreiben nur in der eigenen Kohorte bei freigeschalteter, lesbarer Lektion,
 -- Länge 1-1000, eine Antwortebene, kein Bearbeiten/direktes Löschen,
 -- Soft-Delete über fn_beitrag_loeschen (Autor:in, Moderierende, AfCJ admin),
--- Account-Löschung setzt person_id auf null.
+-- Account-Löschung setzt person_id auf null und anonymisiert die Beiträge;
+-- im Moderationsprotokoll wird person_id auf null gesetzt.
 --
 -- Ausführen mit: supabase test db
 begin;
 
 create extension if not exists pgtap schema extensions;
 
-select plan(45);
+select plan(48);
 
 -- ------------------------------------------------------------
 -- Fixtures (als Superuser)
@@ -382,6 +383,24 @@ delete from auth.users where id = '00000000-0000-0000-0000-000000000902';
 select ok(
   (select person_id is null from lektion_beitrag where id = '00000000-0000-0000-0000-000000000964'),
   'Account-Löschung setzt person_id der Beiträge auf null'
+);
+select ok(
+  (select text is null and autor_anzeigename is null and geloescht_am is not null
+   from lektion_beitrag where id = '00000000-0000-0000-0000-000000000964'),
+  'Account-Löschung anonymisiert den Beitrag (Text und Anzeigename leer, geloescht_am gesetzt)'
+);
+select is(
+  (select text || ' | ' || person_id::text || ' | ' || autor_anzeigename from lektion_beitrag
+   where parent_id = '00000000-0000-0000-0000-000000000963' and text = 'Antwort von Anna'),
+  'Antwort von Anna | 00000000-0000-0000-0000-000000000901 | Anna B.',
+  'Antworten anderer Personen bleiben bei der Account-Löschung unverändert'
+);
+
+delete from auth.users where id = '00000000-0000-0000-0000-000000000908';
+select is(
+  (select count(*)::int from moderationsprotokoll where aktion = 'geloescht_moderation' and person_id is null),
+  1,
+  'Account-Löschung der moderierenden Person setzt person_id im Moderationsprotokoll auf null'
 );
 
 select * from finish();

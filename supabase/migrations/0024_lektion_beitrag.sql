@@ -18,7 +18,10 @@
 --     Trigger gesetzt; keine Policy auf person geöffnet.
 --   - lesson.chat_aktiv (Standard false): Threads nur an freigeschalteten
 --     Lektionen sichtbar und beschreibbar (für Lernende).
---   - person_id nullable, on delete set null (Löschentscheid 14.10. offen).
+--   - person_id nullable, on delete set null. Bei Account-Löschung werden die
+--     Beiträge der Person per Trigger anonymisiert (text und Anzeigename
+--     geleert, geloescht_am gesetzt); Antworten anderer bleiben. Ein harter
+--     Löschweg bleibt zusätzlich möglich (Entscheid 14.10.).
 --   - Moderationsprotokoll ohne Beitragstext.
 --   - Beitragsinhalte werden nirgends geloggt (CLAUDE.md Regel 9): keine
 --     RAISE-Meldung in dieser Migration enthält Text oder Namen.
@@ -301,6 +304,36 @@ revoke execute on function fn_lektion_beitrag_vorbereiten() from public, anon, a
 create trigger lektion_beitrag_vorbereiten
   before insert on lektion_beitrag
   for each row execute function fn_lektion_beitrag_vorbereiten();
+
+-- ============================================================
+-- Trigger: Anonymisieren bei Account-Löschung (Entscheidung Vera 07.10.)
+-- Wird person_id ohne gleichzeitiges Löschen (geloescht_am) auf null gesetzt
+-- -- das passiert über on delete set null, wenn die person gelöscht wird --,
+-- werden text und autor_anzeigename geleert und geloescht_am gesetzt.
+-- fn_beitrag_loeschen setzt geloescht_am im selben Update und ist davon nicht
+-- betroffen. Antworten anderer Personen bleiben unverändert (parent_id ohne
+-- on delete-Aktion, kein Kaskadieren).
+-- ============================================================
+create or replace function fn_lektion_beitrag_anonymisieren()
+returns trigger
+language plpgsql
+set search_path = public
+as $$
+begin
+  if old.person_id is not null and new.person_id is null and new.geloescht_am is null then
+    new.text := null;
+    new.autor_anzeigename := null;
+    new.geloescht_am := now();
+  end if;
+  return new;
+end;
+$$;
+
+revoke execute on function fn_lektion_beitrag_anonymisieren() from public, anon, authenticated;
+
+create trigger lektion_beitrag_anonymisieren
+  before update of person_id on lektion_beitrag
+  for each row execute function fn_lektion_beitrag_anonymisieren();
 
 -- ============================================================
 -- Löschen (Soft-Delete), nur über diese Funktion
