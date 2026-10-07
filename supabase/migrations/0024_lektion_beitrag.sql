@@ -27,7 +27,7 @@
 -- Beitrag übernimmt die organisation_id der Einschreibung der Autor:in
 -- (Arbeitgeber), gesetzt per Trigger. Sichtbar ist der Beitrag trotzdem für
 -- die ganze Kohorte, also über Arbeitgeber hinweg -- bewusste Ausnahme von
--- SR-06, Entscheidungsvorschlag im PR.
+-- SR-06, siehe docs/decisions.md (2026-10-07, Fragen-Thread gehört der Kohorte).
 
 -- ============================================================
 -- lesson.chat_aktiv
