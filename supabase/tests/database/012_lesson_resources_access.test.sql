@@ -185,20 +185,19 @@ select throws_like(
   '%row-level security%',
   'Learner kann kein lesson_resource anlegen'
 );
+-- Update und Delete laufen ohne Fehler, treffen aber wegen RLS keine Zeile.
+update lesson_resource set titel = 'Geändert'
+where id = '00000000-0000-0000-0000-000000000761';
 select is(
-  (with geaendert as (
-     update lesson_resource set titel = 'Geändert'
-     where id = '00000000-0000-0000-0000-000000000761' returning 1)
-   select count(*)::int from geaendert),
-  0,
+  (select titel from lesson_resource where id = '00000000-0000-0000-0000-000000000761'),
+  'Datenblatt',
   'Learner kann lesson_resource nicht ändern'
 );
+delete from lesson_resource
+where id = '00000000-0000-0000-0000-000000000761';
 select is(
-  (with geloescht as (
-     delete from lesson_resource
-     where id = '00000000-0000-0000-0000-000000000761' returning 1)
-   select count(*)::int from geloescht),
-  0,
+  (select count(*)::int from lesson_resource where id = '00000000-0000-0000-0000-000000000761'),
+  1,
   'Learner kann lesson_resource nicht löschen'
 );
 select throws_like(
