@@ -82,6 +82,7 @@ type OrganisationRow = Flatten<
     name: string;
     typ: OrganisationTyp;
     status: OrganisationStatus;
+    logo_pfad: string | null; // 0025, SR-76
   }
 >;
 
@@ -490,7 +491,7 @@ export type Database = {
     Tables: {
       organisation: Table<
         OrganisationRow,
-        Flatten<Partial<Timestamps> & { id?: string; name: string; typ: OrganisationTyp; status?: OrganisationStatus }>,
+        Flatten<Partial<Timestamps> & { id?: string; name: string; typ: OrganisationTyp; status?: OrganisationStatus; logo_pfad?: string | null }>,
         Partial<OrganisationRow>
       >;
       person: Table<

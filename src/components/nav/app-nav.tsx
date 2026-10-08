@@ -1,10 +1,12 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BookOpen, Calendar, GraduationCap, House, Target } from "lucide-react";
 
 import { AccountMenu } from "@/components/nav/account-menu";
+import type { HeaderLogo } from "@/lib/org-logo";
 import { cn } from "@/lib/utils";
 
 // Handoff 2a (docs/design_handoff_lernplattform/README.md, "Kopfleiste").
@@ -47,11 +49,36 @@ function Wortmarke() {
   );
 }
 
-function Programm({ name, mobile }: { name: string; mobile?: boolean }) {
+/**
+ * Logo der eigenen Organisation (SR-76) hinter einem Trennstrich. Fester Kasten
+ * (mobil kleiner): kein Layout-Sprung beim Laden, object-contain verzerrt nicht.
+ * unoptimized: Datei kommt direkt aus dem öffentlichen Bucket, ohne
+ * remotePatterns in next.config.ts.
+ */
+function OrgLogo({ logo, mobile }: { logo: HeaderLogo; mobile?: boolean }) {
+  return (
+    <div className={cn("flex shrink-0 items-center border-l border-border", mobile ? "h-7 pl-3" : "h-8 pl-4")}>
+      <div className={cn("relative", mobile ? "h-6 w-[72px]" : "h-8 w-[120px]")}>
+        <Image
+          src={logo.src}
+          alt={logo.alt}
+          fill
+          unoptimized
+          sizes={mobile ? "72px" : "120px"}
+          className="object-contain object-left"
+        />
+      </div>
+    </div>
+  );
+}
+
+/** Mit Logo davor: nur Abstand, kein zweiter Trennstrich. */
+function Programm({ name, mobile, ohneStrich }: { name: string; mobile?: boolean; ohneStrich?: boolean }) {
   return (
     <div
       className={cn(
-        "flex h-8 min-w-0 items-center gap-2 border-l border-border pl-4",
+        "flex h-8 min-w-0 items-center gap-2",
+        !ohneStrich && "border-l border-border pl-4",
         mobile && "flex-1"
       )}
     >
@@ -59,7 +86,7 @@ function Programm({ name, mobile }: { name: string; mobile?: boolean }) {
       <span
         className={cn(
           "text-muted-foreground",
-          mobile ? "truncate text-xs" : "text-[13px] whitespace-nowrap"
+          mobile ? "truncate text-xs" : "truncate text-[13px]"
         )}
       >
         {name}
@@ -73,11 +100,13 @@ export function AppNav({
   email,
   programmeName,
   cohortName,
+  organisationLogo,
 }: {
   name: string;
   email: string;
   programmeName: string;
   cohortName: string;
+  organisationLogo: HeaderLogo | null;
 }) {
   const pathname = usePathname();
   const menu = <AccountMenu name={name} email={email} programmeName={programmeName} cohortName={cohortName} />;
@@ -88,7 +117,8 @@ export function AppNav({
         {/* Desktop */}
         <div className="hidden h-16 items-center gap-4 px-8 md:flex">
           <Wortmarke />
-          {programmeName.trim() && <Programm name={programmeName} />}
+          {organisationLogo && <OrgLogo logo={organisationLogo} />}
+          {programmeName.trim() && <Programm name={programmeName} ohneStrich={!!organisationLogo} />}
           <nav aria-label="Hauptnavigation" className="ml-auto">
             <ul className="flex items-center gap-1">
               {ITEMS.map(({ href, label, icon: Icon }) => {
@@ -123,7 +153,12 @@ export function AppNav({
         {/* Mobile: Kopf ohne Nav, Nav als Bottom-Bar unten */}
         <div className="flex h-[60px] items-center gap-3 px-4 md:hidden">
           <Wortmarke />
-          {programmeName.trim() ? <Programm name={programmeName} mobile /> : <span className="flex-1" />}
+          {organisationLogo && <OrgLogo logo={organisationLogo} mobile />}
+          {programmeName.trim() ? (
+            <Programm name={programmeName} mobile ohneStrich={!!organisationLogo} />
+          ) : (
+            <span className="flex-1" />
+          )}
           {menu}
         </div>
       </header>
