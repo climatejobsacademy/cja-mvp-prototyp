@@ -233,7 +233,7 @@ type CompetencyRow = Flatten<
     name: string;
     kompetenzbereich: string;
     /**
-     * @deprecated Seit 0020 (SR-66) nicht mehr als Programm-Zuordnung lesen --
+     * @deprecated Seit 0020 (SR-70) nicht mehr als Programm-Zuordnung lesen --
      * die läuft über `competency_programme` (N:M). Spalte entfällt mit der
      * Drop-Column-Folgemigration.
      */
@@ -245,7 +245,7 @@ type CompetencyStepRow = Flatten<
   Timestamps & {
     id: string;
     /**
-     * @deprecated Seit 0019 (SR-65) nicht mehr lesen -- Zuordnung zur
+     * @deprecated Seit 0019 (SR-69) nicht mehr lesen -- Zuordnung zur
      * Kompetenz läuft über `competency_competency_step` (N:M). Spalte
      * entfällt mit der Drop-Column-Folgemigration.
      */
@@ -336,7 +336,7 @@ type FieldJobTypeRow = Flatten<
     // Entschieden 2026-09-16 (SR-58/0014): XOR mit programme_id, analog course.
     module_id: string | null;
     programme_id: string | null;
-    // Entschieden 2026-09-16 (SR-59/0015): analog module.reihenfolge/course.reihenfolge.
+    // Entschieden 2026-09-16 (SR-58/0015): analog module.reihenfolge/course.reihenfolge.
     reihenfolge: number;
   }
 >;
@@ -886,7 +886,7 @@ export type Database = {
       // Berechnete View, kein Write (siehe 0006_progress_and_evidence.sql) —
       // absichtlich kein Insert/Update-Typ.
       competency_evidence: View<CompetencyEvidenceRow>;
-      // SR-68 (0021): AND-Logik je Learner und Kompetenz, ebenfalls kein Write.
+      // SR-72 (0021): AND-Logik je Learner und Kompetenz, ebenfalls kein Write.
       competency_fulfilment: View<CompetencyFulfilmentRow>;
     };
     Functions: {
