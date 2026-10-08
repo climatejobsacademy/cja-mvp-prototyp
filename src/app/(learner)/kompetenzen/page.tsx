@@ -33,7 +33,7 @@ export default async function KompetenzenPage() {
               <div className="flex min-w-0 flex-1 flex-col gap-1">
                 <p className="text-xs text-muted-foreground">{k.kompetenzbereich}</p>
                 <h3 className="line-clamp-2 text-[15px] font-semibold text-eco-deep-green">{k.name}</h3>
-                {/* SR-68: Segmente je Kompetenzschritt aus competency_fulfilment,
+                {/* SR-61: Segmente je Kompetenzschritt aus competency_fulfilment,
                     Zähltext bleibt sichtbar (K2). */}
                 <SegmentProgress
                   className="mt-1"
@@ -68,7 +68,7 @@ export default async function KompetenzenPage() {
                       {/* Typ steht sichtbar nur als Icon, für Screenreader als Text. */}
                       <span className="sr-only"> · {typLabel}</span>
                     </p>
-                    {/* SR-69: Zusatzinfo nur bei offen / in Prüfung. */}
+                    {/* SR-62: Zusatzinfo nur bei offen / in Prüfung. */}
                     {step.fortschritt && (step.status === "offen" || step.status === "in Prüfung") && (
                       <p className="text-[13px] text-muted-foreground tabular-nums">
                         {step.fortschritt.abgeschlossen}/{step.fortschritt.gesamt} {step.fortschritt.einheit}

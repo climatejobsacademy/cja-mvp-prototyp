@@ -48,7 +48,7 @@ export default async function LessonPage({
 
   if (!lesson) notFound();
 
-  // Fragen-Thread (SR folgt (Fragen-Thread)): null bei chat_aktiv aus oder
+  // Fragen-Thread (SR-74): null bei chat_aktiv aus oder
   // ohne Leserecht, dann wird nichts angezeigt.
   const thread = await getLektionThread(lesson.id, lesson.chatAktiv, learner);
 
@@ -74,7 +74,7 @@ export default async function LessonPage({
         </div>
       </div>
 
-      {/* Lernmaterialien (SR folgt): bei SCORM über dem Player, bei Live unter
+      {/* Lernmaterialien (SR-68): bei SCORM über dem Player, bei Live unter
           der Session, bei Repository als Hauptinhalt. Ohne Materialien kein
           Abschnitt (Repository: Hinweistext). */}
       {lesson.contentType === "scorm" && materialien.length > 0 && (

@@ -14,7 +14,7 @@ export type LektionThread = {
 const SPALTEN = "id, created_at, parent_id, person_id, autor_anzeigename, text, geloescht_am";
 
 /**
- * Thread einer Lektion für die angemeldete Person (SR folgt (Fragen-Thread)).
+ * Thread einer Lektion für die angemeldete Person (SR-74).
  * Liefert null, wenn chat_aktiv aus ist oder die Person nicht lesen darf --
  * dann zeigt die Seite gar nichts an.
  *

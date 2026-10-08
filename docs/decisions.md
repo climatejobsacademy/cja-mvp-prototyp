@@ -20,7 +20,7 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 ### 2026-09-04 – Kompetenzprofil wird ausschließlich aus `competency_evidence` berechnet
 - **Entscheidung:** Abgeschlossene Lektionen und bestätigte Verifizierungen erzeugen Nachweise in `competency_evidence`; das Kompetenzprofil wird nur daraus berechnet, nie manuell bearbeitet.
 - **Begründung:** Ein Knotenpunkt für theoretische und praktische Nachweise, keine Doppelhaltung, Profil nicht editierbar (SR-01).
-- **Status:** ersetzt durch 2026-09-28 (SR-70). Der Grundsatz „nicht manuell bearbeitbar“ gilt weiter.
+- **Status:** ersetzt durch 2026-09-28 (SR-63). Der Grundsatz „nicht manuell bearbeitbar“ gilt weiter.
 - **Belegt:** `data-model.md` Group 4; `0006_progress_and_evidence.sql`
 
 ### 2026-09-04 – Verifizierung durch AfCJ admin im Prototyp
@@ -119,25 +119,25 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Status:** gültig
 - **Belegt:** erster Release-PR #40; Branch-Schutz per GitHub-API geprüft (30.09.); `.github/workflows/ci.yml`
 
-### 2026-09-23 – Teilschritt ↔ Kompetenz ist N:M (SR-65)
+### 2026-09-23 – Teilschritt ↔ Kompetenz ist N:M (SR-69)
 - **Entscheidung:** Junction-Tabelle `competency_competency_step`; `competency_step.competency_id` bleibt vorerst stehen und wird nicht mehr gelesen, Drop-Column folgt in einer eigenen Migration.
 - **Begründung:** Ein Teilschritt zahlt auf mehrere Kompetenzen ein.
 - **Status:** gültig (Drop-Column steht aus; bis dahin keine Kompetenzen löschen)
 - **Belegt:** PR #43; Migration `0019`; `data-model.md` Group 2
 
-### 2026-09-23 – Kompetenz ↔ Programm ist N:M (SR-66)
+### 2026-09-23 – Kompetenz ↔ Programm ist N:M (SR-70)
 - **Entscheidung:** Junction-Tabelle `competency_programme`; `competency.quelle` gilt nicht mehr als Programmzuordnung.
 - **Begründung:** Kompetenzen gehören zu mehreren Programmen.
 - **Status:** gültig (Drop-Column für `quelle` steht aus)
 - **Belegt:** PR #45; Migration `0020`
 
-### 2026-09-23 – Typ-Homogenität und AND-Logik auf Kompetenz-Ebene (SR-67, SR-68)
+### 2026-09-23 – Typ-Homogenität und AND-Logik auf Kompetenz-Ebene (SR-71, SR-72)
 - **Entscheidung:** Lektionen nehmen nur theoretische, Praxisaufgaben nur praktische Teilschritte (Trigger). Eine Kompetenz ist erst erfüllt, wenn alle Teilschritte erfüllt sind (View `competency_fulfilment`).
 - **Begründung:** Entscheidung der LD-Runde.
 - **Status:** gültig. Bekannte Lücke: Änderung von `competency_step.typ` selbst wird nicht geprüft.
 - **Belegt:** PR #46; Migration `0021`
 
-### 2026-09-28 – AND-Logik auch auf Teilschritt-Ebene (SR-70)
+### 2026-09-28 – AND-Logik auch auf Teilschritt-Ebene (SR-63)
 - **Entscheidung:** Ein Teilschritt ist erst erfüllt, wenn alle zugeordneten Lektionen bzw. zu allen zugeordneten Praxisaufgaben verifizierte Selbstauskünfte vorliegen. `competency_fulfilment` rechnet dafür direkt aus `unit_progress` und `field_capture`.
 - **Begründung:** Produktentscheidung; `competency_evidence` kennt die auslösende Lektion nicht und kann AND nicht abbilden.
 - **Status:** gültig; ersetzt 2026-09-04 (Profil nur aus `competency_evidence`)
@@ -168,7 +168,7 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 
 ### 2026-09-29 – Zähltext bleibt (K2), neutrale Login-Rückmeldung (K3)
 - **Entscheidung:** K2: „x/y“ steht weiter neben den Segmentbalken. K3: Der Login gibt für alle Fälle dieselbe Rückmeldung, ohne Aussage, ob eine Adresse registriert ist.
-- **Begründung:** SR-69 verlangt den Zähltext; keine Konto-Aufzählung (Datenschutz).
+- **Begründung:** SR-62 verlangt den Zähltext; keine Konto-Aufzählung (Datenschutz).
 - **Status:** gültig
 - **Belegt:** PR #55, #56; `src/app/login/actions.ts`
 
@@ -212,4 +212,4 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Begründung:** Der Austausch gehört zur Kohorte. Die Pilotkohorte besteht nur aus Mitarbeitenden von energiehelden, im Piloten sehen sich also nur Personen desselben Betriebs. Kohorten werden in der Regel je Betrieb angelegt.
 - **Folgen:** Bei einer Kohorte mit mehreren Arbeitgebern gilt die Ausnahme weiter und wird dann neu bewertet. Alternative: Threads je Kohorte und Arbeitgeber trennen (PR #74).
 - **Status:** gültig (Entscheidung Vera)
-- **Belegt:** PR #74; `0024_lektion_beitrag.sql`; `access-matrix.md`, Zeile „Fragen-Thread“
+- **Belegt:** PR #74; `0024_lektion_beitrag.sql`; `access-matrix.md`, Zeile „Fragen-Thread“; SR-74, SR-75

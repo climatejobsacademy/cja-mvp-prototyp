@@ -1,5 +1,5 @@
 // Hilfsfunktionen für den Fragen-Thread pro Lektion (lektion_beitrag,
-// Migration 0024; SR folgt (Fragen-Thread)). Ohne Server-Import, damit sie in
+// Migration 0024; SR-74). Ohne Server-Import, damit sie in
 // Server- und Client-Komponenten sowie in node:test nutzbar sind.
 
 export const MAX_ZEICHEN = 1000;

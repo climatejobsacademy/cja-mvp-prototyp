@@ -1,5 +1,5 @@
 -- 011_step_and_logic.test.sql
--- SR-70 (0022): AND-Logik auf Teilschritt-Ebene in competency_fulfilment.
+-- SR-63 (0022): AND-Logik auf Teilschritt-Ebene in competency_fulfilment.
 -- Ein theoretischer Teilschritt ist erst erfüllt, wenn ALLE zugeordneten
 -- Lektionen abgeschlossen sind; ein praktischer erst, wenn zu ALLEN
 -- zugeordneten Field-Job-Typen eine verifizierte Selbstauskunft vorliegt.
@@ -51,7 +51,7 @@ insert into competency (id, name, kompetenzbereich, quelle) values
   ('00000000-0000-0000-0000-000000000651', 'Kompetenz Sal', 'Elektro', 'EFK-EE');
 
 -- competency_id ist bis zur Drop-Column-Folgemigration noch not null
--- (SR-65, 0019) -- maßgeblich ist competency_competency_step.
+-- (SR-69, 0019) -- maßgeblich ist competency_competency_step.
 insert into competency_step (id, competency_id, name, typ) values
   ('00000000-0000-0000-0000-000000000661', '00000000-0000-0000-0000-000000000651', 'Theorie mit zwei Lektionen', 'theoretisch'),
   ('00000000-0000-0000-0000-000000000662', '00000000-0000-0000-0000-000000000651', 'Praxis mit einem Typ', 'praktisch');

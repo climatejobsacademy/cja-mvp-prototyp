@@ -1,5 +1,5 @@
 -- 013_lektion_beitrag.test.sql
--- Fragen-Thread pro Lektion (0024, SR folgt (Fragen-Thread)): Lesen und
+-- Fragen-Thread pro Lektion (0024, SR-74, SR-75): Lesen und
 -- Schreiben nur in der eigenen Kohorte bei freigeschalteter, lesbarer Lektion,
 -- Länge 1-1000, eine Antwortebene, kein Bearbeiten/direktes Löschen,
 -- Soft-Delete über fn_beitrag_loeschen (Autor:in, Moderierende, AfCJ admin),

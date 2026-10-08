@@ -17,7 +17,7 @@ const AKTION = cn(buttonVariants({ variant: "outline" }), "h-11 gap-2 px-3 sm:h-
 const KLEINE_AKTION = cn(buttonVariants({ variant: "ghost" }), "h-11 gap-1.5 px-2 text-[13px] sm:h-8");
 
 /**
- * Fragen-Thread unter einer Lektion (SR folgt (Fragen-Thread)). Reiner Text:
+ * Fragen-Thread unter einer Lektion (SR-74). Reiner Text:
  * React escaped alles, kein Markdown, keine Links, Zeilenumbrüche bleiben
  * (whitespace-pre-wrap). Kein Echtzeit: "Aktualisieren" lädt neu. Buttons
  * werden nur ein- oder ausgeblendet, entscheiden tut das Backend.
