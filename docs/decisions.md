@@ -206,3 +206,10 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Begründung:** Datenresidenz in Deutschland und Vertrauen; Datenbank und serverseitige Funktionen liegen damit in derselben Region. Gründe gegen den Team-Plan: TODO Vera: ergänzen.
 - **Status:** gültig; ersetzt 2026-09-15 (Supabase-Region EU/Irland)
 - **Belegt:** Region `eu-central-1` über den Pooler-Host des Frankfurter Projekts; Auto-RLS am 02.10.2026 lesend gegen Irland abgeglichen (`runbook.md`, Abschnitt 5); `CLAUDE.md`, Abschnitt Stack. Vercel Pro, die Umstellung der Production-Variablen und der Verzicht auf den Team-Plan **aus Projektdoku übernommen** (Vercel- und Supabase-Tarife nicht im Repo einsehbar).
+
+### 2026-10-07 – Fragen-Thread gehört der Kohorte, Ausnahme von SR-06
+- **Entscheidung:** Beiträge im Fragen-Thread lesen alle Lernenden der Kohorte, die Moderierenden und AfCJ admin. Da `cohort` keine `organisation_id` hat, hängt die Sichtbarkeit nicht am Arbeitgeber; das weicht von der Trennung nach Organisation (SR-06) ab. Die `organisation_id` am Beitrag kommt aus der Einschreibung der Autor:in und bleibt zur Nachvollziehbarkeit erhalten. Moderiert wird über `kohorte_moderation`; eingetragen werden können AfCJ admins und Lernende. Admin- und Lernendenkonten bleiben getrennt, weil ein Admin mit Einschreibung die Stundenplan- und Programmsicht anderer Kohorten sähe.
+- **Begründung:** Der Austausch gehört zur Kohorte. Die Pilotkohorte besteht nur aus Mitarbeitenden von energiehelden, im Piloten sehen sich also nur Personen desselben Betriebs. Kohorten werden in der Regel je Betrieb angelegt.
+- **Folgen:** Bei einer Kohorte mit mehreren Arbeitgebern gilt die Ausnahme weiter und wird dann neu bewertet. Alternative: Threads je Kohorte und Arbeitgeber trennen (PR #74).
+- **Status:** gültig (Entscheidung Vera)
+- **Belegt:** PR #74; `0024_lektion_beitrag.sql`; `access-matrix.md`, Zeile „Fragen-Thread“
