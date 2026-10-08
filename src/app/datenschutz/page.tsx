@@ -1,6 +1,9 @@
 export const metadata = { title: "Datenschutzerklärung" };
 
 export default function DatenschutzPage() {
+  // SR-60 (Pflichtseite). Abschnitte „Fragen und Antworten zu Lektionen“
+  // (SR-74, SR-75) und „Lernmaterialien und externe Links“ (SR-68) ergänzt
+  // 2026-10-08. Eigene Formulierung, nicht rechtlich geprüft.
   // Optional, nach Veröffentlichung:
   // (1) DPF-Zertifizierung von Vercel optional prüfen und ergänzen.
   return (
@@ -50,6 +53,40 @@ export default function DatenschutzPage() {
         mit Kommentar sowie daraus abgeleitete Kompetenznachweise. Einsehbar
         sind diese Daten für Sie selbst und für berechtigtes Personal der
         Akademie für Klimajobs. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.
+      </p>
+
+      <h2>Fragen und Antworten zu Lektionen</h2>
+      <p>
+        Zu einzelnen Lektionen können Teilnehmende Fragen stellen und auf
+        Fragen antworten, sofern diese Funktion für die Lektion freigeschaltet
+        ist. Möglich sind nur Text und Symbole, keine Anhänge. Bitte schreiben
+        Sie keine sensiblen Angaben und keine Daten anderer Personen. Verarbeitet
+        werden der Text Ihres Beitrags, der Zeitpunkt, die Lektion, Ihre
+        Kohorte sowie Ihr Vorname mit dem Anfangsbuchstaben Ihres Nachnamens.
+        Sichtbar sind Ihre Beiträge für die Teilnehmenden Ihrer Kohorte, für
+        das zuständige Personal der Akademie für Klimajobs und für Personen,
+        die die Fragen Ihrer Kohorte moderieren. Eigene Beiträge können Sie
+        jederzeit löschen; der Text und Ihr Name werden dann entfernt.
+        Moderierende und das Personal der Akademie für Klimajobs können
+        Beiträge ebenfalls entfernen. Beiträge, die Sie melden möchten, senden
+        Sie bitte an{" "}
+        <a href="mailto:info@climatejobsacademy.com">info@climatejobsacademy.com</a>.
+        Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.
+      </p>
+
+      <h2>Lernmaterialien und externe Links</h2>
+      <p>
+        Zu Lektionen stellen wir Dateien zum Ansehen und Herunterladen bereit.
+        Der Abruf erfolgt über zeitlich begrenzte Links aus unserem
+        Datenbankdienst. Welche Dateien Sie in der laufenden Sitzung
+        heruntergeladen haben, merkt sich nur Ihr Browser im sogenannten
+        sessionStorage, um sie als „heruntergeladen“ zu kennzeichnen. Das ist
+        kein Cookie, wird nicht an uns übermittelt und beim Schließen des Tabs
+        gelöscht. Einige Lektionen enthalten Verweise auf externe Angebote, etwa
+        Videos. Diese öffnen sich in einem neuen Tab; Inhalte Dritter werden
+        nicht in die Plattform eingebettet. Für die verlinkten Seiten gelten die
+        Datenschutzhinweise der jeweiligen Anbieter. Rechtsgrundlage: Art. 6
+        Abs. 1 lit. b DSGVO.
       </p>
 
       <h2>Uploads</h2>
@@ -138,6 +175,12 @@ export default function DatenschutzPage() {
         beantworten sie innerhalb der gesetzlichen Frist von einem Monat (Art.
         12 Abs. 3 DSGVO).
       </p>
+      <p>
+        Beiträge zu Fragen und Antworten speichern wir, solange die jeweilige
+        Kohorte besteht, und löschen sie danach. Gelöschte Beiträge können bis
+        zu sieben Tage in den täglichen Sicherungskopien (Backups) unseres
+        Datenbankdienstes enthalten sein.
+      </p>
 
       <h2>Weitergabe an Dritte</h2>
       <p>
@@ -173,7 +216,7 @@ export default function DatenschutzPage() {
         <a href="https://learn.climatejobsacademy.com/">
           https://learn.climatejobsacademy.com/
         </a>{" "}
-        und wurde zuletzt am 02.10.2026 aktualisiert.
+        und wurde zuletzt am 08.10.2026 aktualisiert.
       </p>
     </main>
   );
