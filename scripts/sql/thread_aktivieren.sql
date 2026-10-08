@@ -1,7 +1,7 @@
 -- scripts/sql/thread_aktivieren.sql
 -- Vorlage: Fragen-Thread an einer Lektion ein- oder ausschalten und optional
 -- eine Person als Moderation einer Kohorte eintragen. Anleitung:
--- docs/fragen-thread.md. SR folgt (Fragen-Thread).
+-- docs/fragen-thread.md. SR-74/SR-75.
 --
 -- Nur für Staging und Production, immer zuerst als Probelauf. Läuft im
 -- Supabase-Dashboard (SQL Editor) oder per psql. Standard ist der Probelauf:

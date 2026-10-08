@@ -19,7 +19,7 @@ function meldung(code: string | undefined, standard: string): string {
 }
 
 /**
- * Neuer Beitrag oder Antwort im Fragen-Thread (SR folgt (Fragen-Thread)).
+ * Neuer Beitrag oder Antwort im Fragen-Thread (SR-74).
  * Insert nur mit den erlaubten Spalten; person_id, organisation_id und
  * Anzeigename setzt der Trigger, die Berechtigung prüft RLS.
  */

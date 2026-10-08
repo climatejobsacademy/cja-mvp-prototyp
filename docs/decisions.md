@@ -212,4 +212,4 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Begründung:** Der Austausch gehört zur Kohorte. Die Pilotkohorte besteht nur aus Mitarbeitenden von energiehelden, im Piloten sehen sich also nur Personen desselben Betriebs. Kohorten werden in der Regel je Betrieb angelegt.
 - **Folgen:** Bei einer Kohorte mit mehreren Arbeitgebern gilt die Ausnahme weiter und wird dann neu bewertet. Alternative: Threads je Kohorte und Arbeitgeber trennen (PR #74).
 - **Status:** gültig (Entscheidung Vera)
-- **Belegt:** PR #74; `0024_lektion_beitrag.sql`; `access-matrix.md`, Zeile „Fragen-Thread“
+- **Belegt:** PR #74; `0024_lektion_beitrag.sql`; `access-matrix.md`, Zeile „Fragen-Thread“; SR-74, SR-75

@@ -180,7 +180,7 @@ type LessonRow = Flatten<
   }
 >;
 
-// Fragen-Thread pro Lektion (0024, SR folgt (Fragen-Thread)). Learner dürfen
+// Fragen-Thread pro Lektion (0024, SR-74). Learner dürfen
 // organisation_id und updated_at nicht lesen (Spalten-Grant); Row enthält nur
 // die lesbaren Spalten.
 type LektionBeitragRow = {

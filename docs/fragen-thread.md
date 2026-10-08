@@ -1,6 +1,6 @@
 # Fragen-Thread pro Lektion
 
-Stand 2026-10-07, SR folgt (Fragen-Thread). Schema: `supabase/migrations/0024_lektion_beitrag.sql` (PR #74), Anzeige: PR B. Entscheidung zur Sichtbarkeit: `decisions.md`, Eintrag 2026-10-07 „Fragen-Thread gehört der Kohorte, Ausnahme von SR-06“.
+Stand 2026-10-07, SR-74 (Thread) und SR-75 (Moderation). Schema: `supabase/migrations/0024_lektion_beitrag.sql` (PR #74), Anzeige: PR B. Entscheidung zur Sichtbarkeit: `decisions.md`, Eintrag 2026-10-07 „Fragen-Thread gehört der Kohorte, Ausnahme von SR-06“.
 
 ## Was gilt
 
