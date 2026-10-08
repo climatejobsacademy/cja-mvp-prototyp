@@ -64,9 +64,17 @@ supabase test db    # führt die pgTAP-Tests in supabase/tests/database/ aus
 
 ```bash
 npm install
-cp .env.example .env.local   # mit den Werten aus `supabase start` (lokal) oder einem echten Projekt befüllen
+cp .env.example .env.local   # mit den Werten aus `supabase start` (lokal) oder aus Staging befüllen
 npm run dev
+npm test             # Unit-Tests für Hilfsfunktionen (node:test, src/lib/*.test.ts)
 ```
+
+Entwickelt wird lokal oder gegen **Staging** (Supabase Irland, Ref
+`keijrwvegmwgpvprpoxa`, auch von Vercel-Preview-Deployments genutzt).
+**Production** ist das Supabase-Projekt in Frankfurt (Ref
+`vqfnmkcfjsudsujiuoqm`, Vercel Production `main` → learn.climatejobsacademy.com).
+Production-Werte gehören nicht in `.env.local`; Schlüssel werden nie ins Repo
+oder in Chats kopiert.
 
 Ohne gültige `NEXT_PUBLIC_SUPABASE_URL`/`NEXT_PUBLIC_SUPABASE_ANON_KEY` startet
 die App nicht sinnvoll — es gibt bewusst keinen Mock-Modus, die App spricht
