@@ -55,3 +55,11 @@ test("Zeitzone der Umgebung spielt keine Rolle", () => {
   }
   assert.equal(versatz.size, 2, "TZ-Wechsel hat nicht gegriffen");
 });
+
+test("zeitpunktInBerlin: Anzeige in Berliner Zeit, Sommer- und Winterzeit", async () => {
+  // @ts-expect-error TS5097: .ts-Endung für node:test nötig
+  const { zeitpunktInBerlin } = await import("./date.ts");
+  assert.equal(zeitpunktInBerlin("2026-10-07T12:05:00Z"), "07.10.2026, 14:05");
+  assert.equal(zeitpunktInBerlin("2026-11-01T23:30:00Z"), "02.11.2026, 00:30");
+  assert.equal(zeitpunktInBerlin("2026-10-07T12:05:00.123456+00:00"), "07.10.2026, 14:05");
+});

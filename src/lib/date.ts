@@ -32,3 +32,18 @@ export function jetztInBerlin(jetzt: Date = new Date()): string {
   const t = teile(jetzt);
   return `${t.year}-${t.month}-${t.day}T${t.hour}:${t.minute}:${t.second}`;
 }
+
+const anzeigeZeitpunkt = new Intl.DateTimeFormat("de-DE", {
+  timeZone: ZEITZONE,
+  day: "2-digit",
+  month: "2-digit",
+  year: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+});
+
+/** Zeitstempel (ISO, z. B. timestamptz aus der Datenbank) in Berlin als "TT.MM.JJJJ, HH:MM". */
+export function zeitpunktInBerlin(iso: string): string {
+  return anzeigeZeitpunkt.format(new Date(iso));
+}

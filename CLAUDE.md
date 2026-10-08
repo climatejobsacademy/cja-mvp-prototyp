@@ -7,6 +7,10 @@ and all three produce competency evidence in one profile per learner.
 Spec: /docs/requirements.md (SR-xx), /docs/data-model.md, /docs/access-matrix.md,
 /docs/design-specifications.md. Every feature traces to an SR-xx. No SR → ask
 before building.
+SR numbers are assigned only in Notion (database "System Requirements"). If no
+matching SR exists, it is created there; until then the repo says "SR folgt",
+and the PR replaces it as soon as the number is known. Never assign SR numbers
+in the repo. Add every new Notion SR to /docs/sr-registry.json in the same PR.
 
 ## Stack
 - Next.js (App Router), TypeScript strict, one responsive app;

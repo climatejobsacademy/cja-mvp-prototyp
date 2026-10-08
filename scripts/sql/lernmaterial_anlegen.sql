@@ -1,6 +1,6 @@
 -- scripts/sql/lernmaterial_anlegen.sql
 -- Vorlage: eine hochgeladene Datei (oder einen Video-Link) an eine Lektion
--- hängen. Anleitung: docs/lernmaterialien-upload.md. SR folgt.
+-- hängen. Anleitung: docs/lernmaterialien-upload.md. SR-68.
 --
 -- Läuft im Supabase-Dashboard (SQL Editor) oder per psql. Standard ist der
 -- Probelauf: am Ende wird absichtlich ein Fehler ausgelöst, dadurch wird alles
