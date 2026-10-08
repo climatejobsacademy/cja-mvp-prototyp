@@ -187,6 +187,7 @@ export type LessonDetail = {
   id: string;
   name: string;
   contentType: ContentType;
+  chatAktiv: boolean;
   status: UnitProgressStatus;
   liveSession: { datum: string; start: string; ende: string; joinLink: string | null } | null;
   scorm: { entryPointPfad: string; zipSignedUrl: string } | null;
@@ -200,7 +201,7 @@ export async function getLessonDetail(
 
   const { data: lesson } = await supabase
     .from("lesson")
-    .select("id, name, content_type")
+    .select("id, name, content_type, chat_aktiv")
     .eq("id", lessonId)
     .single();
   if (!lesson) return null;
@@ -269,6 +270,7 @@ export async function getLessonDetail(
     id: lesson.id,
     name: lesson.name,
     contentType: lesson.content_type,
+    chatAktiv: lesson.chat_aktiv,
     status: progress?.status ?? "offen",
     liveSession,
     scorm,
