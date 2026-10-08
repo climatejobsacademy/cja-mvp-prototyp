@@ -17,7 +17,7 @@ const downloadMarker = erstelleDownloadMarker(() =>
 const AKTION = cn(buttonVariants({ variant: "outline" }), "h-11 gap-2 px-3 sm:h-9");
 
 /**
- * Liste der Lernmaterialien einer Lektion (SR folgt). Vorschau/Download sind
+ * Liste der Lernmaterialien einer Lektion (SR-68). Vorschau/Download sind
  * normale Links in einen neuen Tab; der signierte Link entsteht erst beim
  * Aufruf im Route Handler. Kein next/link, damit nichts vorab geladen wird.
  * Bilder werden nirgends inline gezeigt (kein img), der Titel steckt im

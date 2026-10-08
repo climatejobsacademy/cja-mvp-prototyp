@@ -74,7 +74,7 @@ export default async function LessonPage({
         </div>
       </div>
 
-      {/* Lernmaterialien (SR folgt): bei SCORM über dem Player, bei Live unter
+      {/* Lernmaterialien (SR-68): bei SCORM über dem Player, bei Live unter
           der Session, bei Repository als Hauptinhalt. Ohne Materialien kein
           Abschnitt (Repository: Hinweistext). */}
       {lesson.contentType === "scorm" && materialien.length > 0 && (

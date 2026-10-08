@@ -1,7 +1,7 @@
 -- 0023_lesson_resources_bucket.sql
 -- Lernmaterialien, PR 1 von 2 (nur Schema; Anzeige für Lernende folgt in PR 2).
--- SR folgt: Notion führt die Anforderung als SR-68, im Repo ist SR-68 anders
--- belegt (AND-Logik je Kompetenz) -- Nummer wird nach der Bereinigung ergänzt.
+-- SR-68 (Notion). Bis 08.10.2026 als "SR folgt" geführt, weil SR-68 im Repo
+-- damals anders belegt war (siehe docs/traceability.md, Legacy-Nummern).
 --
 -- Entschieden 2026-10-07 (Learning Designer und Vera):
 --   - privater Bucket lesson-resources, 50 MB (52428800 Byte) je Datei

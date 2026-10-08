@@ -1,5 +1,5 @@
 -- 009_competency_programme.test.sql
--- SR-66 (0020): competency_programme (N:M competency <-> programme) ist
+-- SR-70 (0020): competency_programme (N:M competency <-> programme) ist
 -- sichtbar, wenn das referenzierte Programm 'published' ist (analog
 -- content_competency_mapping/field_job_type_competency_mapping) -- AfCJ admin
 -- sieht und schreibt alles. Zusätzlich: eine Kompetenz kann an mehreren

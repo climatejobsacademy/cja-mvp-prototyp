@@ -1,6 +1,6 @@
 # Lernmaterialien hochladen und an Lektionen hängen
 
-Stand 2026-10-07, SR folgt (Notion führt die Anforderung als SR-68, im Repo ist SR-68 anders belegt). Schema: `supabase/migrations/0023_lesson_resources_bucket.sql`. Die Anzeige für Lernende folgt in einem eigenen PR.
+Stand 2026-10-07, SR-68 (bis 08.10.2026 als „SR folgt“ geführt). Schema: `supabase/migrations/0023_lesson_resources_bucket.sql`. Die Anzeige für Lernende folgt in einem eigenen PR.
 
 ## Was gilt
 
