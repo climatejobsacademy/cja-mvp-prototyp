@@ -32,6 +32,8 @@ Stand 2026-10-08, SR-76. Schema: `supabase/migrations/0025_organisation_logo.sql
 Immer zuerst auf Staging (Irland, `keijrwvegmwgpvprpoxa`), Production (Frankfurt, `vqfnmkcfjsudsujiuoqm`) erst nach Freigabe und erst, wenn 0025 dort angewendet ist.
 
 1. **Hochladen:** Supabase-Dashboard → Storage → Bucket `org-logos` → Upload, direkt ins Wurzelverzeichnis (keinen Ordner anlegen).
+   - **Die Datei vorher umbenennen.** Das Dashboard übernimmt den lokalen Dateinamen, z. B. `energiehelden-logo-rgb 1.jpg`. Mit diesem Namen lehnen Vorlage und Datenbank das Eintragen ab (so auf Staging passiert, 2026-10-08).
+   - Schon mit falschem Namen hochgeladen: im Dashboard die Datei über „Rename“ auf den UUID-Namen umbenennen, oder sie löschen und richtig benannt neu hochladen.
 2. **Organisations-ID heraussuchen:** Table Editor → `organisation`.
 3. **SQL-Vorlage ausführen:** Inhalt von `scripts/sql/organisation_logo_setzen.sql` in den SQL Editor kopieren, im Block „EINGABEN“ Organisations-ID und Objektnamen eintragen, ausführen.
    - Der erste Lauf ist ein **Probelauf**: Er endet absichtlich mit „PROBELAUF ok, nichts gespeichert …“ und zeigt Organisation, bisheriges und neues Logo, Format und Größe.
