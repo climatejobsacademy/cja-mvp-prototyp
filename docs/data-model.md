@@ -28,12 +28,14 @@ Jede Entity wird eine Tabelle in der Datenbank. **Owner** entscheidet, welchem E
 
 | Entity | What it is | Attributes | Owner | Prototype? | Refers to |
 |---|---|---|---|---|---|
-| organisation | Ein Betrieb oder AfCJ selbst, als Mandant | name, typ (AfCJ / Employer), status (aktiv / trial / pausiert) | — (ist selbst der Tenancy-Anker) | Ja — im Prototyp genau zwei Zeilen: AfCJ, Energiehelden, beide status=aktiv | — |
+| organisation | Ein Betrieb oder AfCJ selbst, als Mandant | name, typ (AfCJ / Employer), status (aktiv / trial / pausiert), logo_pfad (optional, Objektname im Bucket `org-logos`, SR-76) | — (ist selbst der Tenancy-Anker) | Ja — im Prototyp genau zwei Zeilen: AfCJ, Energiehelden, beide status=aktiv | — |
 | person | Eine individuelle Nutzer:in mit Login-Profil | email, name, username, geburtsdatum, geschlecht (feste Auswahl: männlich / weiblich / divers / keine Angabe), vorerfahrung (Freitext), sprache (DE/UK) | Person | Ja | — |
 | org_membership | "Diese Person gehört zu dieser Organisation" (reine Zugehörigkeit, keine Rolle) | person, organisation, aktiv seit | Employer (bzw. AfCJ) | Ja | person, organisation |
 | role_assignment | "Diese Person hat diese Rolle innerhalb dieser Organisation" | person, organisation, rolle (Learner / AfCJ admin), aktiv seit | Employer (bzw. AfCJ) | Ja | person, organisation |
 
 Entschieden 2026-09-04: `org_membership` und `role_assignment` bewusst getrennt statt einer kombinierten "membership"-Entität — damit später admin-konfigurierbare Rollen (SR-44, Later) nur `role_assignment` ersetzen müssen, nicht die Organisationszugehörigkeit; und damit RLS-Policies Zugehörigkeit und Berechtigung sauber getrennt prüfen können. Nur zwei Rollen-Werte im Prototyp (Learner, AfCJ admin) — Instructor/Trainer/Manager existieren noch nicht als eigene Personen. Sprache und Vorerfahrung sind bewusst schon mitgeführt (Struktur mitbauen, SR-12/UN-46), auch wenn Prototyp einsprachig ist. `status` an `organisation` ebenfalls Struktur mitbauen (2026-09-07) — im Prototyp konstant "aktiv".
+
+Entschieden 2026-10-08 (SR-76): Das Logo einer Organisation steht als Textspalte `organisation.logo_pfad` (UUID + Endung, per Check erzwungen) an der Organisation, nicht über `file_asset`. Gründe: Ein Logo gehört genau zu einer Organisation, die Mehrfachverwendung aus SR-55 bringt hier nichts; die Spalte bleibt hinter der bestehenden Policy für `organisation` (Lernende nur eigene Organisation), während `file_asset` für alle Eingeloggten lesbar ist; und es entfällt ein zusätzlicher Handschritt je Logo. Die Bilder liegen im öffentlichen Bucket `org-logos` (Anleitung `docs/organisations-logo.md`).
 
 ### Group 2 — Qualification structure
 *(das Curriculum, einmal definiert, geteilt von allen Employers)*

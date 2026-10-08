@@ -26,7 +26,7 @@ Learner · Instructor / Team Lead · AfCJ trainer · Manager · AfCJ admin
 
 | Entity / group | Learner | Instructor / Team Lead | AfCJ trainer | Manager | AfCJ admin |
 |---|---|---|---|---|---|
-| Organisation, membership | read Own; write — | read Org; write — | read Own; write — | read Org; write — | read All; write All |
+| Organisation, membership (inkl. `organisation.logo_pfad`, SR-76) | read Own; write — | read Org; write — | read Own; write — | read Org; write — | read All; write All |
 | Qualification structure (Curriculum, Kompetenzen, Mappings) | read All (nur veröffentlicht); write — | read All (nur veröffentlicht); write — | read All (nur veröffentlicht); write — | read All (nur veröffentlicht); write — | read All; write All |
 | Cohort, schedule, live sessions | read Own; write — | read Cohort; write — | read Cohort; write Cohort | read Org; write — | read All; write All |
 | Enrolment | read Own; write — | read Cohort; write — | read Cohort; write — | read Org; write — | read All; write All |
@@ -44,6 +44,8 @@ Learner · Instructor / Team Lead · AfCJ trainer · Manager · AfCJ admin
 | Competency evidence / profile | read Own; write — | read Cohort; write — | —; — | read Org; write — | read All; write — |
 | Knowledge sources | —; — | —; — | —; — | —; — | read All; write All |
 | Guidance conversations | — (noch nicht Prototype) | — (noch nicht Prototype) | — (noch nicht Prototype) | — (noch nicht Prototype) | — (noch nicht Prototype) |
+
+Organisations-Logo (SR-76, 0025): Die Zuordnung `organisation.logo_pfad` folgt der Zeile „Organisation, membership“ (Lernende nur eigene Organisation). Die Bilddateien liegen im **öffentlichen** Bucket `org-logos`: Lesen für alle mit der URL, ohne Login (bewusst entschieden 2026-10-08, Dateinamen sind UUIDs). Schreiben nur AfCJ admin im Supabase-Dashboard; es gibt keine Storage-Policy und keine Schreibrechte der App.
 
 ## Anmerkungen
 
