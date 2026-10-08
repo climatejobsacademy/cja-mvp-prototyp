@@ -50,6 +50,10 @@ before building.
 - Enums for status fields; no free-text status
 - Curriculum tables are AfCJ-owned: organization_id references the AfCJ org
 - One folder per screen under /app; shared components under /components
+- "Today" and "now" are determined only via the Berlin helper in
+  `src/lib/date.ts` (`heuteInBerlin()`, `jetztInBerlin()`), never via
+  `new Date().toISOString()` in app code. (Known exception: the UTC default
+  `aktiv_seit … default current_date` in the migrations, informational only.)
 - Async work started inside `useEffect` (fetch calls, subscriptions, etc.) must be
   cancelled via `AbortController` in the effect's cleanup function, not just a
   boolean flag. React StrictMode double-invokes effects in dev; without a real

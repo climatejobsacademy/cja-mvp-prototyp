@@ -1,19 +1,17 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 import { UnitProgressBadge } from "@/components/status-badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { requireCurrentLearner } from "@/lib/queries/session";
 import { getLessonDetail } from "@/lib/queries/content";
+import { getLessonMaterialien } from "@/lib/queries/materialien";
 
 import { MarkCompleteButton } from "./mark-complete-button";
+import { MaterialienListe } from "./materialien-liste";
 import { ScormPlayer } from "./scorm-player";
-
-// Struktur von `lesson.inhalt`, siehe docs/open-questions.md (Q-LESSON-INHALT)
-// und supabase/migrations/0004_qualification_structure.sql.
-type RepositoryInhalt = { items?: { url?: string; file_asset_id?: string }[] };
 
 const TYP_LABEL: Record<string, string> = { live: "Live-Termin", scorm: "Selbstlernmodul" };
 
@@ -41,7 +39,10 @@ export default async function LessonPage({
   const { von, datum } = await searchParams;
   const zurueck = zurueckZiel(von, datum);
   const learner = await requireCurrentLearner();
-  const lesson = await getLessonDetail(lessonId, learner.personId);
+  const [lesson, materialien] = await Promise.all([
+    getLessonDetail(lessonId, learner.personId),
+    getLessonMaterialien(lessonId),
+  ]);
 
   if (!lesson) notFound();
 
@@ -66,6 +67,13 @@ export default async function LessonPage({
           <UnitProgressBadge status={lesson.status} />
         </div>
       </div>
+
+      {/* Lernmaterialien (SR folgt): bei SCORM über dem Player, bei Live unter
+          der Session, bei Repository als Hauptinhalt. Ohne Materialien kein
+          Abschnitt (Repository: Hinweistext). */}
+      {lesson.contentType === "scorm" && materialien.length > 0 && (
+        <MaterialienListe lessonId={lesson.id} materialien={materialien} />
+      )}
 
       {lesson.contentType === "scorm" && (
         <Card>
@@ -117,35 +125,19 @@ export default async function LessonPage({
         </Card>
       )}
 
+      {lesson.contentType === "live" && materialien.length > 0 && (
+        <MaterialienListe lessonId={lesson.id} materialien={materialien} />
+      )}
+
       {lesson.contentType === "repository" && (
-        <Card>
-          <CardContent className="flex flex-col gap-3">
-            <ul className="flex flex-col gap-2">
-              {((lesson.inhalt as RepositoryInhalt | null)?.items ?? []).map((item, i) =>
-                item.url ? (
-                  <li key={i}>
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="flex items-center gap-2 text-sm text-primary hover:underline"
-                    >
-                      <ExternalLink className="size-4" /> {item.url}
-                    </a>
-                  </li>
-                ) : (
-                  <li key={i} className="text-sm text-muted-foreground">
-                    Datei hinterlegt (kein Storage-Zugriff im Prototyp)
-                  </li>
-                )
-              )}
-              {!(lesson.inhalt as RepositoryInhalt | null)?.items?.length && (
-                <li className="text-sm text-muted-foreground">Keine Datei-/Link-Referenzen hinterlegt.</li>
-              )}
-            </ul>
-            <MarkCompleteButton lessonId={lesson.id} done={done} />
-          </CardContent>
-        </Card>
+        <div className="flex flex-col gap-4">
+          {materialien.length > 0 ? (
+            <MaterialienListe lessonId={lesson.id} materialien={materialien} />
+          ) : (
+            <p className="text-sm text-muted-foreground">Für diese Lektion sind noch keine Materialien hinterlegt.</p>
+          )}
+          <MarkCompleteButton lessonId={lesson.id} done={done} />
+        </div>
       )}
     </div>
   );

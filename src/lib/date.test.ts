@@ -1,0 +1,57 @@
+// Tests für den Berlin-Helfer. Ausführen mit `npm test` (node:test, Node 24
+// führt .ts direkt aus). Zeitpunkte rund um den Pilotstart 02.11.2026 und die
+// Zeitumstellung am 25.10.2026 (03:00 Sommerzeit → 02:00 Winterzeit).
+
+import assert from "node:assert/strict";
+import { test } from "node:test";
+
+// Node braucht die Endung .ts zum Auflösen; tsc (TS5097) erlaubt sie nur mit
+// allowImportingTsExtensions. Statt tsconfig.json global zu ändern, nur hier.
+// @ts-expect-error TS5097: .ts-Endung für node:test nötig
+import { heuteInBerlin, jetztInBerlin } from "./date.ts";
+
+const FAELLE: { utc: string; heute: string; jetzt: string; hinweis: string }[] = [
+  // Am 31.10. gilt schon Winterzeit (UTC+1): Berlin ist noch am 31.10.
+  { utc: "2026-10-31T22:30:00Z", heute: "2026-10-31", jetzt: "2026-10-31T23:30:00", hinweis: "Winterzeit, vor Mitternacht" },
+  { utc: "2026-11-01T23:30:00Z", heute: "2026-11-02", jetzt: "2026-11-02T00:30:00", hinweis: "Winterzeit, UTC noch Vortag" },
+  { utc: "2026-11-02T00:30:00Z", heute: "2026-11-02", jetzt: "2026-11-02T01:30:00", hinweis: "Pilotstart" },
+  { utc: "2026-10-24T21:30:00Z", heute: "2026-10-24", jetzt: "2026-10-24T23:30:00", hinweis: "Sommerzeit, vor Mitternacht" },
+  { utc: "2026-10-24T22:30:00Z", heute: "2026-10-25", jetzt: "2026-10-25T00:30:00", hinweis: "Sommerzeit, UTC noch Vortag" },
+  // Umstellung: 02:30 gibt es am 25.10. zweimal (vor und nach 03:00 → 02:00).
+  { utc: "2026-10-25T00:30:00Z", heute: "2026-10-25", jetzt: "2026-10-25T02:30:00", hinweis: "Umstellung, erstes 02:30" },
+  { utc: "2026-10-25T01:30:00Z", heute: "2026-10-25", jetzt: "2026-10-25T02:30:00", hinweis: "Umstellung, zweites 02:30" },
+];
+
+for (const f of FAELLE) {
+  test(`${f.utc} (${f.hinweis})`, () => {
+    const zeitpunkt = new Date(f.utc);
+    assert.equal(heuteInBerlin(zeitpunkt), f.heute);
+    assert.equal(jetztInBerlin(zeitpunkt), f.jetzt);
+  });
+}
+
+test("Stunde nach Mitternacht ist 00, nicht 24", () => {
+  assert.equal(jetztInBerlin(new Date("2026-11-01T23:30:00Z")).slice(11, 13), "00");
+  assert.equal(jetztInBerlin(new Date("2026-10-24T22:30:00Z")).slice(11, 13), "00");
+});
+
+test("Zeitzone der Umgebung spielt keine Rolle", () => {
+  const vorher = process.env.TZ;
+  const versatz = new Set<number>();
+  try {
+    for (const tz of ["UTC", "America/Los_Angeles"]) {
+      process.env.TZ = tz;
+      // Belegt, dass die Umstellung der Umgebungszone wirklich greift.
+      versatz.add(new Date("2026-11-02T00:30:00Z").getTimezoneOffset());
+      for (const f of FAELLE) {
+        const zeitpunkt = new Date(f.utc);
+        assert.equal(heuteInBerlin(zeitpunkt), f.heute, `${tz}: ${f.utc}`);
+        assert.equal(jetztInBerlin(zeitpunkt), f.jetzt, `${tz}: ${f.utc}`);
+      }
+    }
+  } finally {
+    if (vorher === undefined) delete process.env.TZ;
+    else process.env.TZ = vorher;
+  }
+  assert.equal(versatz.size, 2, "TZ-Wechsel hat nicht gegriffen");
+});
