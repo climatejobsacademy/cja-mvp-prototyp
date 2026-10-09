@@ -140,7 +140,6 @@ export const TEXTE = {
     fremdTitel: "Fremdeinschätzung durch die Trainer:in",
     fremdText: "Die Trainer:in wählt je Kriterium die Punkte.",
     status: "Verifizierung durch AfCJ läuft",
-    statusText: "Die Bewertung ist abgeschlossen. Im Demo passiert danach nichts weiter.",
   },
   // Hinweis direkt am jeweiligen Codewort-Feld
   gates: {

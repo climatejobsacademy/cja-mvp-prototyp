@@ -324,7 +324,7 @@ function Flow() {
               gesperrt={!zustand.fremdFreigegeben || zustand.bewertungAbgeschlossen}
             />
             {zustand.bewertungAbgeschlossen ? (
-              <VerifizierungStatus label={TEXTE.bewerten.status} text={TEXTE.bewerten.statusText} />
+              <VerifizierungStatus label={TEXTE.bewerten.status} />
             ) : (
               <button
                 type="button"

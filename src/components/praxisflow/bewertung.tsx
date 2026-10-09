@@ -71,11 +71,10 @@ export function Einschaetzung({
 }
 
 /** Statusanzeige nach Abschluss der Bewertung; im Demo ohne weitere Funktion. */
-export function VerifizierungStatus({ label, text }: { label: string; text: string }) {
+export function VerifizierungStatus({ label }: { label: string }) {
   return (
-    <div className="flex flex-col gap-2" role="status">
+    <div role="status">
       <StatusBadge label={label} icon={Clock} variant="info" className="w-fit" />
-      <p className="text-sm text-muted-foreground">{text}</p>
     </div>
   );
 }
