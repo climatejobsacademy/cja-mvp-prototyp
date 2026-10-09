@@ -119,6 +119,8 @@ export const TEXTE = {
     gesperrt: "Trage mindestens einen Arbeitsschritt ein, dann geht es weiter zu Entscheiden.",
   },
   durchfuehren: {
+    /** Hinweis an einem noch gesperrten Schritt; nr = Nummer des Vorgängers. */
+    gesperrt: (nr: number) => `Zuerst Schritt ${nr} abschließen.`,
     // Wird gerade nicht angezeigt ("Ich komme nicht weiter" ist ausgeblendet,
     // siehe schritte-checkliste.tsx), bleibt für die spätere Wiederverwendung.
     nichtWeiterStandard:

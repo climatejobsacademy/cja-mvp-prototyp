@@ -25,9 +25,10 @@ import {
   eintragVerschieben,
   einschaetzungVollstaendig,
   erledigtBereinigen,
-  erledigtUmschalten,
   fremdFreigabeMoeglich,
   planBereit,
+  schrittStatus,
+  schrittUmschalten,
   speicherSchluessel,
   startZustand,
   zustandLaden,
@@ -115,19 +116,58 @@ test("Weiter zu Entscheiden erst mit mindestens einem Arbeitsschritt", () => {
 
 // ---------- Durchführen ----------
 
-test("Gate 2: erst aktiv, wenn jeder geplante Schritt abgehakt ist", () => {
-  let e: string[] = [];
-  e = erledigtUmschalten(e, "a");
-  e = erledigtUmschalten(e, "b");
-  assert.equal(alleErledigt(drei, e), false);
-  e = erledigtUmschalten(e, "c");
-  assert.equal(alleErledigt(drei, e), true);
-  assert.equal(alleErledigt(drei, erledigtUmschalten(e, "c")), false);
-  assert.equal(alleErledigt([], []), false);
+test("Reihenfolge: nur der nächste offene Schritt ist abhakbar", () => {
+  assert.deepEqual(
+    drei.map((s) => schrittStatus(drei, [], s.id)),
+    ["abhakbar", "gesperrt", "gesperrt"]
+  );
+  assert.deepEqual(schrittUmschalten(drei, [], "b"), []);
+  assert.deepEqual(schrittUmschalten(drei, [], "c"), []);
+  let e = schrittUmschalten(drei, [], "a");
+  assert.deepEqual(e, ["a"]);
+  assert.deepEqual(
+    drei.map((s) => schrittStatus(drei, e, s.id)),
+    ["zuruecknehmbar", "abhakbar", "gesperrt"]
+  );
+  assert.deepEqual(schrittUmschalten(drei, e, "c"), ["a"]);
+  e = schrittUmschalten(drei, e, "b");
+  assert.deepEqual(e, ["a", "b"]);
 });
 
-test("Nach Änderung des Plans bleiben nur Haken vorhandener Schritte", () => {
+test("Zurücknehmen nur beim zuletzt abgehakten Schritt", () => {
+  const e = ["a", "b"];
+  assert.deepEqual(
+    drei.map((s) => schrittStatus(drei, e, s.id)),
+    ["erledigt", "zuruecknehmbar", "abhakbar"]
+  );
+  assert.deepEqual(schrittUmschalten(drei, e, "a"), ["a", "b"]);
+  assert.deepEqual(schrittUmschalten(drei, e, "b"), ["a"]);
+  assert.equal(schrittStatus(drei, e, "unbekannt"), "gesperrt");
+});
+
+test("Bereinigung: Haken nur bis zur ersten Lücke und nur für vorhandene Schritte", () => {
+  assert.deepEqual(erledigtBereinigen(["a", "c"], drei), ["a"]);
+  assert.deepEqual(erledigtBereinigen(["b", "c"], drei), []);
+  assert.deepEqual(erledigtBereinigen(["c", "b", "a"], drei), ["a", "b", "c"]);
   assert.deepEqual(erledigtBereinigen(["a", "b", "weg"], drei), ["a", "b"]);
+  // Nach Umsortieren in Planen: neue Reihenfolge c, a, b
+  assert.deepEqual(erledigtBereinigen(["a", "b"], [drei[2], drei[0], drei[1]]), []);
+});
+
+test("Gespeicherter Stand mit Lücke wird beim Laden bereinigt", () => {
+  const z = { ...startZustand(), phase: "durchfuehren" as const, schritte: drei, erledigt: ["a", "c"] };
+  const s = fakeStorage({ "p:zustand-v2": JSON.stringify(z) });
+  assert.deepEqual(zustandLaden(s, "p:").erledigt, ["a"]);
+});
+
+test("Gate 2: erst aktiv, wenn jeder geplante Schritt abgehakt ist", () => {
+  let e: string[] = [];
+  for (const id of ["a", "b"]) e = schrittUmschalten(drei, e, id);
+  assert.equal(alleErledigt(drei, e), false);
+  e = schrittUmschalten(drei, e, "c");
+  assert.equal(alleErledigt(drei, e), true);
+  assert.equal(alleErledigt(drei, schrittUmschalten(drei, e, "c")), false);
+  assert.equal(alleErledigt([], []), false);
 });
 
 // ---------- Codewort und Bewertung ----------

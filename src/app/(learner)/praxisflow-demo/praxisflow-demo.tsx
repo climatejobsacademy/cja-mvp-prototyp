@@ -38,7 +38,8 @@ import {
   eintragLoeschen,
   eintragVerschieben,
   erledigtBereinigen,
-  erledigtUmschalten,
+  schrittStatus,
+  schrittUmschalten,
   fremdFreigabeMoeglich,
   planBereit,
   startZustand,
@@ -240,7 +241,9 @@ function Flow() {
             <SchritteCheckliste
               schritte={zustand.schritte}
               erledigt={zustand.erledigt}
-              onUmschalten={(id) => setZustand((z) => ({ ...z, erledigt: erledigtUmschalten(z.erledigt, id) }))}
+              status={Object.fromEntries(zustand.schritte.map((s) => [s.id, schrittStatus(zustand.schritte, zustand.erledigt, s.id)]))}
+              gesperrtHinweis={TEXTE.durchfuehren.gesperrt}
+              onUmschalten={(id) => setZustand((z) => ({ ...z, erledigt: schrittUmschalten(z.schritte, z.erledigt, id) }))}
             />
             <CodewortGate
               id="gate-durchfuehren"

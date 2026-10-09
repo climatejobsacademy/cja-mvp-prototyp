@@ -77,14 +77,44 @@ export function planBereit(schritte: Eintrag[]): boolean {
 
 // ---------- Durchführen ----------
 
-export function erledigtUmschalten(erledigt: string[], id: string): string[] {
-  return erledigt.includes(id) ? erledigt.filter((e) => e !== id) : [...erledigt, id];
+// Regel: Schritte nur streng nacheinander. Abgehakt ist immer ein lückenloser
+// Anfang des Plans (Schritt 1 bis k). Abhakbar ist nur Schritt k+1,
+// zurücknehmbar nur Schritt k.
+
+export type SchrittStatus = "abhakbar" | "zuruecknehmbar" | "erledigt" | "gesperrt";
+
+/**
+ * Lückenloser Anfang: Haken gelten nur bis zur ersten Lücke, in der
+ * Reihenfolge des Plans. Entfernt auch Haken gelöschter Schritte (z. B. nach
+ * Änderungen in Planen oder einem gespeicherten Stand mit Lücke).
+ */
+export function erledigtBereinigen(erledigt: string[], schritte: Eintrag[]): string[] {
+  const gesetzt = new Set(erledigt);
+  const ergebnis: string[] = [];
+  for (const s of schritte) {
+    if (!gesetzt.has(s.id)) break;
+    ergebnis.push(s.id);
+  }
+  return ergebnis;
 }
 
-/** Haken nur für Schritte, die es im Plan noch gibt. */
-export function erledigtBereinigen(erledigt: string[], schritte: Eintrag[]): string[] {
-  const ids = new Set(schritte.map((s) => s.id));
-  return erledigt.filter((e) => ids.has(e));
+export function schrittStatus(schritte: Eintrag[], erledigt: string[], id: string): SchrittStatus {
+  const k = erledigtBereinigen(erledigt, schritte).length;
+  const i = schritte.findIndex((s) => s.id === id);
+  if (i < 0) return "gesperrt";
+  if (i < k - 1) return "erledigt";
+  if (i === k - 1) return "zuruecknehmbar";
+  if (i === k) return "abhakbar";
+  return "gesperrt";
+}
+
+/** Hakt den nächsten Schritt ab oder nimmt den letzten zurück; sonst keine Änderung. */
+export function schrittUmschalten(schritte: Eintrag[], erledigt: string[], id: string): string[] {
+  const bereinigt = erledigtBereinigen(erledigt, schritte);
+  const status = schrittStatus(schritte, bereinigt, id);
+  if (status === "abhakbar") return [...bereinigt, id];
+  if (status === "zuruecknehmbar") return bereinigt.slice(0, -1);
+  return bereinigt;
 }
 
 /** Gate 2 erst aktiv, wenn jeder geplante Schritt abgehakt ist. */
