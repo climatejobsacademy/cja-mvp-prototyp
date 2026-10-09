@@ -3,24 +3,31 @@
 import { useState } from "react";
 import { CircleHelp } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 import { FOKUS } from "./stile";
 
-type Schritt = { id: string; text: string; kontrollierbar: boolean; hinweis?: string };
+type Schritt = { id: string; text: string; hinweis?: string };
 
-/** Durchführen: die geplanten Schritte in Reihenfolge zum Abhaken, je Schritt "Ich komme nicht weiter". */
+/**
+ * Durchführen: die geplanten Schritte in Reihenfolge zum Abhaken.
+ *
+ * "Ich komme nicht weiter" ist für das Demo ausgeblendet (Klickprüfung
+ * 09.10.2026), bleibt aber hier erhalten und soll später wiederverwendet
+ * werden: nichtWeiterAnzeigen und hinweisStandard setzen.
+ */
 export function SchritteCheckliste({
   schritte,
   erledigt,
   onUmschalten,
-  hinweisStandard,
+  nichtWeiterAnzeigen = false,
+  hinweisStandard = "",
 }: {
   schritte: Schritt[];
   erledigt: string[];
   onUmschalten: (id: string) => void;
-  hinweisStandard: string;
+  nichtWeiterAnzeigen?: boolean;
+  hinweisStandard?: string;
 }) {
   const [offen, setOffen] = useState<string | null>(null);
 
@@ -45,12 +52,8 @@ export function SchritteCheckliste({
                   <span className={cn("min-w-0 break-words", fertig && "line-through decoration-eco-deep-green/50")}>
                     {i + 1}. {s.text}
                   </span>
-                  {s.kontrollierbar && (
-                    <Badge variant="outline" className="shrink-0">
-                      kontrollierbar
-                    </Badge>
-                  )}
                 </label>
+                {nichtWeiterAnzeigen && (
                 <button
                   type="button"
                   onClick={() => setOffen(offen === s.id ? null : s.id)}
@@ -63,8 +66,9 @@ export function SchritteCheckliste({
                   <CircleHelp className="size-4" aria-hidden="true" />
                   Ich komme nicht weiter
                 </button>
+                )}
               </div>
-              {offen === s.id && (
+              {nichtWeiterAnzeigen && offen === s.id && (
                 <p className="rounded-lg bg-lylac/30 p-3 text-sm text-eco-deep-green">{s.hinweis ?? hinweisStandard}</p>
               )}
             </li>

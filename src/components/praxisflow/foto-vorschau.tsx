@@ -13,7 +13,7 @@ import { FOKUS } from "./stile";
  * wird gespeichert; die temporäre Objekt-URL wird beim Wechsel und beim
  * Verlassen der Phase wieder freigegeben.
  */
-export function FotoVorschau({ hinweis }: { hinweis: string }) {
+export function FotoVorschau({ hinweis }: { hinweis?: string }) {
   const [url, setUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -45,7 +45,7 @@ export function FotoVorschau({ hinweis }: { hinweis: string }) {
           }}
         />
       </label>
-      <p className="text-sm text-muted-foreground">{hinweis}</p>
+      {hinweis && <p className="text-sm text-muted-foreground">{hinweis}</p>}
       {url && (
         <div className="relative h-56 w-full max-w-md overflow-hidden rounded-lg border border-border bg-muted">
           <Image src={url} alt="Vorschau des ausgewählten Fotos" fill unoptimized sizes="448px" className="object-contain" />

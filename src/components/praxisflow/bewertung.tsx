@@ -5,71 +5,56 @@ import { Clock } from "lucide-react";
 import { StatusBadge } from "@/components/status-badge";
 import { cn } from "@/lib/utils";
 
-import { FOKUS, PRIMAER } from "./stile";
+import { FOKUS } from "./stile";
 
-type Schritt = { id: string; text: string };
+type Kriterium = { id: string; titel: string };
 
-/** Bewerten: feste Punkteskala je kontrollierbarem Schritt, danach nur Statusanzeige. */
-export function Bewertung({
-  schritte,
+/**
+ * Einschätzung je Kriterium mit fester Punkteskala (Buttons). Wird für die
+ * Selbst- und die Fremdeinschätzung verwendet. Keine Summe, kein Durchschnitt.
+ */
+export function Einschaetzung({
+  id,
+  titel,
+  text,
+  kriterien,
   skala,
-  noten,
-  onNote,
-  vollstaendig,
-  abgeschlossen,
-  onAbschliessen,
-  ohneSchritteText,
-  statusLabel,
-  statusText,
+  werte,
+  onWert,
+  gesperrt = false,
 }: {
-  schritte: Schritt[];
+  id: string;
+  titel: string;
+  text: string;
+  kriterien: Kriterium[];
   skala: readonly number[];
-  noten: Record<string, number>;
-  onNote: (id: string, punkte: number) => void;
-  vollstaendig: boolean;
-  abgeschlossen: boolean;
-  onAbschliessen: () => void;
-  ohneSchritteText: string;
-  statusLabel: string;
-  statusText: string;
+  werte: Record<string, number>;
+  onWert: (kriteriumId: string, punkte: number) => void;
+  gesperrt?: boolean;
 }) {
-  if (abgeschlossen) {
-    return (
-      <div className="flex flex-col gap-3" role="status">
-        <StatusBadge label={statusLabel} icon={Clock} variant="info" className="w-fit" />
-        <p className="text-sm text-muted-foreground">{statusText}</p>
-        {schritte.length > 0 && (
-          <ul className="flex flex-col gap-1 text-sm text-eco-deep-green">
-            {schritte.map((s) => (
-              <li key={s.id} className="flex justify-between gap-3 border-b border-border py-1.5 last:border-b-0">
-                <span className="min-w-0 break-words">{s.text}</span>
-                <span className="shrink-0 font-semibold">{noten[s.id]} Punkte</span>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
-    );
-  }
-
   return (
-    <div className="flex flex-col gap-4">
-      {schritte.length === 0 && <p className="text-sm text-muted-foreground">{ohneSchritteText}</p>}
-      {schritte.map((s) => (
-        <fieldset key={s.id} className="flex flex-col gap-2">
-          <legend className="mb-2 text-[15px] font-medium text-eco-deep-green">{s.text}</legend>
+    <section className="flex flex-col gap-4 rounded-lg border border-border p-3" aria-labelledby={`${id}-titel`}>
+      <div className="flex flex-col gap-1">
+        <h3 id={`${id}-titel`} className="text-[15px] font-semibold text-eco-deep-green">
+          {titel}
+        </h3>
+        <p className="text-sm text-muted-foreground">{text}</p>
+      </div>
+      {kriterien.map((k) => (
+        <fieldset key={k.id} disabled={gesperrt} className="flex flex-col gap-2 disabled:opacity-60">
+          <legend className="mb-2 text-[15px] font-medium text-eco-deep-green">{k.titel}</legend>
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
             {skala.map((p) => {
-              const gewaehlt = noten[s.id] === p;
+              const gewaehlt = werte[k.id] === p;
               return (
                 <button
                   key={p}
                   type="button"
                   aria-pressed={gewaehlt}
-                  onClick={() => onNote(s.id, p)}
+                  onClick={() => onWert(k.id, p)}
                   className={cn(
-                    "flex min-h-11 flex-col items-center justify-center rounded-lg border text-eco-deep-green",
-                    gewaehlt ? "border-eco-deep-green bg-eco-green/10 font-semibold" : "border-border hover:bg-eco-green/10",
+                    "flex min-h-11 flex-col items-center justify-center rounded-lg border text-eco-deep-green disabled:cursor-not-allowed",
+                    gewaehlt ? "border-eco-deep-green bg-eco-green/10 font-semibold" : "border-border enabled:hover:bg-eco-green/10",
                     FOKUS
                   )}
                 >
@@ -81,9 +66,16 @@ export function Bewertung({
           </div>
         </fieldset>
       ))}
-      <button type="button" onClick={onAbschliessen} disabled={!vollstaendig} className={PRIMAER}>
-        Bewertung abschließen
-      </button>
+    </section>
+  );
+}
+
+/** Statusanzeige nach Abschluss der Bewertung; im Demo ohne weitere Funktion. */
+export function VerifizierungStatus({ label, text }: { label: string; text: string }) {
+  return (
+    <div className="flex flex-col gap-2" role="status">
+      <StatusBadge label={label} icon={Clock} variant="info" className="w-fit" />
+      <p className="text-sm text-muted-foreground">{text}</p>
     </div>
   );
 }

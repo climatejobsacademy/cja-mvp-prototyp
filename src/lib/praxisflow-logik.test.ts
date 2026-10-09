@@ -4,21 +4,30 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-// @ts-expect-error TS5097: .ts-Endung für node:test nötig
-import { DEMO_CODEWORT, DEMO_SCHRITTE, PUNKTE_SKALA, SPEICHER_PRAEFIX } from "./praxisflow-daten.ts";
+import {
+  BEWERTUNGSKRITERIEN,
+  DATEIEN,
+  DEMO_CODEWORT,
+  PHASEN,
+  PHASEN_TEXTE,
+  PUNKTE_SKALA,
+  SPEICHER_PRAEFIX,
+  // @ts-expect-error TS5097: .ts-Endung für node:test nötig
+} from "./praxisflow-daten.ts";
 import {
   alleErledigt,
-  bewertungVollstaendig,
+  bewertungAbschliessbar,
   codewortKorrekt,
   demoZuruecksetzen,
+  eintragBearbeiten,
+  eintragHinzufuegen,
+  eintragLoeschen,
+  eintragVerschieben,
+  einschaetzungVollstaendig,
   erledigtBereinigen,
   erledigtUmschalten,
-  kontrollierbarUmschalten,
-  planVollstaendig,
-  schrittBearbeiten,
-  schrittHinzufuegen,
-  schrittLoeschen,
-  schrittVerschieben,
+  fremdFreigabeMoeglich,
+  planBereit,
   speicherSchluessel,
   startZustand,
   zustandLaden,
@@ -26,13 +35,14 @@ import {
   // @ts-expect-error TS5097: .ts-Endung für node:test nötig
 } from "./praxisflow-logik.ts";
 
-type S = { id: string; text: string; kontrollierbar: boolean };
-const drei: S[] = [
-  { id: "a", text: "A", kontrollierbar: false },
-  { id: "b", text: "B", kontrollierbar: true },
-  { id: "c", text: "C", kontrollierbar: false },
+type E = { id: string; text: string };
+const drei: E[] = [
+  { id: "a", text: "A" },
+  { id: "b", text: "B" },
+  { id: "c", text: "C" },
 ];
-const ids = (l: S[]) => l.map((s) => s.id).join("");
+const ids = (l: E[]) => l.map((e) => e.id).join("");
+const kriterien = [{ id: "k1" }, { id: "k2" }];
 
 function fakeStorage(start: Record<string, string> = {}) {
   const daten = new Map(Object.entries(start));
@@ -48,47 +58,64 @@ function fakeStorage(start: Record<string, string> = {}) {
   };
 }
 
-test("Demo-Daten: Codewort gesetzt, Skala fest, mindestens ein kontrollierbarer Beispielschritt", () => {
+// ---------- Fixtures ----------
+
+test("Fixtures: jede Phase hat Instruktion und Hast-du-alles-Liste", () => {
+  for (const p of PHASEN) {
+    assert.ok(PHASEN_TEXTE[p.id].instruktion.trim().length > 0, p.id);
+    assert.ok(Array.isArray(PHASEN_TEXTE[p.id].hastDuAlles), p.id);
+  }
+});
+
+test("Fixtures: Codewort gesetzt, Skala fest, vier Kriterien mit eindeutiger ID", () => {
   assert.ok(DEMO_CODEWORT.length > 0);
   assert.deepEqual([...PUNKTE_SKALA], [10, 9, 7, 5, 3, 0]);
-  assert.ok(DEMO_SCHRITTE.some((s: S) => s.kontrollierbar));
-  assert.equal(new Set(DEMO_SCHRITTE.map((s: S) => s.id)).size, DEMO_SCHRITTE.length);
+  assert.equal(BEWERTUNGSKRITERIEN.length, 4);
+  assert.equal(new Set(BEWERTUNGSKRITERIEN.map((k: { id: string }) => k.id)).size, 4);
 });
 
-test("Startzustand: Analyse, Kopie der Beispielschritte, nichts abgehakt", () => {
-  const z = startZustand(drei);
+test("Fixtures: Dateinamen ohne Pfad, Leerzeichen oder externe Links", () => {
+  for (const d of DATEIEN as { titel: string; dateiname: string }[]) {
+    assert.match(d.dateiname, /^[a-z0-9]+(-[a-z0-9]+)*\.[a-z0-9]+$/, d.dateiname);
+  }
+});
+
+// ---------- Planen ----------
+
+test("Startzustand: Analyse, alle drei Listen leer, keine Bewertung", () => {
+  const z = startZustand();
   assert.equal(z.phase, "analyse");
-  assert.deepEqual(z.schritte, drei);
-  assert.notEqual(z.schritte[0], drei[0]);
-  assert.deepEqual(z.erledigt, []);
+  assert.deepEqual([z.werkzeuge, z.materialien, z.schritte], [[], [], []]);
+  assert.deepEqual([z.selbst, z.fremd], [{}, {}]);
+  assert.equal(z.fremdFreigegeben, false);
 });
 
-test("Schritte hinzufügen, bearbeiten, löschen; leerer Text wird ignoriert", () => {
-  let l = schrittHinzufuegen(drei, "  D  ", "d");
-  assert.equal(l[3].text, "D");
-  assert.equal(l[3].kontrollierbar, false);
-  assert.equal(schrittHinzufuegen(drei, "   ", "x"), drei);
-  l = schrittBearbeiten(l, "a", " Neu ");
-  assert.equal(l[0].text, "Neu");
-  assert.equal(schrittBearbeiten(l, "a", " "), l);
-  assert.equal(ids(schrittLoeschen(l, "b")), "acd");
+test("Einträge hinzufügen, bearbeiten, löschen; leerer Text wird ignoriert", () => {
+  let l = eintragHinzufuegen([], "  Akkuschrauber  ", "w1");
+  assert.deepEqual(l, [{ id: "w1", text: "Akkuschrauber" }]);
+  assert.equal(eintragHinzufuegen(l, "   ", "x"), l);
+  l = eintragBearbeiten(l, "w1", " Maßband ");
+  assert.equal(l[0].text, "Maßband");
+  assert.equal(eintragBearbeiten(l, "w1", " "), l);
+  assert.deepEqual(eintragLoeschen(l, "w1"), []);
 });
 
 test("Hoch/Runter tauscht Nachbarn, an den Rändern keine Änderung", () => {
-  assert.equal(ids(schrittVerschieben(drei, "b", "hoch")), "bac");
-  assert.equal(ids(schrittVerschieben(drei, "b", "runter")), "acb");
-  assert.equal(schrittVerschieben(drei, "a", "hoch"), drei);
-  assert.equal(schrittVerschieben(drei, "c", "runter"), drei);
-  assert.equal(schrittVerschieben(drei, "x", "hoch"), drei);
+  assert.equal(ids(eintragVerschieben(drei, "b", "hoch")), "bac");
+  assert.equal(ids(eintragVerschieben(drei, "b", "runter")), "acb");
+  assert.equal(eintragVerschieben(drei, "a", "hoch"), drei);
+  assert.equal(eintragVerschieben(drei, "c", "runter"), drei);
+  assert.equal(eintragVerschieben(drei, "x", "hoch"), drei);
 });
 
-test("kontrollierbar umschalten und Plan vollständig", () => {
-  assert.equal(kontrollierbarUmschalten(drei, "a")[0].kontrollierbar, true);
-  assert.equal(planVollstaendig(drei), true);
-  assert.equal(planVollstaendig([]), false);
+test("Weiter zu Entscheiden erst mit mindestens einem Arbeitsschritt", () => {
+  assert.equal(planBereit([]), false);
+  assert.equal(planBereit([{ id: "s1", text: "Schritt" }]), true);
 });
 
-test("Abhaken: alle erledigt erst, wenn jeder geplante Schritt abgehakt ist", () => {
+// ---------- Durchführen ----------
+
+test("Gate 2: erst aktiv, wenn jeder geplante Schritt abgehakt ist", () => {
   let e: string[] = [];
   e = erledigtUmschalten(e, "a");
   e = erledigtUmschalten(e, "b");
@@ -103,34 +130,52 @@ test("Nach Änderung des Plans bleiben nur Haken vorhandener Schritte", () => {
   assert.deepEqual(erledigtBereinigen(["a", "b", "weg"], drei), ["a", "b"]);
 });
 
+// ---------- Codewort und Bewertung ----------
+
 test("Codewort: ohne Groß-/Kleinschreibung und Leerraum, leer ist falsch", () => {
   assert.equal(codewortKorrekt("  WerkStatt ", "werkstatt"), true);
   assert.equal(codewortKorrekt("werkstat", "werkstatt"), false);
   assert.equal(codewortKorrekt("", ""), false);
 });
 
-test("Bewertung vollständig nur mit Punkten aus der Skala für jeden kontrollierbaren Schritt", () => {
-  assert.equal(bewertungVollstaendig(drei, {}, PUNKTE_SKALA), false);
-  assert.equal(bewertungVollstaendig(drei, { b: 8 }, PUNKTE_SKALA), false);
-  assert.equal(bewertungVollstaendig(drei, { b: 0 }, PUNKTE_SKALA), true);
-  assert.equal(bewertungVollstaendig([{ id: "a", text: "A", kontrollierbar: false }], {}, PUNKTE_SKALA), true);
+test("Einschätzung vollständig nur mit Skalenwerten für jedes Kriterium", () => {
+  assert.equal(einschaetzungVollstaendig(kriterien, {}, PUNKTE_SKALA), false);
+  assert.equal(einschaetzungVollstaendig(kriterien, { k1: 10 }, PUNKTE_SKALA), false);
+  assert.equal(einschaetzungVollstaendig(kriterien, { k1: 10, k2: 8 }, PUNKTE_SKALA), false);
+  assert.equal(einschaetzungVollstaendig(kriterien, { k1: 10, k2: 0 }, PUNKTE_SKALA), true);
 });
 
-test("Speichern und Laden über den Fake-Speicher", () => {
+test("Fremdeinschätzung: Freigabe erst nach vollständiger Selbsteinschätzung", () => {
+  assert.equal(fremdFreigabeMoeglich(kriterien, { k1: 9 }, PUNKTE_SKALA), false);
+  assert.equal(fremdFreigabeMoeglich(kriterien, { k1: 9, k2: 7 }, PUNKTE_SKALA), true);
+});
+
+test("Abschluss erst mit Selbst- und Fremdeinschätzung und Freigabe per Codewort", () => {
+  const selbst = { k1: 9, k2: 7 };
+  const fremd = { k1: 10, k2: 5 };
+  assert.equal(bewertungAbschliessbar({ selbst, fremd, fremdFreigegeben: false }, kriterien, PUNKTE_SKALA), false);
+  assert.equal(bewertungAbschliessbar({ selbst, fremd: { k1: 10 }, fremdFreigegeben: true }, kriterien, PUNKTE_SKALA), false);
+  assert.equal(bewertungAbschliessbar({ selbst: {}, fremd, fremdFreigegeben: true }, kriterien, PUNKTE_SKALA), false);
+  assert.equal(bewertungAbschliessbar({ selbst, fremd, fremdFreigegeben: true }, kriterien, PUNKTE_SKALA), true);
+});
+
+// ---------- Speichern ----------
+
+test("Speichern und Laden über den Fake-Speicher unter Schlüssel v2", () => {
   const s = fakeStorage();
-  const z = { ...startZustand(drei), phase: "durchfuehren" as const, erledigt: ["a"] };
+  const z = { ...startZustand(), phase: "durchfuehren" as const, schritte: drei, erledigt: ["a"], selbst: { k1: 9 } };
   zustandSpeichern(s, "p:", z);
-  assert.deepEqual([...s.daten.keys()], [speicherSchluessel("p:")]);
-  assert.deepEqual(zustandLaden(s, "p:", drei), z);
+  assert.deepEqual([...s.daten.keys()], ["p:zustand-v2"]);
+  assert.equal(speicherSchluessel("p:"), "p:zustand-v2");
+  assert.deepEqual(zustandLaden(s, "p:"), z);
 });
 
-test("Laden ohne Speicher, mit kaputtem oder fremdem Inhalt ergibt den Startzustand", () => {
-  assert.deepEqual(zustandLaden(null, "p:", drei), startZustand(drei));
-  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v1": "{kaputt" }), "p:", drei), startZustand(drei));
-  assert.deepEqual(
-    zustandLaden(fakeStorage({ "p:zustand-v1": JSON.stringify({ phase: "unbekannt" }) }), "p:", drei),
-    startZustand(drei)
-  );
+test("Alter Stand (v1) und kaputter oder fremder Inhalt ergeben den Startzustand", () => {
+  const v1 = JSON.stringify({ phase: "planen", schritte: [{ id: "s1", text: "A", kontrollierbar: true }], erledigt: [], noten: {}, bewertungAbgeschlossen: false });
+  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v1": v1 }), "p:"), startZustand());
+  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v2": v1 }), "p:"), startZustand());
+  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v2": "{kaputt" }), "p:"), startZustand());
+  assert.deepEqual(zustandLaden(null, "p:"), startZustand());
 });
 
 test("Speicher, der wirft, bricht nichts", () => {
@@ -147,13 +192,17 @@ test("Speicher, der wirft, bricht nichts", () => {
       throw new Error("gesperrt");
     },
   };
-  assert.deepEqual(zustandLaden(kaputt, "p:", drei), startZustand(drei));
-  assert.doesNotThrow(() => zustandSpeichern(kaputt, "p:", startZustand(drei)));
+  assert.deepEqual(zustandLaden(kaputt, "p:"), startZustand());
+  assert.doesNotThrow(() => zustandSpeichern(kaputt, "p:", startZustand()));
   assert.doesNotThrow(() => demoZuruecksetzen(kaputt, "p:"));
 });
 
-test("Zurücksetzen löscht nur Schlüssel mit dem Demo-Präfix", () => {
-  const s = fakeStorage({ [`${SPEICHER_PRAEFIX}zustand-v1`]: "{}", [`${SPEICHER_PRAEFIX}anderes`]: "1", fremd: "bleibt" });
+test("Zurücksetzen löscht nur Schlüssel mit dem Demo-Präfix, auch alte Versionen", () => {
+  const s = fakeStorage({
+    [`${SPEICHER_PRAEFIX}zustand-v1`]: "{}",
+    [`${SPEICHER_PRAEFIX}zustand-v2`]: "{}",
+    fremd: "bleibt",
+  });
   demoZuruecksetzen(s, SPEICHER_PRAEFIX);
   assert.deepEqual([...s.daten.keys()], ["fremd"]);
 });

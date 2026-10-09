@@ -1,19 +1,23 @@
-import type { LucideIcon } from "lucide-react";
+import { Download, ExternalLink, FileText, type LucideIcon } from "lucide-react";
 
-import { KARTE, TEXT } from "./stile";
+import { cn } from "@/lib/utils";
 
-/** Karte einer Phase: Kopf, Instruktion, optional Definition of Done, darunter der Inhalt. */
+import { FOKUS, KARTE, TEXT } from "./stile";
+
+/** Karte einer Phase: Kopf, Instruktion, Box "Hast du alles?" (wenn Kriterien da), darunter der Inhalt. */
 export function InstruktionKarte({
   icon: Icon,
   titel,
   instruktion,
-  definitionOfDone,
+  hastDuAlles,
+  hastDuAllesTitel,
   children,
 }: {
   icon: LucideIcon;
   titel: string;
   instruktion: string;
-  definitionOfDone?: string[];
+  hastDuAlles?: string[];
+  hastDuAllesTitel: string;
   children?: React.ReactNode;
 }) {
   return (
@@ -25,8 +29,10 @@ export function InstruktionKarte({
         </h2>
       </div>
       <p className={TEXT}>{instruktion}</p>
-      {definitionOfDone && definitionOfDone.length > 0 && (
-        <ListeBlock titel="Definition of Done" eintraege={definitionOfDone} />
+      {hastDuAlles && hastDuAlles.length > 0 && (
+        <div className="rounded-lg border border-border bg-eco-green/5 p-3">
+          <ListeBlock titel={hastDuAllesTitel} eintraege={hastDuAlles} />
+        </div>
       )}
       {children}
     </section>
@@ -47,36 +53,46 @@ export function ListeBlock({ titel, eintraege }: { titel: string; eintraege: str
   );
 }
 
-/** Material zum Lesen (nur Anzeige, keine Dateien). */
-export function MaterialBlock({ eintraege }: { eintraege: { titel: string; beschreibung: string }[] }) {
+/** Dateien zum Anzeigen (neuer Tab) oder Herunterladen; nur Dateien aus public/. */
+export function DateienBlock({
+  titel,
+  ordner,
+  dateien,
+}: {
+  titel: string;
+  ordner: string;
+  dateien: { titel: string; dateiname: string }[];
+}) {
+  const link = cn(
+    "inline-flex min-h-11 items-center gap-1.5 rounded-lg px-2 text-sm font-medium text-eco-deep-green hover:bg-eco-green/10",
+    FOKUS
+  );
   return (
     <div className="flex flex-col gap-1.5">
-      <h3 className="text-sm font-semibold text-eco-deep-green">Material zum Lesen</h3>
+      <h3 className="text-sm font-semibold text-eco-deep-green">{titel}</h3>
       <ul className="flex flex-col gap-2">
-        {eintraege.map((m) => (
-          <li key={m.titel} className="rounded-lg border border-border px-3 py-2.5">
-            <p className="text-[15px] font-medium text-eco-deep-green">{m.titel}</p>
-            <p className="text-sm text-muted-foreground">{m.beschreibung}</p>
-          </li>
-        ))}
+        {dateien.map((d) => {
+          const href = `${ordner}/${encodeURIComponent(d.dateiname)}`;
+          return (
+            <li key={d.dateiname} className="flex flex-col gap-1 rounded-lg border border-border px-3 py-2 sm:flex-row sm:items-center">
+              <span className="flex min-w-0 flex-1 items-center gap-2 text-[15px] text-eco-deep-green">
+                <FileText className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                <span className="min-w-0 break-words">{d.titel}</span>
+              </span>
+              <span className="flex gap-1">
+                <a href={href} target="_blank" rel="noopener" className={link}>
+                  <ExternalLink className="size-4" aria-hidden="true" />
+                  Anzeigen
+                </a>
+                <a href={href} download={d.dateiname} className={link}>
+                  <Download className="size-4" aria-hidden="true" />
+                  Herunterladen
+                </a>
+              </span>
+            </li>
+          );
+        })}
       </ul>
-    </div>
-  );
-}
-
-/** Zusatzinfos zum Aufklappen (natives details, ohne neue Abhängigkeit). */
-export function Zusatzinfos({ eintraege }: { eintraege: { titel: string; text: string }[] }) {
-  return (
-    <div className="flex flex-col gap-2">
-      <h3 className="text-sm font-semibold text-eco-deep-green">Zusatzinfos</h3>
-      {eintraege.map((z) => (
-        <details key={z.titel} className="group rounded-lg border border-border px-3 py-2">
-          <summary className="flex min-h-9 cursor-pointer items-center text-[15px] font-medium text-eco-deep-green">
-            {z.titel}
-          </summary>
-          <p className="pt-1 pb-1 text-sm leading-relaxed text-eco-deep-green">{z.text}</p>
-        </details>
-      ))}
     </div>
   );
 }

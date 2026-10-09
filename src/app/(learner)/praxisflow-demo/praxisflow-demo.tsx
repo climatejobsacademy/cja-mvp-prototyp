@@ -2,23 +2,27 @@
 
 import { useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, ChevronLeft, ClipboardCheck, Hammer, ListOrdered, Search, Star, UserCheck } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronLeft, ClipboardCheck, Hammer, Info, ListOrdered, Package, Search, Star, UserCheck, Wrench } from "lucide-react";
 
 import { PageHeader } from "@/components/page-header";
-import { Bewertung } from "@/components/praxisflow/bewertung";
+import { Einschaetzung, VerifizierungStatus } from "@/components/praxisflow/bewertung";
 import { CodewortGate } from "@/components/praxisflow/codewort-gate";
 import { DemoLeiste } from "@/components/praxisflow/demo-leiste";
 import { FotoVorschau } from "@/components/praxisflow/foto-vorschau";
-import { Hinweis, InstruktionKarte, ListeBlock, MaterialBlock, Zusatzinfos } from "@/components/praxisflow/instruktion-karte";
+import { DateienBlock, Hinweis, InstruktionKarte } from "@/components/praxisflow/instruktion-karte";
+import { ListenEditor } from "@/components/praxisflow/listen-editor";
 import { PhasenAnzeige } from "@/components/praxisflow/phasen-anzeige";
+import { PlanUebersicht } from "@/components/praxisflow/plan-uebersicht";
 import { SchritteCheckliste } from "@/components/praxisflow/schritte-checkliste";
-import { SchritteEditor } from "@/components/praxisflow/schritte-editor";
 import { FOKUS, PRIMAER, SEKUNDAER, TEXT } from "@/components/praxisflow/stile";
 import {
+  BEWERTUNGSKRITERIEN,
+  DATEIEN,
+  DATEIEN_ORDNER,
   DEMO_AUFTRAG,
   DEMO_CODEWORT,
-  DEMO_SCHRITTE,
   PHASEN,
+  PHASEN_TEXTE,
   PUNKTE_SKALA,
   SPEICHER_PRAEFIX,
   TEXTE,
@@ -26,23 +30,22 @@ import {
 } from "@/lib/praxisflow-daten";
 import {
   alleErledigt,
-  bewertungVollstaendig,
+  bewertungAbschliessbar,
   codewortKorrekt,
   demoZuruecksetzen,
+  eintragBearbeiten,
+  eintragHinzufuegen,
+  eintragLoeschen,
+  eintragVerschieben,
   erledigtBereinigen,
   erledigtUmschalten,
-  kontrollierbarUmschalten,
-  kontrollierbareSchritte,
-  planVollstaendig,
-  schrittBearbeiten,
-  schrittHinzufuegen,
-  schrittLoeschen,
-  schrittVerschieben,
+  fremdFreigabeMoeglich,
+  planBereit,
   startZustand,
   zustandLaden,
   zustandSpeichern,
   type DemoZustand,
-  type Schritt,
+  type Eintrag,
 } from "@/lib/praxisflow-logik";
 import { cn } from "@/lib/utils";
 
@@ -93,8 +96,10 @@ export function PraxisflowDemo({ zurueck }: { zurueck: Zurueck }) {
   );
 }
 
+type Liste = "werkzeuge" | "materialien" | "schritte";
+
 function Flow() {
-  const [zustand, setZustand] = useState<DemoZustand>(() => zustandLaden(speicher(), SPEICHER_PRAEFIX, DEMO_SCHRITTE));
+  const [zustand, setZustand] = useState<DemoZustand>(() => zustandLaden(speicher(), SPEICHER_PRAEFIX));
   // Erhöht sich beim Zurücksetzen, damit Eingabefelder und Foto neu starten.
   const [durchlauf, setDurchlauf] = useState(0);
 
@@ -103,28 +108,43 @@ function Flow() {
   }, [zustand]);
 
   const aktuell = PHASEN.findIndex((p) => p.id === zustand.phase);
+  const texte = PHASEN_TEXTE[zustand.phase];
 
   function zuPhase(phase: PhaseId) {
     setZustand((z) => ({ ...z, phase, erledigt: erledigtBereinigen(z.erledigt, z.schritte) }));
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function schritte(aendern: (s: Schritt[]) => Schritt[]) {
+  function liste(name: Liste, aendern: (l: Eintrag[]) => Eintrag[]) {
     setZustand((z) => {
-      const neu = aendern(z.schritte);
-      const noten = Object.fromEntries(Object.entries(z.noten).filter(([id]) => neu.some((s) => s.id === id)));
-      return { ...z, schritte: neu, erledigt: erledigtBereinigen(z.erledigt, neu), noten };
+      const neu = aendern(z[name]);
+      return name === "schritte"
+        ? { ...z, schritte: neu, erledigt: erledigtBereinigen(z.erledigt, neu) }
+        : { ...z, [name]: neu };
     });
+  }
+
+  function editorProps(name: Liste) {
+    return {
+      eintraege: zustand[name],
+      onHinzufuegen: (text: string) => liste(name, (l) => eintragHinzufuegen(l, text, neueId())),
+      onBearbeiten: (id: string, text: string) => liste(name, (l) => eintragBearbeiten(l, id, text)),
+      onLoeschen: (id: string) => liste(name, (l) => eintragLoeschen(l, id)),
+    };
   }
 
   function zuruecksetzen() {
     demoZuruecksetzen(speicher(), SPEICHER_PRAEFIX);
-    setZustand(startZustand(DEMO_SCHRITTE));
+    setZustand(startZustand());
     setDurchlauf((d) => d + 1);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  const kontrollierbar = kontrollierbareSchritte(zustand.schritte);
+  const karte = {
+    instruktion: texte.instruktion,
+    hastDuAlles: texte.hastDuAlles,
+    hastDuAllesTitel: TEXTE.hastDuAllesTitel,
+  };
 
   return (
     <>
@@ -133,18 +153,12 @@ function Flow() {
 
       <div key={`${durchlauf}-${zustand.phase}`} className="flex flex-col gap-6">
         {zustand.phase === "analyse" && (
-          <InstruktionKarte
-            icon={Search}
-            titel="Analyse"
-            instruktion={TEXTE.analyse.instruktion}
-            definitionOfDone={TEXTE.analyse.definitionOfDone}
-          >
+          <InstruktionKarte icon={Search} titel="Analyse" {...karte}>
             <div className="flex flex-col gap-1.5">
               <h3 className="text-sm font-semibold text-eco-deep-green">Arbeitsauftrag</h3>
               <p className={TEXT}>{TEXTE.analyse.arbeitsauftrag}</p>
             </div>
-            <MaterialBlock eintraege={TEXTE.analyse.material} />
-            <Zusatzinfos eintraege={TEXTE.analyse.zusatzinfos} />
+            <DateienBlock titel="Dateien" ordner={DATEIEN_ORDNER} dateien={DATEIEN} />
             <button type="button" onClick={() => zuPhase("planen")} className={PRIMAER}>
               Weiter zu Planen
               <ArrowRight aria-hidden="true" />
@@ -153,42 +167,64 @@ function Flow() {
         )}
 
         {zustand.phase === "planen" && (
-          <InstruktionKarte
-            icon={ListOrdered}
-            titel="Planen"
-            instruktion={TEXTE.planen.instruktion}
-            definitionOfDone={TEXTE.planen.definitionOfDone}
-          >
-            <div className="grid gap-4 sm:grid-cols-2">
-              <ListeBlock titel="Material" eintraege={TEXTE.planen.material} />
-              <ListeBlock titel="Werkzeug" eintraege={TEXTE.planen.werkzeug} />
+          <InstruktionKarte icon={ListOrdered} titel="Planen" {...karte}>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <ListenEditor
+                id="werkzeuge"
+                titel="Werkzeuge"
+                icon={Wrench}
+                einzahl="Werkzeug"
+                leerText="Noch keine Werkzeuge eingetragen."
+                platzhalter="Werkzeug eintragen …"
+                {...editorProps("werkzeuge")}
+              />
+              <ListenEditor
+                id="materialien"
+                titel="Materialien"
+                icon={Package}
+                einzahl="Material"
+                leerText="Noch keine Materialien eingetragen."
+                platzhalter="Material eintragen …"
+                {...editorProps("materialien")}
+              />
             </div>
-            <SchritteEditor
-              schritte={zustand.schritte}
-              onHinzufuegen={(text) => schritte((l) => schrittHinzufuegen(l, text, neueId()))}
-              onBearbeiten={(id, text) => schritte((l) => schrittBearbeiten(l, id, text))}
-              onLoeschen={(id) => schritte((l) => schrittLoeschen(l, id))}
-              onVerschieben={(id, richtung) => schritte((l) => schrittVerschieben(l, id, richtung))}
-              onKontrollierbar={(id) => schritte((l) => kontrollierbarUmschalten(l, id))}
+            <ListenEditor
+              id="schritte"
+              titel="Arbeitsschritte"
+              icon={ListOrdered}
+              einzahl="Schritt"
+              leerText="Noch keine Arbeitsschritte eingetragen."
+              platzhalter="Arbeitsschritt eintragen …"
+              {...editorProps("schritte")}
+              onVerschieben={(id, richtung) => liste("schritte", (l) => eintragVerschieben(l, id, richtung))}
             />
-            <button
-              type="button"
-              onClick={() => zuPhase("entscheiden")}
-              disabled={!planVollstaendig(zustand.schritte)}
-              className={PRIMAER}
-            >
-              Plan zur Abnahme geben
-              <ArrowRight aria-hidden="true" />
-            </button>
+            <div className="flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={() => zuPhase("entscheiden")}
+                disabled={!planBereit(zustand.schritte)}
+                aria-describedby={planBereit(zustand.schritte) ? undefined : "planen-gesperrt"}
+                className={PRIMAER}
+              >
+                Weiter zu Entscheiden
+                <ArrowRight aria-hidden="true" />
+              </button>
+              {!planBereit(zustand.schritte) && (
+                <p id="planen-gesperrt" className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                  <Info className="size-4 shrink-0" aria-hidden="true" />
+                  {TEXTE.planen.gesperrt}
+                </p>
+              )}
+            </div>
           </InstruktionKarte>
         )}
 
         {zustand.phase === "entscheiden" && (
-          <InstruktionKarte icon={UserCheck} titel="Entscheiden" instruktion={TEXTE.entscheiden.instruktion}>
-            <Hinweis icon={UserCheck}>{TEXTE.entscheiden.hinweisAbnahme}</Hinweis>
-            <ListeBlock titel="Dein Plan" eintraege={zustand.schritte.map((s, i) => `${i + 1}. ${s.text}${s.kontrollierbar ? " (kontrollierbar)" : ""}`)} />
+          <InstruktionKarte icon={UserCheck} titel="Entscheiden" {...karte}>
+            <PlanUebersicht werkzeuge={zustand.werkzeuge} materialien={zustand.materialien} schritte={zustand.schritte} />
             <CodewortGate
               id="gate-entscheiden"
+              hinweis={TEXTE.gates.entscheiden}
               label={TEXTE.codewort.label}
               buttonText="Plan freigeben"
               fehlerText={TEXTE.codewort.falsch}
@@ -199,20 +235,20 @@ function Flow() {
         )}
 
         {zustand.phase === "durchfuehren" && (
-          <InstruktionKarte icon={Hammer} titel="Durchführen" instruktion={TEXTE.durchfuehren.instruktion}>
+          <InstruktionKarte icon={Hammer} titel="Durchführen" {...karte}>
+            {/* "Ich komme nicht weiter" vorerst ausgeblendet, siehe schritte-checkliste.tsx */}
             <SchritteCheckliste
               schritte={zustand.schritte}
               erledigt={zustand.erledigt}
               onUmschalten={(id) => setZustand((z) => ({ ...z, erledigt: erledigtUmschalten(z.erledigt, id) }))}
-              hinweisStandard={TEXTE.durchfuehren.nichtWeiterStandard}
             />
-            <Hinweis icon={UserCheck}>{TEXTE.durchfuehren.hinweisGate}</Hinweis>
             <CodewortGate
               id="gate-durchfuehren"
+              hinweis={TEXTE.gates.durchfuehren}
               label={TEXTE.codewort.label}
               buttonText="Durchführung freigeben"
               aktiv={alleErledigt(zustand.schritte, zustand.erledigt)}
-              gesperrtText={TEXTE.codewort.gesperrt}
+              gesperrtText={TEXTE.codewort.gesperrtDurchfuehren}
               fehlerText={TEXTE.codewort.falsch}
               pruefen={pruefen}
               onFreigabe={() => zuPhase("kontrolle")}
@@ -225,15 +261,16 @@ function Flow() {
         )}
 
         {zustand.phase === "kontrolle" && (
-          <InstruktionKarte icon={ClipboardCheck} titel="Kontrolle" instruktion={TEXTE.kontrolle.instruktion}>
+          <InstruktionKarte icon={ClipboardCheck} titel="Kontrolle" {...karte}>
             <div className="flex flex-col gap-1.5">
               <h3 className="text-sm font-semibold text-eco-deep-green">Dokumentation</h3>
               <p className={TEXT}>{TEXTE.kontrolle.dokumentation}</p>
             </div>
             <Hinweis icon={ClipboardCheck}>{TEXTE.kontrolle.hinweisProtokoll}</Hinweis>
-            <FotoVorschau hinweis={TEXTE.kontrolle.hinweisFoto} />
+            <FotoVorschau />
             <CodewortGate
               id="gate-kontrolle"
+              hinweis={TEXTE.gates.kontrolle}
               label={TEXTE.codewort.label}
               buttonText="Kontrolle freigeben"
               fehlerText={TEXTE.codewort.falsch}
@@ -248,19 +285,52 @@ function Flow() {
         )}
 
         {zustand.phase === "bewerten" && (
-          <InstruktionKarte icon={Star} titel="Bewerten" instruktion={TEXTE.bewerten.instruktion}>
-            <Bewertung
-              schritte={kontrollierbar}
+          <InstruktionKarte icon={Star} titel="Bewerten" {...karte}>
+            <Einschaetzung
+              id="selbst"
+              titel={TEXTE.bewerten.selbstTitel}
+              text={TEXTE.bewerten.selbstText}
+              kriterien={BEWERTUNGSKRITERIEN}
               skala={PUNKTE_SKALA}
-              noten={zustand.noten}
-              onNote={(id, punkte) => setZustand((z) => ({ ...z, noten: { ...z.noten, [id]: punkte } }))}
-              vollstaendig={bewertungVollstaendig(zustand.schritte, zustand.noten, PUNKTE_SKALA)}
-              abgeschlossen={zustand.bewertungAbgeschlossen}
-              onAbschliessen={() => setZustand((z) => ({ ...z, bewertungAbgeschlossen: true }))}
-              ohneSchritteText={TEXTE.bewerten.ohneKontrollierbare}
-              statusLabel={TEXTE.bewerten.status}
-              statusText={TEXTE.bewerten.statusText}
+              werte={zustand.selbst}
+              onWert={(k, p) => setZustand((z) => ({ ...z, selbst: { ...z.selbst, [k]: p } }))}
+              gesperrt={zustand.fremdFreigegeben}
             />
+            {!zustand.fremdFreigegeben && (
+              <CodewortGate
+                id="gate-bewerten"
+                hinweis={TEXTE.gates.bewerten}
+                label={TEXTE.codewort.label}
+                buttonText="Fremdeinschätzung freischalten"
+                aktiv={fremdFreigabeMoeglich(BEWERTUNGSKRITERIEN, zustand.selbst, PUNKTE_SKALA)}
+                gesperrtText={TEXTE.codewort.gesperrtBewerten}
+                fehlerText={TEXTE.codewort.falsch}
+                pruefen={pruefen}
+                onFreigabe={() => setZustand((z) => ({ ...z, fremdFreigegeben: true }))}
+              />
+            )}
+            <Einschaetzung
+              id="fremd"
+              titel={TEXTE.bewerten.fremdTitel}
+              text={TEXTE.bewerten.fremdText}
+              kriterien={BEWERTUNGSKRITERIEN}
+              skala={PUNKTE_SKALA}
+              werte={zustand.fremd}
+              onWert={(k, p) => setZustand((z) => ({ ...z, fremd: { ...z.fremd, [k]: p } }))}
+              gesperrt={!zustand.fremdFreigegeben || zustand.bewertungAbgeschlossen}
+            />
+            {zustand.bewertungAbgeschlossen ? (
+              <VerifizierungStatus label={TEXTE.bewerten.status} text={TEXTE.bewerten.statusText} />
+            ) : (
+              <button
+                type="button"
+                onClick={() => setZustand((z) => ({ ...z, bewertungAbgeschlossen: true }))}
+                disabled={!bewertungAbschliessbar(zustand, BEWERTUNGSKRITERIEN, PUNKTE_SKALA)}
+                className={PRIMAER}
+              >
+                Bewertung abschließen
+              </button>
+            )}
           </InstruktionKarte>
         )}
       </div>

@@ -2,69 +2,77 @@
 // damit node:test sie mit einem Fake-Speicher prüfen kann. Nichts hiervon
 // spricht mit der Datenbank.
 
-// Werte (Startschritte, Codewort, Skala, Präfix) kommen als Parameter aus
+// Werte (Codewort, Skala, Kriterien, Präfix) kommen als Parameter aus
 // praxisflow-daten.ts; hier nur Typ-Importe, die node:test entfernt.
-import type { DemoSchritt, PhaseId } from "./praxisflow-daten";
+import type { PhaseId } from "./praxisflow-daten";
 
-export type Schritt = DemoSchritt;
+export type Eintrag = { id: string; text: string };
 
 export type DemoZustand = {
   phase: PhaseId;
-  schritte: Schritt[];
-  /** IDs der abgehakten Schritte (Durchführen). */
+  werkzeuge: Eintrag[];
+  materialien: Eintrag[];
+  schritte: Eintrag[];
+  /** IDs der abgehakten Arbeitsschritte (Durchführen). */
   erledigt: string[];
-  /** Punkte je Schritt-ID (Bewerten). */
-  noten: Record<string, number>;
+  /** Punkte je Kriterium-ID. */
+  selbst: Record<string, number>;
+  fremd: Record<string, number>;
+  /** Fremdeinschätzung per Codewort freigeschaltet. */
+  fremdFreigegeben: boolean;
   bewertungAbgeschlossen: boolean;
 };
 
+/** v2: Struktur mit drei Listen und Selbst-/Fremdeinschätzung (v1 wird ignoriert). */
 export function speicherSchluessel(praefix: string): string {
-  return `${praefix}zustand-v1`;
+  return `${praefix}zustand-v2`;
 }
 
-export function startZustand(startSchritte: Schritt[]): DemoZustand {
+/** Planen startet leer. */
+export function startZustand(): DemoZustand {
   return {
     phase: "analyse",
-    schritte: startSchritte.map((s) => ({ ...s })),
+    werkzeuge: [],
+    materialien: [],
+    schritte: [],
     erledigt: [],
-    noten: {},
+    selbst: {},
+    fremd: {},
+    fremdFreigegeben: false,
     bewertungAbgeschlossen: false,
   };
 }
 
-// ---------- Schritte (Planen) ----------
+// ---------- Listen (Planen) ----------
 
-export function schrittHinzufuegen(schritte: Schritt[], text: string, neueId: string): Schritt[] {
+export function eintragHinzufuegen(liste: Eintrag[], text: string, neueId: string): Eintrag[] {
   const t = text.trim();
-  if (!t) return schritte;
-  return [...schritte, { id: neueId, text: t, kontrollierbar: false }];
+  if (!t) return liste;
+  return [...liste, { id: neueId, text: t }];
 }
 
-export function schrittBearbeiten(schritte: Schritt[], id: string, text: string): Schritt[] {
+export function eintragBearbeiten(liste: Eintrag[], id: string, text: string): Eintrag[] {
   const t = text.trim();
-  if (!t) return schritte;
-  return schritte.map((s) => (s.id === id ? { ...s, text: t } : s));
+  if (!t) return liste;
+  return liste.map((e) => (e.id === id ? { ...e, text: t } : e));
 }
 
-export function schrittLoeschen(schritte: Schritt[], id: string): Schritt[] {
-  return schritte.filter((s) => s.id !== id);
+export function eintragLoeschen(liste: Eintrag[], id: string): Eintrag[] {
+  return liste.filter((e) => e.id !== id);
 }
 
-export function schrittVerschieben(schritte: Schritt[], id: string, richtung: "hoch" | "runter"): Schritt[] {
-  const i = schritte.findIndex((s) => s.id === id);
+export function eintragVerschieben(liste: Eintrag[], id: string, richtung: "hoch" | "runter"): Eintrag[] {
+  const i = liste.findIndex((e) => e.id === id);
   const j = richtung === "hoch" ? i - 1 : i + 1;
-  if (i < 0 || j < 0 || j >= schritte.length) return schritte;
-  const neu = [...schritte];
+  if (i < 0 || j < 0 || j >= liste.length) return liste;
+  const neu = [...liste];
   [neu[i], neu[j]] = [neu[j], neu[i]];
   return neu;
 }
 
-export function kontrollierbarUmschalten(schritte: Schritt[], id: string): Schritt[] {
-  return schritte.map((s) => (s.id === id ? { ...s, kontrollierbar: !s.kontrollierbar } : s));
-}
-
-export function planVollstaendig(schritte: Schritt[]): boolean {
-  return schritte.length > 0 && schritte.every((s) => s.text.trim().length > 0);
+/** Gate vor Entscheiden: mindestens ein Arbeitsschritt. */
+export function planBereit(schritte: Eintrag[]): boolean {
+  return schritte.length > 0;
 }
 
 // ---------- Durchführen ----------
@@ -74,12 +82,13 @@ export function erledigtUmschalten(erledigt: string[], id: string): string[] {
 }
 
 /** Haken nur für Schritte, die es im Plan noch gibt. */
-export function erledigtBereinigen(erledigt: string[], schritte: Schritt[]): string[] {
+export function erledigtBereinigen(erledigt: string[], schritte: Eintrag[]): string[] {
   const ids = new Set(schritte.map((s) => s.id));
   return erledigt.filter((e) => ids.has(e));
 }
 
-export function alleErledigt(schritte: Schritt[], erledigt: string[]): boolean {
+/** Gate 2 erst aktiv, wenn jeder geplante Schritt abgehakt ist. */
+export function alleErledigt(schritte: Eintrag[], erledigt: string[]): boolean {
   return schritte.length > 0 && schritte.every((s) => erledigt.includes(s.id));
 }
 
@@ -91,55 +100,82 @@ export function codewortKorrekt(eingabe: string, codewort: string): boolean {
   return e.length > 0 && e === codewort.trim().toLocaleLowerCase("de");
 }
 
-export function kontrollierbareSchritte(schritte: Schritt[]): Schritt[] {
-  return schritte.filter((s) => s.kontrollierbar);
-}
-
-export function bewertungVollstaendig(
-  schritte: Schritt[],
-  noten: Record<string, number>,
+/** Für jedes Kriterium ein Wert aus der Skala. */
+export function einschaetzungVollstaendig(
+  kriterien: { id: string }[],
+  werte: Record<string, number>,
   skala: readonly number[]
 ): boolean {
-  return kontrollierbareSchritte(schritte).every((s) => skala.includes(noten[s.id]));
+  return kriterien.every((k) => skala.includes(werte[k.id]));
+}
+
+/** Freigabe der Fremdeinschätzung erst nach vollständiger Selbsteinschätzung. */
+export function fremdFreigabeMoeglich(
+  kriterien: { id: string }[],
+  selbst: Record<string, number>,
+  skala: readonly number[]
+): boolean {
+  return einschaetzungVollstaendig(kriterien, selbst, skala);
+}
+
+/** Abschluss: Selbst- und Fremdeinschätzung vollständig, Fremd freigeschaltet. */
+export function bewertungAbschliessbar(
+  zustand: Pick<DemoZustand, "selbst" | "fremd" | "fremdFreigegeben">,
+  kriterien: { id: string }[],
+  skala: readonly number[]
+): boolean {
+  return (
+    zustand.fremdFreigegeben &&
+    einschaetzungVollstaendig(kriterien, zustand.selbst, skala) &&
+    einschaetzungVollstaendig(kriterien, zustand.fremd, skala)
+  );
 }
 
 // ---------- Speichern im Browser ----------
 
 type SpeicherLike = Pick<Storage, "getItem" | "setItem" | "removeItem" | "key" | "length">;
 
+const PHASE_IDS: PhaseId[] = ["analyse", "planen", "entscheiden", "durchfuehren", "kontrolle", "bewerten"];
+
+function istListe(x: unknown): x is Eintrag[] {
+  return (
+    Array.isArray(x) &&
+    x.every((e) => e && typeof e === "object" && typeof (e as Eintrag).id === "string" && typeof (e as Eintrag).text === "string")
+  );
+}
+
+function istPunkte(x: unknown): x is Record<string, number> {
+  return !!x && typeof x === "object" && !Array.isArray(x) && Object.values(x).every((v) => typeof v === "number");
+}
+
 function istZustand(x: unknown): x is DemoZustand {
   if (!x || typeof x !== "object") return false;
   const z = x as Record<string, unknown>;
   return (
     typeof z.phase === "string" &&
-    Array.isArray(z.schritte) &&
-    z.schritte.every(
-      (s) =>
-        s &&
-        typeof s === "object" &&
-        typeof (s as Schritt).id === "string" &&
-        typeof (s as Schritt).text === "string" &&
-        typeof (s as Schritt).kontrollierbar === "boolean"
-    ) &&
+    PHASE_IDS.includes(z.phase as PhaseId) &&
+    istListe(z.werkzeuge) &&
+    istListe(z.materialien) &&
+    istListe(z.schritte) &&
     Array.isArray(z.erledigt) &&
-    typeof z.noten === "object" &&
-    z.noten !== null &&
+    z.erledigt.every((e) => typeof e === "string") &&
+    istPunkte(z.selbst) &&
+    istPunkte(z.fremd) &&
+    typeof z.fremdFreigegeben === "boolean" &&
     typeof z.bewertungAbgeschlossen === "boolean"
   );
 }
 
-const PHASE_IDS: PhaseId[] = ["analyse", "planen", "entscheiden", "durchfuehren", "kontrolle", "bewerten"];
-
 /** Gespeicherter Stand oder Startzustand; nie ein Fehler, auch ohne Speicher. */
-export function zustandLaden(speicher: SpeicherLike | null, praefix: string, startSchritte: Schritt[]): DemoZustand {
+export function zustandLaden(speicher: SpeicherLike | null, praefix: string): DemoZustand {
   try {
     const roh = speicher?.getItem(speicherSchluessel(praefix));
-    if (!roh) return startZustand(startSchritte);
+    if (!roh) return startZustand();
     const z: unknown = JSON.parse(roh);
-    if (!istZustand(z) || !PHASE_IDS.includes(z.phase)) return startZustand(startSchritte);
+    if (!istZustand(z)) return startZustand();
     return { ...z, erledigt: erledigtBereinigen(z.erledigt, z.schritte) };
   } catch {
-    return startZustand(startSchritte);
+    return startZustand();
   }
 }
 
@@ -151,7 +187,7 @@ export function zustandSpeichern(speicher: SpeicherLike | null, praefix: string,
   }
 }
 
-/** Löscht nur Schlüssel mit dem Präfix dieses Demos. */
+/** Löscht nur Schlüssel mit dem Präfix dieses Demos (auch alte Versionen). */
 export function demoZuruecksetzen(speicher: SpeicherLike | null, praefix: string): void {
   try {
     if (!speicher) return;
