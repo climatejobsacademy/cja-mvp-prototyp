@@ -26,6 +26,7 @@ import {
   PUNKTE_SKALA,
   SPEICHER_PRAEFIX,
   TEXTE,
+  ZEIGE_PRUEFPROTOKOLL_HINWEIS,
   type PhaseId,
 } from "@/lib/praxisflow-daten";
 import {
@@ -269,7 +270,7 @@ function Flow() {
               <h3 className="text-sm font-semibold text-eco-deep-green">Dokumentation</h3>
               <p className={TEXT}>{TEXTE.kontrolle.dokumentation}</p>
             </div>
-            <Hinweis icon={ClipboardCheck}>{TEXTE.kontrolle.hinweisProtokoll}</Hinweis>
+            {ZEIGE_PRUEFPROTOKOLL_HINWEIS && <Hinweis icon={ClipboardCheck}>{TEXTE.kontrolle.hinweisProtokoll}</Hinweis>}
             <FotoVorschau />
             <CodewortGate
               id="gate-kontrolle"
