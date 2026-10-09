@@ -17,6 +17,10 @@
   --color-lylac: var(--lylac);
   --color-coral: var(--coral);
   --color-off-white: var(--off-white);
+  --color-lylac-on-dark: var(--lylac-on-dark);
+  --color-eco-green-on-dark: var(--eco-green-on-dark);
+  --color-coral-text: var(--coral-text);
+  --shadow-glow-charge: var(--glow-charge);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
   --color-warning: var(--warning);
@@ -77,6 +81,17 @@
      climatejobsacademy.com). Nur als Hintergrundfläche gedacht, ersetzt
      nicht --background (#ffffff bleibt der App-weite Standard). */
   --off-white: #f5f5f0;
+
+  /* Home v6 (docs/design_handoff_home_v6, SR folgt), von Anna 2026-10-09
+     freigegeben. Nur die Werte ohne nahen vorhandenen Token; die übrigen
+     Hilfsfarben des Briefs laufen auf Off-White, --muted-foreground und
+     --border. Kontraste gerechnet: Lylac/Eco Green hell auf Eco Deep Green
+     5.79:1 bzw. 8.71:1, Coral-Text auf Weiß 5.29:1 (auf --warning nur
+     4.36:1, dort also nicht für kleinen Text). */
+  --lylac-on-dark: #b79bf0;
+  --eco-green-on-dark: #9fdcc0;
+  --coral-text: #a9541c;
+  --glow-charge: 0 0 0 6px rgb(162 229 0 / 0.22), 0 0 28px 6px rgb(162 229 0 / 0.45);
 
   /* Semantische Farben (Abschnitt 1): helle Hintergrundfläche + Eco Deep Green
      als Text-/Icon-Farbe — nie Coral/Charge Green direkt als Vordergrund.

@@ -8,6 +8,8 @@ export type FeldEintrag = {
   titel: string;
   beschreibung: string | null;
   bildOderIcon: string | null;
+  /** Freitext-Ort des Field Jobs (z. B. Betrieb); im Prototyp oft leer. */
+  standort: string | null;
   status: "geplant" | "durchgeführt";
 };
 
@@ -67,7 +69,7 @@ export async function getTagesAgenda(
     const fieldJobIds = feldEntries.map((r) => r.field_job_id!) as string[];
     const { data: fieldJobs } = await supabase
       .from("field_job")
-      .select("id, status, field_job_type_id")
+      .select("id, status, standort, field_job_type_id")
       .in("id", fieldJobIds);
 
     const typeIds = [...new Set((fieldJobs ?? []).map((j) => j.field_job_type_id))];
@@ -87,6 +89,7 @@ export async function getTagesAgenda(
           titel: type.titel,
           beschreibung: type.beschreibung,
           bildOderIcon: type.bild_oder_icon,
+          standort: job.standort,
           status: job.status,
         });
       }
@@ -204,6 +207,7 @@ export type WochenTag = {
  * und einem einfachen Abschluss-Indikator je Tag (design-specifications.md 2.2). */
 export type NaechsterTermin = {
   datum: string;
+  art: "live" | "asynchron" | "feld";
   /** Startzeit HH:MM:SS, nur bei Live-Terminen vorhanden. */
   start: string | null;
 };
@@ -223,7 +227,7 @@ export async function getNaechsterTermin(
 
   const { data: entry } = await supabase
     .from("schedule_entry")
-    .select("datum, live_session_id")
+    .select("datum, art, live_session_id")
     .eq("organisation_id", organisationId)
     .gt("datum", nachDatum)
     .or(`cohort_id.eq.${cohortId},enrolment_id.eq.${enrolmentId}`)
@@ -244,7 +248,7 @@ export async function getNaechsterTermin(
     start = session?.start ?? null;
   }
 
-  return { datum: entry.datum, start };
+  return { datum: entry.datum, art: entry.art, start };
 }
 
 export async function getWochenUebersicht(

@@ -1,153 +1,72 @@
-import Link from "next/link";
-import { Calendar, ChevronRight } from "lucide-react";
-
-import { CurriculumCard } from "@/components/curriculum-card";
-import { LinkRow } from "@/components/link-row";
-import { TypIcon, typFuerContentType, type Typ } from "@/components/typ-icon";
-import { PageHeader } from "@/components/page-header";
-import { heuteInBerlin } from "@/lib/date";
-import { cn } from "@/lib/utils";
-import { getCurriculumFortschritt } from "@/lib/queries/competencies";
+import { heuteInBerlin, jetztInBerlin } from "@/lib/date";
+import { getDayState, parseNowParameter } from "@/lib/home-tag";
+import { getKompetenzFortschritt } from "@/lib/queries/competencies";
+import { getAktuellesModul, getHeutigeKompetenzen, getModulKompetenzIds } from "@/lib/queries/home-modul";
 import { getNaechsterTermin, getTagesAgenda } from "@/lib/queries/schedule";
 import { requireCurrentLearner } from "@/lib/queries/session";
 
-function kurzerWochentag(date: Date): string {
-  return date.toLocaleDateString("de-DE", { weekday: "short", timeZone: "UTC" }).replace(".", "");
-}
+import { Begruessung, TestzeitHinweis } from "./begruessung";
+import { DeinTag, type StaerktFn } from "./dein-tag";
+import { aktivitaeten, tagestyp } from "./home-hilfen";
+import { KompetenzBereich, type RingKompetenz } from "./kompetenz-bereich";
+import type { GestaerkteKompetenz } from "./tages-karten";
 
-/** Überschrift: "Di, 29. September" */
-function formatUeberschrift(dateStr: string): string {
-  const d = new Date(`${dateStr}T00:00:00Z`);
-  const tagMonat = d.toLocaleDateString("de-DE", { day: "numeric", month: "long", timeZone: "UTC" });
-  return `${kurzerWochentag(d)}, ${tagMonat}`;
-}
+// Home v6 (docs/design_handoff_home_v6, SR folgt): lädt die Daten und setzt
+// Begrüßung, "Dein Tag" und Kompetenzbereich zusammen.
 
-/** Fließtext: "Mi, 30.09." */
-function formatKurz(dateStr: string): string {
-  const d = new Date(`${dateStr}T00:00:00Z`);
-  const tagMonat = d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", timeZone: "UTC" });
-  // de-DE liefert "30.09." inklusive Schlusspunkt.
-  return `${kurzerWochentag(d)}, ${tagMonat}`;
-}
-
-type HeuteZeile = {
-  key: string;
-  zeit: string;
-  sortierung: string;
-  typ: Typ;
-  titel: string;
-  href: string | null;
-};
-
-const KARTE = "flex flex-col overflow-hidden rounded-xl border border-border";
-const ZEILE_BASIS = "flex min-h-14 items-center gap-3 border-t border-border px-4";
-
-export default async function HomePage() {
+export default async function HomePage({ searchParams }: { searchParams: Promise<{ now?: string }> }) {
   const learner = await requireCurrentLearner();
-  // Wie der Stundenplan (schedule/page.tsx) über heuteInBerlin(), damit beide
-  // Seiten denselben Tag als "heute" nehmen, und zwar den Berliner.
-  const heute = heuteInBerlin();
+  const { now } = await searchParams;
 
-  const [tag, curriculum, naechster] = await Promise.all([
+  // Brief 8.2: simuliertes "jetzt" zum Testen der Zustände, z. B.
+  // /home?now=2026-10-09T13:05 (Berliner Zeit). Nie auf Production.
+  const simuliert = process.env.VERCEL_ENV !== "production" ? parseNowParameter(now) : null;
+  // Sonst wie der Stundenplan über die Berlin-Helfer, damit alle Seiten
+  // denselben Tag als "heute" nehmen.
+  const jetzt = simuliert ?? jetztInBerlin();
+  const heute = simuliert ? simuliert.slice(0, 10) : heuteInBerlin();
+
+  const [tag, naechster, modul, alleKompetenzen] = await Promise.all([
     getTagesAgenda(learner.organisationId, learner.cohortId, learner.enrolmentId, learner.personId, heute),
-    getCurriculumFortschritt(learner.personId, learner.programmeId),
     getNaechsterTermin(learner.organisationId, learner.cohortId, learner.enrolmentId, heute),
+    getAktuellesModul(learner.organisationId, learner.cohortId, learner.enrolmentId, learner.programmeId, heute),
+    getKompetenzFortschritt(learner.personId),
   ]);
+  const heuteAktiv = aktivitaeten(tag);
+  const [modulKompetenzIds, heutige] = await Promise.all([
+    modul ? getModulKompetenzIds(modul.id) : Promise.resolve(new Set<string>()),
+    getHeutigeKompetenzen(
+      [...heuteAktiv.live.flatMap((l) => (l.lessonId ? [l.lessonId] : [])), ...heuteAktiv.flex.map((f) => f.lessonId)],
+      heuteAktiv.praxis.map((p) => p.fieldJobId)
+    ),
+  ]);
+  // Alle Kompetenzen, die eine heutige Aktivität stärkt (Glow, Brief 2.4).
+  const heuteIds = new Set([...heutige.proLektion.values(), ...heutige.proFieldJob.values()].flat());
 
-  const zeilen: HeuteZeile[] = [
-    ...tag.theorie.map((e) => {
-      const zeit = e.liveSession ? e.liveSession.start.slice(0, 5) : "flexibel";
-      return {
-        key: e.scheduleEntryId,
-        zeit,
-        // Termine mit Uhrzeit zuerst, chronologisch; flexible danach.
-        sortierung: e.liveSession ? e.liveSession.start : "99",
-        typ: typFuerContentType(e.contentType),
-        titel: e.titel,
-        href: e.lessonId ? `/content/${e.lessonId}?von=home` : null,
-      };
-    }),
-    // Praxistage haben kein Zeitfeld -- Spalte bleibt leer.
-    ...tag.feld.map((e) => ({
-      key: e.scheduleEntryId,
-      zeit: "",
-      sortierung: "98",
-      typ: "praxis" as const,
-      titel: e.titel,
-      href: `/praxistag/${e.fieldJobId}`,
-    })),
-  ].sort((a, b) => a.sortierung.localeCompare(b.sortierung));
+  // Ring-Prozent wie auf der Kompetenzseite: nur erreichte Teilschritte
+  // zählen (competency_fulfilment), nie "Lektion angesehen" (Brief 6).
+  const ringe: RingKompetenz[] = alleKompetenzen
+    .filter((k) => modulKompetenzIds.has(k.id))
+    .map((k) => ({ id: k.id, name: k.name, prozent: k.fortschrittProzent, heute: heuteIds.has(k.id) }));
 
-  const vorname = learner.name.trim().split(" ")[0];
+  // alleKompetenzen ist nach Lehrplan sortiert -- so auch die "Stärkt"-Namen.
+  // Höchstens zwei, damit die Zeile auf der Fokus-Karte kurz bleibt.
+  const staerkt: StaerktFn = (art, id) => {
+    const ids = new Set(id ? ((art === "lektion" ? heutige.proLektion : heutige.proFieldJob).get(id) ?? []) : []);
+    return alleKompetenzen.filter((k) => ids.has(k.id)).slice(0, 2).map((k) => k.name);
+  };
+  const gestaerkt: GestaerkteKompetenz[] = alleKompetenzen
+    .filter((k) => heuteIds.has(k.id))
+    .map((k) => ({ id: k.id, name: k.name, prozent: k.fortschrittProzent }));
 
   return (
-    <div className="flex flex-col gap-6">
-      <PageHeader title={vorname ? `Hallo ${vorname}` : "Hallo"} />
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <section aria-labelledby="heute" className={KARTE}>
-          <div className="flex items-center gap-2 p-4">
-            <Calendar className="size-[18px] shrink-0 text-eco-deep-green" aria-hidden="true" />
-            <h2 id="heute" className="text-[15px] font-semibold text-eco-deep-green">
-              Heute
-            </h2>
-            <span className="ml-auto text-[13px] text-muted-foreground">{formatUeberschrift(heute)}</span>
-          </div>
-
-          {zeilen.length > 0 ? (
-            <ul>
-              {zeilen.map((z) => {
-                const inhalt = (
-                  <>
-                    <span className="w-[52px] shrink-0 text-[13px] font-semibold tabular-nums text-eco-deep-green">
-                      {z.zeit}
-                    </span>
-                    <TypIcon typ={z.typ} />
-                    <span className="min-w-0 flex-1 text-sm font-medium text-eco-deep-green">{z.titel}</span>
-                    {z.href && (
-                      <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
-                    )}
-                  </>
-                );
-                return (
-                  <li key={z.key}>
-                    {/* Ohne Zielseite kein Hover und kein Pfeil. */}
-                    {z.href ? (
-                      <Link
-                        href={z.href}
-                        className={cn(
-                          ZEILE_BASIS,
-                          "outline-none transition-[background-color] duration-150 hover:bg-eco-green/10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-eco-green motion-reduce:transition-none"
-                        )}
-                      >
-                        {inhalt}
-                      </Link>
-                    ) : (
-                      <div className={ZEILE_BASIS}>{inhalt}</div>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          ) : (
-            <div className="flex flex-col gap-1 border-t border-border p-4">
-              <p className="text-sm font-medium text-eco-deep-green">Heute finden keine Kurse statt.</p>
-              {naechster && (
-                <p className="text-[13px] text-muted-foreground">
-                  Nächster Termin: {formatKurz(naechster.datum)}
-                  {naechster.start && `, ${naechster.start.slice(0, 5)}`}
-                </p>
-              )}
-            </div>
-          )}
-
-          <div className="mt-auto">
-            <LinkRow href="/schedule">Zum Stundenplan</LinkRow>
-          </div>
-        </section>
-
-        <CurriculumCard fortschritt={curriculum} link={{ href: "/kompetenzen", label: "Zu den Kompetenzen" }} />
-      </div>
+    <div data-breit className="flex flex-col gap-10 md:gap-[52px]">
+      {simuliert && <TestzeitHinweis heute={heute} jetzt={jetzt} />}
+      <Begruessung vorname={learner.name.trim().split(" ")[0]} heute={heute} typ={tagestyp(tag)} />
+      <DeinTag zustand={getDayState(jetzt, heuteAktiv)} naechster={naechster} staerkt={staerkt} gestaerkt={gestaerkt} />
+      {/* Ohne ableitbares Modul oder ohne zugeordnete Kompetenzen: Bereich
+          ausblenden statt etwas zu erfinden (Brief 8.6). */}
+      {modul && ringe.length > 0 && <KompetenzBereich modul={modul} kompetenzen={ringe} />}
     </div>
   );
 }
