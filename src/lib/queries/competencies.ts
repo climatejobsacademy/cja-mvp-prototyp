@@ -21,6 +21,12 @@ export type CompetencyStepView = {
   typ: CompetencyStepTyp;
   status: StepStatus;
   fortschritt: StepFortschritt | null;
+  /**
+   * Annäherung an die Lehrplan-Reihenfolge: kleinste lesson.reihenfolge der
+   * zugeordneten Lektionen. Teilschritte haben kein eigenes Reihenfolge-Feld
+   * (Kompetenzseite v1, Datenprüfung); ohne Lektion ans Ende.
+   */
+  reihenfolge: number;
 };
 
 export type CompetencyView = {
@@ -199,7 +205,14 @@ export async function getKompetenzFortschritt(learnerId: string): Promise<Compet
       .filter((s) => s !== undefined);
     const stepViews: CompetencyStepView[] = mySteps.map((s) => {
       const fortschritt = stepFortschritt(s.id, s.typ);
-      return { id: s.id, name: s.name, typ: s.typ, status: stepStatus(s.id, fortschritt), fortschritt };
+      return {
+        id: s.id,
+        name: s.name,
+        typ: s.typ,
+        status: stepStatus(s.id, fortschritt),
+        fortschritt,
+        reihenfolge: minOrderByStep.get(s.id) ?? Number.MAX_SAFE_INTEGER,
+      };
     });
     // Keine Zeile in competency_fulfilment = noch kein Teilschritt erfüllt.
     const f = fulfilmentByCompetency.get(c.id);
@@ -223,55 +236,4 @@ export async function getKompetenzFortschritt(learnerId: string): Promise<Compet
   });
 
   return result.sort((a, b) => a.curriculumReihenfolge - b.curriculumReihenfolge);
-}
-
-export type CurriculumFortschritt = {
-  gesamtLektionen: number;
-  abgeschlosseneLektionen: number;
-  prozent: number;
-};
-
-/** Curriculum-Fortschritt: % abgeschlossene Lektionen im Programm der Person. */
-export async function getCurriculumFortschritt(
-  learnerId: string,
-  programmeId: string
-): Promise<CurriculumFortschritt> {
-  const supabase = await createClient();
-
-  const { data: modules } = await supabase.from("module").select("id").eq("programme_id", programmeId);
-  const { data: coursesViaProgramme } = await supabase
-    .from("course")
-    .select("id")
-    .eq("programme_id", programmeId);
-  const moduleIds = (modules ?? []).map((m) => m.id);
-  const { data: coursesViaModule } = moduleIds.length
-    ? await supabase.from("course").select("id").in("module_id", moduleIds)
-    : { data: [] as { id: string }[] };
-
-  const courseIds = [...new Set([...(coursesViaProgramme ?? []), ...(coursesViaModule ?? [])].map((c) => c.id))];
-
-  if (courseIds.length === 0) {
-    return { gesamtLektionen: 0, abgeschlosseneLektionen: 0, prozent: 0 };
-  }
-
-  const { data: lessons } = await supabase.from("lesson").select("id").in("course_id", courseIds);
-  const lessonIds = (lessons ?? []).map((l) => l.id);
-
-  if (lessonIds.length === 0) {
-    return { gesamtLektionen: 0, abgeschlosseneLektionen: 0, prozent: 0 };
-  }
-
-  const { data: progress } = await supabase
-    .from("unit_progress")
-    .select("lesson_id, status")
-    .eq("learner_id", learnerId)
-    .in("lesson_id", lessonIds);
-
-  const abgeschlossen = (progress ?? []).filter((p) => p.status === "abgeschlossen").length;
-
-  return {
-    gesamtLektionen: lessonIds.length,
-    abgeschlosseneLektionen: abgeschlossen,
-    prozent: Math.round((abgeschlossen / lessonIds.length) * 100),
-  };
 }
