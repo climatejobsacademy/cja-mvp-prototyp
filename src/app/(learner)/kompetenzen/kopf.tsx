@@ -22,10 +22,13 @@ export function KompetenzenKopf({
   programmName,
   modulTabs,
   gewaehltId,
+  zusatz,
 }: {
   programmName: string;
   modulTabs: ModulTab[];
   gewaehltId: string | null;
+  /** Weitere Query-Parameter, z. B. "&now=…" zum Testen */
+  zusatz: string;
 }) {
   return (
     <section className="flex flex-wrap items-end justify-between gap-6">
@@ -49,7 +52,7 @@ export function KompetenzenKopf({
               return (
                 <li key={m.id}>
                   <Link
-                    href={`/kompetenzen?modul=${m.id}`}
+                    href={`/kompetenzen?modul=${m.id}${zusatz}`}
                     aria-current={gewaehlt ? "true" : undefined}
                     className={cn(
                       "flex min-h-9 items-center gap-1.5 rounded-[9px] px-3.5 text-sm whitespace-nowrap outline-none transition-[background-color,box-shadow,color] duration-150 focus-visible:ring-2 focus-visible:ring-eco-green motion-reduce:transition-none",

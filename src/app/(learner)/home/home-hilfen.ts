@@ -1,64 +1,35 @@
 // Home v6 (docs/design_handoff_home_v6, SR folgt): reine Hilfsfunktionen
-// der Home-Seite -- Datumsformate, Tagestyp und die Umwandlung der
+// der Home-Seite -- Termin-Texte (Datumsanzeige aus src/lib/date.ts), Tagestyp und die Umwandlung der
 // Tagesagenda in die Eingabe von getDayState().
 
+import { datumKurz, tageZwischen, tagRelativ, wochentagLang } from "@/lib/date";
 import type { TagesAktivitaeten } from "@/lib/home-tag";
 import type { NaechsterTermin, TagesAgenda } from "@/lib/queries/schedule";
 
-/** Datum "JJJJ-MM-TT" als Mitternacht UTC, damit die Anzeige nie um einen Tag verrutscht. */
-const alsDatum = (dateStr: string) => new Date(`${dateStr}T00:00:00Z`);
-
-function kurzerWochentag(date: Date): string {
-  return date.toLocaleDateString("de-DE", { weekday: "short", timeZone: "UTC" }).replace(".", "");
-}
-
-/** Fließtext: "Mi, 30.09." */
-export function formatKurz(dateStr: string): string {
-  const d = alsDatum(dateStr);
-  const tagMonat = d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", timeZone: "UTC" });
-  // de-DE liefert "30.09." inklusive Schlusspunkt.
-  return `${kurzerWochentag(d)}, ${tagMonat}`;
-}
-
-/** Begrüßungszeile: "Freitag, 9. Oktober" */
-export function formatLang(dateStr: string): string {
-  return alsDatum(dateStr).toLocaleDateString("de-DE", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    timeZone: "UTC",
-  });
+/** "Praxistag" / "Theorietag ab 13:00" / "Selbstlernen" (Praxistage ohne Uhrzeit, kein Zeitfeld in field_job). */
+function terminArt(t: NaechsterTermin): string {
+  if (t.art === "feld") return "Praxistag";
+  if (t.art === "live") return `Theorietag${t.start ? ` ab ${t.start.slice(0, 5)}` : ""}`;
+  return "Selbstlernen";
 }
 
 /** Zustand F: "Mi, 30.09., 13:00" bzw. ohne Uhrzeit. */
 export function naechsterTerminText(t: NaechsterTermin): string {
-  return `${formatKurz(t.datum)}${t.start ? `, ${t.start.slice(0, 5)}` : ""}`;
+  return `${datumKurz(t.datum)}${t.start ? `, ${t.start.slice(0, 5)}` : ""}`;
 }
 
 /** Vorschau in Zustand D (Brief 3): "Montag: Praxistag" / "Montag: Theorietag ab 13:00" */
 export function naechsterTagText(t: NaechsterTermin): string {
-  const wochentag = alsDatum(t.datum).toLocaleDateString("de-DE", { weekday: "long", timeZone: "UTC" });
-  if (t.art === "feld") return `${wochentag}: Praxistag`;
-  if (t.art === "live") return `${wochentag}: Theorietag${t.start ? ` ab ${t.start.slice(0, 5)}` : ""}`;
-  return `${wochentag}: Selbstlernen`;
+  return `${wochentagLang(t.datum)}: ${terminArt(t)}`;
 }
 
 /**
  * Home v13: dezente Zeile "Morgen: Praxistag" bzw. "Dienstag: Theorietag ab
- * 13:00", wenn unter der Fokus-Karte sonst nichts steht. Praxistage ohne
- * Uhrzeit (kein Zeitfeld in field_job).
+ * 13:00", wenn unter der Fokus-Karte sonst nichts steht.
  */
 export function naechsterTagZeile(t: NaechsterTermin, heute: string): { wann: string; was: string } {
-  const tage = Math.round((alsDatum(t.datum).getTime() - alsDatum(heute).getTime()) / 86_400_000);
-  const wann =
-    tage === 1
-      ? "Morgen"
-      : tage < 7
-        ? alsDatum(t.datum).toLocaleDateString("de-DE", { weekday: "long", timeZone: "UTC" })
-        : formatKurz(t.datum);
-  const was =
-    t.art === "feld" ? "Praxistag" : t.art === "live" ? `Theorietag${t.start ? ` ab ${t.start.slice(0, 5)}` : ""}` : "Selbstlernen";
-  return { wann, was };
+  const wann = tagRelativ(t.datum, heute);
+  return { wann: wann.charAt(0).toUpperCase() + wann.slice(1), was: terminArt(t) };
 }
 
 /**
@@ -66,12 +37,10 @@ export function naechsterTagZeile(t: NaechsterTermin, heute: string): { wann: st
  * innerhalb der letzten Woche, sonst mit Datum "Noch offen vom Mi, 30.09.".
  */
 export function nochOffenText(datum: string, heute: string): string {
-  const tage = Math.round((alsDatum(heute).getTime() - alsDatum(datum).getTime()) / 86_400_000);
+  const tage = tageZwischen(datum, heute);
   if (tage === 1) return "Noch offen von gestern";
-  if (tage > 1 && tage < 7) {
-    return `Noch offen von ${alsDatum(datum).toLocaleDateString("de-DE", { weekday: "long", timeZone: "UTC" })}`;
-  }
-  return `Noch offen vom ${formatKurz(datum)}`;
+  if (tage > 1 && tage < 7) return `Noch offen von ${wochentagLang(datum)}`;
+  return `Noch offen vom ${datumKurz(datum)}`;
 }
 
 export type Tagestyp = "praxis" | "theorie" | null;

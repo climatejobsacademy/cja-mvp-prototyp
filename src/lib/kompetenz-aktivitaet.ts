@@ -3,6 +3,9 @@
 // "Live-Unterricht · heute, 13:00", "Selbstlernen · offen", "Praxis · Montag".
 // Reine Funktion, `heute` kommt aus heuteInBerlin() (src/lib/date.ts).
 
+// @ts-expect-error TS5097: .ts-Endung für node:test nötig (wie die Tests)
+import { tagRelativ } from "./date.ts";
+
 export type AktivitaetFuerMeta = {
   art: "live" | "selbst" | "praxis";
   /** "JJJJ-MM-TT" oder null, wenn nicht im eigenen Plan */
@@ -18,19 +21,6 @@ const ART: Record<AktivitaetFuerMeta["art"], string> = {
   praxis: "Praxis",
 };
 
-const alsDatum = (d: string) => new Date(`${d}T00:00:00Z`);
-
-/** "heute", "morgen", "Montag" (bis 6 Tage), sonst "Mo, 12.10." */
-function wann(datum: string, heute: string): string {
-  const tage = Math.round((alsDatum(datum).getTime() - alsDatum(heute).getTime()) / 86_400_000);
-  if (tage === 0) return "heute";
-  if (tage === 1) return "morgen";
-  const d = alsDatum(datum);
-  if (tage > 1 && tage < 7) return d.toLocaleDateString("de-DE", { weekday: "long", timeZone: "UTC" });
-  const tag = d.toLocaleDateString("de-DE", { weekday: "short", timeZone: "UTC" }).replace(".", "");
-  return `${tag}, ${d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", timeZone: "UTC" })}`;
-}
-
 export function aktivitaetMeta(a: AktivitaetFuerMeta, heute: string): string {
   const art = ART[a.art];
   if (a.erledigt) return `${art} · ${a.art === "praxis" ? "durchgeführt" : "erledigt"}`;
@@ -38,5 +28,5 @@ export function aktivitaetMeta(a: AktivitaetFuerMeta, heute: string): string {
   if (a.datum < heute) return a.art === "selbst" ? `${art} · offen` : `${art} · vorbei`;
   const zeit = a.start ? `, ${a.start.slice(0, 5)}` : "";
   if (a.art === "selbst" && a.datum === heute) return `${art} · heute, flexibel`;
-  return `${art} · ${wann(a.datum, heute)}${zeit}`;
+  return `${art} · ${tagRelativ(a.datum, heute)}${zeit}`;
 }

@@ -63,3 +63,19 @@ test("zeitpunktInBerlin: Anzeige in Berliner Zeit, Sommer- und Winterzeit", asyn
   assert.equal(zeitpunktInBerlin("2026-11-01T23:30:00Z"), "02.11.2026, 00:30");
   assert.equal(zeitpunktInBerlin("2026-10-07T12:05:00.123456+00:00"), "07.10.2026, 14:05");
 });
+
+test("Tagesanzeige: tageZwischen, datumKurz, datumLang, tagRelativ", async () => {
+  // @ts-expect-error TS5097: .ts-Endung für node:test nötig
+  const { tageZwischen, datumKurz, datumLang, tagRelativ, wochentagLang } = await import("./date.ts");
+  assert.equal(tageZwischen("2026-10-09", "2026-10-12"), 3);
+  assert.equal(tageZwischen("2026-10-09", "2026-10-08"), -1);
+  // Zeitumstellung (25.10.) verschiebt nichts
+  assert.equal(tageZwischen("2026-10-24", "2026-10-26"), 2);
+  assert.equal(wochentagLang("2026-10-12"), "Montag");
+  assert.equal(datumKurz("2026-10-12"), "Mo, 12.10.");
+  assert.equal(datumLang("2026-10-09"), "Freitag, 9. Oktober");
+  assert.equal(tagRelativ("2026-10-09", "2026-10-09"), "heute");
+  assert.equal(tagRelativ("2026-10-10", "2026-10-09"), "morgen");
+  assert.equal(tagRelativ("2026-10-12", "2026-10-09"), "Montag");
+  assert.equal(tagRelativ("2026-10-20", "2026-10-09"), "Di, 20.10.");
+});

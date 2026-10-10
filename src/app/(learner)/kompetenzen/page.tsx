@@ -5,6 +5,7 @@ import { getAktuellesModul } from "@/lib/queries/home-modul";
 import { getHeuteStepIds, getLernaktivitaeten, getModuleMitTeilschritten } from "@/lib/queries/kompetenzen-seite";
 import { getTagesAgenda } from "@/lib/queries/schedule";
 import { requireCurrentLearner } from "@/lib/queries/session";
+import { cn } from "@/lib/utils";
 
 import { KompetenzDetail } from "./kompetenz-detail";
 import { KompetenzListe, type ListenKompetenz } from "./kompetenz-liste";
@@ -25,6 +26,8 @@ export default async function KompetenzenPage({
   // nie auf Production; sonst der Berliner Tag.
   const simuliert = process.env.VERCEL_ENV !== "production" ? parseNowParameter(now) : null;
   const heute = simuliert ? simuliert.slice(0, 10) : heuteInBerlin();
+  // Testzeit beim Klicken in Tabs und Liste mitnehmen.
+  const zusatz = simuliert && now ? `&now=${encodeURIComponent(now)}` : "";
 
   const [kompetenzen, modulListe, aktuell, tag] = await Promise.all([
     getKompetenzFortschritt(learner.personId),
@@ -89,6 +92,8 @@ export default async function KompetenzenPage({
         .sort((a, b) => Number(b.heute) - Number(a.heute))
     : [];
   const gewaehlteKompetenz = liste.find((k) => k.id === kompetenzParam) ?? liste[0] ?? null;
+  // Mobil eigene Detailansicht, sobald eine Kompetenz ausdrücklich gewählt ist.
+  const detailAnsicht = !!kompetenzParam && gewaehlteKompetenz?.id === kompetenzParam;
   const detail = gewaehlteKompetenz ? (kompetenzen.find((k) => k.id === gewaehlteKompetenz.id) ?? null) : null;
   const aktivitaeten = detail
     ? await getLernaktivitaeten(
@@ -104,21 +109,42 @@ export default async function KompetenzenPage({
 
   return (
     <div data-breit className="flex flex-col gap-8">
-      <KompetenzenKopf programmName={learner.programmeName} modulTabs={tabs} gewaehltId={gewaehlt?.id ?? null} />
+      <KompetenzenKopf
+        programmName={learner.programmeName}
+        modulTabs={tabs}
+        gewaehltId={gewaehlt?.id ?? null}
+        zusatz={zusatz}
+      />
       {gewaehlt && (
         <ModulFortschrittZeile nummer={gewaehlt.nummer} erreicht={gewaehltErreicht} gesamt={gewaehlt.stepIds.size} />
       )}
       {gewaehlt && (
         // Brief 2.4: links die Liste (ca. 40 %), rechts die Details (ca. 60 %).
+        // Mobil: ohne gewählte Kompetenz nur die Liste, mit ?kompetenz=… nur
+        // die Details als eigene Ansicht (mit Zurück-Link).
         <div className="grid items-start gap-8 min-[960px]:grid-cols-[2fr_3fr]">
-          <KompetenzListe
-            modulId={gewaehlt.id}
-            modulNummer={gewaehlt.nummer}
-            kompetenzen={liste}
-            gewaehltId={gewaehlteKompetenz?.id ?? null}
-          />
+          <div className={cn("min-w-0", detailAnsicht && "hidden min-[960px]:block")}>
+            <KompetenzListe
+              modulId={gewaehlt.id}
+              modulNummer={gewaehlt.nummer}
+              kompetenzen={liste}
+              gewaehltId={gewaehlteKompetenz?.id ?? null}
+              zusatz={zusatz}
+            />
+          </div>
           {detail && (
-            <KompetenzDetail kompetenz={detail} aktivitaeten={aktivitaeten} heute={heute} heuteStepIds={heuteStepIds} />
+            <div className={cn("min-w-0", !detailAnsicht && "hidden min-[960px]:block")}>
+              <KompetenzDetail
+                kompetenz={detail}
+                aktivitaeten={aktivitaeten}
+                heute={heute}
+                heuteStepIds={heuteStepIds}
+                zurueck={{
+                  href: `/kompetenzen?modul=${gewaehlt.id}${zusatz}`,
+                  label: `Alle Kompetenzen in Modul ${gewaehlt.nummer}`,
+                }}
+              />
+            </div>
           )}
         </div>
       )}

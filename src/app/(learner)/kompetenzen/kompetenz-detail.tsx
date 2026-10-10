@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { BookOpen, Check, ChevronRight, Clock, ThumbsDown, Video, Wrench } from "lucide-react";
+import { ArrowLeft, BookOpen, Check, ChevronRight, Clock, ThumbsDown, Video, Wrench } from "lucide-react";
 
 import { Ring } from "@/components/fortschritts-ring";
 import { aktivitaetMeta } from "@/lib/kompetenz-aktivitaet";
@@ -147,12 +147,15 @@ export function KompetenzDetail({
   aktivitaeten,
   heute,
   heuteStepIds,
+  zurueck,
 }: {
   kompetenz: CompetencyView;
   aktivitaeten: Lernaktivitaet[];
   heute: string;
   /** Teilschritte, auf die heute eine Aktivität einzahlt */
   heuteStepIds: Set<string>;
+  /** Mobil (eigene Detailansicht, Brief 2.4): Zurück zur Liste */
+  zurueck: { href: string; label: string };
 }) {
   const heuteDran = kompetenz.steps.some((s) => heuteStepIds.has(s.id));
   // Lehrplan-Reihenfolge als Ersatz für ein eigenes Reihenfolge-Feld.
@@ -162,6 +165,14 @@ export function KompetenzDetail({
       aria-labelledby="kompetenz-detail"
       className="flex min-w-0 flex-col gap-7 rounded-[20px] border border-border p-6 text-eco-deep-green md:p-8"
     >
+      <Link
+        href={zurueck.href}
+        scroll={false}
+        className="-mb-2 inline-flex items-center gap-2 self-start rounded-sm text-sm font-semibold outline-none focus-visible:ring-2 focus-visible:ring-eco-green min-[960px]:hidden"
+      >
+        <ArrowLeft className="size-4" aria-hidden="true" />
+        {zurueck.label}
+      </Link>
       <div className="flex flex-wrap items-center gap-6">
         <Ring prozent={kompetenz.fortschrittProzent} glow={heuteDran} groesse={112} />
         <div className="flex min-w-0 flex-[1_1_220px] flex-col gap-1.5">

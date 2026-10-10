@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 
@@ -9,6 +11,12 @@ import { cn } from "@/lib/utils";
 // Zeile mit Ring, Name und "{x} von {y} Teilschritten". Die Auswahl steht in
 // der URL (?kompetenz=…), damit Home direkt auf eine Kompetenz verlinken
 // kann -- deshalb Links mit aria-current statt Buttons mit aria-pressed.
+// Client-Komponente nur wegen des Scrollens: auf dem Handy öffnet die
+// Auswahl eine eigene Detailansicht (Brief 2.4), die oben beginnen soll; auf
+// breiten Bildschirmen bleibt die Position (Liste und Details nebeneinander).
+
+/** Gleiche Grenze wie das Layout der Seite (min-[960px]). */
+const EINSPALTIG = "(max-width: 959px)";
 
 export type ListenKompetenz = {
   id: string;
@@ -25,11 +33,14 @@ export function KompetenzListe({
   modulNummer,
   kompetenzen,
   gewaehltId,
+  zusatz,
 }: {
   modulId: string;
   modulNummer: number;
   kompetenzen: ListenKompetenz[];
   gewaehltId: string | null;
+  /** Weitere Query-Parameter, z. B. "&now=…" zum Testen */
+  zusatz: string;
 }) {
   if (kompetenzen.length === 0) {
     return (
@@ -44,8 +55,11 @@ export function KompetenzListe({
           return (
             <li key={k.id}>
               <Link
-                href={`/kompetenzen?modul=${modulId}&kompetenz=${k.id}`}
+                href={`/kompetenzen?modul=${modulId}&kompetenz=${k.id}${zusatz}`}
                 scroll={false}
+                onClick={() => {
+                  if (window.matchMedia(EINSPALTIG).matches) window.scrollTo({ top: 0 });
+                }}
                 aria-current={gewaehlt ? "true" : undefined}
                 className={cn(
                   "flex w-full items-center gap-4 rounded-2xl border px-[18px] py-4 text-eco-deep-green outline-none transition-[background-color,border-color] duration-150 focus-visible:ring-2 focus-visible:ring-eco-green motion-reduce:transition-none",

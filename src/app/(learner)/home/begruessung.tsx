@@ -1,8 +1,9 @@
 import { FlaskConical, Video, Wrench } from "lucide-react";
 
+import { datumKurz, datumLang } from "@/lib/date";
 import { cn } from "@/lib/utils";
 
-import { formatKurz, formatLang, type Tagestyp } from "./home-hilfen";
+import { type Tagestyp } from "./home-hilfen";
 
 // Home v12 (docs/design_handoff_home_v6, Brief 2.2, SR folgt): "Hallo
 // {Vorname}", Datum und Tagestyp-Label, darüber ggf. der Hinweis auf die
@@ -32,7 +33,7 @@ export function TestzeitHinweis({ heute, jetzt }: { heute: string; jetzt: string
   return (
     <p className="-mb-4 inline-flex items-center gap-2 self-start rounded-full bg-info px-3 py-1 text-[13px] text-eco-deep-green md:-mb-6">
       <FlaskConical className="size-4 shrink-0 text-lylac" aria-hidden="true" />
-      Testansicht: simulierte Zeit {formatKurz(heute)}, {jetzt.slice(11, 16)} Uhr
+      Testansicht: simulierte Zeit {datumKurz(heute)}, {jetzt.slice(11, 16)} Uhr
     </p>
   );
 }
@@ -54,7 +55,7 @@ export function Begruessung({
         {vorname ? `Hallo ${vorname}` : "Hallo"}
       </h1>
       <div className="flex flex-wrap items-center gap-2.5 text-base text-muted-foreground">
-        <span>{formatLang(heute)}</span>
+        <span>{datumLang(heute)}</span>
         {typ && <TagestypLabel typ={typ} online={online} />}
       </div>
     </section>
