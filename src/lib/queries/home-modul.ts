@@ -1,3 +1,4 @@
+import type { NachholLektion } from "@/lib/home-tag";
 import { createClient } from "@/lib/supabase/server";
 
 // Home v6 (docs/design_handoff_home_v6, Brief 2.4 + 6, SR folgt):
@@ -210,4 +211,91 @@ export async function getHeutigeKompetenzen(lessonIds: string[], fieldJobIds: st
     proLektion: sammeln((theorie ?? []).map((m) => ({ key: m.lesson_id, stepId: m.competency_step_id }))),
     proFieldJob: new Map((jobs ?? []).map((j) => [j.id, proJobTyp.get(j.field_job_type_id) ?? []])),
   };
+}
+
+/**
+ * Brief 3, Zustände E ("Noch offen von {Wochentag}") und F ("ggf.
+ * Weiterlernen"): die zuletzt geplante Selbstlern-Lektion vor `vorDatum`,
+ * die noch nicht abgeschlossen ist. Schaut höchstens 30 Einträge zurück.
+ */
+export async function getNachholLektion(
+  organisationId: string,
+  cohortId: string,
+  enrolmentId: string,
+  learnerId: string,
+  vorDatum: string
+): Promise<NachholLektion | null> {
+  const supabase = await createClient();
+
+  const { data: entries } = await supabase
+    .from("schedule_entry")
+    .select("datum, lesson_id")
+    .eq("organisation_id", organisationId)
+    .eq("art", "asynchron")
+    .not("lesson_id", "is", null)
+    .lt("datum", vorDatum)
+    .or(`cohort_id.eq.${cohortId},enrolment_id.eq.${enrolmentId}`)
+    .order("datum", { ascending: false })
+    .order("reihenfolge", { ascending: false })
+    .limit(30);
+  const eintraege = (entries ?? []).filter((e): e is { datum: string; lesson_id: string } => !!e.lesson_id);
+  if (eintraege.length === 0) return null;
+
+  const lessonIds = [...new Set(eintraege.map((e) => e.lesson_id))];
+  const [{ data: erledigt }, { data: lessons }] = await Promise.all([
+    supabase
+      .from("unit_progress")
+      .select("lesson_id")
+      .eq("learner_id", learnerId)
+      .eq("status", "abgeschlossen")
+      .in("lesson_id", lessonIds),
+    supabase.from("lesson").select("id, name").in("id", lessonIds),
+  ]);
+  const erledigtIds = new Set((erledigt ?? []).map((u) => u.lesson_id));
+  const offen = eintraege.find((e) => !erledigtIds.has(e.lesson_id));
+  const lesson = offen && (lessons ?? []).find((l) => l.id === offen.lesson_id);
+  return offen && lesson ? { lessonId: lesson.id, titel: lesson.name, datum: offen.datum } : null;
+}
+
+/**
+ * Home v13: "Zuletzt dran", wenn heute keine Kompetenz gestärkt wird --
+ * die Kompetenzen der zuletzt abgeschlossenen Lektionen, neueste zuerst.
+ * Nur lesend; "bearbeitet" heißt hier "Lektion abgeschlossen", weil der
+ * Stand "begonnen" nicht gespeichert wird.
+ */
+export async function getZuletztKompetenzIds(learnerId: string): Promise<string[]> {
+  const supabase = await createClient();
+
+  const { data: progress } = await supabase
+    .from("unit_progress")
+    .select("lesson_id, abgeschlossen_am")
+    .eq("learner_id", learnerId)
+    .eq("status", "abgeschlossen")
+    .not("abgeschlossen_am", "is", null)
+    .order("abgeschlossen_am", { ascending: false })
+    .limit(5);
+  const lessonIds = (progress ?? []).map((p) => p.lesson_id);
+  if (lessonIds.length === 0) return [];
+
+  const { data: mappings } = await supabase
+    .from("content_competency_mapping")
+    .select("lesson_id, competency_step_id")
+    .in("lesson_id", lessonIds);
+  const stepIds = [...new Set((mappings ?? []).map((m) => m.competency_step_id))];
+  if (stepIds.length === 0) return [];
+
+  const { data: links } = await supabase
+    .from("competency_competency_step")
+    .select("competency_id, competency_step_id")
+    .in("competency_step_id", stepIds);
+
+  const ergebnis: string[] = [];
+  for (const lessonId of lessonIds) {
+    for (const m of (mappings ?? []).filter((x) => x.lesson_id === lessonId)) {
+      for (const l of (links ?? []).filter((x) => x.competency_step_id === m.competency_step_id)) {
+        if (!ergebnis.includes(l.competency_id)) ergebnis.push(l.competency_id);
+      }
+    }
+  }
+  return ergebnis;
 }

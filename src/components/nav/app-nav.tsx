@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, Calendar, GraduationCap, House, Target } from "lucide-react";
+import { BookOpen, Calendar, House, Target } from "lucide-react";
 
 import { AccountMenu } from "@/components/nav/account-menu";
 import { cn } from "@/lib/utils";
@@ -47,27 +47,6 @@ function Wortmarke() {
   );
 }
 
-function Programm({ name, mobile }: { name: string; mobile?: boolean }) {
-  return (
-    <div
-      className={cn(
-        "flex h-8 min-w-0 items-center gap-2 border-l border-border pl-4",
-        mobile && "flex-1"
-      )}
-    >
-      <GraduationCap className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-      <span
-        className={cn(
-          "text-muted-foreground",
-          mobile ? "truncate text-xs" : "text-[13px] whitespace-nowrap"
-        )}
-      >
-        {name}
-      </span>
-    </div>
-  );
-}
-
 export function AppNav({
   name,
   email,
@@ -85,13 +64,17 @@ export function AppNav({
   return (
     <>
       <header className="sticky top-0 z-20 border-b border-border bg-white">
-        {/* Desktop */}
-        <div className="hidden h-16 items-center gap-4 px-8 md:flex">
-          <Wortmarke />
-          {programmeName.trim() && <Programm name={programmeName} />}
-          <nav aria-label="Hauptnavigation" className="ml-auto">
-            <ul className="flex items-center gap-1">
-              {ITEMS.map(({ href, label, icon: Icon }) => {
+        {/* Desktop (Home v12, docs/design_handoff_home_v6/design/home-v12-referenz.html): Logo
+            links, Navigation als Segmented Control in der Mitte, Avatar
+            rechts. Programmname steht nicht mehr im Kopf (Entscheidung
+            Anna 2026-10-10), sondern im Kompetenz-Panel bzw. Account-Menü. */}
+        <div className="mx-auto hidden max-w-[1200px] items-center gap-6 px-10 py-3 md:flex">
+          <div className="flex min-w-0 flex-1">
+            <Wortmarke />
+          </div>
+          <nav aria-label="Hauptnavigation">
+            <ul className="flex items-center gap-0.5 rounded-xl bg-off-white p-1">
+              {ITEMS.map(({ href, label }) => {
                 const active = isActive(pathname, href);
                 return (
                   <li key={href}>
@@ -99,17 +82,13 @@ export function AppNav({
                       href={href}
                       aria-current={active ? "page" : undefined}
                       className={cn(
-                        "flex h-11 items-center gap-2 rounded-lg px-3.5 text-[15px] transition-[background-color,box-shadow] duration-150 motion-reduce:transition-none",
+                        "flex min-h-9 items-center rounded-[9px] px-4 text-sm transition-[background-color,box-shadow,color] duration-150 motion-reduce:transition-none",
                         FOKUS,
                         active
-                          ? "bg-charge-green/35 font-semibold text-eco-deep-green"
-                          : "text-muted-foreground hover:bg-eco-green/10 hover:text-eco-deep-green"
+                          ? "bg-white font-semibold text-eco-deep-green shadow-sm"
+                          : "text-muted-foreground hover:text-eco-deep-green"
                       )}
                     >
-                      <Icon
-                        className={cn("size-[18px] shrink-0", active && "text-eco-deep-green")}
-                        aria-hidden="true"
-                      />
                       {label}
                     </Link>
                   </li>
@@ -117,13 +96,12 @@ export function AppNav({
               })}
             </ul>
           </nav>
-          {menu}
+          <div className="flex flex-1 justify-end">{menu}</div>
         </div>
 
         {/* Mobile: Kopf ohne Nav, Nav als Bottom-Bar unten */}
-        <div className="flex h-[60px] items-center gap-3 px-4 md:hidden">
+        <div className="flex h-[60px] items-center justify-between gap-3 px-4 md:hidden">
           <Wortmarke />
-          {programmeName.trim() ? <Programm name={programmeName} mobile /> : <span className="flex-1" />}
           {menu}
         </div>
       </header>
@@ -150,7 +128,7 @@ export function AppNav({
                   <span
                     className={cn(
                       "flex h-[30px] w-14 items-center justify-center rounded-full transition-[background-color] duration-150 motion-reduce:transition-none",
-                      active && "bg-charge-green/35"
+                      active && "bg-off-white"
                     )}
                   >
                     <Icon

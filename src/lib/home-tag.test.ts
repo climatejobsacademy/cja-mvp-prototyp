@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 // @ts-expect-error TS5097: .ts-Endung für node:test nötig
-import { getDayState, parseNowParameter, type TagesAktivitaeten } from "./home-tag.ts";
+import { getDayState, parseNowParameter, titelTeile, type TagesAktivitaeten } from "./home-tag.ts";
 
 const DATUM = "2026-10-09";
 const jetzt = (hhmm: string) => `${DATUM}T${hhmm}:00`;
@@ -57,7 +57,30 @@ test("Durchgeführter Praxistag zählt als erledigt", () => {
 });
 
 test("F: nichts geplant", () => {
-  assert.equal(getDayState(jetzt("10:00"), tag({})).zustand, "F");
+  const z = getDayState(jetzt("10:00"), tag({}));
+  assert.ok(z.zustand === "F" && z.nachholen === null);
+});
+
+const nachholen = { lessonId: "les-alt", titel: "Ohmsches Gesetz", datum: "2026-10-08" };
+
+test("F: offene Lektion von früher wird zum Weiterlernen angeboten", () => {
+  const z = getDayState(jetzt("10:00"), tag({ nachholen }));
+  assert.ok(z.zustand === "F" && z.nachholen?.lessonId === "les-alt");
+});
+
+test("E: 'Noch offen von …' nur, wenn heute nichts Flexibles offen ist", () => {
+  const ohneFlex = getDayState(jetzt("07:00"), tag({ praxis: [praxis], nachholen }));
+  assert.ok(ohneFlex.zustand === "E" && ohneFlex.nachholen?.lessonId === "les-alt");
+  const mitFlex = getDayState(jetzt("07:00"), tag({ praxis: [praxis], flex: [flexOffen], nachholen }));
+  assert.ok(mitFlex.zustand === "E" && mitFlex.nachholen === null && mitFlex.danach?.id === "f1");
+});
+
+test("A/B/C/D zeigen nie Offenes von früher", () => {
+  const a = getDayState(jetzt("09:00"), tag({ live: [live], nachholen }));
+  const d = getDayState(jetzt("18:00"), tag({ live: [live], nachholen }));
+  assert.equal(a.zustand, "A");
+  assert.equal(d.zustand, "D");
+  assert.ok(!("nachholen" in a) && !("nachholen" in d));
 });
 
 test("Mehrere Live-Sessions: die nächste bevorstehende wird gewählt", () => {
@@ -72,4 +95,13 @@ test("parseNowParameter: gültige und ungültige Werte", () => {
   assert.equal(parseNowParameter("2026-10-09T25:00"), null);
   assert.equal(parseNowParameter("morgen"), null);
   assert.equal(parseNowParameter(undefined), null);
+});
+
+test("titelTeile: Klammertext wird Untertitel", () => {
+  assert.deepEqual(
+    titelTeile("Grundschaltungen der Elektrotechnik (Umgang mit Multimeter, Analog vs Digital) – Teil 2"),
+    { titel: "Grundschaltungen der Elektrotechnik – Teil 2", untertitel: "Umgang mit Multimeter, Analog vs Digital" }
+  );
+  assert.deepEqual(titelTeile("Ohmsches Gesetz"), { titel: "Ohmsches Gesetz", untertitel: null });
+  assert.deepEqual(titelTeile("(Nur Klammer)"), { titel: "(Nur Klammer)", untertitel: null });
 });

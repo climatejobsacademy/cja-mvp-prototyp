@@ -62,7 +62,7 @@ export function AccountMenu({
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label="Account-Menü"
-        className="flex size-11 shrink-0 items-center justify-center rounded-full bg-muted text-[15px] font-semibold text-eco-deep-green outline-none transition-[background-color,box-shadow] duration-150 hover:bg-eco-green/10 focus-visible:ring-2 focus-visible:ring-eco-green focus-visible:ring-offset-2 data-popup-open:bg-eco-green/10 data-popup-open:ring-2 data-popup-open:ring-eco-green data-popup-open:ring-offset-2 motion-reduce:transition-none"
+        className="flex size-9 shrink-0 items-center justify-center rounded-full bg-eco-deep-green text-sm font-semibold text-white outline-none transition-[background-color,box-shadow] duration-150 hover:bg-eco-deep-green/85 focus-visible:ring-2 focus-visible:ring-eco-green focus-visible:ring-offset-2 data-popup-open:ring-2 data-popup-open:ring-eco-green data-popup-open:ring-offset-2 motion-reduce:transition-none"
       >
         {initial}
       </DropdownMenuTrigger>

@@ -28,12 +28,22 @@ export type PraxisAktivitaet = {
   durchgefuehrt: boolean;
 };
 
+/** Offene Selbstlern-Lektion von einem früheren Tag (getNachholLektion). */
+export type NachholLektion = {
+  lessonId: string;
+  titel: string;
+  /** Geplanter Tag "JJJJ-MM-TT" */
+  datum: string;
+};
+
 export type TagesAktivitaeten = {
   /** "JJJJ-MM-TT" */
   datum: string;
   live: LiveAktivitaet[];
   flex: FlexAktivitaet[];
   praxis: PraxisAktivitaet[];
+  /** Zuletzt geplante, noch offene Selbstlern-Lektion vor heute */
+  nachholen?: NachholLektion | null;
 };
 
 export type ErledigtEintrag =
@@ -50,10 +60,10 @@ export type Tageszustand =
   | { zustand: "C"; fokus: FlexAktivitaet; erledigt: ErledigtEintrag[] }
   /** D – alles von heute erledigt */
   | { zustand: "D"; erledigt: ErledigtEintrag[] }
-  /** E – Praxistag */
-  | { zustand: "E"; praxis: PraxisAktivitaet; danach: FlexAktivitaet | null }
-  /** F – heute nichts geplant */
-  | { zustand: "F" };
+  /** E – Praxistag; `nachholen` nur, wenn heute nichts Flexibles offen ist */
+  | { zustand: "E"; praxis: PraxisAktivitaet; danach: FlexAktivitaet | null; nachholen: NachholLektion | null }
+  /** F – heute nichts geplant; ggf. offene Lektion von früher zum Weiterlernen */
+  | { zustand: "F"; nachholen: NachholLektion | null };
 
 /**
  * Regeln (Brief 3):
@@ -62,6 +72,9 @@ export type Tageszustand =
  *   Hauptaktion -- nie eine offene Selbstlernlektion.
  * - Danach wird die offene Selbstlernlektion zum Fokus (C).
  * - Gab es heute etwas und ist alles erledigt: D. Gab es nichts: F.
+ * - Offenes von früheren Tagen erscheint nur in E (als zweite Karte, wenn
+ *   heute nichts Flexibles offen ist) und F -- nie in A/B, und nicht in D,
+ *   damit "Alles erledigt" ein Erfolgsmoment bleibt.
  * Eine Live-Session gilt allein über die Uhrzeit als erledigt (ende <= jetzt).
  */
 export function getDayState(jetzt: string, tag: TagesAktivitaeten): Tageszustand {
@@ -70,7 +83,10 @@ export function getDayState(jetzt: string, tag: TagesAktivitaeten): Tageszustand
   const ersteOffeneFlex = tag.flex.find((f) => !f.erledigt) ?? null;
 
   const praxisOffen = tag.praxis.find((p) => !p.durchgefuehrt);
-  if (praxisOffen) return { zustand: "E", praxis: praxisOffen, danach: ersteOffeneFlex };
+  const nachholen = tag.nachholen ?? null;
+  if (praxisOffen) {
+    return { zustand: "E", praxis: praxisOffen, danach: ersteOffeneFlex, nachholen: ersteOffeneFlex ? null : nachholen };
+  }
 
   const laufend = live.find((l) => zeit(l.start) <= jetzt && jetzt < zeit(l.ende));
   if (laufend) return { zustand: "B", live: laufend, danach: ersteOffeneFlex };
@@ -86,7 +102,7 @@ export function getDayState(jetzt: string, tag: TagesAktivitaeten): Tageszustand
 
   if (ersteOffeneFlex) return { zustand: "C", fokus: ersteOffeneFlex, erledigt };
   if (erledigt.length > 0) return { zustand: "D", erledigt };
-  return { zustand: "F" };
+  return { zustand: "F", nachholen };
 }
 
 const NOW_FORMAT = /^(\d{4}-\d{2}-\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/;
@@ -101,4 +117,19 @@ export function parseNowParameter(wert: string | undefined): string | null {
   const [, datum, h, min, s = "00"] = m;
   if (Number(h) > 23 || Number(min) > 59 || Number(s) > 59) return null;
   return `${datum}T${h}:${min}:${s}`;
+}
+
+/**
+ * Home v12 (Brief Punkt 4): Lektionstitel in kurzen Titel + Untertitel
+ * teilen. Übergangslösung, solange es kein eigenes Feld gibt: der Text in
+ * der ersten Klammer wird Untertitel, z. B. "Grundschaltungen (Umgang mit
+ * Multimeter) – Teil 2" → "Grundschaltungen – Teil 2" + "Umgang mit
+ * Multimeter". Ohne Klammer bleibt der Titel unverändert.
+ */
+export function titelTeile(titel: string): { titel: string; untertitel: string | null } {
+  const m = /^(.*?)\s*\(([^()]+)\)\s*(.*)$/.exec(titel.trim());
+  if (!m) return { titel: titel.trim(), untertitel: null };
+  const [, vorher, klammer, nachher] = m;
+  const kurz = `${vorher} ${nachher}`.replace(/\s+/g, " ").trim();
+  return kurz ? { titel: kurz, untertitel: klammer.trim() } : { titel: titel.trim(), untertitel: null };
 }

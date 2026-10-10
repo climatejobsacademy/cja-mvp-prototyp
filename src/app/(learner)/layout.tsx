@@ -19,8 +19,8 @@ export default async function LearnerLayout({
         cohortName={learner.cohortName}
       />
       {/* Handoff 2a: Inhalt max-w-3xl, mobil px-4 pt-5 pb-8, Desktop py-10 pb-16.
-          Seiten mit data-breit (Home v6) bekommen 1120 px und 40 px Seitenrand. */}
-      <div className="mx-auto w-full max-w-3xl flex-1 px-4 pt-5 pb-8 has-[[data-breit]]:max-w-[1120px] md:py-10 md:pb-16 md:has-[[data-breit]]:px-10">
+          Seiten mit data-breit (Home v12) bekommen 1200 px und 40 px Seitenrand. */}
+      <div className="mx-auto w-full max-w-3xl flex-1 px-4 pt-5 pb-8 has-[[data-breit]]:max-w-[1200px] md:py-10 md:pb-16 md:has-[[data-breit]]:px-10">
         {children}
       </div>
     </div>

@@ -21,6 +21,7 @@
   --color-eco-green-on-dark: var(--eco-green-on-dark);
   --color-coral-text: var(--coral-text);
   --shadow-glow-charge: var(--glow-charge);
+  --shadow-glow-charge-sm: var(--glow-charge-sm);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
   --color-warning: var(--warning);
@@ -92,6 +93,9 @@
   --eco-green-on-dark: #9fdcc0;
   --coral-text: #a9541c;
   --glow-charge: 0 0 0 6px rgb(162 229 0 / 0.22), 0 0 28px 6px rgb(162 229 0 / 0.45);
+  /* Home v12 (docs/design_handoff_home_v6/design/home-v12-referenz.html), 2026-10-10: kleiner
+     Glow für den 24-px-Mini-Ring in der "Stärkt"-Pill. */
+  --glow-charge-sm: 0 0 0 3px rgb(162 229 0 / 0.25), 0 0 12px 2px rgb(162 229 0 / 0.55);
 
   /* Semantische Farben (Abschnitt 1): helle Hintergrundfläche + Eco Deep Green
      als Text-/Icon-Farbe — nie Coral/Charge Green direkt als Vordergrund.

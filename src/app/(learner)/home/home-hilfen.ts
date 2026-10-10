@@ -43,6 +43,37 @@ export function naechsterTagText(t: NaechsterTermin): string {
   return `${wochentag}: Selbstlernen`;
 }
 
+/**
+ * Home v13: dezente Zeile "Morgen: Praxistag" bzw. "Dienstag: Theorietag ab
+ * 13:00", wenn unter der Fokus-Karte sonst nichts steht. Praxistage ohne
+ * Uhrzeit (kein Zeitfeld in field_job).
+ */
+export function naechsterTagZeile(t: NaechsterTermin, heute: string): { wann: string; was: string } {
+  const tage = Math.round((alsDatum(t.datum).getTime() - alsDatum(heute).getTime()) / 86_400_000);
+  const wann =
+    tage === 1
+      ? "Morgen"
+      : tage < 7
+        ? alsDatum(t.datum).toLocaleDateString("de-DE", { weekday: "long", timeZone: "UTC" })
+        : formatKurz(t.datum);
+  const was =
+    t.art === "feld" ? "Praxistag" : t.art === "live" ? `Theorietag${t.start ? ` ab ${t.start.slice(0, 5)}` : ""}` : "Selbstlernen";
+  return { wann, was };
+}
+
+/**
+ * Kopf für Offenes von früher (Brief 3, Zustand E): "Noch offen von Freitag"
+ * innerhalb der letzten Woche, sonst mit Datum "Noch offen vom Mi, 30.09.".
+ */
+export function nochOffenText(datum: string, heute: string): string {
+  const tage = Math.round((alsDatum(heute).getTime() - alsDatum(datum).getTime()) / 86_400_000);
+  if (tage === 1) return "Noch offen von gestern";
+  if (tage > 1 && tage < 7) {
+    return `Noch offen von ${alsDatum(datum).toLocaleDateString("de-DE", { weekday: "long", timeZone: "UTC" })}`;
+  }
+  return `Noch offen vom ${formatKurz(datum)}`;
+}
+
 export type Tagestyp = "praxis" | "theorie" | null;
 
 /**
@@ -54,6 +85,11 @@ export function tagestyp(tag: TagesAgenda): Tagestyp {
   if (tag.istPraxistag) return "praxis";
   if (tag.theorie.some((e) => e.art === "live")) return "theorie";
   return null;
+}
+
+/** Home v12: "Theorietag · online", wenn ein heutiger Live-Termin einen Beitritts-Link hat. */
+export function istOnline(tag: TagesAgenda): boolean {
+  return tag.theorie.some((e) => e.art === "live" && !!e.liveSession?.joinLink);
 }
 
 /** Tagesagenda → Eingabe für getDayState (Live mit Uhrzeit, Selbstlernen, Praxis). */
