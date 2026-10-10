@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Stundenplan – v2 Mobil</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&amp;family=Work+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+a{color:#23321E}a:hover{color:#239669}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #FFFFFF; font-family: 'Work Sans', sans-serif; color: #23321E; display: flex; flex-direction: column;">
+<header style="padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #EEF1EB;">
+<a href="#" aria-label="Home" style="font-family: 'Anton', sans-serif; font-size: 11px; line-height: 11px; text-transform: uppercase; color: #23321E; text-decoration: none;">The<br>Academy<br>for Climate<br>Jobs</a>
+<div style="display: flex; align-items: center; gap: 4px;">
+<a href="#" aria-label="Benachrichtigungen" style="position: relative; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #23321E;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg><span style="position: absolute; top: 10px; right: 11px; width: 8px; height: 8px; border-radius: 50%; background: #FFA573;"></span></a>
+<a href="#" aria-label="Profil" style="width: 34px; height: 34px; border-radius: 50%; background: #23321E; display: flex; align-items: center; justify-content: center; color: #FFFFFF; font-weight: 600; font-size: 13px; text-decoration: none;">A</a>
+</div>
+</header>
+<main style="flex: 1; padding: 20px 16px 24px; display: flex; flex-direction: column; gap: 16px;">
+<div style="display: flex; justify-content: space-between; align-items: flex-end;">
+<h1 style="margin: 0; font-family: 'Anton', sans-serif; font-weight: 400; font-size: 34px; line-height: 1;">Stundenplan</h1>
+<button type="button" style="min-height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid #E3E8DF; background: #FFFFFF; color: #23321E; font-weight: 600; font-size: 13px;">Heute</button>
+</div>
+<div style="display: flex; align-items: center; justify-content: space-between; font-size: 14px;">
+<button type="button" aria-label="Vorherige Woche" style="width: 36px; height: 36px; border: 0; background: transparent; color: #23321E; display: inline-flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button>
+<span style="font-weight: 700;">Woche 2 · 5. – 9. Okt.</span>
+<button type="button" aria-label="Nächste Woche" style="width: 36px; height: 36px; border: 0; background: transparent; color: #23321E; display: inline-flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button>
+</div>
+<div style="display: flex; gap: 6px;">
+<sc-for list="{{days}}" as="d" hint-placeholder-count="5">
+<a href="#" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 4px; border-radius: 14px; border: 1px solid {{d.border}}; background: {{d.bg}}; color: #23321E; text-decoration: none;">
+<span style="font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: {{d.nameColor}};">{{d.short}}</span>
+<span style="width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-family: 'Anton', sans-serif; font-size: 17px; background: {{d.numBg}}; color: {{d.numColor}};">{{d.num}}</span>
+<span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 50%; background: {{d.dot}};"></span>
+</a>
+</sc-for>
+</div>
+<div style="display: flex; align-items: center; gap: 8px;">
+<span style="font-size: 16px; font-weight: 700;">Freitag, 9. Oktober</span>
+<span style="padding: 3px 9px; border-radius: 999px; background: #F1EBFC; color: #4E2E9E; font-size: 12px; font-weight: 600;">Theorietag</span>
+</div>
+<div style="border: 1px solid #EEF1EB; border-radius: 16px; overflow: hidden;">
+<div style="display: flex; flex-direction: column;">
+<div style="display: grid; grid-template-columns: 48px minmax(0, 1fr); border-bottom: 1px solid #E3E8DF;">
+<div style="padding: 12px 8px 0 0; text-align: right; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #6A7566;">Flex</div>
+<div style="padding: 8px; display: flex; flex-wrap: wrap; gap: 6px;">
+<sc-for list="{{flex}}" as="f" hint-placeholder-count="1">
+<a href="#" style="display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px; border-radius: 9px; background: #E6F4EE; color: #1C5E42; font-size: 13px; font-weight: 600; text-decoration: none;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#239669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"></path><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"></path></svg>{{f.title}}<span style="font-weight: 500; color: #3F7A5F;">· {{f.status}}</span></a>
+</sc-for>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: 48px minmax(0, 1fr);">
+<div style="position: relative; height: {{gridH}}px;">
+<sc-for list="{{hours}}" as="h" hint-placeholder-count="10">
+<span style="position: absolute; right: 10px; top: {{h.top}}px; transform: translateY(-50%); font-size: 11px; color: #8A9486;">{{h.label}}</span>
+</sc-for>
+</div>
+<div style="position: relative; height: {{gridH}}px; border-left: 1px solid #EEF1EB; background-image: linear-gradient(#EEF1EB 1px, transparent 1px); background-size: 100% 40px;">
+<sc-for list="{{events}}" as="e" hint-placeholder-count="1">
+<a href="#" style="position: absolute; left: 8px; right: 8px; top: {{e.top}}px; height: {{e.height}}px; box-sizing: border-box; padding: 10px 12px; border-radius: 12px; background: #F1EBFC; border-left: 4px solid #9164E1; box-shadow: 0 0 0 2px #23321E; color: #23321E; text-decoration: none; display: flex; flex-direction: column; gap: 4px; overflow: hidden;">
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: #4E2E9E;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9164E1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 13 5.2 3.1a.5.5 0 0 0 .8-.4V8.3a.5.5 0 0 0-.8-.4L16 11"></path><rect x="2" y="6" width="14" height="12" rx="2"></rect></svg>{{e.time}} · Live-Unterricht</span>
+<span style="font-size: 15px; font-weight: 700; line-height: 1.3;">{{e.title}}</span>
+<span style="align-self: flex-start; margin-top: auto; padding: 7px 12px; border-radius: 10px; background: #23321E; color: #FFFFFF; font-size: 13px; font-weight: 700;">Zum Live-Unterricht →</span>
+</a>
+</sc-for>
+<div aria-hidden="true" style="position: absolute; left: 0; right: 0; top: {{nowTop}}px; height: 2px; background: #23321E;"><span style="position: absolute; left: -6px; top: -5px; width: 12px; height: 12px; border-radius: 50%; background: #23321E;"></span></div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<nav aria-label="Hauptnavigation" style="position: sticky; bottom: 0; display: flex; border-top: 1px solid #EEF1EB; background: #FFFFFF; padding-bottom: 8px;">
+<a href="#" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 0; font-size: 11px; font-weight: 500; color: #6A7566; text-decoration: none;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>Home</a>
+<a href="#" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 0; font-size: 11px; font-weight: 700; color: #23321E; text-decoration: none;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4M8 2v4M3 10h18"></path></svg>Stundenplan</a>
+<a href="#" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 0; font-size: 11px; font-weight: 500; color: #6A7566; text-decoration: none;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 3a9 9 0 0 1 9 9"></path></svg>Kompetenzen</a>
+<a href="#" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 0; font-size: 11px; font-weight: 500; color: #6A7566; text-decoration: none;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5M4 19h16M8 15l4-4 3 3 5-6"></path></svg>Programm</a>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1080}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var START = 7, END = 17, H = 40;
+    function y(t) { return Math.round((t - START) * H); }
+    var types = { T: '#9164E1', P: '#FFA573', L: '#239669' };
+    var days = [['Mo','5','T'],['Di','6','P'],['Mi','7','T'],['Do','8','T'],['Fr','9','T',1]].map(function (a) {
+      var today = !!a[3];
+      return { short: a[0], num: a[1], dot: types[a[2]], bg: today ? '#F7FAF3' : '#FFFFFF', border: today ? '#23321E' : '#EEF1EB',
+        numBg: today ? '#23321E' : 'transparent', numColor: today ? '#FFFFFF' : '#23321E', nameColor: today ? '#23321E' : '#5B6857' };
+    });
+    var hours = [];
+    for (var h = START + 1; h <= END - 1; h++) hours.push({ top: y(h), label: (h < 10 ? '0' : '') + h + ':00' });
+    var events = [{ top: y(13) + 2, height: y(16) - y(13) - 4, time: '13:00 – [16:00]',
+      title: 'Grundschaltungen der Elektrotechnik – Teil 2',
+      sub: true, subText: 'Umgang mit Multimeter, analog und digital',
+      comp: true, compText: 'Multimeter bedienen' }];
+    return { days: days, hours: hours, events: events, gridH: (END - START) * H, nowTop: y(11.5),
+      flex: [{ title: 'Wiederholung zum Live-Unterricht', status: 'offen' }] };
+  }
+}
+</script>
+</body>
+</html>

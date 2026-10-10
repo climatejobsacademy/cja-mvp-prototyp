@@ -110,7 +110,7 @@ export function DeinTag({
           Dein Tag
         </h2>
         <Link
-          href="/schedule"
+          href="/schedule?ansicht=woche"
           className="rounded-sm text-sm text-muted-foreground outline-none hover:text-eco-deep-green focus-visible:ring-2 focus-visible:ring-eco-green"
         >
           Woche ansehen →

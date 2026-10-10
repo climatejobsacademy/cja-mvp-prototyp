@@ -84,3 +84,16 @@ export function tagRelativ(datum: string, heute: string): string {
   if (tage > 1 && tage < 7) return wochentagLang(datum);
   return datumKurz(datum);
 }
+
+/** Kalendertag plus/minus `tage` ("JJJJ-MM-TT"). */
+export function plusTage(datum: string, tage: number): string {
+  const d = alsTag(datum);
+  d.setUTCDate(d.getUTCDate() + tage);
+  return d.toISOString().slice(0, 10);
+}
+
+/** Montag der Woche, in der `datum` liegt (Woche beginnt Montag). */
+export function montagDerWoche(datum: string): string {
+  const wochentag = alsTag(datum).getUTCDay(); // 0 = Sonntag
+  return plusTage(datum, wochentag === 0 ? -6 : 1 - wochentag);
+}

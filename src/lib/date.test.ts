@@ -79,3 +79,13 @@ test("Tagesanzeige: tageZwischen, datumKurz, datumLang, tagRelativ", async () =>
   assert.equal(tagRelativ("2026-10-12", "2026-10-09"), "Montag");
   assert.equal(tagRelativ("2026-10-20", "2026-10-09"), "Di, 20.10.");
 });
+
+test("plusTage und montagDerWoche", async () => {
+  // @ts-expect-error TS5097: .ts-Endung für node:test nötig
+  const { plusTage, montagDerWoche } = await import("./date.ts");
+  assert.equal(plusTage("2026-10-09", 3), "2026-10-12");
+  assert.equal(plusTage("2026-10-01", -1), "2026-09-30");
+  assert.equal(montagDerWoche("2026-10-09"), "2026-10-05"); // Freitag
+  assert.equal(montagDerWoche("2026-10-05"), "2026-10-05"); // Montag
+  assert.equal(montagDerWoche("2026-10-11"), "2026-10-05"); // Sonntag
+});

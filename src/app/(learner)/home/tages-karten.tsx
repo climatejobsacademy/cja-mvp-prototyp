@@ -398,7 +398,7 @@ export function HeuteErledigtLeiste({ erledigt }: { erledigt: ErledigtEintrag[] 
           ))}
         </ul>
       </span>
-      <Link href="/schedule" className={cn("text-[15px] font-semibold whitespace-nowrap", LINK_FOKUS)}>
+      <Link href="/schedule?ansicht=woche" className={cn("text-[15px] font-semibold whitespace-nowrap", LINK_FOKUS)}>
         Woche ansehen →
       </Link>
     </div>

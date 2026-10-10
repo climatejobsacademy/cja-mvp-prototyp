@@ -68,7 +68,7 @@ export function AppNav({
             links, Navigation als Segmented Control in der Mitte, Avatar
             rechts. Programmname steht nicht mehr im Kopf (Entscheidung
             Anna 2026-10-10), sondern im Kompetenz-Panel bzw. Account-Menü. */}
-        <div className="mx-auto hidden max-w-[1200px] items-center gap-6 px-10 py-3 md:flex">
+        <div className="mx-auto hidden max-w-[1080px] items-center gap-6 px-10 py-3 md:flex">
           <div className="flex min-w-0 flex-1">
             <Wortmarke />
           </div>

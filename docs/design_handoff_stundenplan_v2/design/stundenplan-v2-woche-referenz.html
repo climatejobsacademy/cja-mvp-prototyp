@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Stundenplan – v2</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&amp;family=Work+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+a{color:#23321E}a:hover{color:#239669}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #FFFFFF; font-family: 'Work Sans', sans-serif; color: #23321E;">
+
+<header style="border-bottom: 1px solid #EEF1EB; background: #FFFFFF;">
+<div style="max-width: 1240px; margin: 0 auto; padding: 16px 40px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap;">
+<div style="flex: 1 1 0; min-width: 0;">
+<a href="#" aria-label="Academy for Climate Jobs – Home" style="display: inline-block; font-family: 'Anton', sans-serif; font-size: 14px; line-height: 14px; text-transform: uppercase; color: #23321E; text-decoration: none;">The<br>Academy<br>for Climate<br>Jobs</a>
+</div>
+<nav aria-label="Hauptnavigation" style="display: flex; align-items: center; gap: 2px; padding: 4px; border-radius: 12px; background: #F4F7F1;">
+<a href="#" style="padding: 8px 16px; border-radius: 9px; color: #5B6857; font-size: 14px; text-decoration: none;">Home</a>
+<a href="#" aria-current="page" style="padding: 8px 16px; border-radius: 9px; background: #FFFFFF; box-shadow: 0 1px 2px rgba(35,50,30,0.12); color: #23321E; font-weight: 600; font-size: 14px; text-decoration: none;">Stundenplan</a>
+<a href="#" style="padding: 8px 16px; border-radius: 9px; color: #5B6857; font-size: 14px; text-decoration: none;">Kompetenzen</a>
+<a href="#" style="padding: 8px 16px; border-radius: 9px; color: #5B6857; font-size: 14px; text-decoration: none;">Programm</a>
+</nav>
+<div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px; flex: 1 1 0;">
+<a href="#" aria-label="Benachrichtigungen, 2 neu" style="position: relative; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #23321E;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg><span style="position: absolute; top: 10px; right: 11px; width: 8px; height: 8px; border-radius: 50%; background: #FFA573;"></span></a>
+<a href="#" aria-label="Profil" style="width: 36px; height: 36px; border-radius: 50%; background: #23321E; display: flex; align-items: center; justify-content: center; color: #FFFFFF; font-weight: 600; font-size: 14px; text-decoration: none;">A</a>
+</div>
+</div>
+</header>
+
+<main style="max-width: 1240px; margin: 0 auto; padding: 40px 40px 80px; display: flex; flex-direction: column; gap: 20px;">
+
+<section style="display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; flex-wrap: wrap;">
+<div style="display: flex; flex-direction: column; gap: 8px;">
+<span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #6A7566;">Elektrofachkraft Erneuerbare Energien · Modul 2</span>
+<h1 style="margin: 0; font-family: 'Anton', sans-serif; font-weight: 400; font-size: 48px; line-height: 1;">Stundenplan</h1>
+</div>
+</section>
+
+<div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+<button type="button" style="min-height: 40px; padding: 0 16px; border-radius: 12px; border: 1px solid #E3E8DF; background: #FFFFFF; color: #23321E; font-weight: 600; font-size: 14px; cursor: pointer;">Heute</button>
+<button type="button" aria-label="Vorherige Woche" style="width: 40px; height: 40px; border-radius: 12px; border: 1px solid #E3E8DF; background: #FFFFFF; color: #23321E; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg></button>
+<button type="button" aria-label="Nächste Woche" style="width: 40px; height: 40px; border-radius: 12px; border: 1px solid #E3E8DF; background: #FFFFFF; color: #23321E; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg></button>
+<span style="margin-left: 6px; font-size: 20px; font-weight: 700;">5. – 9. Oktober 2026</span>
+<span style="font-size: 14px; color: #5B6857;">· Woche 2 von Modul 2</span>
+<div style="margin-left: auto; display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+<div style="display: flex; gap: 14px; font-size: 13px; color: #5B6857;">
+<span style="display: inline-flex; align-items: center; gap: 6px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9164E1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 13 5.2 3.1a.5.5 0 0 0 .8-.4V8.3a.5.5 0 0 0-.8-.4L16 11"></path><rect x="2" y="6" width="14" height="12" rx="2"></rect></svg>Live</span>
+<span style="display: inline-flex; align-items: center; gap: 6px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#239669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"></path><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"></path></svg>Selbstlernen</span>
+<span style="display: inline-flex; align-items: center; gap: 6px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#E07B3F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>Praxis</span>
+</div>
+<div role="group" aria-label="Ansicht" style="display: flex; gap: 2px; padding: 4px; border-radius: 12px; background: #F4F7F1;">
+<button type="button" style="padding: 7px 14px; border-radius: 9px; border: 0; background: transparent; color: #5B6857; font-size: 14px; cursor: pointer;">Tag</button>
+<button type="button" aria-pressed="true" style="padding: 7px 14px; border-radius: 9px; border: 0; background: #FFFFFF; box-shadow: 0 1px 2px rgba(35,50,30,0.12); color: #23321E; font-weight: 600; font-size: 14px; cursor: pointer;">Woche</button>
+<button type="button" style="padding: 7px 14px; border-radius: 9px; border: 0; background: transparent; color: #5B6857; font-size: 14px; cursor: pointer;">Monat</button>
+</div>
+</div>
+</div>
+
+<div style="border: 1px solid #EEF1EB; border-radius: 20px; overflow: hidden; background: #FFFFFF;">
+
+<div style="display: grid; grid-template-columns: 64px repeat(5, minmax(0, 1fr)); border-bottom: 1px solid #EEF1EB;">
+<div></div>
+<sc-for list="{{days}}" as="d" hint-placeholder-count="5">
+<div style="padding: 14px 12px 12px; border-left: 1px solid #EEF1EB; background: {{d.bg}}; display: flex; flex-direction: column; align-items: flex-start; gap: 8px;">
+<div style="display: flex; align-items: center; gap: 10px;">
+<span style="width: 44px; height: 44px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-family: 'Anton', sans-serif; font-size: 22px; background: {{d.numBg}}; color: {{d.numColor}};">{{d.num}}</span>
+<span style="font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: {{d.nameColor}};">{{d.short}}</span>
+</div>
+<span style="padding: 3px 9px; border-radius: 999px; background: {{d.typeBg}}; color: {{d.typeColor}}; font-size: 12px; font-weight: 600;">{{d.type}}</span>
+</div>
+</sc-for>
+</div>
+
+<div style="display: grid; grid-template-columns: 64px repeat(5, minmax(0, 1fr)); border-bottom: 1px solid #E3E8DF;">
+<div style="padding: 10px 8px 0 0; text-align: right; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #6A7566;">Flexibel</div>
+<sc-for list="{{days}}" as="d" hint-placeholder-count="5">
+<div style="min-height: 44px; padding: 6px; border-left: 1px solid #EEF1EB; background: {{d.bg}}; display: flex; flex-direction: column; gap: 4px;">
+<sc-for list="{{d.flex}}" as="f" hint-placeholder-count="1">
+<a href="#" style="display: flex; align-items: center; gap: 6px; padding: 5px 8px; border-radius: 8px; background: #E6F4EE; color: #1C5E42; font-size: 12px; font-weight: 600; text-decoration: none; opacity: {{f.opacity}};">
+<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#239669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"></path><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"></path></svg>
+<span style="flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{f.title}}</span>
+<sc-if value="{{f.done}}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#239669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></sc-if>
+</a>
+</sc-for>
+</div>
+</sc-for>
+</div>
+
+<div style="display: grid; grid-template-columns: 64px repeat(5, minmax(0, 1fr));">
+<div style="position: relative; height: {{gridH}}px;">
+<sc-for list="{{hours}}" as="h" hint-placeholder-count="10">
+<span style="position: absolute; right: 10px; top: {{h.top}}px; transform: translateY(-50%); font-size: 11px; color: #8A9486;">{{h.label}}</span>
+</sc-for>
+</div>
+<sc-for list="{{days}}" as="d" hint-placeholder-count="5">
+<div style="position: relative; height: {{d.gridH}}px; border-left: 1px solid #EEF1EB; background-color: {{d.bg}}; background-image: linear-gradient(#EEF1EB 1px, transparent 1px); background-size: 100% {{d.hourH}}px;">
+<sc-for list="{{d.events}}" as="e" hint-placeholder-count="1">
+<a href="#" style="position: absolute; left: 6px; right: 8px; top: {{e.top}}px; height: {{e.height}}px; box-sizing: border-box; padding: 8px 10px; border-radius: 10px; background: {{e.bg}}; border-left: 4px solid {{e.accent}}; color: #23321E; text-decoration: none; display: flex; flex-direction: column; gap: 4px; overflow: hidden; opacity: {{e.opacity}}; box-shadow: {{e.shadow}};">
+<span style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: {{e.color}};">
+<sc-if value="{{e.live}}" hint-placeholder-val="{{ true }}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9164E1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 13 5.2 3.1a.5.5 0 0 0 .8-.4V8.3a.5.5 0 0 0-.8-.4L16 11"></path><rect x="2" y="6" width="14" height="12" rx="2"></rect></svg></sc-if>
+<sc-if value="{{e.praxis}}" hint-placeholder-val="{{ false }}"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#E07B3F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg></sc-if>
+{{e.time}}
+<sc-if value="{{e.done}}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#239669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="margin-left: auto;"><path d="M20 6 9 17l-5-5"></path></svg></sc-if>
+</span>
+<span style="font-size: 13px; font-weight: 600; line-height: 1.3;">{{e.title}}</span>
+<sc-if value="{{e.cta}}" hint-placeholder-val="{{ false }}"><span style="align-self: flex-start; margin-top: auto; padding: 6px 10px; border-radius: 9px; background: #23321E; color: #FFFFFF; font-size: 12px; font-weight: 700;">{{e.ctaLabel}}</span></sc-if>
+</a>
+</sc-for>
+<sc-if value="{{d.today}}" hint-placeholder-val="{{ false }}">
+<div aria-hidden="true" style="position: absolute; left: 0; right: 0; top: {{d.nowTop}}px; height: 2px; background: #23321E;"><span style="position: absolute; left: -6px; top: -5px; width: 12px; height: 12px; border-radius: 50%; background: #23321E;"></span></div>
+</sc-if>
+</div>
+</sc-for>
+</div>
+
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1120}}'>
+class Component extends DCLogic {
+  renderVals() {
+    var START = 7, END = 17, H = 52;
+    function y(t) { return Math.round((t - START) * H); }
+    function ev(kind, from, to, label, title, state, cta) {
+      var done = state === 'done';
+      var c = { live: ['#F1EBFC', '#9164E1', '#4E2E9E'], praxis: ['#FFF0E6', '#FFA573', '#8A4512'] }[kind];
+      return {
+        live: kind === 'live', praxis: kind === 'praxis',
+        top: y(from) + 2, height: Math.round((to - from) * H) - 4,
+        time: label, title: title, done: done,
+        bg: c[0], accent: c[1], color: c[2],
+        opacity: done ? '0.55' : '1',
+        shadow: cta ? '0 0 0 2px #23321E' : 'none',
+        cta: !!cta, ctaLabel: cta || ''
+      };
+    }
+    function fx(title, done) { return { title: title, done: done, opacity: done ? '0.55' : '1' }; }
+    function day(short, num, type, events, flex, today) {
+      var t = { 'Theorietag': ['#F1EBFC', '#4E2E9E'], 'Praxistag': ['#FFF0E6', '#8A4512'], 'Lerntag': ['#E6F4EE', '#1C7853'] }[type];
+      return {
+        short: short, num: num, type: type, typeBg: t[0], typeColor: t[1],
+        events: events, flex: flex, today: !!today,
+        bg: today ? '#F7FAF3' : '#FFFFFF',
+        numBg: today ? '#23321E' : 'transparent', numColor: today ? '#FFFFFF' : '#23321E',
+        nameColor: today ? '#23321E' : '#5B6857'
+      };
+    }
+    var hours = [];
+    for (var h = START + 1; h <= END - 1; h++) hours.push({ top: y(h), label: (h < 10 ? '0' : '') + h + ':00' });
+    var days = [
+      day('Mo', '5', 'Theorietag', [ev('live', 9, 12, '09:00 – 12:00', '[Live-Lektion]', 'done')], [fx('[Wiederholung]', true)]),
+      day('Di', '6', 'Praxistag', [ev('praxis', 7.5, 15.5, '07:30 – 15:30', '[Praxisaufgabe im Betrieb]', 'done')], []),
+      day('Mi', '7', 'Theorietag', [ev('live', 9, 12, '09:00 – 12:00', '[Live-Lektion]', 'done')], [fx('[Wiederholung]', false)]),
+      day('Do', '8', 'Theorietag', [ev('live', 9, 12, '09:00 – 12:00', 'Grundschaltungen der Elektrotechnik – Teil 1', 'done')], [fx('Übung: Reihen- und Parallelschaltung', true)]),
+      day('Fr', '9', 'Theorietag', [ev('live', 13, 16, '13:00 – [16:00]', 'Grundschaltungen der Elektrotechnik – Teil 2', 'next', 'Zum Live-Unterricht →')], [fx('Wiederholung zum Live-Unterricht', false)], true)
+    ];
+    days.forEach(function (d) { d.gridH = (END - START) * H; d.hourH = H; d.nowTop = y(11.5); });
+    return { days: days, hours: hours, hourH: H, gridH: (END - START) * H, nowTop: y(11.5) };
+  }
+}
+</script>
+</body>
+</html>
