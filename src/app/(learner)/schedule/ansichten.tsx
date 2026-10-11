@@ -18,10 +18,10 @@ export type Ansicht = "tag" | "woche" | "monat";
 
 // Punkt 5: Pfeile ohne Rahmen.
 const PFEIL =
-  "inline-flex size-9 items-center justify-center rounded-full text-eco-deep-green outline-none transition-[background-color] duration-150 hover:bg-off-white focus-visible:ring-2 focus-visible:ring-eco-green motion-reduce:transition-none";
-// Punkt 5: "Heute" als unterstrichener Textlink.
+  "inline-flex size-9 items-center justify-center rounded-full text-ink outline-none transition-[background-color] duration-150 hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand motion-reduce:transition-none";
+// Punkt 5: "Heute" als Textlink (seit dem visuellen Update ohne Unterstreichung).
 const HEUTE_LINK =
-  "rounded-sm text-sm font-semibold text-eco-deep-green underline underline-offset-4 outline-none hover:decoration-2 focus-visible:ring-2 focus-visible:ring-eco-green";
+  "rounded-sm text-sm font-semibold text-ink outline-none hover:text-brand focus-visible:ring-2 focus-visible:ring-brand";
 // Rasterhöhe: Desktop passt sich dem Fenster an, damit Woche bzw. Tag ohne
 // Scrollen ganz sichtbar sind (Entscheidung Anna 2026-10-10); der Abzug ist
 // die Höhe von Kopf, Steuerleiste und Tageskopf. Mobil fest 48 px/Stunde.
@@ -43,7 +43,7 @@ const tagZahl = (datum: string) => String(Number(datum.slice(8, 10)));
 function HeuteLink({ href, className }: { href: string | null; className?: string }) {
   if (!href) {
     return (
-      <span aria-disabled="true" title="Du siehst schon heute" className={cn("text-sm font-semibold text-muted-foreground/60", className)}>
+      <span aria-disabled="true" title="Du siehst schon heute" className={cn("text-sm font-semibold text-ink-muted/60", className)}>
         Heute
       </span>
     );
@@ -62,15 +62,15 @@ function AnsichtUmschalter({ aktiv, href }: { aktiv: Ansicht; href: (a: Ansicht)
       href={href(a)}
       aria-current={aktiv === a ? "true" : undefined}
       className={cn(
-        "rounded-[9px] px-3.5 py-[7px] text-sm outline-none focus-visible:ring-2 focus-visible:ring-eco-green",
-        aktiv === a ? "bg-white font-semibold text-eco-deep-green shadow-sm" : "text-muted-foreground hover:text-eco-deep-green"
+        "rounded-full px-3.5 py-[7px] text-sm outline-none focus-visible:ring-2 focus-visible:ring-brand",
+        aktiv === a ? "bg-white font-semibold text-ink shadow-segment" : "text-ink-muted hover:text-ink"
       )}
     >
       {text}
     </Link>
   );
   return (
-    <div role="group" aria-label="Ansicht" className="flex gap-0.5 rounded-xl bg-off-white p-1">
+    <div role="group" aria-label="Ansicht" className="flex gap-0.5 rounded-full bg-subtle p-1">
       {knopf("tag", "Tag")}
       {knopf("woche", "Woche")}
       {knopf("monat", "Monat")}
@@ -112,7 +112,7 @@ export function Steuerleiste({
       <h2 className="ml-2 text-xl font-bold" aria-live="polite">
         {titel}
       </h2>
-      <span className="ml-1.5 text-sm text-muted-foreground">{zusatz}</span>
+      <span className="ml-1.5 text-sm text-ink-muted">{zusatz}</span>
       <HeuteLink href={heuteHref} className="ml-4" />
       <div className="ml-auto">
         <AnsichtUmschalter aktiv={ansicht} href={umschalterHref} />
@@ -121,14 +121,14 @@ export function Steuerleiste({
   );
 }
 
-/** Kreis mit Datumszahl: heute dunkel hinterlegt. */
+/** Kreis mit Datumszahl: heute lila hinterlegt. */
 function DatumsKreis({ datum, heute, gewaehlt = false, klein = false }: { datum: string; heute: boolean; gewaehlt?: boolean; klein?: boolean }) {
   return (
     <span
       className={cn(
         "flex shrink-0 items-center justify-center rounded-full font-heading",
         klein ? "size-7 text-[15px]" : "size-8 text-lg",
-        heute ? "bg-eco-deep-green text-white" : gewaehlt ? "bg-heute-flaeche ring-2 ring-eco-deep-green" : ""
+        heute ? "bg-brand text-white" : gewaehlt ? "bg-brand-tint ring-2 ring-brand" : ""
       )}
     >
       {tagZahl(datum)}
@@ -150,11 +150,16 @@ export function WochenAnsicht({
   simuliert: boolean;
   tagHref: (datum: string) => string;
 }) {
-  const { von, bis } = stundenBereich(tage.flatMap((t) => t.bloecke));
+  const bloecke = tage.flatMap((t) => t.bloecke);
+  const bereich = stundenBereich(bloecke);
+  const { von } = bereich;
+  // Wunsch Anna 2026-10-11: unter dem letzten Termin nur eine halbe Stunde
+  // Luft, damit "Flexibel" näher am Kalender steht.
+  const bis = bloecke.length > 0 ? bereich.bis - 0.5 : bereich.bis;
   const raster = "grid grid-cols-[64px_repeat(5,minmax(0,1fr))]";
   const heute = (t: TagModell) => t.heute && "bg-heute-flaeche";
   return (
-    <div className="text-eco-deep-green">
+    <div className="text-ink">
       <div className={raster}>
         <div />
         {tage.map((t) => (
@@ -162,10 +167,10 @@ export function WochenAnsicht({
             <Link
               href={tagHref(t.datum)}
               aria-label={`${datumLang(t.datum)}, Tagesansicht öffnen`}
-              className="flex items-center gap-1.5 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-eco-green"
+              className="flex items-center gap-1.5 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-brand"
             >
               <DatumsKreis datum={t.datum} heute={t.heute} />
-              <span className={cn("text-xs font-semibold tracking-[0.06em] uppercase", !t.heute && "text-muted-foreground")}>
+              <span className={cn("text-xs font-semibold tracking-[0.06em] uppercase", !t.heute && "text-ink-muted")}>
                 {kurzname(t.datum)}
               </span>
             </Link>
@@ -184,11 +189,11 @@ export function WochenAnsicht({
       </div>
       {/* Anna 2026-10-11: Selbstlernen unter dem Kalender -- der Unterricht steht im Vordergrund. */}
       <div className={raster}>
-        <div className="pt-4 pr-2.5 text-right text-[11px] font-semibold tracking-[0.06em] text-muted-foreground uppercase">
+        <div className="pt-4 pr-2.5 text-right text-[11px] font-semibold tracking-[0.06em] text-ink-muted uppercase">
           Flexibel
         </div>
         {tage.map((t) => (
-          <div key={t.datum} className={cn("flex min-w-0 flex-col gap-1 px-1.5 pt-3 pb-1.5", heute(t))}>
+          <div key={t.datum} className={cn("flex min-w-0 flex-col gap-1.5 px-1.5 pt-2 pb-1.5", heute(t))}>
             {t.chips.map((c) => (
               <FlexChip key={c.id} chip={c} />
             ))}
@@ -229,26 +234,26 @@ export function TagesListe({
               aria-current={aktiv ? "date" : undefined}
               aria-label={`${datumLang(t.datum)}${t.heute ? ", heute" : ""}${erledigt ? ", alles erledigt" : ""}`}
               className={cn(
-                "flex rounded-xl text-eco-deep-green outline-none hover:bg-off-white focus-visible:ring-2 focus-visible:ring-eco-green",
+                "flex rounded-xl text-ink outline-none hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand",
                 quer ? "flex-col items-center gap-1 py-1.5" : "items-center gap-3 px-2 py-1.5",
-                aktiv && !quer && "bg-off-white"
+                aktiv && !quer && "bg-subtle"
               )}
             >
               {quer && (
-                <span className={cn("text-[11px] font-semibold tracking-[0.06em] uppercase", !aktiv && "text-muted-foreground")}>
+                <span className={cn("text-[11px] font-semibold tracking-[0.06em] uppercase", !aktiv && "text-ink-muted")}>
                   {kurzname(t.datum)}
                 </span>
               )}
               <DatumsKreis datum={t.datum} heute={t.heute} gewaehlt={aktiv} klein={quer} />
               {quer ? (
                 <span className="flex h-3 items-center">
-                  {erledigt && <Check className="size-3 text-eco-green" strokeWidth={3} aria-hidden="true" />}
+                  {erledigt && <Check className="size-3 text-progress" strokeWidth={3} aria-hidden="true" />}
                 </span>
               ) : (
                 <>
                   <span className={cn("text-sm", aktiv ? "font-bold" : "font-medium")}>{wochentagLang(t.datum)}</span>
                   <AbweichungsLabel typ={t.typ} haupt={haupt} />
-                  {erledigt && <Check className="ml-auto size-3.5 text-eco-green" strokeWidth={3} aria-hidden="true" />}
+                  {erledigt && <Check className="ml-auto size-3.5 text-progress" strokeWidth={3} aria-hidden="true" />}
                 </>
               )}
             </Link>
@@ -266,14 +271,14 @@ export function TagesKarte({ tag, jetzt, simuliert, mobil }: { tag: TagModell; j
   const raster = mobil ? "grid grid-cols-[48px_minmax(0,1fr)]" : "grid grid-cols-[64px_minmax(0,1fr)]";
   const hoehe = mobil ? mobilHoehe(von, bis) : tagesHoehe(von, bis);
   return (
-    <div className="flex flex-col gap-3 text-eco-deep-green">
+    <div className="flex flex-col gap-3 text-ink">
       <div className={raster}>
         <StundenSpalte von={von} bis={bis} hoehe={hoehe} />
         <TagSpalte tag={tag} von={von} bis={bis} hoehe={hoehe} gross={!mobil} jetzt={jetzt} simuliert={simuliert} />
       </div>
       {tag.chips.length > 0 && (
         <div className={raster}>
-          <div className="pt-2.5 pr-2.5 text-right text-[11px] font-semibold tracking-[0.06em] text-muted-foreground uppercase">
+          <div className="pt-2.5 pr-2.5 text-right text-[11px] font-semibold tracking-[0.06em] text-ink-muted uppercase">
             {mobil ? "Flex" : "Flexibel"}
           </div>
           <div className="flex min-w-0 flex-col gap-1.5">
@@ -284,7 +289,7 @@ export function TagesKarte({ tag, jetzt, simuliert, mobil }: { tag: TagModell; j
         </div>
       )}
       {tag.bloecke.length === 0 && tag.chips.length === 0 && (
-        <p className="text-center text-sm text-muted-foreground">An diesem Tag ist nichts geplant.</p>
+        <p className="text-center text-sm text-ink-muted">An diesem Tag ist nichts geplant.</p>
       )}
     </div>
   );
@@ -311,7 +316,7 @@ export function TagesAnsicht({
   return (
     <div className="grid items-start gap-10 lg:grid-cols-[200px_minmax(0,1fr)]">
       <aside className="flex flex-col gap-2">
-        <span className="px-2 text-[13px] font-semibold text-muted-foreground">{wochenText}</span>
+        <span className="px-2 text-[13px] font-semibold text-ink-muted">{wochenText}</span>
         <TagesListe tage={tage} gewaehlt={tag.datum} haupt={haupt} quer={false} tagHref={tagHref} />
       </aside>
       <TagesKarte tag={tag} jetzt={jetzt} simuliert={simuliert} mobil={false} />
@@ -339,13 +344,13 @@ export function MonatsAnsicht({
   const raster = "grid grid-cols-[72px_repeat(5,minmax(0,1fr))_repeat(2,72px)]";
   const kopf = wochen[0] ?? [];
   return (
-    <div className="text-eco-deep-green">
+    <div className="text-ink">
       <div className={raster}>
         <div />
         {kopf.map((t, i) => (
           <div
             key={t.datum}
-            className={cn("px-2 pb-2 text-xs font-semibold tracking-[0.06em] uppercase", i < 5 ? "text-muted-foreground" : "text-muted-foreground/70")}
+            className={cn("px-2 pb-2 text-xs font-semibold tracking-[0.06em] uppercase", i < 5 ? "text-ink-muted" : "text-ink-muted/70")}
           >
             {kurzname(t.datum)}
           </div>
@@ -354,8 +359,8 @@ export function MonatsAnsicht({
       {wochen.map((woche) => {
         const nr = wocheNr(woche[0].datum);
         return (
-          <div key={woche[0].datum} className={cn(raster, "border-t border-raster-linie")}>
-            <div className="pt-2.5 text-xs font-semibold text-muted-foreground">{nr ? `Woche ${nr}` : ""}</div>
+          <div key={woche[0].datum} className={cn(raster, "border-t border-line")}>
+            <div className="pt-2.5 text-xs font-semibold text-ink-muted">{nr ? `Woche ${nr}` : ""}</div>
             {woche.map((t, i) => {
               const wochenende = i >= 5;
               const fremd = !t.datum.startsWith(monat);
@@ -365,12 +370,12 @@ export function MonatsAnsicht({
                   href={tagHref(t.datum)}
                   aria-label={`${datumLang(t.datum)}, Tagesansicht öffnen`}
                   className={cn(
-                    "flex min-h-[104px] min-w-0 flex-col gap-1.5 rounded-lg p-1.5 outline-none hover:bg-off-white focus-visible:ring-2 focus-visible:ring-eco-green",
+                    "flex min-h-[104px] min-w-0 flex-col gap-1.5 rounded-lg p-1.5 outline-none hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand",
                     t.heute && "bg-heute-flaeche",
                     fremd && "opacity-50"
                   )}
                 >
-                  <span className={cn("self-start", wochenende && !t.heute && "text-muted-foreground")}>
+                  <span className={cn("self-start", wochenende && !t.heute && "text-ink-muted")}>
                     <DatumsKreis datum={t.datum} heute={t.heute} klein />
                   </span>
                   <MonatsTags tag={t} />
@@ -410,7 +415,7 @@ export function MobilAnsicht({
   tagHref: (datum: string) => string;
 }) {
   return (
-    <div className="flex flex-col gap-4 text-eco-deep-green">
+    <div className="flex flex-col gap-4 text-ink">
       <div className="flex items-end justify-between">
         <h1 className="font-heading text-[34px] leading-none">Stundenplan</h1>
         <HeuteLink href={heuteHref} />

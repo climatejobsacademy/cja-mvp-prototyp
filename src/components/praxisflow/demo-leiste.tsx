@@ -20,12 +20,12 @@ export function DemoLeiste({
   const [fragen, setFragen] = useState(false);
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-dashed border-eco-deep-green/40 bg-eco-green/5 p-3 sm:flex-row sm:items-center">
+    <div className="flex flex-col gap-3 rounded-xl border border-dashed border-line bg-subtle p-3 sm:flex-row sm:items-center">
       <div className="flex min-w-0 flex-1 items-start gap-2">
         <Badge variant="info" className="shrink-0">
           {kennzeichnung}
         </Badge>
-        <p className="text-sm text-eco-deep-green">{text}</p>
+        <p className="text-sm text-ink">{text}</p>
       </div>
       {fragen ? (
         <div className="flex shrink-0 flex-col gap-2 sm:flex-row" role="group" aria-label="Demo zurücksetzen bestätigen">

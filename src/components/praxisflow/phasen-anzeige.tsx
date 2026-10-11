@@ -17,7 +17,7 @@ export function PhasenAnzeige({ phasen, aktuell }: { phasen: { id: string; name:
             key={p.id}
             className={cn(
               "truncate",
-              i === aktuell ? "font-semibold text-eco-deep-green" : "text-muted-foreground"
+              i === aktuell ? "font-semibold text-ink" : "text-muted-foreground"
             )}
           >
             {p.name}

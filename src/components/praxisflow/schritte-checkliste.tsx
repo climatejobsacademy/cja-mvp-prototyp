@@ -54,7 +54,7 @@ export function SchritteCheckliste({
               key={s.id}
               className={cn(
                 "flex flex-col gap-2 rounded-lg border p-2",
-                fertig ? "border-eco-deep-green bg-eco-green/10" : "border-border",
+                fertig ? "border-brand bg-subtle" : "border-border",
                 st === "gesperrt" && "bg-muted/40"
               )}
             >
@@ -62,8 +62,8 @@ export function SchritteCheckliste({
                 <label
                   className={cn(
                     "flex min-h-11 flex-1 items-center gap-3 px-1 text-[15px]",
-                    bedienbar ? "cursor-pointer text-eco-deep-green" : "cursor-not-allowed",
-                    st === "gesperrt" ? "text-muted-foreground" : "text-eco-deep-green"
+                    bedienbar ? "cursor-pointer text-ink" : "cursor-not-allowed",
+                    st === "gesperrt" ? "text-muted-foreground" : "text-ink"
                   )}
                 >
                   <input
@@ -72,10 +72,10 @@ export function SchritteCheckliste({
                     disabled={!bedienbar}
                     onChange={() => onUmschalten(s.id)}
                     aria-describedby={st === "gesperrt" && i > 0 ? hinweisId : undefined}
-                    className="size-5 shrink-0 accent-eco-deep-green disabled:cursor-not-allowed"
+                    className="size-5 shrink-0 accent-brand disabled:cursor-not-allowed"
                   />
                   <span className="flex min-w-0 flex-col">
-                    <span className={cn("break-words", fertig && "line-through decoration-eco-deep-green/50")}>
+                    <span className={cn("break-words", fertig && "line-through decoration-ink/50")}>
                       {i + 1}. {s.text}
                     </span>
                     {st === "gesperrt" && i > 0 && (
@@ -92,7 +92,7 @@ export function SchritteCheckliste({
                   onClick={() => setOffen(offen === s.id ? null : s.id)}
                   aria-expanded={offen === s.id}
                   className={cn(
-                    "inline-flex min-h-11 shrink-0 items-center gap-1.5 self-start rounded-lg px-2 text-sm text-muted-foreground hover:bg-eco-green/10 hover:text-eco-deep-green sm:self-auto",
+                    "inline-flex min-h-11 shrink-0 items-center gap-1.5 self-start rounded-lg px-2 text-sm text-muted-foreground hover:bg-subtle hover:text-ink sm:self-auto",
                     FOKUS
                   )}
                 >
@@ -102,7 +102,7 @@ export function SchritteCheckliste({
                 )}
               </div>
               {nichtWeiterAnzeigen && offen === s.id && (
-                <p className="rounded-lg bg-lylac/30 p-3 text-sm text-eco-deep-green">{s.hinweis ?? hinweisStandard}</p>
+                <p className="rounded-lg bg-brand-tint p-3 text-sm text-ink">{s.hinweis ?? hinweisStandard}</p>
               )}
             </li>
           );

@@ -2,10 +2,12 @@ import { cn } from "@/lib/utils";
 
 // Fortschrittsring: erreichte Teilschritte / alle Teilschritte einer
 // Kompetenz (competency_fulfilment, SR-63) -- nie "Lektion angesehen".
+// Farben (visuelles Update 2026-10-11): Fortschritt neutral in --progress auf
+// --progress-track; auf Anker-Flächen weiß.
 
 export type RingGroesse = 112 | 84 | 80 | 64 | 56 | 48 | 44;
 const RING: Record<RingGroesse, { klasse: string; strich: number; text: string }> = {
-  112: { klasse: "size-28", strich: 9, text: "font-heading text-[26px] font-normal" },
+  112: { klasse: "size-28", strich: 9, text: "text-[24px]" },
   84: { klasse: "size-[84px]", strich: 8, text: "text-[15px]" },
   80: { klasse: "size-20", strich: 8, text: "text-[15px]" },
   64: { klasse: "size-16", strich: 6, text: "text-[13px]" },
@@ -16,7 +18,7 @@ const RING: Record<RingGroesse, { klasse: string; strich: number; text: string }
 
 /**
  * Fortschrittsring mit Prozentzahl, gemeinsam für Home v13 und die
- * Kompetenzseite v1: 112 px (Kompetenz-Detail, Zahl in Anton), 84/64 px
+ * Kompetenzseite v1: 112 px (Kompetenz-Detail), 84/64 px
  * ("Heute stärkst du"), 80 px (Zustand D, dunkle Karte), 56 px
  * (Kompetenzliste), 48 px (Modul-Übersicht), 44 px (Home, freier Tag).
  * `glow` = heute gestärkt.
@@ -41,7 +43,7 @@ export function Ring({
       className={cn(
         "relative flex flex-none items-center justify-center rounded-full",
         klasse,
-        glow && "shadow-glow-charge"
+        glow && "shadow-glow-today"
       )}
     >
       <svg viewBox={`0 0 ${groesse} ${groesse}`} className="absolute inset-0 size-full -rotate-90" aria-hidden="true">
@@ -51,7 +53,7 @@ export function Ring({
           r={r}
           fill="none"
           strokeWidth={strich}
-          className={dunkel ? "stroke-white/15" : "stroke-border"}
+          className={dunkel ? "stroke-white/25" : "stroke-progress-track"}
         />
         {prozent > 0 && (
           <circle
@@ -63,7 +65,7 @@ export function Ring({
             strokeLinecap="round"
             strokeDasharray={umfang}
             strokeDashoffset={umfang * (1 - prozent / 100)}
-            className={dunkel ? "stroke-eco-green-on-dark" : "stroke-eco-green"}
+            className={dunkel ? "stroke-white" : "stroke-progress"}
           />
         )}
       </svg>

@@ -17,13 +17,36 @@
   --color-lylac: var(--lylac);
   --color-coral: var(--coral);
   --color-off-white: var(--off-white);
-  --color-lylac-on-dark: var(--lylac-on-dark);
-  --color-eco-green-on-dark: var(--eco-green-on-dark);
   --color-coral-text: var(--coral-text);
-  --color-raster-linie: var(--raster-linie);
+  /* Visuelles Update (docs/ux/visual-update, Anna 2026-10-11) */
+  --color-page: var(--page);
+  --color-subtle: var(--subtle);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-subtle: var(--ink-subtle);
+  --color-brand: var(--brand);
+  --color-brand-2: var(--brand-2);
+  --color-brand-tint: var(--brand-tint);
+  --color-praxis: var(--praxis);
+  --color-praxis-2: var(--praxis-2);
+  --color-praxis-tint: var(--praxis-tint);
+  --color-praxis-text: var(--praxis-text);
+  --color-self: var(--self);
+  --color-self-tint: var(--self-tint);
+  --color-lime: var(--lime);
+  --color-on-lime: var(--on-lime);
+  --color-progress: var(--progress);
+  --color-progress-track: var(--progress-track);
+  --shadow-card: var(--shadow-card);
+  --shadow-anchor-brand: var(--shadow-anchor-brand);
+  --shadow-anchor-praxis: var(--shadow-anchor-praxis);
+  --shadow-glow-today: var(--glow-today);
+  --shadow-segment: var(--shadow-segment);
+  --radius-karte: 26px;
+  --radius-zeile: 18px;
+  --radius-block: 16px;
   --color-heute-flaeche: var(--heute-flaeche);
-  --color-flex-flaeche: var(--flex-flaeche);
-  --color-frei-text: var(--frei-text);
   --shadow-glow-charge: var(--glow-charge);
   --shadow-glow-charge-sm: var(--glow-charge-sm);
   --color-success: var(--success);
@@ -93,22 +116,50 @@
      --border. Kontraste gerechnet: Lylac/Eco Green hell auf Eco Deep Green
      5.79:1 bzw. 8.71:1, Coral-Text auf Weiß 5.29:1 (auf --warning nur
      4.36:1, dort also nicht für kleinen Text). */
-  --lylac-on-dark: #b79bf0;
-  --eco-green-on-dark: #9fdcc0;
   --coral-text: #a9541c;
   --glow-charge: 0 0 0 6px rgb(162 229 0 / 0.22), 0 0 28px 6px rgb(162 229 0 / 0.45);
   /* Home v12 (docs/design_handoff_home_v6/design/home-v12-referenz.html), 2026-10-10: kleiner
      Glow für den 24-px-Mini-Ring in der "Stärkt"-Pill. */
   --glow-charge-sm: 0 0 0 3px rgb(162 229 0 / 0.25), 0 0 12px 2px rgb(162 229 0 / 0.55);
-  /* Stundenplan v2, Änderungsliste Anna 2026-10-10 (SR folgt): feine
-     Stundenlinien, Tönung der Heute-Spalte, Fläche offener Selbstlern-Einträge
-     in "Flexibel". Alles reine Flächen/Linien mit Eco Deep Green als Text. */
-  --raster-linie: #f1f3ef;
+  /* Stundenplan v2, Änderungsliste Anna 2026-10-10 (SR folgt): Tönung der
+     Heute-Spalte. Stundenlinien und "Flexibel" seit dem visuellen Update
+     (2026-10-11) über --line bzw. --self-tint. */
   --heute-flaeche: #f7faf3;
-  --flex-flaeche: #eef7f2;
-  /* Home, freier Tag (Änderungsliste Anna 2026-10-11, SR folgt): Text auf der
-     Coral-Karte "Heute frei" -- auf --warning 7.5:1, auf Weiß 9.2:1. */
-  --frei-text: #5b4636;
+
+  /* Visuelles Update (docs/ux/visual-update/claude-code-visual-update.md,
+     Anna 2026-10-11): so nah wie möglich an den Markenfarben. Wo der Brief
+     abweicht, gilt die Markenfarbe (Text = Eco Deep Green, Seite = Off-White,
+     Selbstlernen = Eco Green, Lime = Charge Green). Lylac und Coral nur als
+     Abstufung, wo weiße Schrift sonst WCAG AA verfehlt. Kontraste gerechnet:
+     Weiß auf --brand 6.07:1, auf --brand-2 4.61:1, auf --praxis 4.97:1, auf
+     --praxis-2 4.55:1; --ink-subtle auf --page 4.75:1; --praxis-text auf
+     --praxis-tint 4.78:1; Eco Deep Green auf Charge Green 8.89:1. */
+  --page: #fafaf7;              /* heller als Off-White (Anna 2026-10-11) */
+  --subtle: #ecede6;
+  --line: #eceee8;
+  --ink: var(--eco-deep-green);
+  --ink-muted: #5f6b5a;
+  --ink-subtle: #697364;
+  --brand: #6e44d6;            /* Lylac dunkel */
+  --brand-2: #8959df;          /* Lylac, AA-Abstufung */
+  --brand-tint: #f1ebfc;       /* Lylac hell */
+  --praxis: #b9501e;           /* Coral dunkel */
+  --praxis-2: #c2551e;         /* Coral, AA-Abstufung */
+  --praxis-tint: #fff1e8;      /* Coral hell */
+  --praxis-text: var(--coral-text);
+  --self: var(--eco-green);
+  --self-tint: #e9f5ef;        /* Eco Green hell */
+  --lime: var(--charge-green);
+  --on-lime: var(--eco-deep-green);
+  --progress: var(--eco-deep-green);
+  --progress-track: #e7e9e2;
+  --anchor-brand: linear-gradient(135deg, var(--brand) 0%, var(--brand-2) 100%);
+  --anchor-praxis: linear-gradient(135deg, var(--praxis) 0%, var(--praxis-2) 100%);
+  --shadow-anchor-brand: 0 14px 34px rgb(110 68 214 / 0.3);
+  --shadow-anchor-praxis: 0 14px 34px rgb(185 80 30 / 0.28);
+  --shadow-card: 0 1px 2px rgb(40 20 90 / 0.04), 0 12px 32px rgb(40 20 90 / 0.06);
+  --shadow-segment: 0 1px 3px rgb(40 20 90 / 0.1);
+  --glow-today: 0 0 0 5px rgb(162 229 0 / 0.25), 0 0 20px 4px rgb(162 229 0 / 0.45);
 
   /* Semantische Farben (Abschnitt 1): helle Hintergrundfläche + Eco Deep Green
      als Text-/Icon-Farbe — nie Coral/Charge Green direkt als Vordergrund.
@@ -120,28 +171,26 @@
   --info: #ede6fa;
   --info-foreground: var(--eco-deep-green);
 
-  --background: #ffffff;
+  --background: var(--page);
   --foreground: var(--eco-deep-green);
   --card: #ffffff;
   --card-foreground: var(--eco-deep-green);
   --popover: #ffffff;
   --popover-foreground: var(--eco-deep-green);
-  --primary: var(--eco-green);
+  --primary: var(--brand);
   --primary-foreground: #ffffff;
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: var(--eco-deep-green);
   --muted: oklch(0.97 0 0);
-  /* shadcn-Default (oklch(0.556 0 0), ~4.3:1) unterschreitet 4.5:1 auf Weiß —
-     genau die in design-specifications.md (Abschnitt 1, Barrierefreiheit)
-     benannte Lücke ("text-muted-foreground liegt oft unter 4.5:1"). Hier auf
-     #666666 (5.74:1) korrigiert statt die Lücke offenzulassen. */
-  --muted-foreground: #666666;
+  /* shadcn-Default (~4.3:1) unterschreitet 4.5:1 -- seit dem visuellen
+     Update (2026-10-11) --ink-muted, 5.14:1 auf Off-White. */
+  --muted-foreground: var(--ink-muted);
   --accent: oklch(0.97 0 0);
   --accent-foreground: var(--eco-deep-green);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
+  --border: var(--line);
   --input: oklch(0.922 0 0);
-  --ring: var(--eco-green);
+  --ring: var(--brand);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -190,6 +239,14 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+}
+
+/* Anker-Flächen (ein Anker pro Seite, Brief Abschnitt 2) */
+@utility bg-anchor-brand {
+  background-image: var(--anchor-brand);
+}
+@utility bg-anchor-praxis {
+  background-image: var(--anchor-praxis);
 }
 
 @layer base {

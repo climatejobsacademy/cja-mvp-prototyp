@@ -106,12 +106,12 @@ export function DeinTag({
   return (
     <section aria-labelledby="dein-tag" className="flex min-w-0 flex-col gap-4">
       <div className="flex items-baseline justify-between gap-4">
-        <h2 id="dein-tag" className="text-xl font-bold text-eco-deep-green">
+        <h2 id="dein-tag" className="text-lg font-bold text-ink">
           Dein Tag
         </h2>
         <Link
           href="/schedule?ansicht=woche"
-          className="rounded-sm text-sm text-muted-foreground outline-none hover:text-eco-deep-green focus-visible:ring-2 focus-visible:ring-eco-green"
+          className="rounded-sm text-sm font-semibold text-ink outline-none hover:text-brand focus-visible:ring-2 focus-visible:ring-brand"
         >
           Woche ansehen →
         </Link>

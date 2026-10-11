@@ -33,13 +33,13 @@ export type Kanal = {
   modulStatus: "abgeschlossen" | "aktuell" | "kommend" | null;
 };
 
-const JANA: ChatPerson = { name: "Jana Weber", kuerzel: "JW", team: "Trainer:in", flaeche: "bg-eco-deep-green text-white" };
-const TOM: ChatPerson = { name: "Tom Krüger", kuerzel: "TK", team: "Lernbegleitung", flaeche: "bg-eco-deep-green text-white" };
-const AYLIN: ChatPerson = { name: "Aylin K.", kuerzel: "AK", flaeche: "bg-success text-eco-deep-green" };
-const MAREK: ChatPerson = { name: "Marek S.", kuerzel: "MS", flaeche: "bg-info text-eco-deep-green" };
-const KEMAL: ChatPerson = { name: "Kemal B.", kuerzel: "KB", flaeche: "bg-warning text-eco-deep-green" };
-const JONAS: ChatPerson = { name: "Jonas L.", kuerzel: "JL", flaeche: "bg-flex-flaeche text-eco-deep-green" };
-const SARA: ChatPerson = { name: "Sara Y.", kuerzel: "SY", flaeche: "bg-success text-eco-deep-green" };
+const JANA: ChatPerson = { name: "Jana Weber", kuerzel: "JW", team: "Trainer:in", flaeche: "bg-brand text-white" };
+const TOM: ChatPerson = { name: "Tom Krüger", kuerzel: "TK", team: "Lernbegleitung", flaeche: "bg-brand text-white" };
+const AYLIN: ChatPerson = { name: "Aylin K.", kuerzel: "AK", flaeche: "bg-self-tint text-ink" };
+const MAREK: ChatPerson = { name: "Marek S.", kuerzel: "MS", flaeche: "bg-brand-tint text-ink" };
+const KEMAL: ChatPerson = { name: "Kemal B.", kuerzel: "KB", flaeche: "bg-praxis-tint text-ink" };
+const JONAS: ChatPerson = { name: "Jonas L.", kuerzel: "JL", flaeche: "bg-self-tint text-ink" };
+const SARA: ChatPerson = { name: "Sara Y.", kuerzel: "SY", flaeche: "bg-self-tint text-ink" };
 
 const STD = 60;
 const TAG = 24 * STD;

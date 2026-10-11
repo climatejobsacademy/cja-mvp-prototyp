@@ -12,9 +12,12 @@ import { zeitText, type Block } from "./plan-modell";
 // vollständig: die Lektionen heißen z. B. "Grundlagen der Elektrotechnik
 // (Der Transistor / Die Dioden)" -- das Thema steht in der Klammer.
 
+// Visuelles Update (docs/ux/visual-update, 2026-10-11): helle Typ-Fläche mit
+// 3-px-Streifen; nur der nächste Termin ist der Anker (voller Verlauf, weiße
+// Schrift, Lime-Button).
 const ART = {
-  live: { text: "Live-Unterricht", Icon: Video, flaeche: "bg-info", streifen: "border-l-lylac", icon: "text-lylac", inhalt: "Zur Lektion" },
-  praxis: { text: "Praxisaufgabe", Icon: Wrench, flaeche: "bg-warning", streifen: "border-l-coral", icon: "text-coral-text", inhalt: "Zur Praxisaufgabe" },
+  live: { text: "Live-Unterricht", Icon: Video, flaeche: "bg-brand-tint", streifen: "border-l-brand-2", icon: "text-brand", anker: "bg-anchor-brand shadow-anchor-brand", inhalt: "Zur Lektion" },
+  praxis: { text: "Praxisaufgabe", Icon: Wrench, flaeche: "bg-praxis-tint", streifen: "border-l-praxis", icon: "text-praxis-text", anker: "bg-anchor-praxis shadow-anchor-praxis", inhalt: "Zur Praxisaufgabe" },
 } as const;
 
 const STATUS_TEXT = { erledigt: "erledigt", vorbei: "vorbei", offen: "offen" } as const;
@@ -30,7 +33,7 @@ export function TerminBlock({ block, gross, style }: { block: Block; gross: bool
     block.naechster ? "als Nächstes" : STATUS_TEXT[block.status],
   ].join(", ");
   const klickflaeche =
-    "outline-none after:absolute after:inset-0 after:rounded-[10px] after:content-[''] focus-visible:after:ring-2 focus-visible:after:ring-eco-green";
+    "outline-none after:absolute after:inset-0 after:rounded-block after:content-[''] focus-visible:after:ring-2 focus-visible:after:ring-brand";
   const titel = (
     <span className={cn("leading-snug font-semibold", gross ? "text-base" : "line-clamp-3 text-[13px]")}>{block.titel}</span>
   );
@@ -39,20 +42,22 @@ export function TerminBlock({ block, gross, style }: { block: Block; gross: bool
     <div
       style={style}
       className={cn(
-        "group/termin absolute flex flex-col overflow-hidden rounded-[10px]",
+        "group/termin absolute flex flex-col overflow-hidden rounded-block",
         gross ? "gap-2 px-[18px] py-3.5" : "gap-1 px-2.5 py-2",
         block.naechster
-          ? cn("z-10 border-l-4 text-eco-deep-green", art.flaeche, art.streifen)
-          : cn("border border-border bg-white", zurueck ? "text-muted-foreground" : "text-eco-deep-green"),
-        (block.inhalt || block.liveRaum) && !block.naechster && "transition-[background-color] duration-150 hover:bg-off-white motion-reduce:transition-none"
+          ? cn("z-10 text-white", art.anker)
+          : zurueck
+            ? "border border-line bg-card text-ink-muted"
+            : cn("border-l-[3px] text-ink", art.flaeche, art.streifen),
+        (block.inhalt || block.liveRaum) && !block.naechster && "transition-[box-shadow] duration-150 hover:shadow-card motion-reduce:transition-none"
       )}
     >
       <span className="flex items-center gap-1.5 text-xs font-semibold">
         {/* Symbol immer in der Typfarbe wie auf Home und Kompetenzen (Anna 2026-10-11). */}
-        <art.Icon className={cn("size-[13px] shrink-0", art.icon)} aria-hidden="true" />
+        <art.Icon className={cn("size-[13px] shrink-0", block.naechster ? "text-white" : art.icon)} aria-hidden="true" />
         {zeitText(block)}
         {gross && ` · ${art.text}`}
-        {block.status === "erledigt" && <Check className="ml-auto size-3 text-eco-green" strokeWidth={3} aria-hidden="true" />}
+        {block.status === "erledigt" && <Check className={cn("ml-auto size-3", block.naechster ? "text-white" : "text-progress")} strokeWidth={3} aria-hidden="true" />}
       </span>
       {/* Immer genau eine Aktion (wie Veras Stundenplan, Anna 2026-10-11): ab
           15 Min. vor Beginn bis zum Ende führt der ganze Block in den Live-Raum,
@@ -74,12 +79,16 @@ export function TerminBlock({ block, gross, style }: { block: Block; gross: bool
       ) : (
         <span aria-label={label}>{titel}</span>
       )}
-      <span className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1.5">
+      {/* Nur Anzeige -- geklickt wird die Fläche des Links darüber. Ohne
+          pointer-events-none fängt der Knopf beim Hover (filter = eigene
+          Ebene) den Klick ab. */}
+      <span className="pointer-events-none mt-auto flex flex-wrap items-center gap-x-3 gap-y-1.5">
         {block.liveRaum ? (
           <span
             aria-hidden="true"
             className={cn(
-              "rounded-[9px] bg-eco-deep-green font-bold text-white transition-[background-color] duration-150 group-hover/termin:bg-eco-deep-green/90 motion-reduce:transition-none",
+              "rounded-full font-bold transition-[filter] duration-150 group-hover/termin:brightness-95 motion-reduce:transition-none",
+              block.naechster ? "bg-lime text-on-lime" : "bg-brand text-white",
               gross ? "px-3.5 py-2 text-[13px]" : "px-2 py-1 text-[11px] whitespace-nowrap"
             )}
           >
@@ -90,8 +99,11 @@ export function TerminBlock({ block, gross, style }: { block: Block; gross: bool
             <span
               aria-hidden="true"
               className={cn(
-                "inline-flex items-center gap-1 rounded-lg border border-border bg-white font-semibold whitespace-nowrap text-eco-deep-green transition-[border-color,box-shadow] duration-150 group-hover/termin:border-eco-deep-green/40 group-hover/termin:shadow-sm motion-reduce:transition-none",
-                gross ? "px-3 py-1.5 text-[13px]" : "px-2 py-1 text-[11px]"
+                "inline-flex items-center gap-1 font-semibold whitespace-nowrap",
+                // Anker: Lime-Button; sonst Nebenaktion als Textlink (Brief 4.4).
+                block.naechster
+                  ? cn("rounded-full bg-lime text-on-lime transition-[filter] duration-150 group-hover/termin:brightness-95 motion-reduce:transition-none", gross ? "px-3 py-1.5 text-[13px]" : "px-2 py-1 text-[11px]")
+                  : cn("transition-[color] duration-150 group-hover/termin:text-brand motion-reduce:transition-none", gross ? "text-[13px]" : "text-[11px]")
               )}
             >
               {art.inhalt}

@@ -36,10 +36,10 @@ export function JetztLinie({
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute inset-x-0 z-20 h-0.5 bg-eco-deep-green"
+      className="pointer-events-none absolute inset-x-0 z-20 h-0.5 bg-brand"
       style={{ top: `${((h - von) / (bis - von)) * 100}%` }}
     >
-      <span className="absolute -top-[5px] -left-1.5 size-3 rounded-full bg-eco-deep-green" />
+      <span className="absolute -top-[5px] -left-1.5 size-3 rounded-full bg-brand" />
     </div>
   );
 }

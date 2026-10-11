@@ -35,14 +35,14 @@ export function Einschaetzung({
   return (
     <section className="flex flex-col gap-4 rounded-lg border border-border p-3" aria-labelledby={`${id}-titel`}>
       <div className="flex flex-col gap-1">
-        <h3 id={`${id}-titel`} className="text-[15px] font-semibold text-eco-deep-green">
+        <h3 id={`${id}-titel`} className="text-[15px] font-semibold text-ink">
           {titel}
         </h3>
         <p className="text-sm text-muted-foreground">{text}</p>
       </div>
       {kriterien.map((k) => (
         <fieldset key={k.id} disabled={gesperrt} className="flex flex-col gap-2 disabled:opacity-60">
-          <legend className="mb-2 text-[15px] font-medium text-eco-deep-green">{k.titel}</legend>
+          <legend className="mb-2 text-[15px] font-medium text-ink">{k.titel}</legend>
           <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
             {skala.map((p) => {
               const gewaehlt = werte[k.id] === p;
@@ -53,8 +53,8 @@ export function Einschaetzung({
                   aria-pressed={gewaehlt}
                   onClick={() => onWert(k.id, p)}
                   className={cn(
-                    "flex min-h-11 flex-col items-center justify-center rounded-lg border text-eco-deep-green disabled:cursor-not-allowed",
-                    gewaehlt ? "border-eco-deep-green bg-eco-green/10 font-semibold" : "border-border enabled:hover:bg-eco-green/10",
+                    "flex min-h-11 flex-col items-center justify-center rounded-lg border text-ink disabled:cursor-not-allowed",
+                    gewaehlt ? "border-brand bg-subtle font-semibold" : "border-border enabled:hover:bg-subtle",
                     FOKUS
                   )}
                 >

@@ -5,8 +5,8 @@ type Eintrag = { id: string; text: string };
 function Kasten({ icon: Icon, titel, leerText, children }: { icon: LucideIcon; titel: string; leerText: string; children?: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-2 rounded-lg border border-border bg-white p-3">
-      <h3 className="flex items-center gap-2 text-sm font-semibold text-eco-deep-green">
-        <span className="flex size-7 items-center justify-center rounded-md bg-eco-green/10">
+      <h3 className="flex items-center gap-2 text-sm font-semibold text-ink">
+        <span className="flex size-7 items-center justify-center rounded-md bg-subtle">
           <Icon className="size-4" aria-hidden="true" />
         </span>
         {titel}
@@ -33,7 +33,7 @@ export function PlanUebersicht({
           {werkzeuge.length > 0 && (
             <ul className="flex flex-wrap gap-1.5">
               {werkzeuge.map((w) => (
-                <li key={w.id} className="rounded-full border border-border px-2.5 py-1 text-sm text-eco-deep-green">
+                <li key={w.id} className="rounded-full border border-border px-2.5 py-1 text-sm text-ink">
                   {w.text}
                 </li>
               ))}
@@ -44,7 +44,7 @@ export function PlanUebersicht({
           {materialien.length > 0 && (
             <ul className="flex flex-wrap gap-1.5">
               {materialien.map((m) => (
-                <li key={m.id} className="rounded-full border border-border px-2.5 py-1 text-sm text-eco-deep-green">
+                <li key={m.id} className="rounded-full border border-border px-2.5 py-1 text-sm text-ink">
                   {m.text}
                 </li>
               ))}
@@ -57,10 +57,10 @@ export function PlanUebersicht({
           <ol className="flex flex-col">
             {schritte.map((s, i) => (
               <li key={s.id} className="flex gap-3 border-b border-border py-2 last:border-b-0">
-                <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-eco-deep-green text-sm font-semibold text-white">
+                <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-semibold text-white">
                   {i + 1}
                 </span>
-                <span className="min-w-0 pt-0.5 text-[15px] break-words text-eco-deep-green">{s.text}</span>
+                <span className="min-w-0 pt-0.5 text-[15px] break-words text-ink">{s.text}</span>
               </li>
             ))}
           </ol>

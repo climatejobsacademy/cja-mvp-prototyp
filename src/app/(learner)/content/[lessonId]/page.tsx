@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import { UnitProgressBadge } from "@/components/status-badge";
 import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { requireCurrentLearner } from "@/lib/queries/session";
 import { getLessonDetail } from "@/lib/queries/content";
@@ -17,6 +18,8 @@ import { MaterialienListe } from "./materialien-liste";
 import { ScormPlayer } from "./scorm-player";
 
 const TYP_LABEL: Record<string, string> = { live: "Live-Termin", scorm: "Selbstlernmodul" };
+// Visuelles Update (Anna 2026-10-11): Typ als Pill in der Typfarbe.
+const TYP_PILL: Record<string, string> = { live: "bg-brand-tint text-brand", scorm: "bg-self-tint text-self" };
 
 /**
  * Zurück-Link je nach Herkunft: aus dem Stundenplan zurück zum selben Tag,
@@ -65,18 +68,18 @@ export default async function LessonPage({
     <div className="flex flex-col gap-4">
       <Link
         href={zurueck.href}
-        className="flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-eco-deep-green"
+        className="flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-ink"
       >
         <ArrowLeft className="size-4" /> {zurueck.label}
       </Link>
 
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-2">
         {/* Typ als Meta-Zeile -- die Lektionsnamen tragen ihn seit 2026-09-29 nicht mehr. */}
         {TYP_LABEL[lesson.contentType] && (
-          <p className="text-[13px] text-muted-foreground">{TYP_LABEL[lesson.contentType]}</p>
+          <p className={cn("self-start rounded-full px-2.5 py-0.5 text-xs font-semibold", TYP_PILL[lesson.contentType])}>{TYP_LABEL[lesson.contentType]}</p>
         )}
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="font-heading text-xl text-eco-deep-green">{lesson.name}</h1>
+          <h1 className="font-heading text-[28px] leading-tight text-ink md:text-[36px]">{lesson.name}</h1>
           <UnitProgressBadge status={lesson.status} />
         </div>
       </div>
@@ -108,11 +111,12 @@ export default async function LessonPage({
       )}
 
       {lesson.contentType === "live" && (
-        <Card>
-          <CardContent className="flex flex-col gap-2">
+        // Anker der Seite: der Termin (Lila-Verlauf, Lime-Knopf).
+        <Card className="bg-anchor-brand text-white shadow-anchor-brand">
+          <CardContent className="flex flex-col gap-3">
             {termin ? (
               <>
-                <p className="text-eco-deep-green">
+                <p className="text-[17px] font-semibold text-white">
                   {new Date(`${termin.datum}T00:00:00`).toLocaleDateString("de-DE", {
                     weekday: "long",
                     day: "2-digit",
@@ -123,14 +127,14 @@ export default async function LessonPage({
                 {(termin.joinLink || liveKontext?.festigenLessonId) && (
                   <div className="flex flex-wrap gap-2">
                     {termin.joinLink && (
-                      <a href={termin.joinLink} target="_blank" rel="noreferrer" className={buttonVariants()}>
+                      <a href={termin.joinLink} target="_blank" rel="noreferrer" className={cn(buttonVariants(), "h-10 bg-lime px-5 font-bold text-on-lime hover:bg-lime hover:brightness-95")}>
                         Beitreten
                       </a>
                     )}
                     {liveKontext?.festigenLessonId && (
                       <Link
                         href={`/content/${liveKontext.festigenLessonId}${herkunft ? `?${herkunft}` : ""}`}
-                        className={buttonVariants({ variant: "outline" })}
+                        className={cn(buttonVariants(), "h-10 bg-white/15 px-5 text-white hover:bg-white/25")}
                       >
                         Wissen festigen <ArrowRight className="size-4" aria-hidden="true" />
                       </Link>
@@ -139,7 +143,7 @@ export default async function LessonPage({
                 )}
               </>
             ) : (
-              <p className="text-sm text-muted-foreground">Kein Termin hinterlegt.</p>
+              <p className="text-sm text-white/85">Kein Termin hinterlegt.</p>
             )}
           </CardContent>
         </Card>

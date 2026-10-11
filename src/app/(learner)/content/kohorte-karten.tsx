@@ -16,9 +16,9 @@ const BEISPIEL_KONTAKTE = [
   { kuerzel: "JW", name: "Jana Weber", rolle: "Trainer:in · Live-Unterricht" },
   { kuerzel: "TK", name: "Tom Krüger", rolle: "Lernbegleitung · Fragen zum Programm" },
 ];
-const AVATAR_FLAECHEN = ["bg-success", "bg-info", "bg-warning", "bg-flex-flaeche", "bg-success"];
+const AVATAR_FLAECHEN = ["bg-brand-tint", "bg-self-tint", "bg-praxis-tint", "bg-subtle", "bg-brand-tint"];
 
-const KARTE = "flex flex-col gap-4 rounded-[20px] border border-border p-5 md:p-7";
+const KARTE = "flex flex-col gap-4 rounded-karte bg-card p-5 shadow-card md:p-7";
 
 // Rückmeldung Anna 2026-10-11 ("zu uneben"): zwei Karten nebeneinander unter
 // der Tracking-Karte, gleich hoch; Ansprechpersonen nebeneinander.
@@ -31,7 +31,7 @@ export function KohorteKarten({ kohortenName }: { kohortenName: string }) {
           <h2 id="kohorte-titel" className="text-xl font-bold">
             Deine Kohorte
           </h2>
-          <span className="text-[13px] text-muted-foreground">{kohortenName}</span>
+          <span className="text-[13px] text-ink-muted">{kohortenName}</span>
         </div>
         <div className="flex items-center gap-3">
           <ul aria-hidden="true" className="flex">
@@ -47,12 +47,12 @@ export function KohorteKarten({ kohortenName }: { kohortenName: string }) {
               </li>
             ))}
             {weitere > 0 && (
-              <li className="-mr-2 flex size-10 items-center justify-center rounded-full border-2 border-white bg-off-white text-[13px] font-bold">
+              <li className="-mr-2 flex size-10 items-center justify-center rounded-full border-2 border-white bg-subtle text-[13px] font-bold">
                 +{weitere}
               </li>
             )}
           </ul>
-          <span className="ml-2.5 text-sm text-muted-foreground">{BEISPIEL_ANZAHL} Lernende</span>
+          <span className="ml-2.5 text-sm text-ink-muted">{BEISPIEL_ANZAHL} Lernende</span>
         </div>
       </section>
 
@@ -65,13 +65,13 @@ export function KohorteKarten({ kohortenName }: { kohortenName: string }) {
             <li key={p.name} className="flex items-center gap-3">
               <span
                 aria-hidden="true"
-                className="flex size-10 shrink-0 items-center justify-center rounded-full bg-eco-deep-green text-sm font-bold text-white"
+                className="flex size-10 shrink-0 items-center justify-center rounded-full bg-subtle text-sm font-bold text-ink"
               >
                 {p.kuerzel}
               </span>
               <span className="flex min-w-0 flex-col gap-0.5">
                 <span className="text-[15px] font-semibold">{p.name}</span>
-                <span className="text-[13px] text-muted-foreground">{p.rolle}</span>
+                <span className="text-[13px] text-ink-muted">{p.rolle}</span>
               </span>
             </li>
           ))}

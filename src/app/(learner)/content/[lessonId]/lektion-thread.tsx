@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 
 import { beitragLoeschen, beitragSchreiben } from "./thread-actions";
 
-const AKTION = cn(buttonVariants({ variant: "outline" }), "h-11 gap-2 px-3 sm:h-9");
+const AKTION = cn(buttonVariants({ variant: "secondary" }), "h-11 gap-2 bg-subtle px-3.5 hover:bg-brand-tint hover:text-brand sm:h-9");
 const KLEINE_AKTION = cn(buttonVariants({ variant: "ghost" }), "h-11 gap-1.5 px-2 text-[13px] sm:h-8");
 
 /**
@@ -72,10 +72,10 @@ export function LektionThread({ lessonId, thread }: { lessonId: string; thread: 
     .filter((e) => !e.geloescht_am || e.antworten.length > 0);
 
   return (
-    <section aria-labelledby="thread-ueberschrift" className="flex flex-col gap-3">
+    <section aria-labelledby="thread-ueberschrift" className="flex flex-col gap-4 rounded-karte bg-card p-5 shadow-card md:p-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 id="thread-ueberschrift" className="flex items-center gap-2 text-[15px] font-semibold text-eco-deep-green">
-          <MessageSquareText className="size-[18px] text-eco-green" aria-hidden="true" />
+        <h2 id="thread-ueberschrift" className="flex items-center gap-2 text-[15px] font-semibold text-ink">
+          <MessageSquareText className="size-[18px] text-brand" aria-hidden="true" />
           Fragen zur Lektion
         </h2>
         <button type="button" onClick={aktualisieren} disabled={aktualisiert} className={AKTION}>
@@ -88,7 +88,7 @@ export function LektionThread({ lessonId, thread }: { lessonId: string; thread: 
         {status}
       </p>
       {fehler && (
-        <p role="alert" className="rounded-lg border-2 border-coral p-3 text-sm text-eco-deep-green">
+        <p role="alert" className="rounded-lg border-2 border-praxis p-3 text-sm text-ink">
           {fehler}
         </p>
       )}
@@ -104,7 +104,7 @@ export function LektionThread({ lessonId, thread }: { lessonId: string; thread: 
       ) : (
         <ul className="flex flex-col gap-3">
           {sichtbar.map((eintrag) => (
-            <li key={eintrag.id} className="flex flex-col gap-2 rounded-xl border border-border p-4">
+            <li key={eintrag.id} className="flex flex-col gap-2 rounded-zeile bg-subtle p-4">
               <BeitragAnzeige
                 beitrag={eintrag}
                 loeschbar={darfLoeschen(eintrag)}
@@ -118,7 +118,7 @@ export function LektionThread({ lessonId, thread }: { lessonId: string; thread: 
                 antwortOffen={antwortAuf === eintrag.id}
               />
               {eintrag.antworten.length > 0 && (
-                <ul className="ml-3 flex flex-col gap-3 border-l-2 border-border pl-3 sm:ml-5 sm:pl-4">
+                <ul className="ml-3 flex flex-col gap-3 border-l-2 border-brand-tint pl-3 sm:ml-5 sm:pl-4">
                   {eintrag.antworten.map((antwort) => (
                     <li key={antwort.id} className="flex flex-col gap-2">
                       <BeitragAnzeige
@@ -132,7 +132,7 @@ export function LektionThread({ lessonId, thread }: { lessonId: string; thread: 
                 </ul>
               )}
               {antwortAuf === eintrag.id && (
-                <div className="ml-3 border-l-2 border-eco-green pl-3 sm:ml-5 sm:pl-4">
+                <div className="ml-3 border-l-2 border-brand pl-3 sm:ml-5 sm:pl-4">
                   <BeitragFormular
                     lessonId={lessonId}
                     cohortId={thread.cohortId}
@@ -187,11 +187,11 @@ function BeitragAnzeige({
   return (
     <div className="flex flex-col gap-1">
       <p className="text-[13px] text-muted-foreground">
-        <span className="font-medium text-eco-deep-green">{name}</span> ·{" "}
+        <span className="font-medium text-ink">{name}</span> ·{" "}
         <time dateTime={beitrag.created_at}>{zeitpunktInBerlin(beitrag.created_at)}</time>
       </p>
       {/* Reiner Text: React escaped, keine Links, Zeilenumbrüche bleiben. */}
-      <p className="text-[15px] whitespace-pre-wrap break-words text-eco-deep-green">{beitrag.text}</p>
+      <p className="text-[15px] whitespace-pre-wrap break-words text-ink">{beitrag.text}</p>
       {(antwortbar || loeschbar) && (
         <div className="flex flex-wrap gap-1">
           {antwortbar && (
@@ -258,7 +258,7 @@ function BeitragFormular({
 
   return (
     <form onSubmit={absenden} className="flex flex-col gap-2">
-      <label htmlFor={`${id}-text`} className="text-sm font-medium text-eco-deep-green">
+      <label htmlFor={`${id}-text`} className="text-sm font-medium text-ink">
         {label}
       </label>
       <textarea
@@ -269,10 +269,10 @@ function BeitragFormular({
         rows={parentId ? 3 : 4}
         aria-describedby={`${id}-zaehler`}
         aria-invalid={zuLang || undefined}
-        className="rounded-lg border border-border bg-white px-3 py-2.5 text-[15px] text-eco-deep-green outline-none focus-visible:ring-2 focus-visible:ring-eco-green focus-visible:ring-offset-2"
+        className="rounded-zeile border border-line bg-white px-3.5 py-3 text-[15px] text-ink outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
       />
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p id={`${id}-zaehler`} className={cn("text-[13px] tabular-nums", zuLang ? "text-eco-deep-green font-semibold" : "text-muted-foreground")}>
+        <p id={`${id}-zaehler`} className={cn("text-[13px] tabular-nums", zuLang ? "text-ink font-semibold" : "text-muted-foreground")}>
           {anzahl} / {MAX_ZEICHEN} Zeichen{zuLang ? " – zu lang" : ""}
         </p>
         <div className="flex gap-2">
@@ -294,7 +294,7 @@ function BeitragFormular({
       {/* Wunsch Anna 2026-10-11 (demo): Hinweis ganz unten statt über dem Feld. */}
       <p className="text-[13px] text-muted-foreground">
         Bitte keine sensiblen Angaben und keine Daten anderer Personen schreiben.{" "}
-        <Link href="/datenschutz" className="text-eco-deep-green underline underline-offset-2">
+        <Link href="/datenschutz" className="text-ink underline underline-offset-2">
           Datenschutzerklärung
         </Link>
       </p>

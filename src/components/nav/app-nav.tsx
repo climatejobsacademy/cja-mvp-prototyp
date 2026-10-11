@@ -17,7 +17,7 @@ const ITEMS = [
 ];
 
 const FOKUS =
-  "outline-none focus-visible:ring-2 focus-visible:ring-eco-green focus-visible:ring-offset-2";
+  "outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2";
 
 function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
@@ -33,7 +33,7 @@ function Wortmarke() {
     >
       <span
         aria-hidden="true"
-        className="font-heading text-[10px] leading-[1.05] text-eco-deep-green uppercase"
+        className="font-heading text-[10px] leading-[1.05] text-ink uppercase"
       >
         The
         <br />
@@ -63,7 +63,7 @@ export function AppNav({
 
   return (
     <>
-      <header className="sticky top-0 z-20 border-b border-border bg-white">
+      <header className="sticky top-0 z-20 border-b border-line bg-white">
         {/* Desktop (Home v12, docs/design_handoff_home_v6/design/home-v12-referenz.html): Logo
             links, Navigation als Segmented Control in der Mitte, Avatar
             rechts. Programmname steht nicht mehr im Kopf (Entscheidung
@@ -73,7 +73,7 @@ export function AppNav({
             <Wortmarke />
           </div>
           <nav aria-label="Hauptnavigation">
-            <ul className="flex items-center gap-0.5 rounded-xl bg-off-white p-1">
+            <ul className="flex items-center gap-0.5 rounded-full bg-white p-1 shadow-card">
               {ITEMS.map(({ href, label }) => {
                 const active = isActive(pathname, href);
                 return (
@@ -82,11 +82,11 @@ export function AppNav({
                       href={href}
                       aria-current={active ? "page" : undefined}
                       className={cn(
-                        "flex min-h-9 items-center rounded-[9px] px-4 text-sm transition-[background-color,box-shadow,color] duration-150 motion-reduce:transition-none",
+                        "flex min-h-9 items-center rounded-full px-4 text-sm transition-[background-color,box-shadow,color] duration-150 motion-reduce:transition-none",
                         FOKUS,
                         active
-                          ? "bg-white font-semibold text-eco-deep-green shadow-sm"
-                          : "text-muted-foreground hover:text-eco-deep-green"
+                          ? "bg-brand font-semibold text-white"
+                          : "text-ink-muted hover:text-ink"
                       )}
                     >
                       {label}
@@ -109,7 +109,7 @@ export function AppNav({
       <nav
         aria-label="Hauptnavigation"
         data-bottom-nav
-        className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-white pb-[env(safe-area-inset-bottom)] md:hidden"
+        className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-white pb-[env(safe-area-inset-bottom)] md:hidden"
       >
         <ul className="grid grid-cols-4">
           {ITEMS.map(({ href, label, icon: Icon }) => {
@@ -122,17 +122,17 @@ export function AppNav({
                   className={cn(
                     "flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-lg text-xs",
                     FOKUS,
-                    active ? "font-semibold text-eco-deep-green" : "text-muted-foreground"
+                    active ? "font-semibold text-brand" : "text-ink-muted"
                   )}
                 >
                   <span
                     className={cn(
                       "flex h-[30px] w-14 items-center justify-center rounded-full transition-[background-color] duration-150 motion-reduce:transition-none",
-                      active && "bg-off-white"
+                      active && "bg-brand-tint"
                     )}
                   >
                     <Icon
-                      className={cn("size-5", active && "text-eco-deep-green")}
+                      className={cn("size-5", active && "text-brand")}
                       aria-hidden="true"
                     />
                   </span>

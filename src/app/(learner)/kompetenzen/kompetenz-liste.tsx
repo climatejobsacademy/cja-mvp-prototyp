@@ -44,7 +44,7 @@ export function KompetenzListe({
 }) {
   if (kompetenzen.length === 0) {
     return (
-      <p className="text-[15px] text-muted-foreground">Für Modul {modulNummer} sind noch keine Kompetenzen hinterlegt.</p>
+      <p className="text-[15px] text-ink-muted">Für Modul {modulNummer} sind noch keine Kompetenzen hinterlegt.</p>
     );
   }
   return (
@@ -62,8 +62,8 @@ export function KompetenzListe({
                 }}
                 aria-current={gewaehlt ? "true" : undefined}
                 className={cn(
-                  "flex w-full items-center gap-4 rounded-2xl border px-[18px] py-4 text-eco-deep-green outline-none transition-[background-color,border-color] duration-150 focus-visible:ring-2 focus-visible:ring-eco-green motion-reduce:transition-none",
-                  gewaehlt ? "border-eco-deep-green bg-white" : "border-transparent hover:bg-off-white"
+                  "flex w-full items-center gap-4 rounded-zeile px-[18px] py-4 text-ink outline-none transition-[background-color] duration-150 focus-visible:ring-2 focus-visible:ring-brand motion-reduce:transition-none",
+                  gewaehlt ? "bg-subtle" : "hover:bg-subtle"
                 )}
               >
                 <Ring prozent={k.prozent} glow={k.heute} groesse={56} />
@@ -73,13 +73,13 @@ export function KompetenzListe({
                     {k.heute && <span className="sr-only"> · heute dran</span>}
                   </span>
                   {k.gesamt > 0 && (
-                    <span className="text-[13px] text-muted-foreground">
+                    <span className="text-[13px] text-ink-muted">
                       {k.erreicht} von {k.gesamt} Kompetenzschritten
                     </span>
                   )}
                 </span>
                 <ChevronRight
-                  className={cn("size-[18px] shrink-0", gewaehlt ? "text-eco-deep-green" : "text-muted-foreground")}
+                  className={cn("size-[18px] shrink-0", gewaehlt ? "text-ink" : "text-ink-muted")}
                   aria-hidden="true"
                 />
               </Link>

@@ -14,7 +14,7 @@ const downloadMarker = erstelleDownloadMarker(() =>
   typeof window === "undefined" ? null : window.sessionStorage
 );
 
-const AKTION = cn(buttonVariants({ variant: "outline" }), "h-11 gap-2 px-3 sm:h-9");
+const AKTION = cn(buttonVariants({ variant: "secondary" }), "h-11 gap-2 bg-subtle px-3.5 hover:bg-brand-tint hover:text-brand sm:h-9");
 
 /**
  * Liste der Lernmaterialien einer Lektion (SR-68). Vorschau/Download sind
@@ -40,20 +40,20 @@ export function MaterialienListe({
 
   return (
     <section aria-labelledby="materialien-ueberschrift" className="flex flex-col gap-3">
-      <h2 id="materialien-ueberschrift" className="text-[15px] font-semibold text-eco-deep-green">
+      <h2 id="materialien-ueberschrift" className="text-[15px] font-semibold text-ink">
         {ueberschrift}
       </h2>
-      <ul className="flex flex-col divide-y divide-border rounded-xl border border-border">
+      <ul className="flex flex-col divide-y divide-line rounded-karte bg-card px-2 shadow-card">
         {materialien.map((m) => (
           <li key={m.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex min-w-0 items-start gap-3">
+            <div className="flex min-w-0 items-center gap-3">
               {m.art === "datei" ? (
-                <FileText className="mt-0.5 size-5 shrink-0 text-eco-green" aria-hidden="true" />
+                <FileText className="size-9 shrink-0 rounded-xl bg-brand-tint p-2 text-brand" aria-hidden="true" />
               ) : (
-                <Link2 className="mt-0.5 size-5 shrink-0 text-eco-green" aria-hidden="true" />
+                <Link2 className="size-9 shrink-0 rounded-xl bg-brand-tint p-2 text-brand" aria-hidden="true" />
               )}
               <div className="flex min-w-0 flex-col gap-0.5">
-                <p className="text-sm font-medium break-words text-eco-deep-green">{m.titel}</p>
+                <p className="text-sm font-medium break-words text-ink">{m.titel}</p>
                 {m.art === "datei" ? (
                   <p className="text-[13px] break-all text-muted-foreground">
                     {m.dateiname} · {m.format}
@@ -63,8 +63,8 @@ export function MaterialienListe({
                   <p className="text-[13px] text-muted-foreground">externer Link</p>
                 )}
                 {heruntergeladen.has(m.id) && (
-                  <p className="flex items-center gap-1 text-[13px] text-eco-deep-green">
-                    <CircleCheck className="size-3.5 text-eco-green" aria-hidden="true" />
+                  <p className="flex items-center gap-1 text-[13px] text-ink">
+                    <CircleCheck className="size-3.5 text-progress" aria-hidden="true" />
                     heruntergeladen
                   </p>
                 )}

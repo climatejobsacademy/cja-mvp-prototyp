@@ -144,18 +144,18 @@ export default async function ProgrammPage({
   ].filter(Boolean);
 
   return (
-    <div data-breit className="flex flex-col gap-10 text-eco-deep-green">
+    <div data-breit className="flex flex-col gap-10 text-ink">
       {simuliert && (
-        <p className="inline-flex items-center gap-2 self-start rounded-full bg-info px-3 py-1 text-[13px]">
-          <FlaskConical className="size-4 shrink-0 text-lylac" aria-hidden="true" />
+        <p className="inline-flex items-center gap-2 self-start rounded-full bg-brand-tint px-3 py-1 text-[13px]">
+          <FlaskConical className="size-4 shrink-0 text-brand" aria-hidden="true" />
           Testansicht: simulierte Zeit {datumKurz(heute)}, {simuliert.slice(11, 16)} Uhr
         </p>
       )}
 
       <section className="flex flex-col gap-2.5">
-        <span className="text-xs font-semibold tracking-[0.12em] text-muted-foreground uppercase">Dein Programm</span>
-        <h1 className="font-heading text-[34px] leading-[1.05] md:text-[48px]">{learner.programmeName}</h1>
-        {kopfZeile.length > 0 && <span className="text-[15px] text-muted-foreground">{kopfZeile.join(" · ")}</span>}
+        <span className="text-[13px] text-ink-subtle">Dein Programm</span>
+        <h1 className="font-heading text-[34px] leading-[1.05] md:text-[52px]">{learner.programmeName}</h1>
+        {kopfZeile.length > 0 && <span className="text-[15px] text-ink-muted">{kopfZeile.join(" · ")}</span>}
       </section>
 
       {pfad.length > 0 && (

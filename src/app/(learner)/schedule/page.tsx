@@ -83,25 +83,28 @@ export default async function SchedulePage({
   const zusatzTeile = [wocheNr ? `Woche ${wocheNr}` : null, haupt ? WOCHENTYP_TEXT[haupt] : null].filter(Boolean);
   const zusatz = zusatzTeile.length ? `· ${zusatzTeile.join(" · ")}` : null;
   const ohneJahr = (text: string) => text.replace(/\s\d{4}$/, "");
+  // Visuelles Update (Anna 2026-10-11, wie im Mock-up): Steuerleiste und
+  // Kalender stehen auf einer weißen Karte.
+  const KALENDER_KARTE = "flex flex-col gap-6 rounded-karte bg-card p-6 shadow-card";
 
   return (
     <div data-breit className="flex flex-col gap-5">
       {simuliert && (
-        <p className="inline-flex items-center gap-2 self-start rounded-full bg-info px-3 py-1 text-[13px] text-eco-deep-green">
-          <FlaskConical className="size-4 shrink-0 text-lylac" aria-hidden="true" />
+        <p className="inline-flex items-center gap-2 self-start rounded-full bg-brand-tint px-3 py-1 text-[13px] text-ink">
+          <FlaskConical className="size-4 shrink-0 text-brand" aria-hidden="true" />
           Testansicht: simulierte Zeit {datumKurz(heute)}, {jetzt.slice(11, 16)} Uhr
         </p>
       )}
 
       {/* Desktop (ab 768 px): Woche, Tag oder Monat */}
       <div className="hidden flex-col gap-6 md:flex">
-        <div className="flex flex-col gap-2 text-eco-deep-green">
-          <span className="text-xs font-semibold tracking-[0.12em] text-muted-foreground uppercase">{learner.programmeName}</span>
-          <h1 className="font-heading text-[48px] leading-none">Stundenplan</h1>
+        <div className="flex flex-col gap-2 text-ink">
+          <span className="text-[13px] text-ink-subtle">{learner.programmeName}</span>
+          <h1 className="font-heading text-[52px] leading-none">Stundenplan</h1>
         </div>
 
         {desktopAnsicht === "woche" && (
-          <>
+          <div className={KALENDER_KARTE}>
             <Steuerleiste
               ansicht="woche"
               heuteHref={wochenende ? href("tag", heute) : woche.includes(heute) ? null : href("woche", heute)}
@@ -114,11 +117,11 @@ export default async function SchedulePage({
               umschalterHref={(a) => href(a, woche.includes(heute) && a === "tag" ? heute : datum)}
             />
             <WochenAnsicht tage={wochenTage} haupt={haupt} jetzt={jetzt} simuliert={!!simuliert} tagHref={tagHref} />
-          </>
+          </div>
         )}
 
         {desktopAnsicht === "tag" && (
-          <>
+          <div className={KALENDER_KARTE}>
             <Steuerleiste
               ansicht="tag"
               heuteHref={datum === heute ? null : href("tag", heute)}
@@ -143,11 +146,11 @@ export default async function SchedulePage({
               simuliert={!!simuliert}
               tagHref={tagHref}
             />
-          </>
+          </div>
         )}
 
         {desktopAnsicht === "monat" && (
-          <>
+          <div className={KALENDER_KARTE}>
             <Steuerleiste
               ansicht="monat"
               heuteHref={datum.slice(0, 7) === heute.slice(0, 7) ? null : href("monat", heute)}
@@ -165,7 +168,7 @@ export default async function SchedulePage({
               wocheNr={(m) => wocheSeit(kohortenStart, m)}
               tagHref={tagHref}
             />
-          </>
+          </div>
         )}
       </div>
 

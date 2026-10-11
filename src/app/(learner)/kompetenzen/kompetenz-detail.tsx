@@ -26,7 +26,7 @@ const STATUS: Record<
   abgeschlossen: {
     text: "erreicht",
     symbol: (
-      <span className="flex size-6 flex-none items-center justify-center rounded-full bg-eco-green text-white">
+      <span className="flex size-6 flex-none items-center justify-center rounded-full bg-progress text-white">
         <Check className="size-[13px]" strokeWidth={3.2} aria-hidden="true" />
       </span>
     ),
@@ -34,7 +34,7 @@ const STATUS: Record<
   "in Prüfung": {
     text: "in Prüfung",
     symbol: (
-      <span className="flex size-6 flex-none items-center justify-center rounded-full bg-info text-eco-deep-green">
+      <span className="flex size-6 flex-none items-center justify-center rounded-full bg-brand-tint text-brand">
         <Clock className="size-[13px]" strokeWidth={2.6} aria-hidden="true" />
       </span>
     ),
@@ -42,14 +42,14 @@ const STATUS: Record<
   abgelehnt: {
     text: "abgelehnt",
     symbol: (
-      <span className="flex size-6 flex-none items-center justify-center rounded-full bg-warning text-eco-deep-green">
+      <span className="flex size-6 flex-none items-center justify-center rounded-full bg-praxis-tint text-praxis-text">
         <ThumbsDown className="size-[13px]" strokeWidth={2.6} aria-hidden="true" />
       </span>
     ),
   },
   offen: {
     text: "",
-    symbol: <span className="size-6 flex-none rounded-full border-2 border-border" />,
+    symbol: <span className="size-6 flex-none rounded-full border-2 border-progress-track" />,
   },
 };
 
@@ -60,14 +60,14 @@ const STATUS: Record<
  */
 const HEUTE_DRAN = {
   text: "heute dran",
-  symbol: <span className="size-6 flex-none rounded-full border-[3px] border-charge-green shadow-glow-charge-sm" />,
+  symbol: <span className="size-6 flex-none rounded-full border-[3px] border-lime shadow-glow-charge-sm" />,
 };
 
 function TeilschrittZeile({ step, heute }: { step: CompetencyStepView; heute: boolean }) {
   const { text, symbol } = heute && step.status === "offen" ? HEUTE_DRAN : STATUS[step.status];
   const typ = step.typ === "praktisch" ? "Praxis" : "Theorie";
   return (
-    <li className="flex items-center gap-3.5 border-b border-border py-2.5 last:border-b-0">
+    <li className="flex items-center gap-3.5 border-b border-line py-2.5 last:border-b-0">
       {/* Rückmeldung Anna 2026-10-11: Typ-Symbol wie in der früheren Version --
           Buch = Theorie, Schraubenschlüssel = Praxis; Status rechts. */}
       <TypIcon typ={step.typ === "praktisch" ? "praxis" : "theorie"} />
@@ -75,7 +75,7 @@ function TeilschrittZeile({ step, heute }: { step: CompetencyStepView; heute: bo
         <span
           className={cn(
             "text-[15px]",
-            step.status === "offen" && !heute ? "text-muted-foreground" : "text-eco-deep-green"
+            step.status === "offen" && !heute ? "text-ink-muted" : "text-ink"
           )}
         >
           {step.name}
@@ -86,13 +86,13 @@ function TeilschrittZeile({ step, heute }: { step: CompetencyStepView; heute: bo
         </span>
         {/* SR-62: Zusatzinfo nur bei offen / in Prüfung. */}
         {step.fortschritt && (step.status === "offen" || step.status === "in Prüfung") && (
-          <span className="text-[13px] text-muted-foreground tabular-nums">
+          <span className="text-[13px] text-ink-muted tabular-nums">
             {step.fortschritt.abgeschlossen} von {step.fortschritt.gesamt} {step.fortschritt.einheit}
           </span>
         )}
       </span>
       {text && (
-        <span className="text-[13px] text-muted-foreground" aria-hidden="true">
+        <span className="text-[13px] text-ink-muted" aria-hidden="true">
           {text}
         </span>
       )}
@@ -104,9 +104,9 @@ function TeilschrittZeile({ step, heute }: { step: CompetencyStepView; heute: bo
 // Aktivitätstypen wie auf Home (Brief Home 4): Icon + Farbe, nie nur Farbe.
 // Kacheln als helle Fläche, Icon in der Typfarbe (Kontrast ≥ 3:1).
 const TYP: Record<Lernaktivitaet["art"], { Icon: typeof Video; kachel: string }> = {
-  live: { Icon: Video, kachel: "bg-info text-lylac" },
-  selbst: { Icon: BookOpen, kachel: "bg-success text-eco-deep-green" },
-  praxis: { Icon: Wrench, kachel: "bg-warning text-coral-text" },
+  live: { Icon: Video, kachel: "bg-brand-tint text-brand" },
+  selbst: { Icon: BookOpen, kachel: "bg-self-tint text-self" },
+  praxis: { Icon: Wrench, kachel: "bg-praxis-tint text-praxis-text" },
 };
 
 /**
@@ -120,11 +120,11 @@ function HierLernstDu({ aktivitaeten, heute }: { aktivitaeten: Lernaktivitaet[];
   if (aktivitaeten.length === 0) return null;
   return (
     <details className="group/lernen flex flex-col">
-      <summary className="flex cursor-pointer list-none items-center gap-2 rounded-lg py-1 outline-none focus-visible:ring-2 focus-visible:ring-eco-green [&::-webkit-details-marker]:hidden">
+      <summary className="flex cursor-pointer list-none items-center gap-2 rounded-lg py-1 outline-none focus-visible:ring-2 focus-visible:ring-brand [&::-webkit-details-marker]:hidden">
         <h3 className="text-[15px] font-bold">Hier lernst du das</h3>
-        <span className="text-[13px] text-muted-foreground tabular-nums">· {aktivitaeten.length}</span>
+        <span className="text-[13px] text-ink-muted tabular-nums">· {aktivitaeten.length}</span>
         <ChevronDown
-          className="ml-auto size-[18px] shrink-0 text-muted-foreground transition-transform group-open/lernen:rotate-180 motion-reduce:transition-none"
+          className="ml-auto size-[18px] shrink-0 text-ink-muted transition-transform group-open/lernen:rotate-180 motion-reduce:transition-none"
           aria-hidden="true"
         />
       </summary>
@@ -135,16 +135,16 @@ function HierLernstDu({ aktivitaeten, heute }: { aktivitaeten: Lernaktivitaet[];
             <li key={`${a.art}-${a.id}`}>
               <Link
                 href={a.art === "praxis" ? "/praxisflow-demo" : `/content/${a.id}`}
-                className="flex items-center gap-3.5 rounded-[14px] bg-off-white px-3.5 py-3 text-eco-deep-green outline-none transition-[background-color] duration-150 hover:bg-eco-green/10 focus-visible:ring-2 focus-visible:ring-eco-green motion-reduce:transition-none"
+                className="flex items-center gap-3.5 rounded-zeile bg-subtle px-3.5 py-3 text-ink outline-none transition-[box-shadow] duration-150 hover:shadow-card focus-visible:ring-2 focus-visible:ring-brand motion-reduce:transition-none"
               >
                 <span className={cn("flex size-9 flex-none items-center justify-center rounded-[10px]", kachel)}>
                   <Icon className="size-[17px]" aria-hidden="true" />
                 </span>
                 <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                   <span className="text-[15px] leading-snug font-semibold">{a.titel}</span>
-                  <span className="text-[13px] text-muted-foreground">{aktivitaetMeta(a, heute)}</span>
+                  <span className="text-[13px] text-ink-muted">{aktivitaetMeta(a, heute)}</span>
                 </span>
-                <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                <ChevronRight className="size-4 shrink-0 text-ink-muted" aria-hidden="true" />
               </Link>
             </li>
           );
@@ -175,12 +175,12 @@ export function KompetenzDetail({
   return (
     <section
       aria-labelledby="kompetenz-detail"
-      className="flex min-w-0 flex-col gap-7 rounded-[20px] border border-border p-6 text-eco-deep-green md:p-8"
+      className="flex min-w-0 flex-col gap-7 rounded-karte bg-card p-6 text-ink shadow-card md:p-8"
     >
       <Link
         href={zurueck.href}
         scroll={false}
-        className="-mb-2 inline-flex items-center gap-2 self-start rounded-sm text-sm font-semibold outline-none focus-visible:ring-2 focus-visible:ring-eco-green min-[960px]:hidden"
+        className="-mb-2 inline-flex items-center gap-2 self-start rounded-sm text-sm font-semibold outline-none focus-visible:ring-2 focus-visible:ring-brand min-[960px]:hidden"
       >
         <ArrowLeft className="size-4" aria-hidden="true" />
         {zurueck.label}
@@ -188,12 +188,12 @@ export function KompetenzDetail({
       <div className="flex flex-wrap items-center gap-6">
         <Ring prozent={kompetenz.fortschrittProzent} glow={heuteDran} groesse={112} />
         <div className="flex min-w-0 flex-[1_1_220px] flex-col gap-1.5">
-          {heuteDran && <span className="text-[13px] font-semibold">Heute dran</span>}
+          {heuteDran && <span className="text-[13px] font-semibold text-brand">Heute dran</span>}
           <h2 id="kompetenz-detail" className="text-[22px] leading-tight font-bold md:text-[26px]">
             {kompetenz.name}
           </h2>
           {kompetenz.teilschritteGesamt > 0 && (
-            <span className="text-[15px] text-muted-foreground">
+            <span className="text-[15px] text-ink-muted">
               {kompetenz.teilschritteErfuellt} von {kompetenz.teilschritteGesamt} Kompetenzschritten
             </span>
           )}
@@ -209,7 +209,7 @@ export function KompetenzDetail({
             ))}
           </ul>
         ) : (
-          <p className="text-[15px] text-muted-foreground">Für diese Kompetenz sind noch keine Kompetenzschritte hinterlegt.</p>
+          <p className="text-[15px] text-ink-muted">Für diese Kompetenz sind noch keine Kompetenzschritte hinterlegt.</p>
         )}
       </div>
 

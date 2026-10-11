@@ -41,7 +41,7 @@ export function ModulPfad({
   href: (modulId: string) => string;
 }) {
   return (
-    <section aria-labelledby="dein-weg" className="flex flex-col gap-4 text-eco-deep-green">
+    <section aria-labelledby="dein-weg" className="flex flex-col gap-4 text-ink">
       <h2 id="dein-weg" className="text-xl font-bold">
         Dein Weg
       </h2>
@@ -60,12 +60,12 @@ export function ModulPfad({
                   className={cn(
                     "flex size-[30px] shrink-0 items-center justify-center rounded-full border-2 text-[13px] font-bold",
                     m.ziel
-                      ? "border-charge-green bg-charge-green text-eco-deep-green"
+                      ? "border-lime bg-lime text-on-lime"
                       : m.status === "abgeschlossen"
-                        ? "border-eco-green bg-eco-green text-white"
+                        ? "border-progress bg-progress text-white"
                         : aktuell
-                          ? "border-eco-deep-green bg-eco-deep-green text-white"
-                          : "border-border bg-white text-muted-foreground"
+                          ? "border-brand bg-brand text-white"
+                          : "border-progress-track bg-white text-ink-muted"
                   )}
                 >
                   {m.ziel ? (
@@ -79,7 +79,7 @@ export function ModulPfad({
                 <span
                   className={cn(
                     "ml-2 h-0.5 flex-1",
-                    letztes ? "bg-transparent" : m.status === "abgeschlossen" ? "bg-eco-green" : "bg-border"
+                    letztes ? "bg-transparent" : m.status === "abgeschlossen" ? "bg-progress" : "bg-progress-track"
                   )}
                 />
               </div>
@@ -89,22 +89,19 @@ export function ModulPfad({
                 aria-current={gewaehlt ? "true" : undefined}
                 aria-label={`${m.ueberzeile}: ${m.name}, ${m.zeitraum ? `${m.zeitraum}, ` : ""}${naechstes ? "als Nächstes" : STATUS_TEXT[m.status]}, Inhalte öffnen`}
                 className={cn(
-                  "group/karte relative flex flex-1 flex-col items-start gap-1.5 rounded-[14px] border px-4 py-3.5 outline-none transition-[box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-eco-green focus-visible:ring-offset-2 motion-reduce:transition-none",
-                  aktuell
-                    ? "border-eco-deep-green bg-eco-deep-green text-white"
-                    : m.ziel
-                      ? "border-transparent bg-off-white hover:bg-success"
-                      : "border-border bg-white hover:bg-off-white",
-                  m.status === "kommend" && "text-muted-foreground",
-                  gewaehlt && "ring-2 ring-eco-deep-green ring-offset-2"
+                  "group/karte relative flex flex-1 flex-col items-start gap-1.5 rounded-zeile px-4 py-3.5 outline-none transition-[box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 motion-reduce:transition-none",
+                  // Anker der Seite: das aktuelle Modul (visuelles Update 2026-10-11).
+                  aktuell ? "bg-anchor-brand text-white shadow-anchor-brand" : "bg-card text-ink shadow-card hover:bg-subtle",
+                  m.status === "kommend" && "text-ink-muted",
+                  gewaehlt && "ring-2 ring-brand ring-offset-2"
                 )}
               >
-                <span className={cn("text-xs font-semibold tracking-[0.08em] uppercase", aktuell ? "text-white/75" : "text-muted-foreground")}>
+                <span className={cn("text-xs font-semibold tracking-[0.08em] uppercase", aktuell ? "text-white/85" : "text-ink-subtle")}>
                   {m.ueberzeile}
                 </span>
                 {/* Wunsch Anna 2026-10-11: Zeitraum bei jedem Modul, direkt unter der
                     Überzeile -- so stehen alle Daten auf einer Linie. */}
-                <span className={cn("block min-h-4 text-xs whitespace-nowrap tabular-nums", aktuell ? "text-white/75" : "text-muted-foreground")}>
+                <span className={cn("block min-h-4 text-xs whitespace-nowrap tabular-nums", aktuell ? "text-white/85" : "text-ink-subtle")}>
                   {m.zeitraum}
                 </span>
                 {/* Lange Wörter trennen statt über den Rahmen laufen. */}
@@ -116,7 +113,7 @@ export function ModulPfad({
                   <span
                     className={cn(
                       "absolute -top-[11px] left-3.5 rounded-full px-[9px] py-[2px] text-xs font-bold",
-                      aktuell ? "bg-charge-green text-eco-deep-green" : "border border-border bg-white font-semibold text-eco-deep-green"
+                      aktuell ? "bg-lime text-on-lime" : "bg-lime font-semibold text-on-lime"
                     )}
                   >
                     {aktuell ? "Hier bist du" : "Als Nächstes"}
@@ -128,8 +125,8 @@ export function ModulPfad({
                 <span
                   aria-hidden="true"
                   className={cn(
-                    "mt-auto pt-1 text-xs font-semibold underline underline-offset-2 group-hover/karte:decoration-2",
-                    aktuell ? "text-white" : "text-eco-deep-green"
+                    "mt-auto pt-1 text-xs font-semibold",
+                    aktuell ? "text-white" : "text-ink group-hover/karte:text-brand"
                   )}
                 >
                   Details

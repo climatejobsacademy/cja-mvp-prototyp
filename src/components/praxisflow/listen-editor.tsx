@@ -58,7 +58,7 @@ export function ListenEditor({
 
   return (
     <section className="flex flex-col gap-3 rounded-lg border border-border p-3" aria-labelledby={`${id}-titel`}>
-      <h3 id={`${id}-titel`} className="flex items-center gap-2 text-sm font-semibold text-eco-deep-green">
+      <h3 id={`${id}-titel`} className="flex items-center gap-2 text-sm font-semibold text-ink">
         <Icon className="size-4" aria-hidden="true" />
         {titel} ({eintraege.length})
       </h3>
@@ -83,7 +83,7 @@ export function ListenEditor({
                     className={cn(EINGABE, "min-w-0 flex-1")}
                   />
                 ) : (
-                  <span className="min-w-0 flex-1 text-[15px] break-words text-eco-deep-green">{e.text}</span>
+                  <span className="min-w-0 flex-1 text-[15px] break-words text-ink">{e.text}</span>
                 )}
                 <span className="flex shrink-0 items-center">
                   {bearbeitet?.id === e.id ? (

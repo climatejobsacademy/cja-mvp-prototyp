@@ -85,7 +85,7 @@ export function PraxisflowDemo({ zurueck }: { zurueck: Zurueck }) {
         <Link
           href={zurueck.href}
           className={cn(
-            "-ml-2 inline-flex min-h-11 w-fit items-center gap-1 rounded-lg px-2 text-sm font-medium text-muted-foreground hover:bg-eco-green/10 hover:text-eco-deep-green",
+            "-ml-2 inline-flex min-h-11 w-fit items-center gap-1 rounded-lg px-2 text-sm font-medium text-muted-foreground hover:bg-subtle hover:text-ink",
             FOKUS
           )}
         >
@@ -157,7 +157,7 @@ function Flow() {
         {zustand.phase === "analyse" && (
           <InstruktionKarte icon={Search} titel="Analyse" {...karte}>
             <div className="flex flex-col gap-1.5">
-              <h3 className="text-sm font-semibold text-eco-deep-green">Arbeitsauftrag</h3>
+              <h3 className="text-sm font-semibold text-ink">Arbeitsauftrag</h3>
               <p className={TEXT}>{TEXTE.analyse.arbeitsauftrag}</p>
             </div>
             <DateienBlock titel="Dateien" ordner={DATEIEN_ORDNER} dateien={DATEIEN} />
@@ -267,7 +267,7 @@ function Flow() {
         {zustand.phase === "kontrolle" && (
           <InstruktionKarte icon={ClipboardCheck} titel="Kontrolle" {...karte}>
             <div className="flex flex-col gap-1.5">
-              <h3 className="text-sm font-semibold text-eco-deep-green">Dokumentation</h3>
+              <h3 className="text-sm font-semibold text-ink">Dokumentation</h3>
               <p className={TEXT}>{TEXTE.kontrolle.dokumentation}</p>
             </div>
             {ZEIGE_PRUEFPROTOKOLL_HINWEIS && <Hinweis icon={ClipboardCheck}>{TEXTE.kontrolle.hinweisProtokoll}</Hinweis>}

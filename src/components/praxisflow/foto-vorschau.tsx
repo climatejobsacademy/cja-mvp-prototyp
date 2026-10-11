@@ -27,7 +27,7 @@ export function FotoVorschau({ hinweis }: { hinweis?: string }) {
       <label
         htmlFor="kontrolle-foto"
         className={cn(
-          "inline-flex min-h-11 w-fit cursor-pointer items-center gap-2 rounded-lg border border-border bg-white px-4 text-[15px] font-medium text-eco-deep-green hover:bg-eco-green/10 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-eco-green has-[:focus-visible]:ring-offset-2",
+          "inline-flex min-h-11 w-fit cursor-pointer items-center gap-2 rounded-lg border border-border bg-white px-4 text-[15px] font-medium text-ink hover:bg-subtle has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand has-[:focus-visible]:ring-offset-2",
           FOKUS
         )}
       >

@@ -10,7 +10,7 @@ import { TerminBlock } from "./termin-block";
 
 // Stundenplan v2 (docs/design_handoff_stundenplan_v2, SR folgt): gemeinsame
 // Bausteine von Woche, Tag und Monat. Aktivitätsfarben wie Home und
-// Kompetenzen: Live = Lylac, Selbstlernen = Eco Green, Praxis = Coral --
+// Kompetenzen: Live = Lila (--brand), Selbstlernen = Eco Green, Praxis = Coral --
 // immer Icon + Text, nie nur Farbe. Änderungsliste Anna 2026-10-10: ruhiger
 // -- kein Rahmen, feine Stundenlinien, Vergangenes weiß und grau.
 
@@ -22,9 +22,9 @@ export const WOCHENTYP_TEXT: Record<Tagestyp, string> = {
 };
 
 const TAGESTYP: Record<Tagestyp, { text: string; farbe: string }> = {
-  theorie: { text: "Theorietag", farbe: "text-eco-deep-green" },
-  praxis: { text: "Praxistag", farbe: "text-coral-text" },
-  lernen: { text: "Lerntag", farbe: "text-eco-deep-green" },
+  theorie: { text: "Theorietag", farbe: "text-ink" },
+  praxis: { text: "Praxistag", farbe: "text-praxis-text" },
+  lernen: { text: "Lerntag", farbe: "text-ink" },
 };
 
 /**
@@ -54,16 +54,15 @@ export function FlexChip({ chip }: { chip: Chip }) {
       title={chip.refresher ? chip.titel : undefined}
       aria-label={`Selbstlernen, flexibel, ${chip.refresher ? "Wissen festigen: " : ""}${chip.titel}, ${chip.erledigt ? "erledigt" : "offen"}`}
       className={cn(
-        "flex min-w-0 items-start gap-1.5 rounded-lg px-2 py-[5px] text-xs leading-snug font-semibold outline-none transition-[background-color] duration-150 focus-visible:ring-2 focus-visible:ring-eco-green motion-reduce:transition-none",
-        chip.erledigt ? "text-muted-foreground" : "text-eco-deep-green",
-        "hover:bg-off-white"
+        "flex min-w-0 items-start gap-2 rounded-xl px-3 py-2.5 text-[13px] leading-snug font-semibold outline-none transition-[box-shadow] duration-150 hover:shadow-card focus-visible:ring-2 focus-visible:ring-brand motion-reduce:transition-none",
+        chip.erledigt ? "text-ink-muted" : "bg-self-tint text-ink"
       )}
     >
-      <BookOpen className="mt-px size-3.5 shrink-0 text-eco-green" aria-hidden="true" />
+      <BookOpen className="mt-px size-4 shrink-0 text-self" aria-hidden="true" />
       {/* Voller Titel (Anna 2026-10-11): das Thema steht oft in der Klammer.
           Gleicher Titel wie der Live-Unterricht des Tages: nur "Wissen festigen" (Anna 2026-10-11, vorher "Refresher"). */}
       <span className="min-w-0 flex-1 hyphens-auto break-words">{chip.refresher ? "Wissen festigen" : chip.titel}</span>
-      {chip.erledigt && <Check className="mt-px size-3 shrink-0 text-eco-green" strokeWidth={3} aria-hidden="true" />}
+      {chip.erledigt && <Check className="mt-0.5 size-3.5 shrink-0 text-progress" strokeWidth={3} aria-hidden="true" />}
     </Link>
   );
 }
@@ -84,16 +83,16 @@ export function FlexLeiste({ chip, gross }: { chip: Chip; gross: boolean }) {
       aria-label={`Selbstlernen, flexibel, ${chip.refresher ? "Wissen festigen: " : ""}${chip.titel}, ${chip.erledigt ? "erledigt" : "weiterlernen"}`}
       style={{ marginLeft: rand.links, marginRight: rand.rechts }}
       className={cn(
-        "flex min-w-0 items-center gap-2 rounded-[10px] px-3 py-2 text-[13px] font-semibold outline-none transition-[background-color] duration-150 focus-visible:ring-2 focus-visible:ring-eco-green motion-reduce:transition-none",
+        "flex min-w-0 items-center gap-2 rounded-xl px-3 py-2 text-[13px] font-semibold outline-none transition-[box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-brand motion-reduce:transition-none",
         chip.erledigt
-          ? "border border-border bg-white text-muted-foreground hover:bg-off-white"
-          : "bg-flex-flaeche text-eco-deep-green hover:bg-success"
+          ? "border border-line bg-card text-ink-muted hover:shadow-card"
+          : "bg-self-tint text-ink hover:shadow-card"
       )}
     >
-      <BookOpen className="size-4 shrink-0 text-eco-green" aria-hidden="true" />
+      <BookOpen className="size-4 shrink-0 text-self" aria-hidden="true" />
       <span className="min-w-0 flex-1">{chip.refresher ? "Wissen festigen" : chip.titel}</span>
       {chip.erledigt ? (
-        <Check className="size-3.5 shrink-0 text-eco-green" strokeWidth={3} aria-hidden="true" />
+        <Check className="size-3.5 shrink-0 text-progress" strokeWidth={3} aria-hidden="true" />
       ) : (
         <span aria-hidden="true" className="inline-flex shrink-0 items-center gap-1 text-xs font-bold">
           Weiterlernen
@@ -119,7 +118,7 @@ export function StundenSpalte({ von, bis, hoehe }: { von: number; bis: number; h
       {stundenListe.map((h) => (
         <span
           key={h}
-          className="absolute right-2.5 -translate-y-1/2 text-[11px] text-muted-foreground tabular-nums"
+          className="absolute right-2.5 -translate-y-1/2 text-[11px] text-ink-subtle tabular-nums"
           style={{ top: prozent(h, von, bis) }}
         >
           {String(h).padStart(2, "0")}:00
@@ -162,7 +161,7 @@ export function TagSpalte({
       className={cn("relative", tag.heute && heuteToenen && "bg-heute-flaeche")}
       style={{
         height: hoehe,
-        backgroundImage: "linear-gradient(var(--raster-linie) 1px, transparent 1px)",
+        backgroundImage: "linear-gradient(var(--line) 1px, transparent 1px)",
         backgroundSize: `100% calc(100% / ${bis - von})`,
       }}
     >
@@ -201,7 +200,7 @@ export function MonatsTags({ tag }: { tag: TagModell }) {
       lang: `${b.art === "live" ? "Live-Unterricht" : "Praxisaufgabe"}: ${b.titel}`,
       erledigt: b.status === "erledigt",
       vorbei: b.status !== "offen",
-      punkt: b.art === "live" ? "bg-lylac" : "bg-coral",
+      punkt: b.art === "live" ? "bg-brand" : "bg-praxis",
     })),
     ...tag.chips.map((c) => ({
       id: c.id,
@@ -209,7 +208,7 @@ export function MonatsTags({ tag }: { tag: TagModell }) {
       lang: `Selbstlernen: ${c.titel}`,
       erledigt: c.erledigt,
       vorbei: c.erledigt,
-      punkt: "bg-eco-green",
+      punkt: "bg-self",
     })),
   ];
   if (tags.length === 0) return null;
@@ -221,7 +220,7 @@ export function MonatsTags({ tag }: { tag: TagModell }) {
           title={t.lang}
           className={cn(
             "flex min-w-0 items-center gap-1.5 text-xs",
-            t.vorbei ? "text-muted-foreground" : "font-medium text-eco-deep-green"
+            t.vorbei ? "text-ink-muted" : "font-medium text-ink"
           )}
         >
           <span aria-hidden="true" className={cn("size-1.5 shrink-0 rounded-full", t.punkt)} />
@@ -232,7 +231,7 @@ export function MonatsTags({ tag }: { tag: TagModell }) {
             {t.lang}
             {t.erledigt ? ", erledigt" : ""}
           </span>
-          {t.erledigt && <Check className="size-3 shrink-0 text-eco-green" strokeWidth={3} aria-hidden="true" />}
+          {t.erledigt && <Check className="size-3 shrink-0 text-progress" strokeWidth={3} aria-hidden="true" />}
         </li>
       ))}
     </ul>

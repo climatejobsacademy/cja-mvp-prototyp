@@ -89,7 +89,7 @@ function Avatar({ person }: { person: ChatPerson | null }) {
       aria-hidden="true"
       className={cn(
         "flex size-8 shrink-0 items-center justify-center rounded-full text-xs font-bold",
-        person ? person.flaeche : "bg-charge-green text-eco-deep-green"
+        person ? person.flaeche : "bg-lime text-ink"
       )}
     >
       {person ? person.kuerzel : "Du"}
@@ -185,13 +185,13 @@ export function DemoChat({ kanaele, vorname }: { kanaele: Kanal[]; vorname: stri
           type="button"
           onClick={oeffnen}
           aria-label={`Chat öffnen${ungelesenGesamt ? `, ${ungelesenGesamt} ungelesen` : ""}`}
-          className="fixed right-4 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40 flex size-14 items-center justify-center rounded-full bg-eco-deep-green text-white shadow-[0_8px_24px_rgb(35_50_30/0.28)] outline-none transition-transform duration-150 hover:scale-105 focus-visible:ring-2 focus-visible:ring-eco-green focus-visible:ring-offset-2 motion-reduce:transition-none md:right-8 md:bottom-8"
+          className="fixed right-4 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] z-40 flex size-14 items-center justify-center rounded-full bg-brand text-white shadow-anchor-brand outline-none transition-transform duration-150 hover:scale-105 focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 motion-reduce:transition-none md:right-8 md:bottom-8"
         >
           <MessageCircle className="size-6" aria-hidden="true" />
           {ungelesenGesamt > 0 && (
             <span
               aria-hidden="true"
-              className="absolute -top-1 -right-1 flex size-6 items-center justify-center rounded-full border-2 border-white bg-charge-green text-xs font-bold text-eco-deep-green"
+              className="absolute -top-1 -right-1 flex size-6 items-center justify-center rounded-full border-2 border-white bg-lime text-xs font-bold text-ink"
             >
               {ungelesenGesamt}
             </span>
@@ -203,7 +203,7 @@ export function DemoChat({ kanaele, vorname }: { kanaele: Kanal[]; vorname: stri
         <section
           role="dialog"
           aria-label={kanal ? `Chat: ${kanal.titel}` : "Chat"}
-          className="fixed inset-0 z-50 flex flex-col bg-white text-eco-deep-green md:inset-auto md:right-8 md:bottom-8 md:h-[min(620px,calc(100dvh-64px))] md:w-[400px] md:rounded-2xl md:border md:border-border md:shadow-[0_12px_40px_rgb(35_50_30/0.22)]"
+          className="fixed inset-0 z-50 flex flex-col bg-white text-ink md:inset-auto md:right-8 md:bottom-8 md:h-[min(620px,calc(100dvh-64px))] md:w-[400px] md:rounded-2xl md:border md:border-border md:shadow-[0_12px_40px_rgb(35_50_30/0.22)]"
         >
           {/* Kopf */}
           <div className="flex items-center gap-2 border-b border-border px-3 py-3">
@@ -212,7 +212,7 @@ export function DemoChat({ kanaele, vorname }: { kanaele: Kanal[]; vorname: stri
                 type="button"
                 onClick={() => setKanalId(null)}
                 aria-label="Zurück zu den Kanälen"
-                className="flex size-9 items-center justify-center rounded-lg outline-none hover:bg-off-white focus-visible:ring-2 focus-visible:ring-eco-green"
+                className="flex size-9 items-center justify-center rounded-lg outline-none hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand"
               >
                 <ArrowLeft className="size-[18px]" aria-hidden="true" />
               </button>
@@ -235,7 +235,7 @@ export function DemoChat({ kanaele, vorname }: { kanaele: Kanal[]; vorname: stri
                 setKanalId(null);
               }}
               aria-label="Chat schließen"
-              className="flex size-9 items-center justify-center rounded-lg outline-none hover:bg-off-white focus-visible:ring-2 focus-visible:ring-eco-green"
+              className="flex size-9 items-center justify-center rounded-lg outline-none hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand"
             >
               <X className="size-[18px]" aria-hidden="true" />
             </button>
@@ -258,13 +258,13 @@ export function DemoChat({ kanaele, vorname }: { kanaele: Kanal[]; vorname: stri
                           <button
                             type="button"
                             onClick={() => kanalWaehlen(k)}
-                            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left outline-none hover:bg-off-white focus-visible:ring-2 focus-visible:ring-eco-green"
+                            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left outline-none hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand"
                           >
                             <span
                               aria-hidden="true"
                               className={cn(
                                 "flex size-9 shrink-0 items-center justify-center rounded-[10px]",
-                                k.art === "ankuendigungen" ? "bg-info text-lylac" : k.art === "modul" ? "bg-success text-eco-green" : "bg-warning text-coral-text"
+                                k.art === "ankuendigungen" ? "bg-brand-tint text-brand" : k.art === "modul" ? "bg-self-tint text-progress" : "bg-praxis-tint text-praxis-text"
                               )}
                             >
                               <Icon className="size-[17px]" />
@@ -273,7 +273,7 @@ export function DemoChat({ kanaele, vorname }: { kanaele: Kanal[]; vorname: stri
                               <span className="flex items-center gap-2">
                                 <span className={cn("truncate text-sm", anzahlNeu ? "font-bold" : "font-semibold")}>{k.titel}</span>
                                 {k.modulStatus === "aktuell" && (
-                                  <span className="shrink-0 rounded-full bg-charge-green px-1.5 py-px text-[10px] font-bold">aktuell</span>
+                                  <span className="shrink-0 rounded-full bg-lime px-1.5 py-px text-[10px] font-bold">aktuell</span>
                                 )}
                               </span>
                               <span className="truncate text-xs text-muted-foreground">
@@ -281,7 +281,7 @@ export function DemoChat({ kanaele, vorname }: { kanaele: Kanal[]; vorname: stri
                               </span>
                             </span>
                             {anzahlNeu > 0 && (
-                              <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-eco-deep-green text-[11px] font-bold text-white">
+                              <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-brand text-[11px] font-bold text-white">
                                 {anzahlNeu}
                                 <span className="sr-only"> ungelesen</span>
                               </span>
@@ -314,16 +314,16 @@ export function DemoChat({ kanaele, vorname }: { kanaele: Kanal[]; vorname: stri
                           <Avatar person={n.person} />
                           <span className={cn("flex max-w-[78%] flex-col gap-1", eigene && "items-end")}>
                             <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                              <span className="font-semibold text-eco-deep-green">{eigene ? "Du" : n.person!.name}</span>
+                              <span className="font-semibold text-ink">{eigene ? "Du" : n.person!.name}</span>
                               {n.person?.team && (
-                                <span className="rounded-full bg-info px-1.5 py-px text-[10px] font-semibold text-eco-deep-green">{n.person.team}</span>
+                                <span className="rounded-full bg-brand-tint px-1.5 py-px text-[10px] font-semibold text-ink">{n.person.team}</span>
                               )}
                               {jetzt && <span>{zeitText(n.zeit, jetzt)}</span>}
                             </span>
                             <span
                               className={cn(
                                 "rounded-2xl px-3.5 py-2.5 text-sm leading-snug whitespace-pre-wrap",
-                                eigene ? "rounded-tr-md bg-eco-deep-green text-white" : "rounded-tl-md bg-off-white"
+                                eigene ? "rounded-tr-md bg-brand text-white" : "rounded-tl-md bg-subtle"
                               )}
                             >
                               {n.text}
@@ -360,13 +360,13 @@ export function DemoChat({ kanaele, vorname }: { kanaele: Kanal[]; vorname: stri
                     rows={1}
                     maxLength={1000}
                     placeholder={`Nachricht an ${kanal.titel}`}
-                    className="max-h-28 min-h-10 flex-1 resize-none rounded-xl border border-border px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-eco-green"
+                    className="max-h-28 min-h-10 flex-1 resize-none rounded-xl border border-border px-3 py-2 text-sm outline-none focus-visible:ring-2 focus-visible:ring-brand"
                   />
                   <button
                     type="submit"
                     disabled={!entwurf.trim()}
                     aria-label="Senden"
-                    className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-eco-deep-green text-white outline-none hover:bg-eco-deep-green/90 focus-visible:ring-2 focus-visible:ring-eco-green focus-visible:ring-offset-2 disabled:opacity-40"
+                    className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-brand text-white outline-none hover:bg-brand/90 focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:opacity-40"
                   >
                     <Send className="size-[18px]" aria-hidden="true" />
                   </button>

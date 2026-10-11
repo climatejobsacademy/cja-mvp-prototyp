@@ -21,15 +21,15 @@ import { cn } from "@/lib/utils";
 // auf der Programmseite, jeweils aufklappbar.
 
 const STATUS: Record<ModulStatus, { text: string; klasse: string }> = {
-  abgeschlossen: { text: "Abgeschlossen", klasse: "bg-success text-eco-deep-green" },
-  aktuell: { text: "Aktuell", klasse: "bg-eco-deep-green text-white" },
-  kommend: { text: "Kommt noch", klasse: "bg-off-white text-muted-foreground" },
+  abgeschlossen: { text: "Abgeschlossen", klasse: "bg-subtle text-progress" },
+  aktuell: { text: "Aktuell", klasse: "bg-lime text-on-lime" },
+  kommend: { text: "Kommt noch", klasse: "bg-subtle text-ink-muted" },
 };
 
 const LEKTION_STATUS: Record<LektionsStatus, { text: string; klasse: string }> = {
-  offen: { text: "Offen", klasse: "border-border bg-white text-eco-deep-green" },
-  erledigt: { text: "Erledigt", klasse: "border-success bg-success text-eco-deep-green" },
-  heute: { text: "Heute", klasse: "border-eco-deep-green bg-eco-deep-green text-white" },
+  offen: { text: "Offen", klasse: "border-line bg-white text-ink" },
+  erledigt: { text: "Erledigt", klasse: "border-subtle bg-subtle text-progress" },
+  heute: { text: "Heute", klasse: "border-lime bg-lime text-on-lime" },
 };
 
 const TYP: Record<LektionsTyp, Typ> = { live: "live", selbstlern: "selbstlern", dokument: "dokument", praxis: "praxis" };
@@ -43,7 +43,7 @@ function adresseMerken(offen: boolean) {
 }
 
 const AUFKLAPP =
-  "flex w-full cursor-pointer list-none items-center gap-3 text-left outline-none transition-[background-color] duration-150 hover:bg-off-white focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-eco-green motion-reduce:transition-none [&::-webkit-details-marker]:hidden";
+  "flex w-full cursor-pointer list-none items-center gap-3 text-left outline-none transition-[background-color] duration-150 hover:bg-subtle focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand motion-reduce:transition-none [&::-webkit-details-marker]:hidden";
 
 function Lektion({ l }: { l: PanelLektion }) {
   const status = LEKTION_STATUS[l.status];
@@ -52,14 +52,14 @@ function Lektion({ l }: { l: PanelLektion }) {
       <TypIcon typ={TYP[l.typ]} groesse="gross" />
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="text-[15px]">{l.label}</span>
-        {l.meta && <span className="text-xs text-muted-foreground">{l.meta}</span>}
+        {l.meta && <span className="text-xs text-ink-muted">{l.meta}</span>}
       </span>
       <span className={cn("shrink-0 rounded-full border px-[11px] py-[5px] text-[13px] font-semibold", status.klasse)}>{status.text}</span>
-      {l.href && <ChevronRight className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />}
+      {l.href && <ChevronRight className="size-4 shrink-0 text-ink-muted" aria-hidden="true" />}
     </>
   );
-  const klasse = "flex items-center gap-3.5 rounded-xl p-2 text-eco-deep-green";
-  const fokus = "outline-none hover:bg-off-white focus-visible:ring-2 focus-visible:ring-eco-green";
+  const klasse = "flex items-center gap-3.5 rounded-xl p-2 text-ink";
+  const fokus = "outline-none hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand";
   if (!l.href) return <div className={klasse}>{inhalt}</div>;
   return l.extern ? (
     <a href={l.href} target="_blank" rel="noopener noreferrer" className={cn(klasse, fokus)} aria-label={`${l.label}, ${status.text}, Live-Raum (öffnet in neuem Tab)`}>
@@ -110,61 +110,61 @@ export function InhaltePanel({
         adresseMerken(neu);
       }}
     >
-      <Dialog.Trigger className="inline-flex items-center gap-1.5 rounded-xl bg-eco-deep-green px-4 py-[11px] text-sm font-bold text-white outline-none hover:bg-eco-deep-green/90 focus-visible:ring-2 focus-visible:ring-eco-green focus-visible:ring-offset-2">
+      <Dialog.Trigger className="inline-flex items-center gap-1.5 rounded-full bg-brand px-5 py-[11px] text-sm font-bold text-white outline-none hover:bg-brand/90 focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
         Inhalte des Moduls
         <ArrowRight className="size-4" aria-hidden="true" />
       </Dialog.Trigger>
       <Dialog.Portal>
-        <Dialog.Backdrop className="fixed inset-0 z-50 bg-eco-deep-green/30 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 motion-reduce:animate-none" />
-        <Dialog.Popup className="fixed inset-y-0 right-0 z-50 flex w-full max-w-[680px] flex-col gap-6 overflow-y-auto bg-white px-4 pt-5 pb-12 text-eco-deep-green shadow-[-12px_0_40px_rgb(35_50_30/0.18)] outline-none data-open:animate-in data-open:slide-in-from-right data-closed:animate-out data-closed:slide-out-to-right motion-reduce:animate-none md:px-8 md:pt-8">
+        <Dialog.Backdrop className="fixed inset-0 z-50 bg-ink/30 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 motion-reduce:animate-none" />
+        <Dialog.Popup className="fixed inset-y-0 right-0 z-50 flex w-full max-w-[680px] flex-col gap-6 overflow-y-auto bg-page px-4 pt-5 pb-12 text-ink shadow-card outline-none data-open:animate-in data-open:slide-in-from-right data-closed:animate-out data-closed:slide-out-to-right motion-reduce:animate-none md:px-8 md:pt-8">
           <div className="flex items-start justify-between gap-4">
             <div className="flex flex-col gap-2">
               <div className="flex flex-wrap items-center gap-2.5">
-                <span className="text-xs font-semibold tracking-[0.12em] text-muted-foreground uppercase">
+                <span className="text-xs font-semibold tracking-[0.12em] text-ink-muted uppercase">
                   {ueberzeile}
                   {zeitraum && ` · ${zeitraum}`}
                 </span>
                 <span className={cn("rounded-full px-[9px] py-[3px] text-xs font-semibold", STATUS[status].klasse)}>{STATUS[status].text}</span>
               </div>
-              <Dialog.Title className="font-heading text-[30px] leading-[1.1] font-normal">{name}</Dialog.Title>
+              <Dialog.Title className="text-[24px] leading-tight font-bold md:text-[26px]">{name}</Dialog.Title>
             </div>
             <Dialog.Close
               aria-label="Schließen"
-              className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-border bg-white outline-none hover:bg-off-white focus-visible:ring-2 focus-visible:ring-eco-green"
+              className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white shadow-card outline-none hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand"
             >
               <X className="size-[18px]" aria-hidden="true" />
             </Dialog.Close>
           </div>
 
           {wochen.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Für dieses Modul sind noch keine Inhalte freigeschaltet.</p>
+            <p className="text-sm text-ink-muted">Für dieses Modul sind noch keine Inhalte freigeschaltet.</p>
           ) : (
             <div className="flex flex-col gap-3">
               {wochen.map((w) => {
                 const fertig = w.lektionen > 0 && w.erledigt === w.lektionen;
                 return (
-                  <details key={w.id} open={w.offen} className="group/woche overflow-hidden rounded-2xl border border-border">
+                  <details key={w.id} open={w.offen} className="group/woche overflow-hidden rounded-zeile bg-card shadow-card">
                     <summary className={cn(AUFKLAPP, "px-5 py-[18px]")}>
                       <span className="flex min-w-0 flex-1 flex-col gap-1">
                         <span className="text-base font-bold">{w.titel}</span>
-                        <span className="text-[13px] text-muted-foreground tabular-nums">
+                        <span className="text-[13px] text-ink-muted tabular-nums">
                           {w.erledigt}/{w.lektionen} Lektionen
                         </span>
                       </span>
                       {w.aktuell && (
-                        <span className="shrink-0 rounded-full bg-charge-green px-[9px] py-[3px] text-xs font-bold">Diese Woche</span>
+                        <span className="shrink-0 rounded-full bg-lime px-[9px] py-[3px] text-xs font-bold text-on-lime">Diese Woche</span>
                       )}
                       {fertig && (
-                        <Check className="size-[18px] shrink-0 text-eco-green" strokeWidth={3} aria-label="Woche erledigt" />
+                        <Check className="size-[18px] shrink-0 text-progress" strokeWidth={3} aria-label="Woche erledigt" />
                       )}
                       <ChevronDown
                         className="size-[18px] shrink-0 transition-transform group-open/woche:rotate-180 motion-reduce:transition-none"
                         aria-hidden="true"
                       />
                     </summary>
-                    <div className="border-t border-border">
+                    <div className="border-t border-line">
                       {w.themen.map((t) => (
-                        <details key={t.id} open={t.offen} className="group/thema border-b border-border last:border-b-0">
+                        <details key={t.id} open={t.offen} className="group/thema border-b border-line last:border-b-0">
                           <summary className={cn(AUFKLAPP, "px-5 py-3.5")}>
                             <span className="flex min-w-0 flex-1 flex-col gap-2">
                               <span className="text-[15px] leading-snug font-medium">{t.titel}</span>
@@ -173,7 +173,7 @@ export function InhaltePanel({
                                 max={t.lektionen.length}
                                 label={`${t.erledigt} von ${t.lektionen.length} Lektionen erledigt`}
                               />
-                              <span className="text-[13px] text-muted-foreground tabular-nums" aria-hidden="true">
+                              <span className="text-[13px] text-ink-muted tabular-nums" aria-hidden="true">
                                 {t.erledigt}/{t.lektionen.length} Lektionen
                               </span>
                             </span>

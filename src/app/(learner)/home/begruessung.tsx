@@ -14,12 +14,12 @@ function TagestypLabel({ typ, online }: { typ: Exclude<Tagestyp, null>; online: 
   // helle Fläche bzw. Icon, Text in Eco Deep Green (Kontrast).
   const { Icon, text, flaeche, iconFarbe } =
     typ === "praxis"
-      ? { Icon: Wrench, text: "Praxistag", flaeche: "bg-warning", iconFarbe: "text-coral-text" }
-      : { Icon: Video, text: online ? "Theorietag · online" : "Theorietag", flaeche: "bg-info", iconFarbe: "text-lylac" };
+      ? { Icon: Wrench, text: "Praxistag", flaeche: "bg-praxis-tint", iconFarbe: "text-praxis-text" }
+      : { Icon: Video, text: online ? "Theorietag · online" : "Theorietag", flaeche: "bg-brand-tint", iconFarbe: "text-brand" };
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-[11px] py-1 text-[13px] font-semibold text-eco-deep-green",
+        "inline-flex items-center gap-1.5 rounded-full px-[11px] py-1 text-xs font-semibold text-ink",
         flaeche
       )}
     >
@@ -31,8 +31,8 @@ function TagestypLabel({ typ, online }: { typ: Exclude<Tagestyp, null>; online: 
 
 export function TestzeitHinweis({ heute, jetzt }: { heute: string; jetzt: string }) {
   return (
-    <p className="-mb-4 inline-flex items-center gap-2 self-start rounded-full bg-info px-3 py-1 text-[13px] text-eco-deep-green md:-mb-6">
-      <FlaskConical className="size-4 shrink-0 text-lylac" aria-hidden="true" />
+    <p className="-mb-4 inline-flex items-center gap-2 self-start rounded-full bg-brand-tint px-3 py-1 text-[13px] text-ink md:-mb-6">
+      <FlaskConical className="size-4 shrink-0 text-brand" aria-hidden="true" />
       Testansicht: simulierte Zeit {datumKurz(heute)}, {jetzt.slice(11, 16)} Uhr
     </p>
   );
@@ -51,10 +51,10 @@ export function Begruessung({
 }) {
   return (
     <section className="flex flex-col gap-2.5">
-      <h1 className="font-heading text-[40px] leading-none text-eco-deep-green md:text-[48px]">
+      <h1 className="font-heading text-[40px] leading-none text-ink md:text-[52px]">
         {vorname ? `Hallo ${vorname}` : "Hallo"}
       </h1>
-      <div className="flex flex-wrap items-center gap-2.5 text-base text-muted-foreground">
+      <div className="flex flex-wrap items-center gap-2.5 text-sm text-ink-subtle">
         <span>{datumLang(heute)}</span>
         {typ && <TagestypLabel typ={typ} online={online} />}
       </div>

@@ -25,7 +25,7 @@ export type RingKompetenz = {
   teilschritteGesamt: number;
 };
 
-const LINK_FOKUS = "rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-eco-green";
+const LINK_FOKUS = "rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-brand";
 const ringLabel = (k: RingKompetenz) => `${k.name}, ${k.prozent} Prozent${k.heute ? ", heute dran" : ""}`;
 
 /**
@@ -56,21 +56,21 @@ export function HeuteSpalte({
   return (
     <aside aria-labelledby="heute-kompetenzen" className="flex min-w-0 flex-col gap-4 self-start">
       <div className="flex items-baseline justify-between gap-3">
-        <h2 id="heute-kompetenzen" className="text-xl font-bold text-eco-deep-green">
+        <h2 id="heute-kompetenzen" className="text-lg font-bold text-ink">
           {kompetenzen.length > 0 ? "Heute stärkst du" : "Zuletzt dran"}
         </h2>
-        <Link href="/kompetenzen" className={cn("text-sm text-muted-foreground hover:text-eco-deep-green", LINK_FOKUS)}>
+        <Link href="/kompetenzen" className={cn("text-sm font-semibold text-ink hover:text-brand", LINK_FOKUS)}>
           Alle →
         </Link>
       </div>
-      <div className="flex flex-col gap-[22px] rounded-[20px] border border-border p-7 text-eco-deep-green">
+      <div className="flex flex-col gap-[22px] rounded-karte bg-card p-7 text-ink shadow-card">
         <div className="flex flex-col gap-1">
           {programmName.trim() && (
-            <span className="text-[11px] font-semibold tracking-[0.12em] text-muted-foreground uppercase">
+            <span className="text-[11px] font-semibold tracking-[0.12em] text-ink-subtle uppercase">
               {programmName}
             </span>
           )}
-          <span className="font-heading text-2xl leading-tight">Modul {modul.nummer}</span>
+          <span className="text-lg leading-tight font-bold">Modul {modul.nummer}</span>
         </div>
         <ul className="flex flex-col gap-4">
           {gross.map((k) => (
@@ -78,7 +78,7 @@ export function HeuteSpalte({
               <Link
                 href={kompetenzHref(k.id)}
                 aria-label={ringLabel(k)}
-                className="flex items-center gap-[18px] rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-eco-green focus-visible:ring-offset-4"
+                className="flex items-center gap-[18px] rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-4"
               >
                 <Ring prozent={k.prozent} glow={k.heute} groesse={groesse} />
                 <span className="flex flex-col gap-1">
@@ -86,7 +86,7 @@ export function HeuteSpalte({
                     {k.name}
                   </span>
                   {k.teilschritteGesamt > 0 && (
-                    <span className="text-[13px] text-muted-foreground">
+                    <span className="text-[13px] text-ink-subtle">
                       {k.teilschritteErreicht} von {k.teilschritteGesamt} Kompetenzschritten erreicht
                     </span>
                   )}
@@ -96,7 +96,7 @@ export function HeuteSpalte({
           ))}
         </ul>
         {mehr > 0 && (
-          <p className="text-[13px] text-muted-foreground">
+          <p className="text-[13px] text-ink-subtle">
             + {mehr} weitere heute, siehe Fortschritt unten
           </p>
         )}
@@ -113,12 +113,12 @@ export function HeuteSpalte({
 export function ModulFortschritt({ modul, kompetenzen }: { modul: AktuellesModul; kompetenzen: RingKompetenz[] }) {
   const sortiert = [...kompetenzen].sort((a, b) => Number(b.heute) - Number(a.heute));
   return (
-    <section aria-labelledby="modul-fortschritt" className="flex flex-col gap-5">
+    <section aria-labelledby="modul-fortschritt" className="flex flex-col gap-5 rounded-karte bg-card p-7 shadow-card">
       <div className="flex items-baseline justify-between gap-3">
-        <h2 id="modul-fortschritt" className="text-xl font-bold text-eco-deep-green">
+        <h2 id="modul-fortschritt" className="text-lg font-bold text-ink">
           Dein Fortschritt in Modul {modul.nummer}
         </h2>
-        <Link href="/kompetenzen" className={cn("text-sm text-muted-foreground hover:text-eco-deep-green", LINK_FOKUS)}>
+        <Link href="/kompetenzen" className={cn("text-sm font-semibold text-ink hover:text-brand", LINK_FOKUS)}>
           Alle Kompetenzen →
         </Link>
       </div>
@@ -128,7 +128,7 @@ export function ModulFortschritt({ modul, kompetenzen }: { modul: AktuellesModul
             <Link
               href={kompetenzHref(k.id)}
               aria-label={ringLabel(k)}
-              className="flex items-center gap-3.5 rounded-xl text-eco-deep-green outline-none focus-visible:ring-2 focus-visible:ring-eco-green focus-visible:ring-offset-4"
+              className="flex items-center gap-3.5 rounded-xl text-ink outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-4"
             >
               <Ring prozent={k.prozent} glow={k.heute} groesse={48} />
               <span className={cn("text-sm leading-snug", k.heute ? "font-semibold" : "font-medium")}>{k.name}</span>
