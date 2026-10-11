@@ -1,187 +1,204 @@
-import Link from "next/link";
-import { ArrowRight, BookOpen, ChevronDown, ChevronRight } from "lucide-react";
+import { randomUUID } from "node:crypto";
 
-import { PageHeader } from "@/components/page-header";
-import { SegmentProgress } from "@/components/segment-progress";
-import { UnitProgressBadge } from "@/components/status-badge";
-import { TypIcon, typFuerContentType } from "@/components/typ-icon";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { FlaskConical } from "lucide-react";
+
+import { datumKurz, heuteInBerlin, jetztInBerlin } from "@/lib/date";
+import { parseNowParameter } from "@/lib/home-tag";
+import {
+  datumPunkt,
+  gliederungFuer,
+  letztesDatumImNamen,
+  modulFuerDatum,
+  modulStatus,
+  zeitraumPunkt,
+} from "@/lib/programm";
+import { getKompetenzFortschritt } from "@/lib/queries/competencies";
+import { getContentLibrary } from "@/lib/queries/content";
+import { getModuleMitTeilschritten } from "@/lib/queries/kompetenzen-seite";
+import { getDbModule, getKohortenZeitraum } from "@/lib/queries/programm";
 import { requireCurrentLearner } from "@/lib/queries/session";
-import { getContentLibrary, type CourseListItem, type ModuleGroup } from "@/lib/queries/content";
-import type { ContentType } from "@/lib/database.types";
+import { getStundenplan } from "@/lib/queries/stundenplan";
+import { panelWochen } from "@/lib/programm-inhalte";
 
-// Lektionstypen laut Handoff-Wording. "repository" ist dort nicht vorgesehen
-// -- für diese Lektionen steht statt des Typs der Lektionsname.
-const TYP: Record<ContentType, { label: string | null }> = {
-  live: { label: "Live-Termin" },
-  scorm: { label: "Selbstlernmodul" },
-  repository: { label: null },
-};
+import { tagErledigt } from "../schedule/plan-bausteine";
+import { planModell } from "../schedule/plan-modell";
 
-const HOVER =
-  "outline-none transition-[background-color] duration-150 hover:bg-eco-green/10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-eco-green motion-reduce:transition-none";
+import { KohorteKarten } from "./kohorte-karten";
+import { ModulPfad, type PfadModul } from "./modul-pfad";
+import { InhaltePanel } from "./inhalte-panel";
+import { TrackingKarte, type Kachel } from "./tracking-karte";
 
-/** Einheit (= Kurs) als aufklappbare Zeile mit Segmenten, darin die Lektionen. */
-function Einheit({ course }: { course: CourseListItem }) {
-  const done = course.lessons.filter((l) => l.status === "abgeschlossen").length;
-  const gesamt = course.lessons.length;
+// Programmseite v8 (docs/design_handoff_programm_v8, SR folgt): Überblick
+// über das ganze Programm -- Kopf, Modulpfad "Dein Weg", Tracking des
+// gewählten Moduls, Kohorte; die Wochen mit Kursen und Lektionen im
+// Seitenpanel "Inhalte des Moduls". Entscheidungen Anna 2026-10-11: ca. 6 Module à ca. 4 Wochen
+// (vorläufige Gliederung in src/lib/programm.ts), Zeitraum bei jedem Modul
+// sichtbar; Breite 1080 px wie alle Seiten; Adresse bleibt /content.
 
-  return (
-    <details id={`kurs-${course.id}`} className="group/course border-t border-border">
-      <summary className={cn("flex min-h-16 cursor-pointer list-none items-center gap-3 px-4 py-3", HOVER)}>
-        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
-          <p className="text-sm font-medium text-eco-deep-green">{course.name}</p>
-          <SegmentProgress value={done} max={gesamt} label={`${done} von ${gesamt} Lektionen abgeschlossen`} />
-          {/* K2: Zähltext bleibt sichtbar. */}
-          {gesamt > 0 && (
-            <p className="text-[13px] text-muted-foreground tabular-nums" aria-hidden="true">
-              {done}/{gesamt} Lektionen
-            </p>
-          )}
-        </div>
-        <ChevronDown
-          className="size-5 shrink-0 text-muted-foreground transition-transform group-open/course:rotate-180 motion-reduce:transition-none"
-          aria-hidden="true"
-        />
-      </summary>
-      <ul>
-        {course.lessons.map((lesson) => {
-          const { label } = TYP[lesson.contentType];
-          return (
-            <li key={lesson.id}>
-              <Link
-                href={`/content/${lesson.id}`}
-                className={cn(
-                  "flex min-h-14 flex-wrap items-center gap-x-3 gap-y-2 border-t border-border py-2.5 pr-4 pl-8",
-                  HOVER
-                )}
-              >
-                <TypIcon typ={typFuerContentType(lesson.contentType)} />
-                <span className="min-w-0 grow basis-32 text-sm text-eco-deep-green">{label ?? lesson.name}</span>
-                <UnitProgressBadge status={lesson.status} />
-                <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </details>
-  );
-}
-
-/** Praxisaufgaben je Modul (SR-59): informativ, nicht klickbar. Der Vorbereitungstext
- * gehört in den Praxis-Flow, nicht hierher (Entscheidung 2026-09-29). */
-function Praxisaufgaben({ group }: { group: ModuleGroup }) {
-  if (group.praxisTypen.length === 0) return null;
-  return (
-    <>
-      {group.praxisTypen.map((p) => {
-        const inhalt = (
-          <>
-            <TypIcon typ="praxis" />
-            <div className="flex min-w-0 flex-1 flex-col gap-1">
-              <p className="text-sm font-medium text-eco-deep-green">{p.titel}</p>
-              {p.beschreibung && <p className="text-[13px] text-muted-foreground">{p.beschreibung}</p>}
-            </div>
-          </>
-        );
-        // Mit eigenem Praxistag direkt in den Praxis-Flow, sonst Info-Zeile
-        // ohne Hover und Pfeil ("Ohne Zielseite kein Hover und kein Pfeil").
-        return p.fieldJobId ? (
-          <Link
-            key={p.id}
-            id={`praxis-${p.id}`}
-            href={`/praxistag/${p.fieldJobId}?von=programm`}
-            className={cn("flex min-h-14 items-center gap-3 border-t border-border px-4 py-3", HOVER)}
-          >
-            {inhalt}
-            <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
-          </Link>
-        ) : (
-          <div key={p.id} id={`praxis-${p.id}`} className="flex min-h-14 items-start gap-3 border-t border-border px-4 py-3">
-            {inhalt}
-          </div>
-        );
-      })}
-    </>
-  );
-}
-
-export default async function ContentLibraryPage() {
+export default async function ProgrammPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ modul?: string; inhalte?: string; now?: string }>;
+}) {
   const learner = await requireCurrentLearner();
-  const groups = await getContentLibrary(learner.programmeId, learner.personId);
-  const sichtbar = groups.filter((g) => g.courses.length > 0 || g.praxisTypen.length > 0);
+  const { modul: modulParam, inhalte, now } = await searchParams;
+
+  // Wie Home, Kompetenzen und Stundenplan: simuliertes "jetzt" zum Testen, nie auf Production.
+  const simuliert = process.env.VERCEL_ENV !== "production" ? parseNowParameter(now) : null;
+  const heute = simuliert ? simuliert.slice(0, 10) : heuteInBerlin();
+  const nowZusatz = simuliert && now ? `&now=${encodeURIComponent(now)}` : "";
+
+  const ctx = {
+    organisationId: learner.organisationId,
+    cohortId: learner.cohortId,
+    enrolmentId: learner.enrolmentId,
+  };
+  const [dbModule, kohorte, groups, kompetenzen, stepsJeWoche] = await Promise.all([
+    getDbModule({ ...ctx, programmeId: learner.programmeId }),
+    getKohortenZeitraum(learner.cohortId),
+    getContentLibrary(learner.programmeId, learner.personId),
+    getKompetenzFortschritt(learner.personId),
+    getModuleMitTeilschritten(learner.programmeId),
+  ]);
+
+  // Module mit ihren Wochen (= Zeilen aus "module"). Mit Gliederung: Wochen
+  // über ihr Datum (Stundenplan, sonst Datum im Namen) zuordnen; ohne
+  // Gliederung ist jede Zeile ein eigenes Modul.
+  const gliederung = gliederungFuer(learner.programmeName);
+  const modulListe = gliederung
+    ? gliederung.map((g) => ({
+        ...g,
+        wochenIds: new Set(
+          dbModule.filter((w) => modulFuerDatum(gliederung, w.von ?? letztesDatumImNamen(w.name)) === g.nummer).map((w) => w.id)
+        ),
+      }))
+    : dbModule.map((m) => ({
+        nummer: m.nummer,
+        ueberzeile: `Modul ${m.nummer}`,
+        name: m.name,
+        von: m.von,
+        bis: m.bis,
+        wochenIds: new Set([m.id]),
+      }));
+
+  const status = modulStatus(
+    modulListe.map((m) => ({ von: m.von ?? "9999-12-31", bis: m.bis ?? "9999-12-31" })),
+    heute
+  );
+  const pfad: PfadModul[] = modulListe.map((m, i) => ({
+    id: String(m.nummer),
+    nummer: m.nummer,
+    ueberzeile: m.ueberzeile,
+    name: m.name,
+    status: status[i],
+    zeitraum: m.von && m.bis ? zeitraumPunkt(m.von, m.bis) : null,
+    ziel: m.ueberzeile === "Abschluss",
+  }));
+  // Brief 2.3: beim Öffnen ist das aktuelle Modul gewählt.
+  const gewaehltIndex = Math.max(
+    0,
+    pfad.findIndex((m) => m.id === modulParam) !== -1
+      ? pfad.findIndex((m) => m.id === modulParam)
+      : pfad.findIndex((m) => m.status === "aktuell")
+  );
+  const gewaehlt = pfad[gewaehltIndex] ?? null;
+  const gewaehltesModul = modulListe[gewaehltIndex] ?? null;
+  const gewaehlteWochen = gewaehltesModul?.wochenIds ?? new Set<string>();
+
+  // Brief 2.4, Kacheln -- dieselben Regeln wie auf der Kompetenzseite:
+  // Teilschritte des Moduls = Teilschritte, auf die Inhalte seiner Wochen
+  // einzahlen; Kompetenzen = mit mindestens einem dieser Teilschritte.
+  const modulSteps = new Set(stepsJeWoche.filter((w) => gewaehlteWochen.has(w.id)).flatMap((w) => [...w.stepIds]));
+  const erreichteSteps = new Set(
+    kompetenzen.flatMap((k) => k.steps.filter((st) => st.status === "abgeschlossen").map((st) => st.id))
+  );
+  const kompetenzAnzahl = kompetenzen.filter((k) => k.steps.some((st) => modulSteps.has(st.id))).length;
+  const stepsErreicht = [...modulSteps].filter((id) => erreichteSteps.has(id)).length;
+
+  // Lerntage (Entscheidung Anna 2026-10-11): geplante Tage im Zeitraum des
+  // Moduls; absolviert = alles an dem Tag erledigt -- derselbe Haken wie in
+  // der Tagesliste des Stundenplans (Live nur mit bestätigter Anwesenheit).
+  const plan =
+    gewaehltesModul?.von && gewaehltesModul.bis
+      ? await getStundenplan({ ...ctx, learnerId: learner.personId }, gewaehltesModul.von, gewaehltesModul.bis)
+      : [];
+  const jetzt = simuliert ?? jetztInBerlin();
+  const lernTage = planModell(plan, heute, jetzt).filter(
+    (t) => t.bloecke.length > 0 || t.chips.length > 0
+  );
+
+  const kacheln: Kachel[] = [
+    kompetenzAnzahl > 0 ? { wert: String(kompetenzAnzahl), label: kompetenzAnzahl === 1 ? "Kompetenz" : "Kompetenzen" } : null,
+    modulSteps.size > 0 ? { wert: `${stepsErreicht} / ${modulSteps.size}`, label: "Teilschritte erreicht" } : null,
+    lernTage.length > 0 ? { wert: `${lernTage.filter(tagErledigt).length} / ${lernTage.length}`, label: "Lerntage absolviert" } : null,
+  ].filter((k): k is Kachel => !!k);
+  // Kompetenzseite hat (noch) je Woche einen Reiter: erste Woche des Moduls wählen.
+  const ersteWoche = dbModule.find((w) => gewaehlteWochen.has(w.id));
+
+  // Brief 2.2, angepasst (Anna 2026-10-11): "Start {Datum} · Ende {Datum} · {n} Module"
+  // statt Dauer. Ende: Kohorte, sonst Ende des letzten Moduls; Fehlendes weglassen.
+  const anzahl = modulListe.filter((m) => m.ueberzeile.startsWith("Modul")).length;
+  const ende = kohorte?.ende ?? modulListe.at(-1)?.bis ?? null;
+  const kopfZeile = [
+    kohorte ? `Start ${datumPunkt(kohorte.start)}` : null,
+    ende ? `Ende ${datumPunkt(ende)}` : null,
+    anzahl ? `${anzahl} ${anzahl === 1 ? "Modul" : "Module"}` : null,
+  ].filter(Boolean);
 
   return (
-    <div className="flex flex-col gap-6">
-      <PageHeader title="Programm" />
-
-      {sichtbar.length === 0 && (
-        <div className="flex flex-col items-center gap-4 rounded-xl border-2 border-dashed border-border px-5 py-10 text-center md:py-16">
-          <span className="flex size-14 items-center justify-center rounded-xl bg-eco-green/10">
-            <BookOpen className="size-6 text-eco-green" aria-hidden="true" />
-          </span>
-          <h2 className="text-xl font-semibold text-eco-deep-green">Noch keine Programminhalte freigeschaltet</h2>
-          <Link
-            href="/schedule"
-            className={cn(
-              buttonVariants({ variant: "outline" }),
-              "h-11 w-full rounded-lg text-[15px] font-medium hover:bg-eco-green/10 md:w-auto"
-            )}
-          >
-            Zum Stundenplan
-            <ArrowRight className="size-[18px]" aria-hidden="true" />
-          </Link>
-        </div>
+    <div data-breit className="flex flex-col gap-10 text-eco-deep-green">
+      {simuliert && (
+        <p className="inline-flex items-center gap-2 self-start rounded-full bg-info px-3 py-1 text-[13px]">
+          <FlaskConical className="size-4 shrink-0 text-lylac" aria-hidden="true" />
+          Testansicht: simulierte Zeit {datumKurz(heute)}, {simuliert.slice(11, 16)} Uhr
+        </p>
       )}
 
-      {sichtbar.map((group) => {
-        // Kurse direkt am Programm (kein Modul): Container ohne Modulkopf.
-        if (!group.name) {
-          return (
-            <section
-              key="ohne-modul"
-              aria-label="Kurse"
-              className="overflow-hidden rounded-xl border border-border [&>*:first-child]:border-t-0"
-            >
-              {group.courses.map((course) => (
-                <Einheit key={course.id} course={course} />
-              ))}
-              <Praxisaufgaben group={group} />
-            </section>
-          );
-        }
+      <section className="flex flex-col gap-2.5">
+        <span className="text-xs font-semibold tracking-[0.12em] text-muted-foreground uppercase">Dein Programm</span>
+        <h1 className="font-heading text-[34px] leading-[1.05] md:text-[48px]">{learner.programmeName}</h1>
+        {kopfZeile.length > 0 && <span className="text-[15px] text-muted-foreground">{kopfZeile.join(" · ")}</span>}
+      </section>
 
-        return (
-          <details
-            key={group.id}
-            id={group.id ? `modul-${group.id}` : undefined}
-            className="group/module overflow-hidden rounded-xl border border-border shadow-sm"
-          >
-            <summary className={cn("flex min-h-14 cursor-pointer list-none items-center gap-3 px-4 py-3", HOVER)}>
-              <div className="flex min-w-0 flex-1 flex-col">
-                <h2 className="text-[15px] font-semibold text-eco-deep-green">{group.name}</h2>
-              </div>
-              {/* Theorie-/Praxis-Icons wie im Stundenplan-Programm (SR-59). */}
-              {group.courses.length > 0 && (
-                <TypIcon typ="theorie" groesse="klein" label="Theorie" />
-              )}
-              {group.praxisTypen.length > 0 && (
-                <TypIcon typ="praxis" groesse="klein" label="Praxis" />
-              )}
-              <ChevronDown
-                className="size-5 shrink-0 text-muted-foreground transition-transform group-open/module:rotate-180 motion-reduce:transition-none"
-                aria-hidden="true"
+      {pfad.length > 0 && (
+        <ModulPfad module={pfad} gewaehltId={gewaehlt?.id ?? null} href={(id) => `/content?modul=${id}&inhalte=1${nowZusatz}`} />
+      )}
+
+      {/* Brief 2.4 sah Tracking links und Kohorte rechts vor. Rückmeldung Anna
+          2026-10-11 ("zu uneben"): Tracking über die volle Breite, darunter
+          Kohorte und Ansprechpersonen als zwei gleich hohe Karten; mobil untereinander. */}
+      <div className="flex flex-col gap-6">
+        {gewaehlt && gewaehltesModul && (
+          <TrackingKarte
+            ueberzeile={gewaehlt.ueberzeile}
+            zeitraum={gewaehlt.zeitraum}
+            name={gewaehlt.name}
+            status={gewaehlt.status}
+            kacheln={kacheln}
+            inhalte={
+              <InhaltePanel
+                ueberzeile={gewaehlt.ueberzeile}
+                zeitraum={gewaehlt.zeitraum}
+                name={gewaehlt.name}
+                status={gewaehlt.status}
+                wochen={panelWochen(
+                  dbModule.filter((w) => gewaehlteWochen.has(w.id)),
+                  groups,
+                  plan,
+                  heute,
+                  jetzt,
+                  gewaehlt.status === "aktuell"
+                )}
+                // Neue Kennung je Aufruf mit &inhalte=1 (Klick auf eine Modulkarte).
+                oeffnen={inhalte === "1" ? randomUUID() : null}
               />
-            </summary>
-            {group.courses.map((course) => (
-              <Einheit key={course.id} course={course} />
-            ))}
-            <Praxisaufgaben group={group} />
-          </details>
-        );
-      })}
+            }
+            kompetenzenHref={ersteWoche ? `/kompetenzen?modul=${ersteWoche.id}${nowZusatz}` : null}
+          />
+        )}
+        <KohorteKarten kohortenName={learner.cohortName} />
+      </div>
+
     </div>
   );
 }

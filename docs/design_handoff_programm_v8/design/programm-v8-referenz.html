@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>Programm – v8</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&amp;family=Work+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+a{color:#23321E}a:hover{color:#239669}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #FFFFFF; font-family: 'Work Sans', sans-serif; color: #23321E;">
+
+<header style="border-bottom: 1px solid #EEF1EB; background: #FFFFFF;">
+<div style="max-width: 1240px; margin: 0 auto; padding: 16px 40px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap;">
+<div style="flex: 1 1 0; min-width: 0;">
+<a href="#" aria-label="Academy for Climate Jobs – Home" style="display: inline-block; font-family: 'Anton', sans-serif; font-size: 14px; line-height: 14px; text-transform: uppercase; color: #23321E; text-decoration: none;">The<br>Academy<br>for Climate<br>Jobs</a>
+</div>
+<nav aria-label="Hauptnavigation" style="display: flex; align-items: center; gap: 2px; padding: 4px; border-radius: 12px; background: #F4F7F1;">
+<a href="#" style="padding: 8px 16px; border-radius: 9px; color: #5B6857; font-size: 14px; text-decoration: none;">Home</a>
+<a href="#" style="padding: 8px 16px; border-radius: 9px; color: #5B6857; font-size: 14px; text-decoration: none;">Stundenplan</a>
+<a href="#" style="padding: 8px 16px; border-radius: 9px; color: #5B6857; font-size: 14px; text-decoration: none;">Kompetenzen</a>
+<a href="#" aria-current="page" style="padding: 8px 16px; border-radius: 9px; background: #FFFFFF; box-shadow: 0 1px 2px rgba(35,50,30,0.12); color: #23321E; font-weight: 600; font-size: 14px; text-decoration: none;">Programm</a>
+</nav>
+<div style="display: flex; align-items: center; justify-content: flex-end; gap: 6px; flex: 1 1 0;">
+<a href="#" aria-label="Benachrichtigungen, 2 neu" style="position: relative; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #23321E;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg><span style="position: absolute; top: 10px; right: 11px; width: 8px; height: 8px; border-radius: 50%; background: #FFA573;"></span></a>
+<a href="#" aria-label="Profil" style="width: 36px; height: 36px; border-radius: 50%; background: #23321E; display: flex; align-items: center; justify-content: center; color: #FFFFFF; font-weight: 600; font-size: 14px; text-decoration: none;">A</a>
+</div>
+</div>
+</header>
+
+<main style="max-width: 1240px; margin: 0 auto; padding: 48px 40px 96px; display: flex; flex-direction: column; gap: 40px;">
+
+<section style="display: flex; flex-direction: column; gap: 10px;">
+<span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #6A7566;">Dein Programm</span>
+<h1 style="margin: 0; font-family: 'Anton', sans-serif; font-weight: 400; font-size: 48px; line-height: 1.05;">Elektrofachkraft Erneuerbare Energien</h1>
+<span style="font-size: 15px; color: #5B6857;">Start 28.09.2026 · 18 Monate · {{modCount}} Module</span>
+</section>
+
+<section aria-labelledby="weg" style="display: flex; flex-direction: column; gap: 16px;">
+<h2 id="weg" style="margin: 0; font-size: 20px; font-weight: 700;">Dein Weg</h2>
+<ol style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat({{modCount}}, minmax(150px, 1fr)); overflow-x: auto;">
+<sc-for list="{{modules}}" as="m" hint-placeholder-count="6">
+<li style="display: flex; flex-direction: column; gap: 12px; padding-right: 12px;">
+<div style="display: flex; align-items: center;">
+<span style="flex: none; width: 30px; height: 30px; box-sizing: border-box; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; background: {{m.dotBg}}; color: {{m.dotColor}}; border: 2px solid {{m.dotBorder}};">
+<sc-if value="{{m.done}}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></sc-if>
+<sc-if value="{{m.notDone}}" hint-placeholder-val="{{ true }}">{{m.n}}</sc-if>
+</span>
+<span aria-hidden="true" style="flex: 1; height: 2px; margin-left: 8px; background: {{m.line}};"></span>
+</div>
+<button type="button" aria-expanded="{{m.expanded}}" onClick="{{m.pick}}" style="display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 14px 16px; border-radius: 14px; border: 1px solid {{m.border}}; background: {{m.bg}}; color: {{m.fg}}; text-align: left; cursor: pointer;">
+<span style="font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: {{m.sub}};">Modul {{m.n}}</span>
+<span style="font-size: 15px; font-weight: 700; line-height: 1.3;">{{m.name}}</span>
+<sc-if value="{{m.current}}" hint-placeholder-val="{{ false }}"><span style="margin-top: 2px; padding: 3px 9px; border-radius: 999px; background: #A2E500; color: #23321E; font-size: 12px; font-weight: 700;">Hier bist du</span></sc-if>
+<sc-if value="{{m.notCurrent}}" hint-placeholder-val="{{ true }}"><span style="font-size: 13px; color: {{m.sub}};">{{m.meta}}</span></sc-if>
+</button>
+</li>
+</sc-for>
+</ol>
+
+
+</section>
+
+<section style="display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 24px; align-items: start;">
+
+<div style="border: 1px solid #EEF1EB; border-radius: 20px; padding: 28px; display: flex; flex-direction: column; gap: 20px;">
+<div style="display: flex; flex-direction: column; gap: 6px;">
+<div style="display: flex; align-items: center; gap: 10px;">
+<span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #6A7566;">Modul {{s.n}} · {{s.period}}</span>
+<span style="padding: 3px 9px; border-radius: 999px; background: {{s.statusBg}}; color: {{s.statusColor}}; font-size: 12px; font-weight: 600;">{{s.status}}</span>
+</div>
+<h2 style="margin: 0; font-family: 'Anton', sans-serif; font-weight: 400; font-size: 28px; line-height: 1.1;">{{s.name}}</h2>
+</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;">
+<sc-for list="{{s.tiles}}" as="k" hint-placeholder-count="3">
+<div style="padding: 18px; border-radius: 14px; background: #F4F7F1; display: flex; flex-direction: column; gap: 4px;"><span style="font-family: 'Anton', sans-serif; font-size: 30px; line-height: 1.1;">{{k.v}}</span><span style="font-size: 13px; color: #5B6857;">{{k.l}}</span></div>
+</sc-for>
+</div>
+<div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center;">
+<button type="button" onClick="{{s.openDrawer}}" style="padding: 11px 16px; border-radius: 12px; border: 0; background: #23321E; color: #FFFFFF; font-size: 14px; font-weight: 700; cursor: pointer;">Inhalte des Moduls →</button>
+<a href="#" style="font-size: 14px; font-weight: 600; text-decoration: none;">Kompetenzen im Modul →</a>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 24px;">
+<div style="border: 1px solid #EEF1EB; border-radius: 20px; padding: 28px; display: flex; flex-direction: column; gap: 16px;">
+<div style="display: flex; justify-content: space-between; align-items: baseline;">
+<h2 style="margin: 0; font-size: 20px; font-weight: 700;">Deine Kohorte</h2>
+<span style="font-size: 13px; color: #6A7566;">[Kohorte Herbst 2026]</span>
+</div>
+<div style="display: flex; align-items: center; gap: 12px;">
+<div style="display: flex;">
+<sc-for list="{{cohort}}" as="p" hint-placeholder-count="6">
+<span style="width: 36px; height: 36px; margin-right: -8px; border-radius: 50%; border: 2px solid #FFFFFF; background: {{p.bg}}; color: #23321E; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700;">{{p.i}}</span>
+</sc-for>
+</div>
+<span style="margin-left: 10px; font-size: 14px; color: #5B6857;">[12] Lernende</span>
+</div>
+<a href="#" style="font-size: 14px; font-weight: 600; text-decoration: none;">Zum Kohorten-Chat →</a>
+</div>
+
+<div style="border: 1px solid #EEF1EB; border-radius: 20px; padding: 28px; display: flex; flex-direction: column; gap: 16px;">
+<h2 style="margin: 0; font-size: 20px; font-weight: 700;">Deine Ansprechpersonen</h2>
+<sc-for list="{{contacts}}" as="c" hint-placeholder-count="2">
+<div style="display: flex; align-items: center; gap: 12px;">
+<span style="width: 40px; height: 40px; border-radius: 50%; background: #23321E; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">{{c.i}}</span>
+<span style="flex: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 15px; font-weight: 600;">{{c.name}}</span><span style="font-size: 13px; color: #5B6857;">{{c.role}}</span></span>
+<a href="#" style="padding: 8px 12px; border-radius: 10px; border: 1px solid #E3E8DF; font-size: 13px; font-weight: 600; text-decoration: none;">Nachricht</a>
+</div>
+</sc-for>
+</div>
+</div>
+
+</section>
+
+</main>
+
+<sc-if value="{{drawer}}" hint-placeholder-val="{{ true }}">
+<div style="position: fixed; inset: 0; z-index: 20; display: flex; justify-content: flex-end;">
+<div onClick="{{closeDrawer}}" style="position: absolute; inset: 0; background: rgba(35,50,30,0.32);"></div>
+<aside role="dialog" aria-modal="true" aria-label="Inhalte Modul" style="position: relative; width: 680px; max-width: 100%; height: 100%; overflow-y: auto; background: #FFFFFF; box-shadow: -12px 0 40px rgba(35,50,30,0.18); padding: 32px 32px 48px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px;">
+<div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 16px;">
+<div style="display: flex; flex-direction: column; gap: 8px;">
+<div style="display: flex; align-items: center; gap: 10px;">
+<span style="font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #6A7566;">Modul {{dr.n}} · {{dr.period}}</span>
+<span style="padding: 3px 9px; border-radius: 999px; background: {{dr.statusBg}}; color: {{dr.statusColor}}; font-size: 12px; font-weight: 600;">{{dr.status}}</span>
+</div>
+<h2 style="margin: 0; font-family: 'Anton', sans-serif; font-weight: 400; font-size: 30px; line-height: 1.1;">{{dr.name}}</h2>
+</div>
+<button type="button" aria-label="Schließen" onClick="{{closeDrawer}}" style="flex: none; width: 40px; height: 40px; border-radius: 12px; border: 1px solid #E3E8DF; background: #FFFFFF; color: #23321E; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 12px;">
+<sc-for list="{{dr.weeks}}" as="w" hint-placeholder-count="3">
+<section style="border: 1px solid #E3E8DF; border-radius: 16px; overflow: hidden;">
+<button type="button" aria-expanded="{{w.expanded}}" onClick="{{w.toggle}}" style="display: flex; align-items: center; gap: 12px; width: 100%; padding: 18px 20px; border: 0; background: #FFFFFF; color: #23321E; text-align: left; cursor: pointer;">
+<span style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+<span style="font-size: 16px; font-weight: 700;">{{w.title}}</span>
+<span style="font-size: 13px; color: #6A7566;">{{w.count}}</span>
+</span>
+<sc-if value="{{w.current}}" hint-placeholder-val="{{ false }}"><span style="padding: 3px 9px; border-radius: 999px; background: #A2E500; color: #23321E; font-size: 12px; font-weight: 700;">Diese Woche</span></sc-if>
+<sc-if value="{{w.done}}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#239669" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg></sc-if>
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; transform: rotate({{w.rot}}deg);"><path d="m6 9 6 6 6-6"></path></svg>
+</button>
+<sc-if value="{{w.open}}" hint-placeholder-val="{{ true }}">
+<div style="border-top: 1px solid #EEF1EB;">
+<sc-for list="{{w.topics}}" as="t" hint-placeholder-count="3">
+<div style="border-bottom: 1px solid #EEF1EB;">
+<button type="button" aria-expanded="{{t.expanded}}" onClick="{{t.toggle}}" style="display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 20px; border: 0; background: #FFFFFF; color: #23321E; text-align: left; cursor: pointer;">
+<span style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+<span style="font-size: 15px; font-weight: 500; line-height: 1.35;">{{t.title}}</span>
+<span style="display: flex; gap: 4px;">
+<sc-for list="{{t.segs}}" as="g" hint-placeholder-count="2"><span style="width: 56px; height: 5px; border-radius: 999px; background: {{g.c}};"></span></sc-for>
+</span>
+<span style="font-size: 13px; color: #6A7566;">{{t.count}}</span>
+</span>
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; transform: rotate({{t.rot}}deg);"><path d="m6 9 6 6 6-6"></path></svg>
+</button>
+<sc-if value="{{t.open}}" hint-placeholder-val="{{ false }}">
+<ul style="list-style: none; margin: 0; padding: 0 12px 10px 36px; display: flex; flex-direction: column;">
+<sc-for list="{{t.items}}" as="i" hint-placeholder-count="2">
+<li><a href="#" style="display: flex; align-items: center; gap: 14px; padding: 8px; border-radius: 12px; color: #23321E; text-decoration: none;">
+<sc-if value="{{i.live}}" hint-placeholder-val="{{ true }}"><span style="flex: none; width: 40px; height: 40px; border-radius: 10px; background: #F1EBFC; display: inline-flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9164E1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 13 5.2 3.1a.5.5 0 0 0 .8-.4V8.3a.5.5 0 0 0-.8-.4L16 11"></path><rect x="2" y="6" width="14" height="12" rx="2"></rect></svg></span></sc-if>
+<sc-if value="{{i.self}}" hint-placeholder-val="{{ false }}"><span style="flex: none; width: 40px; height: 40px; border-radius: 10px; background: #E6F4EE; display: inline-flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#239669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v14"></path><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"></path></svg></span></sc-if>
+<sc-if value="{{i.praxis}}" hint-placeholder-val="{{ false }}"><span style="flex: none; width: 40px; height: 40px; border-radius: 10px; background: #FFF0E6; display: inline-flex; align-items: center; justify-content: center;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E07B3F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg></span></sc-if>
+<span style="flex: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 15px;">{{i.label}}</span><span style="font-size: 12px; color: #6A7566;">{{i.meta}}</span></span>
+<span style="display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; border: 1px solid {{i.pillBorder}}; background: {{i.pillBg}}; color: {{i.pillColor}}; font-size: 13px; font-weight: 600;">{{i.status}}</span>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5B6857" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>
+</a></li>
+</sc-for>
+</ul>
+</sc-if>
+</div>
+</sc-for>
+</div>
+</sc-if>
+</section>
+</sc-for>
+</div>
+</aside>
+</div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1060}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { sel: 0, drawer: true, wk: 1, tp: '1-2' };
+  }
+  renderVals() {
+    var self = this, CURRENT = 0, sel = this.state.sel, open = this.state.open;
+    function T(title, items) { return [title, items]; }
+    function L(st, meta) { return ['live', 'Live-Termin', st, meta || '']; }
+    function S(st) { return ['self', 'Selbstlernmodul', st, '']; }
+    function P(st, meta) { return ['praxis', 'Praxisaufgabe', st, meta || '']; }
+    function phW(n) { var w = []; for (var i = 1; i <= n; i++) w.push(['Woche ' + i + ' – [Theorie (online) / Praxis], [Datum]', [T('[Thema]', [L('open'), S('open')]), T('[Thema]', [L('open'), S('open')])]]); return w; }
+    var data = [
+      { name: '[Modulname]', period: 'ab 28.09.2026', comp: '4', steps: '[3 / 18]', days: '[4 / 12]', curWeek: 1, weeks: [
+        ['Woche 1 – Theorie (online), 28.09.–02.10.2026', [
+          T('Grundlagen der Elektrotechnik (Grundeinheiten U, R, I, P, W, Schaltungen)', [L('done'), S('done')]),
+          T('Grundlagen der Elektrotechnik (Schaltungen, Einführung Elektrischer Bauteile)', [L('done'), S('done')]),
+          T('Grundlagen der Elektrotechnik (Der elektrische Widerstand)', [L('done'), S('done')]),
+          T('Grundlagen der Elektrotechnik (Der Kondensator)', [L('done'), S('open')])
+        ]],
+        ['Woche 2 – [Theorie (online) + Praxistag], 05.–09.10.2026', [
+          T('Grundschaltungen der Elektrotechnik – Teil 1', [L('done'), S('done')]),
+          T('[Praxistag]', [P('done', 'Di, 07:30')]),
+          T('Grundschaltungen der Elektrotechnik – Teil 2', [L('today', 'Heute, 13:00'), S('open')])
+        ]],
+        ['Woche 3 – [Typ], 12.–16.10.2026', [T('[Thema]', [L('open'), S('open')]), T('[Thema]', [L('open'), S('open')])]]
+      ] },
+      { name: '[Modulname]', period: '[Zeitraum]', comp: '[4]', steps: '[0 / 16]', days: '[0 / 10]', weeks: phW(3) },
+      { name: '[Modulname]', period: '[Zeitraum]', comp: '[5]', steps: '[0 / 20]', days: '[0 / 14]', weeks: phW(3) },
+      { name: '[Modulname]', period: '[Zeitraum]', comp: '[4]', steps: '[0 / 16]', days: '[0 / 12]', weeks: phW(3) },
+      { name: '[Modulname]', period: '[Zeitraum]', comp: '[4]', steps: '[0 / 16]', days: '[0 / 12]', weeks: phW(2) },
+      { name: '[Modulname]', period: '[… – Mär. 2028]', comp: '[3]', steps: '[0 / 12]', days: '[0 / 10]', weeks: phW(2) }
+    ];
+    var modules = data.map(function (d, i) {
+      var done = i < CURRENT, cur = i === CURRENT, s = i === sel;
+      return {
+        n: i + 1, name: d.name, meta: done ? 'Abgeschlossen' : d.period,
+        done: done, notDone: !done, current: cur, notCurrent: !cur, expanded: s ? 'true' : 'false',
+        dotBg: done ? '#239669' : (cur ? '#23321E' : '#FFFFFF'),
+        dotColor: cur ? '#FFFFFF' : '#8A9486',
+        dotBorder: done ? '#239669' : (cur ? '#23321E' : '#D6DED0'),
+        line: i === data.length - 1 ? 'transparent' : (done ? '#239669' : '#E3E8DF'),
+        bg: cur ? '#23321E' : '#FFFFFF',
+        border: s ? '#23321E' : '#EEF1EB',
+        fg: cur ? '#FFFFFF' : (done ? '#23321E' : '#5B6857'),
+        sub: cur ? '#C9D3C4' : '#6A7566',
+        pick: function () { var c = data[i].curWeek; self.setState({ sel: i, wk: c === undefined ? 0 : c, tp: c === undefined ? '0-0' : c + '-' + (data[i].weeks[c][1].length - 1) }); }
+      };
+    });
+    var d = data[sel];
+    var st = sel < CURRENT ? ['Abgeschlossen', '#E6F4EE', '#1C7853'] : (sel === CURRENT ? ['Aktuell', '#23321E', '#FFFFFF'] : ['Kommt noch', '#F4F7F1', '#5B6857']);
+    var cols = ['#E6F4EE', '#F1EBFC', '#FFF0E6', '#EEF6D6', '#E6F4EE', '#F1EBFC'];
+    var PILL = { done: ['Erledigt', '#E6F4EE', '#E6F4EE', '#1C7853'], today: ['Heute', '#23321E', '#23321E', '#FFFFFF'], open: ['Offen', '#FFFFFF', '#E3E8DF', '#23321E'] };
+    var wk = this.state.wk, tp = this.state.tp;
+    var dr = {
+      n: sel + 1, name: d.name, period: d.period, status: st[0], statusBg: st[1], statusColor: st[2],
+      weeks: d.weeks.map(function (w, wi) {
+        var tot = 0, dn = 0, wOpen = wi === wk;
+        var topics = w[1].map(function (t, ti) {
+          var key = wi + '-' + ti, tOpen = key === tp;
+          var items = t[1].map(function (it) {
+            var stt = d.allDone ? 'done' : it[2]; var p = PILL[stt];
+            return { live: it[0] === 'live', self: it[0] === 'self', praxis: it[0] === 'praxis', label: it[1], meta: it[3],
+              status: p[0], pillBg: p[1], pillBorder: p[2], pillColor: p[3], isDone: stt === 'done' };
+          });
+          var tdn = items.filter(function (x) { return x.isDone; }).length;
+          tot += items.length; dn += tdn;
+          return { title: t[0], count: tdn + '/' + items.length + ' Lektionen', open: tOpen, expanded: tOpen ? 'true' : 'false', rot: tOpen ? 180 : 0,
+            segs: items.map(function (x) { return { c: x.isDone ? '#239669' : '#E6E9E3' }; }),
+            toggle: function () { self.setState({ tp: tOpen ? '' : key }); }, items: items };
+        });
+        return { title: w[0], count: dn + '/' + tot + ' Lektionen', open: wOpen, expanded: wOpen ? 'true' : 'false', rot: wOpen ? 180 : 0,
+          current: wi === d.curWeek, done: dn === tot,
+          toggle: function () { self.setState({ wk: wOpen ? -1 : wi }); }, topics: topics };
+      })
+    };
+    return {
+      modules: modules, modCount: data.length, dr: dr, drawer: !!this.state.drawer,
+      closeDrawer: function () { self.setState({ drawer: false }); },
+      s: { n: sel + 1, name: d.name, period: d.period, status: st[0], statusBg: st[1], statusColor: st[2],
+        openDrawer: function () { self.setState({ drawer: true }); },
+        tiles: [{ v: d.comp, l: 'Kompetenzen' }, { v: d.steps, l: 'Teilschritte erreicht' }, { v: d.days, l: 'Lerntage absolviert' }] },
+      cohort: ['A', 'M', 'K', 'J', 'S', '+7'].map(function (x, i) { return { i: x, bg: i === 5 ? '#F4F7F1' : cols[i] }; }),
+      contacts: [
+        { i: 'T', name: '[Name Trainer:in]', role: 'Trainer:in · Live-Unterricht' },
+        { i: 'L', name: '[Name Lernbegleitung]', role: 'Lernbegleitung · Fragen zum Programm' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
