@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import { UnitProgressBadge } from "@/components/status-badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { requireCurrentLearner } from "@/lib/queries/session";
 import { getLessonDetail } from "@/lib/queries/content";
 import { getLektionThread } from "@/lib/queries/lektion-thread";
+import { getLiveKontext } from "@/lib/queries/lektion-live";
 import { getLessonMaterialien } from "@/lib/queries/materialien";
 
 import { LektionThread } from "./lektion-thread";
@@ -50,7 +51,13 @@ export default async function LessonPage({
 
   // Fragen-Thread (SR-74): null bei chat_aktiv aus oder
   // ohne Leserecht, dann wird nichts angezeigt.
-  const thread = await getLektionThread(lesson.id, lesson.chatAktiv, learner);
+  // Live: Termin der eigenen Kohorte und "Wissen festigen" (Anna 2026-10-11).
+  const [thread, liveKontext] = await Promise.all([
+    getLektionThread(lesson.id, lesson.chatAktiv, learner),
+    lesson.contentType === "live" ? getLiveKontext(lesson.id, lesson.name, learner) : null,
+  ]);
+  const termin = liveKontext?.termin ?? lesson.liveSession;
+  const herkunft = new URLSearchParams({ ...(von ? { von } : {}), ...(datum ? { datum } : {}) }).toString();
 
   const done = lesson.status === "abgeschlossen";
 
@@ -103,25 +110,32 @@ export default async function LessonPage({
       {lesson.contentType === "live" && (
         <Card>
           <CardContent className="flex flex-col gap-2">
-            {lesson.liveSession ? (
+            {termin ? (
               <>
                 <p className="text-eco-deep-green">
-                  {new Date(`${lesson.liveSession.datum}T00:00:00`).toLocaleDateString("de-DE", {
+                  {new Date(`${termin.datum}T00:00:00`).toLocaleDateString("de-DE", {
                     weekday: "long",
                     day: "2-digit",
                     month: "long",
                   })}
-                  , {lesson.liveSession.start.slice(0, 5)}–{lesson.liveSession.ende.slice(0, 5)} Uhr
+                  , {termin.start.slice(0, 5)}–{termin.ende.slice(0, 5)} Uhr
                 </p>
-                {lesson.liveSession.joinLink && (
-                  <a
-                    href={lesson.liveSession.joinLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={buttonVariants({ className: "self-start" })}
-                  >
-                    Beitreten
-                  </a>
+                {(termin.joinLink || liveKontext?.festigenLessonId) && (
+                  <div className="flex flex-wrap gap-2">
+                    {termin.joinLink && (
+                      <a href={termin.joinLink} target="_blank" rel="noreferrer" className={buttonVariants()}>
+                        Beitreten
+                      </a>
+                    )}
+                    {liveKontext?.festigenLessonId && (
+                      <Link
+                        href={`/content/${liveKontext.festigenLessonId}${herkunft ? `?${herkunft}` : ""}`}
+                        className={buttonVariants({ variant: "outline" })}
+                      >
+                        Wissen festigen <ArrowRight className="size-4" aria-hidden="true" />
+                      </Link>
+                    )}
+                  </div>
                 )}
               </>
             ) : (

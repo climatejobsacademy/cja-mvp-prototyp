@@ -52,7 +52,7 @@ export function FlexChip({ chip }: { chip: Chip }) {
     <Link
       href={chip.href}
       title={chip.refresher ? chip.titel : undefined}
-      aria-label={`Selbstlernen, flexibel, ${chip.refresher ? "Refresher: " : ""}${chip.titel}, ${chip.erledigt ? "erledigt" : "offen"}`}
+      aria-label={`Selbstlernen, flexibel, ${chip.refresher ? "Wissen festigen: " : ""}${chip.titel}, ${chip.erledigt ? "erledigt" : "offen"}`}
       className={cn(
         "flex min-w-0 items-start gap-1.5 rounded-lg px-2 py-[5px] text-xs leading-snug font-semibold outline-none transition-[background-color] duration-150 focus-visible:ring-2 focus-visible:ring-eco-green motion-reduce:transition-none",
         chip.erledigt ? "text-muted-foreground" : "text-eco-deep-green",
@@ -61,8 +61,8 @@ export function FlexChip({ chip }: { chip: Chip }) {
     >
       <BookOpen className="mt-px size-3.5 shrink-0 text-eco-green" aria-hidden="true" />
       {/* Voller Titel (Anna 2026-10-11): das Thema steht oft in der Klammer.
-          Gleicher Titel wie der Live-Unterricht des Tages: nur "Refresher". */}
-      <span className="min-w-0 flex-1 hyphens-auto break-words">{chip.refresher ? "Refresher" : chip.titel}</span>
+          Gleicher Titel wie der Live-Unterricht des Tages: nur "Wissen festigen" (Anna 2026-10-11, vorher "Refresher"). */}
+      <span className="min-w-0 flex-1 hyphens-auto break-words">{chip.refresher ? "Wissen festigen" : chip.titel}</span>
       {chip.erledigt && <Check className="mt-px size-3 shrink-0 text-eco-green" strokeWidth={3} aria-hidden="true" />}
     </Link>
   );
@@ -81,7 +81,7 @@ export function FlexLeiste({ chip, gross }: { chip: Chip; gross: boolean }) {
     <Link
       href={chip.href}
       title={chip.refresher ? chip.titel : undefined}
-      aria-label={`Selbstlernen, flexibel, ${chip.refresher ? "Refresher: " : ""}${chip.titel}, ${chip.erledigt ? "erledigt" : "weiterlernen"}`}
+      aria-label={`Selbstlernen, flexibel, ${chip.refresher ? "Wissen festigen: " : ""}${chip.titel}, ${chip.erledigt ? "erledigt" : "weiterlernen"}`}
       style={{ marginLeft: rand.links, marginRight: rand.rechts }}
       className={cn(
         "flex min-w-0 items-center gap-2 rounded-[10px] px-3 py-2 text-[13px] font-semibold outline-none transition-[background-color] duration-150 focus-visible:ring-2 focus-visible:ring-eco-green motion-reduce:transition-none",
@@ -91,7 +91,7 @@ export function FlexLeiste({ chip, gross }: { chip: Chip; gross: boolean }) {
       )}
     >
       <BookOpen className="size-4 shrink-0 text-eco-green" aria-hidden="true" />
-      <span className="min-w-0 flex-1">{chip.refresher ? "Refresher zum Live-Unterricht" : chip.titel}</span>
+      <span className="min-w-0 flex-1">{chip.refresher ? "Wissen festigen" : chip.titel}</span>
       {chip.erledigt ? (
         <Check className="size-3.5 shrink-0 text-eco-green" strokeWidth={3} aria-hidden="true" />
       ) : (

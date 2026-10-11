@@ -3,7 +3,7 @@
 // Chips in "Flexibel", Tagestyp. Reine Funktionen, keine Datenbank.
 
 import type { Plantag } from "@/lib/queries/stundenplan";
-import { naechsterTerminId, PRAXIS_STANDARDZEIT, tagestypAus, type Tagestyp } from "@/lib/stundenplan";
+import { gleicherTitel, naechsterTerminId, PRAXIS_STANDARDZEIT, tagestypAus, type Tagestyp } from "@/lib/stundenplan";
 
 export type BlockStatus = "erledigt" | "vorbei" | "offen";
 
@@ -35,11 +35,10 @@ export type Chip = {
   titel: string;
   href: string;
   erledigt: boolean;
-  /** Gleicher Titel wie ein Live-Termin desselben Tages → als "Refresher" zeigen (Anna 2026-10-11) */
+  /** Gleicher Titel wie ein Live-Termin desselben Tages → als "Wissen festigen" zeigen (Anna 2026-10-11) */
   refresher: boolean;
 };
 
-const gleicherTitel = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
 
 export type TagModell = {
   datum: string;

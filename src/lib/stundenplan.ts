@@ -15,6 +15,13 @@ import { montagDerWoche, plusTage, tageZwischen } from "./date.ts";
  */
 export const PRAXIS_STANDARDZEIT = { start: "08:30:00", ende: "16:30:00" } as const;
 
+/**
+ * Selbstlernen mit gleichem Titel wie ein Live-Termin desselben Tages gilt als
+ * "Wissen festigen" zu diesem Termin (Anna 2026-10-11) -- im Stundenplan und
+ * als Knopf auf der Live-Lektion.
+ */
+export const gleicherTitel = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
+
 /** Raster ohne Termine: 08:00-17:00. */
 const RASTER_VON = 8;
 const RASTER_BIS = 17;
