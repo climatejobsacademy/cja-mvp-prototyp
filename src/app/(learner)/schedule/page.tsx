@@ -46,7 +46,10 @@ export default async function SchedulePage({
   const ansicht: Ansicht | null =
     ansichtParam === "tag" || ansichtParam === "woche" || ansichtParam === "monat" ? ansichtParam : null;
   const desktopAnsicht: Ansicht = ansicht ?? "woche";
-  const datum = datumParam && DATUM.test(datumParam) ? datumParam : heute;
+  // Wunsch Anna 2026-10-11: am Wochenende zeigt der Stundenplan ohne
+  // ausgewähltes Datum schon die kommende Woche (die vergangene ist vorbei).
+  const wochenende = !arbeitstage(heute).includes(heute);
+  const datum = datumParam && DATUM.test(datumParam) ? datumParam : wochenende ? naechsterArbeitstag(heute, 1) : heute;
   const montag = montagDerWoche(datum);
   const woche = arbeitstage(datum);
 
@@ -73,7 +76,6 @@ export default async function SchedulePage({
   // "Heute" (Entscheidung Anna 2026-10-11): am Wochenende springt es aus der
   // Woche (Mo–Fr, ohne Sa/So) in die Tagesansicht des Wochenendtags. Zeigt
   // die Ansicht schon heute, ist der Link aus (null).
-  const wochenende = !arbeitstage(heute).includes(heute);
   const href = (a: Ansicht, d: string) => `/schedule?ansicht=${a}&datum=${d}${nowZusatz}`;
   const tagHref = (d: string) => href("tag", d);
 

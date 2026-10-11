@@ -5,8 +5,9 @@
 -- Idee: Die Demo soll mit dem echten Datum laufen, ohne Sonderlinks. Dafür
 -- bekommt das Demo-Konto eine eigene Kohorte, deren Stundenplan eine Kopie
 -- der Vorlage-Kohorte "Energiehelden 28.09.26" ist -- um `verschiebung` Tage
--- früher (Standard 28 = 4 Wochen, Start 31.08.2026). Dann liegen die Wochen
--- 12.–23.10. in Modul 2 (Theorie, dann Praxis), Modul 1 ist abgeschlossen.
+-- früher (+) bzw. später (-). Standard -7 = 1 Woche später, Start 05.10.2026
+-- (Entscheidung Anna 2026-10-11: auf Staging gibt es nur Inhalte für Modul 1):
+-- 05.–09.10. erledigt, 12.–16.10. Theorie, ab 19.10. Praxis.
 -- Die Wochentage bleiben gleich (Verschiebung in ganzen Wochen).
 --
 -- Angelegt wird:
@@ -37,9 +38,9 @@
 --     -X -v ON_ERROR_STOP=1 -f scripts/sql/demo_kohorte_verschoben.sql
 --
 --   Echter Lauf: zusätzlich -v modus=echt
---   Optional: -v stichtag=2026-10-14  -v verschiebung=28  -v pruefer_email=...
+--   Optional: -v stichtag=2026-10-14  -v verschiebung=-7  -v pruefer_email=...
 --
--- Voraussetzung: Login-Konto demo+test@climatejobsacademy.com existiert auf
+-- Voraussetzung: Login-Konto anna+demo@climatejobsacademy.com existiert auf
 -- Staging (scripts/invite-learner.mjs --target=staging).
 --
 -- Production (vqfnmkcfjsudsujiuoqm) wird nie angefasst: das Skript bricht ab,
@@ -55,16 +56,16 @@
 \endif
 \if :{?verschiebung}
 \else
-  \set verschiebung 28
+  \set verschiebung -7
 \endif
 \if :{?modus}
 \else
   \set modus probe
 \endif
-\set demo_email 'demo+test@climatejobsacademy.com'
+\set demo_email 'anna+demo@climatejobsacademy.com'
 \set demo_name 'Rim'
 \set demo_username 'demo_rim'
-\set demo_kohorte 'DEMO Rim (Start 31.08.26)'
+\set demo_kohorte 'DEMO Rim'
 \set vorlage_kohorte 'Energiehelden 28.09.26'
 \set organisation 'Energiehelden'
 \set programm_kuerzel 'EFK-EE'
@@ -109,7 +110,9 @@ select
   exists (select 1 from auth.users where email = :'demo_email')        as konto_vorhanden,
   coalesce((select id from person where email = :'pruefer_email'),
            (select ra.person_id from role_assignment ra where ra.rolle = 'afcj_admin'
-            order by ra.created_at limit 1))                            as pruefer_id,
+            order by ra.created_at limit 1),
+           (select om.person_id from org_membership om join organisation o on o.id = om.organisation_id
+            where o.typ = 'afcj' order by om.created_at limit 1))       as pruefer_id,
   :'modus' = 'echt'                                                    as echt,
   (select id from organisation where name = :'organisation')           as org_id,
   (select id from programme where kuerzel = :'programm_kuerzel')       as programme_id,
@@ -120,24 +123,24 @@ do $$
 declare r record;
 begin
   select * into r from p;
-  if r.verschiebung % 7 <> 0 or r.verschiebung <= 0 then
+  if r.verschiebung % 7 <> 0 then
     raise exception 'ABBRUCH: verschiebung % muss ein Vielfaches von 7 sein (ganze Wochen).', r.verschiebung;
   end if;
   if not r.konto_vorhanden then
     if r.echt then
-      raise exception 'ABBRUCH: Kein Login-Konto demo+test@climatejobsacademy.com auf Staging. Erst mit scripts/invite-learner.mjs --target=staging einladen.';
+      raise exception 'ABBRUCH: Kein Login-Konto anna+demo@climatejobsacademy.com auf Staging. Erst mit scripts/invite-learner.mjs --target=staging einladen.';
     end if;
-    raise notice 'HINWEIS: Login-Konto demo+test@climatejobsacademy.com fehlt noch. Der Probelauf rechnet mit einer Platzhalter-ID; der echte Lauf bricht ab.';
+    raise notice 'HINWEIS: Login-Konto anna+demo@climatejobsacademy.com fehlt noch. Der Probelauf rechnet mit einer Platzhalter-ID; der echte Lauf bricht ab.';
   end if;
   if r.pruefer_id is null then
-    raise exception 'ABBRUCH: Keine Prüfer-Person gefunden (keine afcj_admin-Rolle; -v pruefer_email=... angeben).';
+    raise notice 'HINWEIS: Keine Prüfer-Person gefunden -- Anwesenheit ohne "bestätigt von", Praxisberichte bleiben "in Prüfung".';
   end if;
   if r.org_id is null or r.programme_id is null or r.vorlage_id is null then
     raise exception 'ABBRUCH: Organisation, Programm oder Vorlage-Kohorte nicht gefunden (%, %, %).',
       r.org_id, r.programme_id, r.vorlage_id;
   end if;
   if exists (select 1 from enrolment e join cohort c on c.id = e.cohort_id
-             where e.learner_id = r.person_id and c.name <> 'DEMO Rim (Start 31.08.26)') then
+             where e.learner_id = r.person_id and c.name <> 'DEMO Rim') then
     raise exception 'ABBRUCH: Das Demo-Konto ist noch in einer anderen Kohorte eingeschrieben.';
   end if;
 end $$;
@@ -346,7 +349,8 @@ from neu_bericht b, p;
 
 insert into verification (organisation_id, field_capture_id, verifiziert_von, entscheidung, verifiziert_am, kommentar)
 select p.org_id, b.id, p.pruefer_id, 'verified', (b.datum + time '18:00') at time zone 'Europe/Berlin', 'Demo-Datensatz'
-from neu_bericht b, p;
+from neu_bericht b, p
+where p.pruefer_id is not null;
 
 commit;
 \echo '== ECHTER LAUF gespeichert.'

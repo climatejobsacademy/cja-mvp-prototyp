@@ -62,6 +62,15 @@ export function LektionThread({ lessonId, thread }: { lessonId: string; thread: 
     router.refresh();
   }
 
+  // Wunsch Anna 2026-10-11 (demo): gelöschte Beiträge ganz ausblenden statt
+  // "Beitrag gelöscht" -- außer ein gelöschter Beitrag hat noch Antworten,
+  // dann bleibt der Hinweis, damit die Antworten einen Bezug haben.
+  // Abweichung von SR-74 ("Gelöschte Beiträge erscheinen als 'Beitrag
+  // gelöscht'"), vor dev mit dem Team klären.
+  const sichtbar = thread.eintraege
+    .map((e) => ({ ...e, antworten: e.antworten.filter((a) => !a.geloescht_am) }))
+    .filter((e) => !e.geloescht_am || e.antworten.length > 0);
+
   return (
     <section aria-labelledby="thread-ueberschrift" className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -90,11 +99,11 @@ export function LektionThread({ lessonId, thread }: { lessonId: string; thread: 
         </p>
       )}
 
-      {thread.eintraege.length === 0 ? (
+      {sichtbar.length === 0 ? (
         <p className="text-sm text-muted-foreground">Noch keine Fragen. Stell gern die erste.</p>
       ) : (
         <ul className="flex flex-col gap-3">
-          {thread.eintraege.map((eintrag) => (
+          {sichtbar.map((eintrag) => (
             <li key={eintrag.id} className="flex flex-col gap-2 rounded-xl border border-border p-4">
               <BeitragAnzeige
                 beitrag={eintrag}
@@ -249,12 +258,6 @@ function BeitragFormular({
 
   return (
     <form onSubmit={absenden} className="flex flex-col gap-2">
-      <p className="text-[13px] text-muted-foreground">
-        Bitte keine sensiblen Angaben und keine Daten anderer Personen schreiben.{" "}
-        <Link href="/datenschutz" className="text-eco-deep-green underline underline-offset-2">
-          Datenschutzerklärung
-        </Link>
-      </p>
       <label htmlFor={`${id}-text`} className="text-sm font-medium text-eco-deep-green">
         {label}
       </label>
@@ -288,6 +291,13 @@ function BeitragFormular({
           </button>
         </div>
       </div>
+      {/* Wunsch Anna 2026-10-11 (demo): Hinweis ganz unten statt über dem Feld. */}
+      <p className="text-[13px] text-muted-foreground">
+        Bitte keine sensiblen Angaben und keine Daten anderer Personen schreiben.{" "}
+        <Link href="/datenschutz" className="text-eco-deep-green underline underline-offset-2">
+          Datenschutzerklärung
+        </Link>
+      </p>
     </form>
   );
 }
