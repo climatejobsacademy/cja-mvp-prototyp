@@ -74,7 +74,7 @@ export function KompetenzListe({
                   </span>
                   {k.gesamt > 0 && (
                     <span className="text-[13px] text-muted-foreground">
-                      {k.erreicht} von {k.gesamt} Teilschritten
+                      {k.erreicht} von {k.gesamt} Kompetenzschritten
                     </span>
                   )}
                 </span>

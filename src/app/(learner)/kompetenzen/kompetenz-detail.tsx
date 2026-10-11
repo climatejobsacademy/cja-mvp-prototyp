@@ -1,8 +1,9 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { ArrowLeft, BookOpen, Check, ChevronRight, Clock, ThumbsDown, Video, Wrench } from "lucide-react";
+import { ArrowLeft, BookOpen, Check, ChevronDown, ChevronRight, Clock, ThumbsDown, Video, Wrench } from "lucide-react";
 
 import { Ring } from "@/components/fortschritts-ring";
+import { TypIcon } from "@/components/typ-icon";
 import { aktivitaetMeta } from "@/lib/kompetenz-aktivitaet";
 import type { CompetencyStepView, CompetencyView } from "@/lib/queries/competencies";
 import type { Lernaktivitaet } from "@/lib/queries/kompetenzen-seite";
@@ -67,7 +68,9 @@ function TeilschrittZeile({ step, heute }: { step: CompetencyStepView; heute: bo
   const typ = step.typ === "praktisch" ? "Praxis" : "Theorie";
   return (
     <li className="flex items-center gap-3.5 border-b border-border py-2.5 last:border-b-0">
-      <span aria-hidden="true">{symbol}</span>
+      {/* Rückmeldung Anna 2026-10-11: Typ-Symbol wie in der früheren Version --
+          Buch = Theorie, Schraubenschlüssel = Praxis; Status rechts. */}
+      <TypIcon typ={step.typ === "praktisch" ? "praxis" : "theorie"} />
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span
           className={cn(
@@ -93,6 +96,7 @@ function TeilschrittZeile({ step, heute }: { step: CompetencyStepView; heute: bo
           {text}
         </span>
       )}
+      <span aria-hidden="true">{symbol}</span>
     </li>
   );
 }
@@ -110,13 +114,21 @@ const TYP: Record<Lernaktivitaet["art"], { Icon: typeof Video; kachel: string }>
  * einzahlen -- die USP Lernaktivität → Teilschritt → Kompetenz. Lektionen
  * öffnen die Lektionsseite, Praxis laut Entscheidung 2026-10-10 die
  * Demo-Seite /praxisflow-demo. Ohne Zuordnung: Bereich ausgeblendet.
+ * Wunsch Anna 2026-10-11: aufklappbar, beim Öffnen einer Kompetenz zu.
  */
 function HierLernstDu({ aktivitaeten, heute }: { aktivitaeten: Lernaktivitaet[]; heute: string }) {
   if (aktivitaeten.length === 0) return null;
   return (
-    <div className="flex flex-col gap-2.5">
-      <h3 className="text-[15px] font-bold">Hier lernst du das</h3>
-      <ul className="flex flex-col gap-2.5">
+    <details className="group/lernen flex flex-col">
+      <summary className="flex cursor-pointer list-none items-center gap-2 rounded-lg py-1 outline-none focus-visible:ring-2 focus-visible:ring-eco-green [&::-webkit-details-marker]:hidden">
+        <h3 className="text-[15px] font-bold">Hier lernst du das</h3>
+        <span className="text-[13px] text-muted-foreground tabular-nums">· {aktivitaeten.length}</span>
+        <ChevronDown
+          className="ml-auto size-[18px] shrink-0 text-muted-foreground transition-transform group-open/lernen:rotate-180 motion-reduce:transition-none"
+          aria-hidden="true"
+        />
+      </summary>
+      <ul className="mt-2.5 flex flex-col gap-2.5">
         {aktivitaeten.map((a) => {
           const { Icon, kachel } = TYP[a.art];
           return (
@@ -138,7 +150,7 @@ function HierLernstDu({ aktivitaeten, heute }: { aktivitaeten: Lernaktivitaet[];
           );
         })}
       </ul>
-    </div>
+    </details>
   );
 }
 
@@ -182,14 +194,14 @@ export function KompetenzDetail({
           </h2>
           {kompetenz.teilschritteGesamt > 0 && (
             <span className="text-[15px] text-muted-foreground">
-              {kompetenz.teilschritteErfuellt} von {kompetenz.teilschritteGesamt} Teilschritten
+              {kompetenz.teilschritteErfuellt} von {kompetenz.teilschritteGesamt} Kompetenzschritten
             </span>
           )}
         </div>
       </div>
 
       <div className="flex flex-col gap-1">
-        <h3 className="mb-2 text-[15px] font-bold">Teilschritte</h3>
+        <h3 className="mb-2 text-[15px] font-bold">Kompetenzschritte</h3>
         {steps.length > 0 ? (
           <ul>
             {steps.map((s) => (
@@ -197,11 +209,12 @@ export function KompetenzDetail({
             ))}
           </ul>
         ) : (
-          <p className="text-[15px] text-muted-foreground">Für diese Kompetenz sind noch keine Teilschritte hinterlegt.</p>
+          <p className="text-[15px] text-muted-foreground">Für diese Kompetenz sind noch keine Kompetenzschritte hinterlegt.</p>
         )}
       </div>
 
-      <HierLernstDu aktivitaeten={aktivitaeten} heute={heute} />
+      {/* key: beim Wechsel der Kompetenz wieder zugeklappt */}
+      <HierLernstDu key={kompetenz.id} aktivitaeten={aktivitaeten} heute={heute} />
     </section>
   );
 }

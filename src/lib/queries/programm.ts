@@ -1,3 +1,4 @@
+import { gliederungFuer, letztesDatumImNamen, modulFuerDatum, modulStatus, type GliederungsModul } from "@/lib/programm";
 import { createClient } from "@/lib/supabase/server";
 
 // Programmseite v8 (docs/design_handoff_programm_v8, SR folgt): die Zeilen
@@ -108,4 +109,45 @@ export async function getKohortenZeitraum(cohortId: string): Promise<{ start: st
   const supabase = await createClient();
   const { data } = await supabase.from("cohort").select("start_datum, end_datum").eq("id", cohortId).maybeSingle();
   return data ? { start: data.start_datum, ende: data.end_datum } : null;
+}
+
+/**
+ * Module der vorläufigen Gliederung (src/lib/programm.ts) mit den Wochen
+ * (Zeilen aus "module"), die über ihr Datum dazugehören. Ohne Gliederung
+ * für dieses Programm null -- dann gelten die Module der Datenbank.
+ */
+export async function getGliederungsModule(
+  ctx: Ctx,
+  programmName: string
+): Promise<(GliederungsModul & { wochenIds: Set<string> })[] | null> {
+  const kohorte = await getKohortenZeitraum(ctx.cohortId);
+  const gliederung = gliederungFuer(programmName, kohorte?.start ?? null);
+  if (!gliederung) return null;
+  const wochen = await getDbModule(ctx);
+  return gliederung.map((g) => ({
+    ...g,
+    wochenIds: new Set(
+      wochen.filter((w) => modulFuerDatum(gliederung, w.von ?? letztesDatumImNamen(w.name)) === g.nummer).map((w) => w.id)
+    ),
+  }));
+}
+
+/**
+ * Aktuelles Modul mit seinen Wochen -- dieselbe Regel wie auf der
+ * Programmseite: das Modul der Gliederung, das noch nicht vorbei ist. Ohne
+ * Gliederung null (dann gilt die bisherige Regel getAktuellesModul).
+ * Behebt "Dein Fortschritt in Modul 3", obwohl Modul 1 läuft (Änderungsliste
+ * Home freier Tag, Punkt 6): vorher wurden Wochen als Module gezählt.
+ */
+export async function getAktuellesGliederungsModul(
+  ctx: Ctx,
+  programmName: string,
+  heute: string
+): Promise<{ modul: { id: string; name: string; nummer: number }; wochenIds: Set<string> } | null> {
+  const modulListe = await getGliederungsModule(ctx, programmName);
+  if (!modulListe) return null;
+  const index = modulStatus(modulListe, heute).indexOf("aktuell");
+  if (index === -1) return null;
+  const g = modulListe[index];
+  return { modul: { id: String(g.nummer), name: g.name, nummer: g.nummer }, wochenIds: g.wochenIds };
 }

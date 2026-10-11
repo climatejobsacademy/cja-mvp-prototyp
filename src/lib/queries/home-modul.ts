@@ -217,13 +217,17 @@ export async function getHeutigeKompetenzen(lessonIds: string[], fieldJobIds: st
  * Brief 3, Zustände E ("Noch offen von {Wochentag}") und F ("ggf.
  * Weiterlernen"): die zuletzt geplante Selbstlern-Lektion vor `vorDatum`,
  * die noch nicht abgeschlossen ist. Schaut höchstens 30 Einträge zurück.
+ * `aelteste`: stattdessen die früheste offene (freier Tag, "Wenn du magst",
+ * Änderungsliste Home freier Tag: bei mehreren die älteste), höchstens 200
+ * Einträge ab Programmbeginn.
  */
 export async function getNachholLektion(
   organisationId: string,
   cohortId: string,
   enrolmentId: string,
   learnerId: string,
-  vorDatum: string
+  vorDatum: string,
+  aelteste = false
 ): Promise<NachholLektion | null> {
   const supabase = await createClient();
 
@@ -235,9 +239,9 @@ export async function getNachholLektion(
     .not("lesson_id", "is", null)
     .lt("datum", vorDatum)
     .or(`cohort_id.eq.${cohortId},enrolment_id.eq.${enrolmentId}`)
-    .order("datum", { ascending: false })
-    .order("reihenfolge", { ascending: false })
-    .limit(30);
+    .order("datum", { ascending: aelteste })
+    .order("reihenfolge", { ascending: aelteste })
+    .limit(aelteste ? 200 : 30);
   const eintraege = (entries ?? []).filter((e): e is { datum: string; lesson_id: string } => !!e.lesson_id);
   if (eintraege.length === 0) return null;
 

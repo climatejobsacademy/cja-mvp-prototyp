@@ -1,0 +1,144 @@
+import Link from "next/link";
+import { BookOpen, Check, Video, Wrench } from "lucide-react";
+
+import { Ring } from "@/components/fortschritts-ring";
+import { datumKurz, tageZwischen, wochentagLang } from "@/lib/date";
+import type { FreiText, WochenTag } from "@/lib/home-frei";
+import { titelTeile, type NachholLektion } from "@/lib/home-tag";
+import type { NaechsterTermin } from "@/lib/queries/schedule";
+import { cn } from "@/lib/utils";
+
+import type { RingKompetenz } from "./kompetenz-bereich";
+import { kompetenzHref } from "./tages-karten";
+
+// Home, Zustand "freier Tag" (docs/design_handoff_home_v6/claude-code-aenderungen-home-freier-tag.md
+// + design/home-freier-tag-referenz.html, SR folgt): an Tagen ohne Termin
+// statt "Heute ist nichts geplant" eine Coral-Karte "Heute frei" mit
+// Wochenrückblick, darunter zwei schlichte Zeilen, rechts alle Kompetenzen
+// des aktuellen Moduls.
+
+const ZEILE =
+  "flex items-center gap-3.5 rounded-2xl border border-border px-[22px] py-4 text-eco-deep-green outline-none transition-[background-color] duration-150 hover:bg-off-white focus-visible:ring-2 focus-visible:ring-eco-green motion-reduce:transition-none";
+
+/** Karte "Heute frei": Label, Headline, Unterzeile, ggf. Wochenreihe (nur Zustand 1 und 2). */
+export function FreiKarte({ text, tage }: { text: FreiText; tage: WochenTag[] }) {
+  return (
+    <article className="flex flex-col gap-7 rounded-3xl bg-warning px-6 py-7 text-eco-deep-green md:px-10 md:py-9">
+      <div className="flex flex-col gap-3">
+        <span className="self-start rounded-full bg-white px-3 py-[5px] text-[13px] font-semibold">Heute frei</span>
+        <h3 className="font-heading text-[40px] leading-[1.02] font-normal md:text-[56px]">{text.headline}</h3>
+        <p className="text-[17px] text-frei-text">{text.unterzeile}</p>
+      </div>
+      {text.wochenreihe && tage.length > 0 && (
+        <ul aria-label="Deine letzte Woche" className="flex gap-3.5">
+          {tage.map((t) => (
+            <li key={t.datum} className="flex flex-col items-center gap-1.5">
+              {t.geschafft ? (
+                <span className="flex size-10 items-center justify-center rounded-full bg-eco-deep-green">
+                  <Check className="size-4 text-warning" strokeWidth={3} aria-hidden="true" />
+                </span>
+              ) : (
+                <span aria-hidden="true" className="size-10 rounded-full border-2 border-eco-deep-green/25" />
+              )}
+              <span className="text-xs font-semibold text-frei-text">
+                {t.kurz}
+                <span className="sr-only">{t.geschafft ? ", geschafft" : ", offen"}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </article>
+  );
+}
+
+const ART: Record<NaechsterTermin["art"], { text: string; Icon: typeof Video; farbe: string }> = {
+  live: { text: "Live-Unterricht", Icon: Video, farbe: "text-lylac" },
+  feld: { text: "Praxistag", Icon: Wrench, farbe: "text-coral-text" },
+  asynchron: { text: "Selbstlernen", Icon: BookOpen, farbe: "text-eco-green" },
+};
+
+/** "Montag, 13:00"; ab einer Woche Abstand mit Datum ("Mo, 19.10., 13:00"). */
+function wann(t: NaechsterTermin, heute: string): string {
+  const tag = tageZwischen(heute, t.datum) < 7 ? wochentagLang(t.datum) : datumKurz(t.datum);
+  return `${tag}${t.start ? `, ${t.start.slice(0, 5)}` : ""}`;
+}
+
+/** Zeile 1 "Weiter geht's …" und Zeile 2 "Wenn du magst: …" (nur wenn etwas offen ist). */
+export function FreiZeilen({
+  naechster,
+  offen,
+  heute,
+}: {
+  naechster: NaechsterTermin | null;
+  offen: NachholLektion | null;
+  heute: string;
+}) {
+  return (
+    <>
+      {naechster && (
+        <Link href="/schedule?ansicht=woche" className={ZEILE}>
+          {(() => {
+            const { Icon, farbe, text } = ART[naechster.art];
+            return (
+              <>
+                <Icon className={cn("size-[18px] shrink-0", farbe)} aria-hidden="true" />
+                <span className="min-w-0 flex-1 text-[15px]">
+                  <span className="text-muted-foreground">Weiter geht’s</span>{" "}
+                  <span className="font-bold">{wann(naechster, heute)}</span>{" "}
+                  <span className="text-muted-foreground">· {text}</span>
+                </span>
+              </>
+            );
+          })()}
+          <span className="shrink-0 text-sm font-semibold">Stundenplan →</span>
+        </Link>
+      )}
+      {/* Ersetzt "Noch offen von …"; bei mehreren offenen die älteste. */}
+      {offen && (
+        <Link href={`/content/${offen.lessonId}`} className={ZEILE}>
+          <BookOpen className="size-[18px] shrink-0 text-eco-green" aria-hidden="true" />
+          <span className="min-w-0 flex-1 text-[15px]">
+            <span className="text-muted-foreground">Wenn du magst:</span>{" "}
+            <span className="font-semibold">{titelTeile(offen.titel).titel}</span>{" "}
+            <span className="text-muted-foreground">· Selbstlernen</span>
+          </span>
+          <span className="shrink-0 text-sm font-semibold">Weiterlernen →</span>
+        </Link>
+      )}
+    </>
+  );
+}
+
+/** Rechte Spalte: alle Kompetenzen des aktuellen Moduls -- kein Kasten, kein "Heute dran", kein Leuchten. */
+export function AlleKompetenzen({ modulNummer, kompetenzen }: { modulNummer: number; kompetenzen: RingKompetenz[] }) {
+  return (
+    <aside aria-labelledby="frei-kompetenzen" className="flex min-w-0 flex-col gap-[22px] self-start pt-2 text-eco-deep-green">
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 id="frei-kompetenzen" className="text-base font-bold">
+          Deine Kompetenzen · Modul {modulNummer}
+        </h2>
+        <Link
+          href="/kompetenzen"
+          className="rounded-sm text-sm text-muted-foreground outline-none hover:text-eco-deep-green focus-visible:ring-2 focus-visible:ring-eco-green"
+        >
+          Alle →
+        </Link>
+      </div>
+      <ul className="flex flex-col gap-4">
+        {kompetenzen.map((k) => (
+          <li key={k.id}>
+            <Link
+              href={kompetenzHref(k.id)}
+              aria-label={`${k.name}, ${k.prozent} Prozent`}
+              className="flex items-center gap-3.5 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-eco-green focus-visible:ring-offset-4"
+            >
+              <Ring prozent={k.prozent} groesse={44} />
+              <span className="text-[15px] leading-snug">{k.name}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </aside>
+  );
+}

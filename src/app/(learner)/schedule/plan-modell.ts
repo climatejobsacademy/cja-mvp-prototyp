@@ -22,11 +22,24 @@ export type Block = {
   /** Ziel beim Klick; null = kein Ziel (dann kein Link) */
   href: string | null;
   extern: boolean;
+  /** Live: Link in den Live-Raum, solange der Termin nicht vorbei ist (sonst null) */
+  liveRaum: string | null;
+  /** Lektionsseite (Unterlagen) bzw. Praxisaufgabe; null = keine */
+  inhalt: string | null;
   lessonId: string | null;
   fieldJobId: string | null;
 };
 
-export type Chip = { id: string; titel: string; href: string; erledigt: boolean };
+export type Chip = {
+  id: string;
+  titel: string;
+  href: string;
+  erledigt: boolean;
+  /** Gleicher Titel wie ein Live-Termin desselben Tages → als "Refresher" zeigen (Anna 2026-10-11) */
+  refresher: boolean;
+};
+
+const gleicherTitel = (a: string, b: string) => a.trim().toLowerCase() === b.trim().toLowerCase();
 
 export type TagModell = {
   datum: string;
@@ -66,6 +79,8 @@ export function planModell(tage: Plantag[], heute: string, jetzt: string): TagMo
           naechster: false,
           href: zumRaum ? s.joinLink : e.lessonId ? lektionHref(e.lessonId) : null,
           extern: zumRaum,
+          liveRaum: zumRaum ? s.joinLink : null,
+          inhalt: e.lessonId ? lektionHref(e.lessonId) : null,
           lessonId: e.lessonId,
           fieldJobId: null,
         },
@@ -85,6 +100,8 @@ export function planModell(tage: Plantag[], heute: string, jetzt: string): TagMo
       // Wie Home und Kompetenzen (Entscheidung 2026-10-09): Demo-Praxisflow.
       href: "/praxisflow-demo",
       extern: false,
+      liveRaum: null,
+      inhalt: "/praxisflow-demo",
       lessonId: null,
       fieldJobId: e.fieldJobId,
     }));
@@ -98,6 +115,7 @@ export function planModell(tage: Plantag[], heute: string, jetzt: string): TagMo
           titel: e.titel,
           href: e.lessonId ? lektionHref(e.lessonId) : "/content",
           erledigt: e.unitProgressStatus === "abgeschlossen",
+          refresher: live.some((l) => gleicherTitel(l.titel, e.titel)),
         },
       ];
     });
@@ -112,9 +130,11 @@ export function planModell(tage: Plantag[], heute: string, jetzt: string): TagMo
     };
   });
 
-  // Brief 2.4: nächster bzw. laufender Termin der angezeigten Woche hervorheben.
+  // Brief 2.4: nächster bzw. laufender Termin der angezeigten Woche hervorheben
+  // -- nach Datum und Uhrzeit, auch wenn er schon erledigt ist (Entscheidung
+  // Anna 2026-10-11: ein vorab durchgeklickter Praxistag bleibt der nächste).
   const naechster = naechsterTerminId(
-    modelle.flatMap((t) => t.bloecke.filter((b) => b.status !== "erledigt")),
+    modelle.flatMap((t) => t.bloecke),
     jetzt
   );
   for (const t of modelle) for (const b of t.bloecke) b.naechster = b.id === naechster;

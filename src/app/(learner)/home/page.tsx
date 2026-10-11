@@ -1,6 +1,9 @@
-import { heuteInBerlin, jetztInBerlin } from "@/lib/date";
+import { heuteInBerlin, jetztInBerlin, montagDerWoche, plusTage } from "@/lib/date";
+import { freiText, wochenrueckblick } from "@/lib/home-frei";
 import { getDayState, parseNowParameter } from "@/lib/home-tag";
 import { getKompetenzFortschritt } from "@/lib/queries/competencies";
+import { getModuleMitTeilschritten } from "@/lib/queries/kompetenzen-seite";
+import { getAktuellesGliederungsModul } from "@/lib/queries/programm";
 import {
   getAktuellesModul,
   getHeutigeKompetenzen,
@@ -10,10 +13,12 @@ import {
 } from "@/lib/queries/home-modul";
 import { getNaechsterTermin, getTagesAgenda } from "@/lib/queries/schedule";
 import { requireCurrentLearner } from "@/lib/queries/session";
+import { getKohortenStart, getStundenplan } from "@/lib/queries/stundenplan";
 import { cn } from "@/lib/utils";
 
 import { Begruessung, TestzeitHinweis } from "./begruessung";
 import { DeinTag, type StaerktFn } from "./dein-tag";
+import { AlleKompetenzen, FreiKarte, FreiZeilen } from "./freier-tag";
 import { aktivitaeten, istOnline, tagestyp } from "./home-hilfen";
 import { HeuteSpalte, ModulFortschritt, type RingKompetenz } from "./kompetenz-bereich";
 import type { GestaerkteKompetenz } from "./tages-karten";
@@ -33,17 +38,36 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   const jetzt = simuliert ?? jetztInBerlin();
   const heute = simuliert ? simuliert.slice(0, 10) : heuteInBerlin();
 
-  const [tag, naechster, modul, alleKompetenzen, nachholen, zuletztIds] = await Promise.all([
+  const ctx = {
+    organisationId: learner.organisationId,
+    cohortId: learner.cohortId,
+    enrolmentId: learner.enrolmentId,
+    programmeId: learner.programmeId,
+  };
+  const [tag, naechster, gliederungsModul, dbModul, alleKompetenzen, nachholen, zuletztIds] = await Promise.all([
     getTagesAgenda(learner.organisationId, learner.cohortId, learner.enrolmentId, learner.personId, heute),
     getNaechsterTermin(learner.organisationId, learner.cohortId, learner.enrolmentId, heute),
+    // Punkt 6 der Änderungsliste "freier Tag": dasselbe Modul wie auf der
+    // Programmseite (Gliederung), sonst die bisherige Regel.
+    getAktuellesGliederungsModul(ctx, learner.programmeName, heute),
     getAktuellesModul(learner.organisationId, learner.cohortId, learner.enrolmentId, learner.programmeId, heute),
     getKompetenzFortschritt(learner.personId),
     getNachholLektion(learner.organisationId, learner.cohortId, learner.enrolmentId, learner.personId, heute),
     getZuletztKompetenzIds(learner.personId),
   ]);
+  const modul = gliederungsModul?.modul ?? dbModul;
   const heuteAktiv = { ...aktivitaeten(tag), nachholen };
+  const zustand = getDayState(jetzt, heuteAktiv);
   const [modulKompetenzIds, heutige] = await Promise.all([
-    modul ? getModulKompetenzIds(modul.id) : Promise.resolve(new Set<string>()),
+    gliederungsModul
+      ? getModuleMitTeilschritten(learner.programmeId).then((wochen) => {
+          // Kompetenzen mit mindestens einem Teilschritt aus den Wochen des Moduls.
+          const steps = new Set(wochen.filter((w) => gliederungsModul.wochenIds.has(w.id)).flatMap((w) => [...w.stepIds]));
+          return new Set(alleKompetenzen.filter((k) => k.steps.some((st) => steps.has(st.id))).map((k) => k.id));
+        })
+      : modul
+        ? getModulKompetenzIds(modul.id)
+        : Promise.resolve(new Set<string>()),
     getHeutigeKompetenzen(
       [...heuteAktiv.live.flatMap((l) => (l.lessonId ? [l.lessonId] : [])), ...heuteAktiv.flex.map((f) => f.lessonId)],
       heuteAktiv.praxis.map((p) => p.fieldJobId)
@@ -93,19 +117,45 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       <HeuteSpalte modul={modul} programmName={learner.programmeName} kompetenzen={heuteRinge} zuletzt={zuletzt} />
     ) : null;
 
+  const vorname = learner.name.trim().split(" ")[0];
+  const begruessung = (
+    <Begruessung vorname={vorname} heute={heute} typ={tagestyp(tag)} online={istOnline(tag)} />
+  );
+
+  // Änderungsliste "freier Tag": heute nichts geplant (Zustand F) → Karte
+  // "Heute frei" mit Rückblick auf die letzte Programmwoche, zwei Zeilen,
+  // rechts alle Kompetenzen des Moduls; kein Modul-Fortschritt darunter.
+  if (zustand.zustand === "F") {
+    const [plan, kohortenStart, aeltesteOffene] = await Promise.all([
+      getStundenplan({ ...ctx, learnerId: learner.personId }, plusTage(montagDerWoche(heute), -7), plusTage(heute, -1)),
+      getKohortenStart(learner.cohortId),
+      getNachholLektion(learner.organisationId, learner.cohortId, learner.enrolmentId, learner.personId, heute, true),
+    ]);
+    const rueckblick = wochenrueckblick(plan, heute);
+    const text = freiText(rueckblick, vorname, heute, naechster?.datum ?? null, !!kohortenStart && kohortenStart < heute);
+    return (
+      <div data-breit className="flex flex-col gap-9">
+        {simuliert && <TestzeitHinweis heute={heute} jetzt={jetzt} />}
+        {begruessung}
+        <div className={cn("grid items-start gap-12", modul && ringe.length > 0 && "min-[960px]:grid-cols-[2fr_1fr]")}>
+          <section aria-label="Dein Tag" className="flex min-w-0 flex-col gap-4">
+            <FreiKarte text={text} tage={rueckblick?.tage ?? []} />
+            <FreiZeilen naechster={naechster} offen={aeltesteOffene} heute={heute} />
+          </section>
+          {modul && ringe.length > 0 && <AlleKompetenzen modulNummer={modul.nummer} kompetenzen={ringe} />}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div data-breit className="flex flex-col gap-10">
       {simuliert && <TestzeitHinweis heute={heute} jetzt={jetzt} />}
-      <Begruessung
-        vorname={learner.name.trim().split(" ")[0]}
-        heute={heute}
-        typ={tagestyp(tag)}
-        online={istOnline(tag)}
-      />
+      {begruessung}
       {/* Rechte Spalte nur so hoch wie ihr Inhalt (Option 1, 2026-10-10). */}
       <div className={cn("grid gap-8", spalte && "min-[960px]:grid-cols-[2fr_1fr]")}>
         <DeinTag
-          zustand={getDayState(jetzt, heuteAktiv)}
+          zustand={zustand}
           heute={heute}
           naechster={naechster}
           staerkt={staerkt}

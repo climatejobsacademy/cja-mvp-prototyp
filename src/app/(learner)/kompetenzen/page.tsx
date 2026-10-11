@@ -2,7 +2,9 @@ import { heuteInBerlin } from "@/lib/date";
 import { parseNowParameter } from "@/lib/home-tag";
 import { getKompetenzFortschritt } from "@/lib/queries/competencies";
 import { getAktuellesModul } from "@/lib/queries/home-modul";
-import { getHeuteStepIds, getLernaktivitaeten, getModuleMitTeilschritten } from "@/lib/queries/kompetenzen-seite";
+import { modulStatus } from "@/lib/programm";
+import { getHeuteStepIds, getLernaktivitaeten, getModuleMitTeilschritten, type ModulInfo } from "@/lib/queries/kompetenzen-seite";
+import { getGliederungsModule } from "@/lib/queries/programm";
 import { getTagesAgenda } from "@/lib/queries/schedule";
 import { requireCurrentLearner } from "@/lib/queries/session";
 import { cn } from "@/lib/utils";
@@ -29,12 +31,38 @@ export default async function KompetenzenPage({
   // Testzeit beim Klicken in Tabs und Liste mitnehmen.
   const zusatz = simuliert && now ? `&now=${encodeURIComponent(now)}` : "";
 
-  const [kompetenzen, modulListe, aktuell, tag] = await Promise.all([
+  const [kompetenzen, wochen, dbAktuell, tag, gliederung] = await Promise.all([
     getKompetenzFortschritt(learner.personId),
     getModuleMitTeilschritten(learner.programmeId),
     getAktuellesModul(learner.organisationId, learner.cohortId, learner.enrolmentId, learner.programmeId, heute),
     getTagesAgenda(learner.organisationId, learner.cohortId, learner.enrolmentId, learner.personId, heute),
+    getGliederungsModule(
+      {
+        organisationId: learner.organisationId,
+        cohortId: learner.cohortId,
+        enrolmentId: learner.enrolmentId,
+        programmeId: learner.programmeId,
+      },
+      learner.programmeName
+    ),
   ]);
+  // Wie Home und Programmseite (Anna 2026-10-11): In der Datenbank steht unter
+  // "module" je eine Woche. Mit vorläufiger Gliederung sind die Reiter die
+  // echten Module (ohne den Abschluss); ihre Teilschritte sind die aller
+  // zugehörigen Wochen. Ohne Gliederung bleiben es die Module der Datenbank.
+  const modulListe: ModulInfo[] = gliederung
+    ? gliederung
+        .filter((g) => g.ueberzeile.startsWith("Modul"))
+        .map((g) => ({
+          id: String(g.nummer),
+          name: g.name,
+          nummer: g.nummer,
+          stepIds: new Set(wochen.filter((w) => g.wochenIds.has(w.id)).flatMap((w) => [...w.stepIds])),
+        }))
+    : wochen;
+  const aktuell = gliederung
+    ? (modulListe[modulStatus(gliederung, heute).indexOf("aktuell")] ?? null)
+    : dbAktuell;
   // "Heute dran" (Brief 2.4): Teilschritte, auf die heutige Lektionen oder
   // Praxistage einzahlen -- dieselbe Zuordnung wie "Stärkt …" auf Home.
   const heuteStepIds = await getHeuteStepIds(

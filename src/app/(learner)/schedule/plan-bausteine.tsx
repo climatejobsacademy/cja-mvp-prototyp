@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, Check, Video, Wrench } from "lucide-react";
+import { ArrowRight, BookOpen, Check } from "lucide-react";
 
 import { spuren, stunden, type Tagestyp } from "@/lib/stundenplan";
-import { titelTeile } from "@/lib/home-tag";
 import { cn } from "@/lib/utils";
 
 import { JetztLinie } from "./jetzt-linie";
-import { zeitText, type Block, type Chip, type TagModell } from "./plan-modell";
+import type { Chip, TagModell } from "./plan-modell";
+import { TerminBlock } from "./termin-block";
 
 // Stundenplan v2 (docs/design_handoff_stundenplan_v2, SR folgt): gemeinsame
 // Bausteine von Woche, Tag und Monat. Aktivitätsfarben wie Home und
@@ -51,15 +51,18 @@ export function FlexChip({ chip }: { chip: Chip }) {
   return (
     <Link
       href={chip.href}
-      aria-label={`Selbstlernen, flexibel, ${chip.titel}, ${chip.erledigt ? "erledigt" : "offen"}`}
+      title={chip.refresher ? chip.titel : undefined}
+      aria-label={`Selbstlernen, flexibel, ${chip.refresher ? "Refresher: " : ""}${chip.titel}, ${chip.erledigt ? "erledigt" : "offen"}`}
       className={cn(
         "flex min-w-0 items-start gap-1.5 rounded-lg px-2 py-[5px] text-xs leading-snug font-semibold outline-none transition-[background-color] duration-150 focus-visible:ring-2 focus-visible:ring-eco-green motion-reduce:transition-none",
         chip.erledigt ? "text-muted-foreground" : "text-eco-deep-green",
         "hover:bg-off-white"
       )}
     >
-      <BookOpen className={cn("mt-px size-3.5 shrink-0", chip.erledigt ? "text-muted-foreground" : "text-eco-green")} aria-hidden="true" />
-      <span className="min-w-0 flex-1 hyphens-auto break-words">{titelTeile(chip.titel).titel}</span>
+      <BookOpen className="mt-px size-3.5 shrink-0 text-eco-green" aria-hidden="true" />
+      {/* Voller Titel (Anna 2026-10-11): das Thema steht oft in der Klammer.
+          Gleicher Titel wie der Live-Unterricht des Tages: nur "Refresher". */}
+      <span className="min-w-0 flex-1 hyphens-auto break-words">{chip.refresher ? "Refresher" : chip.titel}</span>
       {chip.erledigt && <Check className="mt-px size-3 shrink-0 text-eco-green" strokeWidth={3} aria-hidden="true" />}
     </Link>
   );
@@ -77,7 +80,8 @@ export function FlexLeiste({ chip, gross }: { chip: Chip; gross: boolean }) {
   return (
     <Link
       href={chip.href}
-      aria-label={`Selbstlernen, flexibel, ${chip.titel}, ${chip.erledigt ? "erledigt" : "weiterlernen"}`}
+      title={chip.refresher ? chip.titel : undefined}
+      aria-label={`Selbstlernen, flexibel, ${chip.refresher ? "Refresher: " : ""}${chip.titel}, ${chip.erledigt ? "erledigt" : "weiterlernen"}`}
       style={{ marginLeft: rand.links, marginRight: rand.rechts }}
       className={cn(
         "flex min-w-0 items-center gap-2 rounded-[10px] px-3 py-2 text-[13px] font-semibold outline-none transition-[background-color] duration-150 focus-visible:ring-2 focus-visible:ring-eco-green motion-reduce:transition-none",
@@ -86,8 +90,8 @@ export function FlexLeiste({ chip, gross }: { chip: Chip; gross: boolean }) {
           : "bg-flex-flaeche text-eco-deep-green hover:bg-success"
       )}
     >
-      <BookOpen className={cn("size-4 shrink-0", chip.erledigt ? "text-muted-foreground" : "text-eco-green")} aria-hidden="true" />
-      <span className="min-w-0 flex-1 truncate">{titelTeile(chip.titel).titel}</span>
+      <BookOpen className="size-4 shrink-0 text-eco-green" aria-hidden="true" />
+      <span className="min-w-0 flex-1">{chip.refresher ? "Refresher zum Live-Unterricht" : chip.titel}</span>
       {chip.erledigt ? (
         <Check className="size-3.5 shrink-0 text-eco-green" strokeWidth={3} aria-hidden="true" />
       ) : (
@@ -97,83 +101,6 @@ export function FlexLeiste({ chip, gross }: { chip: Chip; gross: boolean }) {
         </span>
       )}
     </Link>
-  );
-}
-
-const ART = {
-  live: { text: "Live-Unterricht", Icon: Video, flaeche: "bg-info", streifen: "border-l-lylac", icon: "text-lylac", cta: "Zum Live-Unterricht →" },
-  praxis: { text: "Praxisaufgabe", Icon: Wrench, flaeche: "bg-warning", streifen: "border-l-coral", icon: "text-coral-text", cta: "Zur Praxisaufgabe →" },
-} as const;
-
-const STATUS_TEXT = { erledigt: "erledigt", vorbei: "vorbei", offen: "offen" } as const;
-
-/**
- * Termin im Zeitraster. `gross` = Tagesansicht (mit Untertitel). Der ganze
- * Block ist klickbar (gestreckter Link). Punkt 3: Vergangenes weiß mit
- * feinem Rand und grauem Text (Häkchen nur bei bestätigter Anwesenheit),
- * der nächste Termin in seiner Farbe mit Knopf, ohne dunklen Rahmen.
- */
-function TerminBlock({ block, gross, style }: { block: Block; gross: boolean; style: React.CSSProperties }) {
-  const art = ART[block.art];
-  const teile = titelTeile(block.titel);
-  const zurueck = !block.naechster && block.status !== "offen";
-  const label = [
-    art.text,
-    `${zeitText(block)} Uhr${block.standardzeit ? " (Uhrzeit vorläufig)" : ""}`,
-    block.titel,
-    block.naechster ? "als Nächstes" : STATUS_TEXT[block.status],
-  ].join(", ");
-  const klickflaeche =
-    "outline-none after:absolute after:inset-0 after:rounded-[10px] after:content-[''] focus-visible:after:ring-2 focus-visible:after:ring-eco-green";
-  const titel = (
-    <span className={cn("leading-snug font-semibold", gross ? "text-base" : "line-clamp-2 text-[13px]")}>{teile.titel}</span>
-  );
-  return (
-    <div
-      style={style}
-      className={cn(
-        "absolute flex flex-col overflow-hidden rounded-[10px]",
-        gross ? "gap-2 px-[18px] py-3.5" : "gap-1 px-2.5 py-2",
-        // Wunsch Anna 2026-10-10: Woche im Stil des Monats -- nur der
-        // nächste Termin hat Farbfläche, alle anderen weiß mit feinem Rand.
-        block.naechster
-          ? cn("border-l-4 text-eco-deep-green", art.flaeche, art.streifen)
-          : cn("border border-border bg-white", zurueck ? "text-muted-foreground" : "text-eco-deep-green"),
-        block.naechster && "z-10"
-      )}
-    >
-      <span className="flex items-center gap-1.5 text-xs font-semibold">
-        <art.Icon className={cn("size-[13px] shrink-0", zurueck ? "text-muted-foreground" : art.icon)} aria-hidden="true" />
-        {zeitText(block)}
-        {gross && ` · ${art.text}`}
-        {block.status === "erledigt" && <Check className="ml-auto size-3 text-eco-green" strokeWidth={3} aria-hidden="true" />}
-      </span>
-      {block.href ? (
-        block.extern ? (
-          <a href={block.href} target="_blank" rel="noopener noreferrer" aria-label={`${label} (öffnet in neuem Tab)`} className={klickflaeche}>
-            {titel}
-          </a>
-        ) : (
-          <Link href={block.href} aria-label={label} className={klickflaeche}>
-            {titel}
-          </Link>
-        )
-      ) : (
-        <span aria-label={label}>{titel}</span>
-      )}
-      {gross && teile.untertitel && <span className="text-[13px] text-muted-foreground">{teile.untertitel}</span>}
-      {block.naechster && (
-        <span
-          aria-hidden="true"
-          className={cn(
-            "mt-auto self-start rounded-[9px] bg-eco-deep-green font-bold text-white",
-            gross ? "px-3.5 py-2 text-[13px]" : "px-2 py-1 text-[11px] whitespace-nowrap"
-          )}
-        >
-          {art.cta}
-        </span>
-      )}
-    </div>
   );
 }
 
@@ -297,7 +224,7 @@ export function MonatsTags({ tag }: { tag: TagModell }) {
             t.vorbei ? "text-muted-foreground" : "font-medium text-eco-deep-green"
           )}
         >
-          <span aria-hidden="true" className={cn("size-1.5 shrink-0 rounded-full", t.vorbei ? "bg-border" : t.punkt)} />
+          <span aria-hidden="true" className={cn("size-1.5 shrink-0 rounded-full", t.punkt)} />
           <span aria-hidden="true" className="truncate">
             {t.text}
           </span>

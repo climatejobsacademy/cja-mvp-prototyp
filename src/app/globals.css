@@ -23,6 +23,7 @@
   --color-raster-linie: var(--raster-linie);
   --color-heute-flaeche: var(--heute-flaeche);
   --color-flex-flaeche: var(--flex-flaeche);
+  --color-frei-text: var(--frei-text);
   --shadow-glow-charge: var(--glow-charge);
   --shadow-glow-charge-sm: var(--glow-charge-sm);
   --color-success: var(--success);
@@ -105,6 +106,9 @@
   --raster-linie: #f1f3ef;
   --heute-flaeche: #f7faf3;
   --flex-flaeche: #eef7f2;
+  /* Home, freier Tag (Änderungsliste Anna 2026-10-11, SR folgt): Text auf der
+     Coral-Karte "Heute frei" -- auf --warning 7.5:1, auf Weiß 9.2:1. */
+  --frei-text: #5b4636;
 
   /* Semantische Farben (Abschnitt 1): helle Hintergrundfläche + Eco Deep Green
      als Text-/Icon-Farbe — nie Coral/Charge Green direkt als Vordergrund.

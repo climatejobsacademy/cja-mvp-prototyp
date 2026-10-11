@@ -2,6 +2,9 @@
 // ohne Datenbank und ohne Uhr -- Zeitraum-Texte, Gliederung, Modul-Status.
 // Getestet in src/lib/programm.test.ts.
 
+// @ts-expect-error TS5097: .ts-Endung für node:test nötig (wie die Tests)
+import { montagDerWoche, plusTage } from "./date.ts";
+
 /** "2026-09-28" → "28.09.2026" */
 export function datumPunkt(datum: string): string {
   const [j, m, t] = datum.split("-");
@@ -20,24 +23,40 @@ export function zeitraumPunkt(von: string, bis: string): string {
  * steht unter "module" je eine Woche (z. B. "Woche 1 – Theorie (online),
  * 28.09.–02.10.2026"); die Ebene "Modul" (ca. 4 Wochen) darüber fehlt.
  * Bis Vera sie im Schema anlegt, kommt die Gliederung aus Annas Stundenplan
- * "EFK_EE_IHK_2026_2027" (Zeilen 19-178, zwei Tippfehler dort korrigiert:
- * Zeile 137 → 2027, Zeile 167 → Februar). Wochen werden über ihr Datum
- * zugeordnet. Vor dev ersetzen -- siehe Notion "Demo (→dev): To-dos".
+ * "EFK_EE_IHK_2026_2027" (Zeilen 19-178). Seit 2026-10-11 in Wochen ab
+ * Kohortenstart statt mit festen Daten -- so passt sie für jede Kohorte,
+ * auch für die Demo-Kohorte mit Start 31.08.2026 (Umsetzungsplan in Notion).
+ * Wochen werden über ihr Datum zugeordnet. Vor dev ersetzen -- siehe Notion
+ * "Demo (→dev): To-dos".
  */
 export type GliederungsModul = { nummer: number; ueberzeile: string; name: string; von: string; bis: string };
 
-const EFK_EE: GliederungsModul[] = [
-  { nummer: 1, ueberzeile: "Modul 1", name: "Grundlagen Elektrotechnik", von: "2026-09-28", bis: "2026-10-30" },
-  { nummer: 2, ueberzeile: "Modul 2", name: "Gebäudeinstallation", von: "2026-11-02", bis: "2026-11-28" },
-  { nummer: 3, ueberzeile: "Modul 3", name: "Grundlagen IT-Systemtechnik", von: "2026-11-30", bis: "2026-12-19" },
-  { nummer: 4, ueberzeile: "Modul 4", name: "Schaltschrankbau", von: "2027-01-04", bis: "2027-01-30" },
-  { nummer: 5, ueberzeile: "Modul 5", name: "Grundlagen Erneuerbaren Energien", von: "2027-02-01", bis: "2027-02-12" },
-  { nummer: 6, ueberzeile: "Abschluss", name: "Prüfungsvorbereitung", von: "2027-02-15", bis: "2027-02-19" },
+/** Woche 1 = Woche des Kohortenstarts; letzter Tag 4 = Freitag, 5 = Samstag (Praxis-Samstage). */
+type Vorlage = { nummer: number; ueberzeile: string; name: string; ersteWoche: number; letzteWoche: number; letzterTag: 4 | 5 };
+
+const EFK_EE: Vorlage[] = [
+  { nummer: 1, ueberzeile: "Modul 1", name: "Grundlagen Elektrotechnik", ersteWoche: 1, letzteWoche: 5, letzterTag: 4 },
+  { nummer: 2, ueberzeile: "Modul 2", name: "Gebäudeinstallation", ersteWoche: 6, letzteWoche: 9, letzterTag: 5 },
+  { nummer: 3, ueberzeile: "Modul 3", name: "Grundlagen IT-Systemtechnik", ersteWoche: 10, letzteWoche: 12, letzterTag: 5 },
+  // Wochen 13-14: Weihnachtspause
+  { nummer: 4, ueberzeile: "Modul 4", name: "Schaltschrankbau", ersteWoche: 15, letzteWoche: 18, letzterTag: 5 },
+  { nummer: 5, ueberzeile: "Modul 5", name: "Grundlagen Erneuerbaren Energien", ersteWoche: 19, letzteWoche: 20, letzterTag: 4 },
+  { nummer: 6, ueberzeile: "Abschluss", name: "Prüfungsvorbereitung", ersteWoche: 21, letzteWoche: 21, letzterTag: 4 },
 ];
 
-/** Gliederung für ein Programm (über den Namen erkannt); null = keine, dann gelten die Module der Datenbank. */
-export function gliederungFuer(programmName: string): GliederungsModul[] | null {
-  return /erneuerbare energien/i.test(programmName) ? EFK_EE : null;
+/**
+ * Gliederung für ein Programm (über den Namen erkannt) mit Zeiträumen ab
+ * dem Start der Kohorte; null = keine Gliederung oder kein Start bekannt,
+ * dann gelten die Module der Datenbank.
+ */
+export function gliederungFuer(programmName: string, kohortenStart: string | null): GliederungsModul[] | null {
+  if (!kohortenStart || !/erneuerbare energien/i.test(programmName)) return null;
+  const montag = montagDerWoche(kohortenStart);
+  return EFK_EE.map(({ ersteWoche, letzteWoche, letzterTag, ...m }) => ({
+    ...m,
+    von: plusTage(montag, (ersteWoche - 1) * 7),
+    bis: plusTage(montag, (letzteWoche - 1) * 7 + letzterTag),
+  }));
 }
 
 /** "Woche …, 28.09.–02.10.2026" → "2026-10-02" (letztes Datum im Namen), sonst null. */

@@ -35,6 +35,26 @@ const kurzname = (datum: string) =>
   new Date(`${datum}T00:00:00Z`).toLocaleDateString("de-DE", { weekday: "short", timeZone: "UTC" }).replace(".", "");
 const tagZahl = (datum: string) => String(Number(datum.slice(8, 10)));
 
+/**
+ * "Heute" als Textlink. Zeigt die Ansicht schon heute, grau und nicht
+ * klickbar -- sonst passiert beim Klick sichtbar nichts (Rückmeldung Anna
+ * 2026-10-11).
+ */
+function HeuteLink({ href, className }: { href: string | null; className?: string }) {
+  if (!href) {
+    return (
+      <span aria-disabled="true" title="Du siehst schon heute" className={cn("text-sm font-semibold text-muted-foreground/60", className)}>
+        Heute
+      </span>
+    );
+  }
+  return (
+    <Link href={href} className={cn(HEUTE_LINK, className)}>
+      Heute
+    </Link>
+  );
+}
+
 /** Brief 2.3: Segmented Control Tag | Woche | Monat. */
 function AnsichtUmschalter({ aktiv, href }: { aktiv: Ansicht; href: (a: Ansicht) => string }) {
   const knopf = (a: Ansicht, text: string) => (
@@ -70,7 +90,8 @@ export function Steuerleiste({
   umschalterHref,
 }: {
   ansicht: Ansicht;
-  heuteHref: string;
+  /** null = die Ansicht zeigt schon heute */
+  heuteHref: string | null;
   zurueckHref: string;
   vorHref: string;
   zurueckLabel: string;
@@ -92,9 +113,7 @@ export function Steuerleiste({
         {titel}
       </h2>
       <span className="ml-1.5 text-sm text-muted-foreground">{zusatz}</span>
-      <Link href={heuteHref} className={cn(HEUTE_LINK, "ml-4")}>
-        Heute
-      </Link>
+      <HeuteLink href={heuteHref} className="ml-4" />
       <div className="ml-auto">
         <AnsichtUmschalter aktiv={ansicht} href={umschalterHref} />
       </div>
@@ -117,7 +136,7 @@ function DatumsKreis({ datum, heute, gewaehlt = false, klein = false }: { datum:
   );
 }
 
-/** Brief 2.4: Tageskopf, Zeile "Flexibel" und Zeitraster über Mo–Fr -- ohne Rahmen (Punkt 2). */
+/** Brief 2.4: Tageskopf, Zeitraster und darunter die Zeile "Flexibel" über Mo–Fr -- ohne Rahmen (Punkt 2). */
 export function WochenAnsicht({
   tage,
   haupt,
@@ -158,11 +177,18 @@ export function WochenAnsicht({
       </div>
 
       <div className={raster}>
-        <div className="pt-2.5 pr-2.5 text-right text-[11px] font-semibold tracking-[0.06em] text-muted-foreground uppercase">
+        <StundenSpalte von={von} bis={bis} hoehe={HOEHE_WOCHE} />
+        {tage.map((t) => (
+          <TagSpalte key={t.datum} tag={t} von={von} bis={bis} hoehe={HOEHE_WOCHE} gross={false} jetzt={jetzt} simuliert={simuliert} heuteToenen />
+        ))}
+      </div>
+      {/* Anna 2026-10-11: Selbstlernen unter dem Kalender -- der Unterricht steht im Vordergrund. */}
+      <div className={raster}>
+        <div className="pt-4 pr-2.5 text-right text-[11px] font-semibold tracking-[0.06em] text-muted-foreground uppercase">
           Flexibel
         </div>
         {tage.map((t) => (
-          <div key={t.datum} className={cn("flex min-w-0 flex-col gap-1 px-1.5 pt-1.5 pb-3", heute(t))}>
+          <div key={t.datum} className={cn("flex min-w-0 flex-col gap-1 px-1.5 pt-3 pb-1.5", heute(t))}>
             {t.chips.map((c) => (
               <FlexChip key={c.id} chip={c} />
             ))}
@@ -170,12 +196,6 @@ export function WochenAnsicht({
         ))}
       </div>
 
-      <div className={raster}>
-        <StundenSpalte von={von} bis={bis} hoehe={HOEHE_WOCHE} />
-        {tage.map((t) => (
-          <TagSpalte key={t.datum} tag={t} von={von} bis={bis} hoehe={HOEHE_WOCHE} gross={false} jetzt={jetzt} simuliert={simuliert} heuteToenen />
-        ))}
-      </div>
     </div>
   );
 }
@@ -239,7 +259,7 @@ export function TagesListe({
   );
 }
 
-/** Ein Tag: Flexibel-Leisten (Punkt 9) + Zeitraster, ohne Rahmen. */
+/** Ein Tag: Zeitraster, darunter die Flexibel-Leisten (Punkt 9; unten seit 2026-10-11), ohne Rahmen. */
 export function TagesKarte({ tag, jetzt, simuliert, mobil }: { tag: TagModell; jetzt: string; simuliert: boolean; mobil: boolean }) {
   const bereich = stundenBereich(tag.bloecke);
   const { von, bis } = mobil ? bereich : { von: Math.min(7, bereich.von), bis: Math.max(19, bereich.bis) };
@@ -247,6 +267,10 @@ export function TagesKarte({ tag, jetzt, simuliert, mobil }: { tag: TagModell; j
   const hoehe = mobil ? mobilHoehe(von, bis) : tagesHoehe(von, bis);
   return (
     <div className="flex flex-col gap-3 text-eco-deep-green">
+      <div className={raster}>
+        <StundenSpalte von={von} bis={bis} hoehe={hoehe} />
+        <TagSpalte tag={tag} von={von} bis={bis} hoehe={hoehe} gross={!mobil} jetzt={jetzt} simuliert={simuliert} />
+      </div>
       {tag.chips.length > 0 && (
         <div className={raster}>
           <div className="pt-2.5 pr-2.5 text-right text-[11px] font-semibold tracking-[0.06em] text-muted-foreground uppercase">
@@ -259,10 +283,6 @@ export function TagesKarte({ tag, jetzt, simuliert, mobil }: { tag: TagModell; j
           </div>
         </div>
       )}
-      <div className={raster}>
-        <StundenSpalte von={von} bis={bis} hoehe={hoehe} />
-        <TagSpalte tag={tag} von={von} bis={bis} hoehe={hoehe} gross={!mobil} jetzt={jetzt} simuliert={simuliert} />
-      </div>
       {tag.bloecke.length === 0 && tag.chips.length === 0 && (
         <p className="text-center text-sm text-muted-foreground">An diesem Tag ist nichts geplant.</p>
       )}
@@ -381,7 +401,8 @@ export function MobilAnsicht({
   tage: TagModell[];
   haupt: Tagestyp | null;
   wochenText: string;
-  heuteHref: string;
+  /** null = die Ansicht zeigt schon heute */
+  heuteHref: string | null;
   zurueckHref: string;
   vorHref: string;
   jetzt: string;
@@ -392,9 +413,7 @@ export function MobilAnsicht({
     <div className="flex flex-col gap-4 text-eco-deep-green">
       <div className="flex items-end justify-between">
         <h1 className="font-heading text-[34px] leading-none">Stundenplan</h1>
-        <Link href={heuteHref} className={HEUTE_LINK}>
-          Heute
-        </Link>
+        <HeuteLink href={heuteHref} />
       </div>
       <div className="flex items-center justify-between text-sm">
         <Link href={zurueckHref} aria-label="Vorherige Woche" className={PFEIL}>

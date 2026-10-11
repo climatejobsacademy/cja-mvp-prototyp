@@ -70,6 +70,10 @@ export default async function SchedulePage({
   const haupt = haupttyp(wochenTage.map((t) => t.typ));
 
   const nowZusatz = simuliert && now ? `&now=${encodeURIComponent(now)}` : "";
+  // "Heute" (Entscheidung Anna 2026-10-11): am Wochenende springt es aus der
+  // Woche (Mo–Fr, ohne Sa/So) in die Tagesansicht des Wochenendtags. Zeigt
+  // die Ansicht schon heute, ist der Link aus (null).
+  const wochenende = !arbeitstage(heute).includes(heute);
   const href = (a: Ansicht, d: string) => `/schedule?ansicht=${a}&datum=${d}${nowZusatz}`;
   const tagHref = (d: string) => href("tag", d);
 
@@ -98,7 +102,7 @@ export default async function SchedulePage({
           <>
             <Steuerleiste
               ansicht="woche"
-              heuteHref={href("woche", heute)}
+              heuteHref={wochenende ? href("tag", heute) : woche.includes(heute) ? null : href("woche", heute)}
               zurueckHref={href("woche", plusTage(datum, -7))}
               vorHref={href("woche", plusTage(datum, 7))}
               zurueckLabel="Vorherige Woche"
@@ -115,7 +119,7 @@ export default async function SchedulePage({
           <>
             <Steuerleiste
               ansicht="tag"
-              heuteHref={href("tag", heute)}
+              heuteHref={datum === heute ? null : href("tag", heute)}
               zurueckHref={href("tag", naechsterArbeitstag(datum, -1))}
               vorHref={href("tag", naechsterArbeitstag(datum, 1))}
               zurueckLabel="Vorheriger Tag"
@@ -144,7 +148,7 @@ export default async function SchedulePage({
           <>
             <Steuerleiste
               ansicht="monat"
-              heuteHref={href("monat", heute)}
+              heuteHref={datum.slice(0, 7) === heute.slice(0, 7) ? null : href("monat", heute)}
               zurueckHref={href("monat", plusMonate(datum, -1))}
               vorHref={href("monat", plusMonate(datum, 1))}
               zurueckLabel="Vorheriger Monat"
@@ -170,7 +174,7 @@ export default async function SchedulePage({
           tage={wochenTage}
           haupt={haupt}
           wochenText={wocheNr ? `Woche ${wocheNr} · ${zeitraumText(montag, true)}` : zeitraumText(montag, true)}
-          heuteHref={href("tag", heute)}
+          heuteHref={datum === heute ? null : href("tag", heute)}
           zurueckHref={href("tag", plusTage(datum, -7))}
           vorHref={href("tag", plusTage(datum, 7))}
           jetzt={jetzt}

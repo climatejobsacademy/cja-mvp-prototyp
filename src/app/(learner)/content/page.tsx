@@ -64,7 +64,7 @@ export default async function ProgrammPage({
   // Module mit ihren Wochen (= Zeilen aus "module"). Mit Gliederung: Wochen
   // über ihr Datum (Stundenplan, sonst Datum im Namen) zuordnen; ohne
   // Gliederung ist jede Zeile ein eigenes Modul.
-  const gliederung = gliederungFuer(learner.programmeName);
+  const gliederung = gliederungFuer(learner.programmeName, kohorte?.start ?? null);
   const modulListe = gliederung
     ? gliederung.map((g) => ({
         ...g,
@@ -129,11 +129,9 @@ export default async function ProgrammPage({
 
   const kacheln: Kachel[] = [
     kompetenzAnzahl > 0 ? { wert: String(kompetenzAnzahl), label: kompetenzAnzahl === 1 ? "Kompetenz" : "Kompetenzen" } : null,
-    modulSteps.size > 0 ? { wert: `${stepsErreicht} / ${modulSteps.size}`, label: "Teilschritte erreicht" } : null,
+    modulSteps.size > 0 ? { wert: `${stepsErreicht} / ${modulSteps.size}`, label: "Kompetenzschritte erreicht" } : null,
     lernTage.length > 0 ? { wert: `${lernTage.filter(tagErledigt).length} / ${lernTage.length}`, label: "Lerntage absolviert" } : null,
   ].filter((k): k is Kachel => !!k);
-  // Kompetenzseite hat (noch) je Woche einen Reiter: erste Woche des Moduls wählen.
-  const ersteWoche = dbModule.find((w) => gewaehlteWochen.has(w.id));
 
   // Brief 2.2, angepasst (Anna 2026-10-11): "Start {Datum} · Ende {Datum} · {n} Module"
   // statt Dauer. Ende: Kohorte, sonst Ende des letzten Moduls; Fehlendes weglassen.
@@ -193,7 +191,13 @@ export default async function ProgrammPage({
                 oeffnen={inhalte === "1" ? randomUUID() : null}
               />
             }
-            kompetenzenHref={ersteWoche ? `/kompetenzen?modul=${ersteWoche.id}${nowZusatz}` : null}
+            kompetenzenHref={
+              gliederung
+                ? gewaehlt.ueberzeile.startsWith("Modul")
+                  ? `/kompetenzen?modul=${gewaehlt.id}${nowZusatz}`
+                  : null
+                : `/kompetenzen?modul=${[...gewaehlteWochen][0] ?? ""}${nowZusatz}`
+            }
           />
         )}
         <KohorteKarten kohortenName={learner.cohortName} />

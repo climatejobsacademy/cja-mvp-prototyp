@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 // Fortschrittsring: erreichte Teilschritte / alle Teilschritte einer
 // Kompetenz (competency_fulfilment, SR-63) -- nie "Lektion angesehen".
 
-export type RingGroesse = 112 | 84 | 80 | 64 | 56 | 48;
+export type RingGroesse = 112 | 84 | 80 | 64 | 56 | 48 | 44;
 const RING: Record<RingGroesse, { klasse: string; strich: number; text: string }> = {
   112: { klasse: "size-28", strich: 9, text: "font-heading text-[26px] font-normal" },
   84: { klasse: "size-[84px]", strich: 8, text: "text-[15px]" },
@@ -11,13 +11,15 @@ const RING: Record<RingGroesse, { klasse: string; strich: number; text: string }
   64: { klasse: "size-16", strich: 6, text: "text-[13px]" },
   56: { klasse: "size-14", strich: 5, text: "text-xs" },
   48: { klasse: "size-12", strich: 5, text: "text-[11px]" },
+  44: { klasse: "size-11", strich: 4, text: "text-[11px]" },
 };
 
 /**
  * Fortschrittsring mit Prozentzahl, gemeinsam für Home v13 und die
  * Kompetenzseite v1: 112 px (Kompetenz-Detail, Zahl in Anton), 84/64 px
  * ("Heute stärkst du"), 80 px (Zustand D, dunkle Karte), 56 px
- * (Kompetenzliste), 48 px (Modul-Übersicht). `glow` = heute gestärkt.
+ * (Kompetenzliste), 48 px (Modul-Übersicht), 44 px (Home, freier Tag).
+ * `glow` = heute gestärkt.
  */
 export function Ring({
   prozent,

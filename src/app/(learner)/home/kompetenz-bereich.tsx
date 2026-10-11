@@ -87,7 +87,7 @@ export function HeuteSpalte({
                   </span>
                   {k.teilschritteGesamt > 0 && (
                     <span className="text-[13px] text-muted-foreground">
-                      {k.teilschritteErreicht} von {k.teilschritteGesamt} Teilschritten erreicht
+                      {k.teilschritteErreicht} von {k.teilschritteGesamt} Kompetenzschritten erreicht
                     </span>
                   )}
                 </span>

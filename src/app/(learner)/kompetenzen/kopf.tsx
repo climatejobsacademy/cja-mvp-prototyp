@@ -94,7 +94,7 @@ export function ModulFortschrittZeile({
   if (gesamt === 0) {
     return (
       <p className="rounded-[14px] bg-off-white px-5 py-4 text-[15px] text-muted-foreground">
-        Für Modul {nummer} sind noch keine Teilschritte hinterlegt.
+        Für Modul {nummer} sind noch keine Kompetenzschritte hinterlegt.
       </p>
     );
   }
@@ -113,7 +113,7 @@ export function ModulFortschrittZeile({
       </span>
       <span>
         <span className="font-semibold text-eco-deep-green">
-          {erreicht} von {gesamt} Teilschritten
+          {erreicht} von {gesamt} Kompetenzschritten
         </span>{" "}
         in Modul {nummer} erreicht
       </span>
