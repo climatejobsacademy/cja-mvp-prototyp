@@ -22,7 +22,7 @@ export type Block = {
   /** Ziel beim Klick; null = kein Ziel (dann kein Link) */
   href: string | null;
   extern: boolean;
-  /** Live: Link in den Live-Raum, solange der Termin nicht vorbei ist (sonst null) */
+  /** Live: Link in den Live-Raum ab 15 Min. vor Beginn bis zum Ende (sonst null) */
   liveRaum: string | null;
   /** Lektionsseite (Unterlagen) bzw. Praxisaufgabe; null = keine */
   inhalt: string | null;
@@ -51,6 +51,13 @@ export type TagModell = {
 
 const hhmm = (zeit: string) => zeit.slice(0, 5);
 
+/** "13:00:00" → "12:45:00" (am selben Tag; vor 00:15 bleibt 00:00) */
+function minus15(zeit: string): string {
+  const [h, m] = zeit.split(":").map(Number);
+  const minuten = Math.max(0, h * 60 + m - 15);
+  return `${String(Math.floor(minuten / 60)).padStart(2, "0")}:${String(minuten % 60).padStart(2, "0")}:00`;
+}
+
 /** "09:00 – 12:00" bzw. "ca. 08:30 – 16:30" bei Standardzeit */
 export function zeitText(b: Pick<Block, "start" | "ende" | "standardzeit">): string {
   return `${b.standardzeit ? "ca. " : ""}${hhmm(b.start)} – ${hhmm(b.ende)}`;
@@ -64,8 +71,10 @@ export function planModell(tage: Plantag[], heute: string, jetzt: string): TagMo
       if (e.art !== "live" || !e.liveSession) return [];
       const s = e.liveSession;
       const vorbei = `${tag.datum}T${s.ende}` <= jetzt;
-      // Vor und während des Termins: Live-Raum; danach: Lektion (Unterlagen).
-      const zumRaum = !vorbei && !!s.joinLink;
+      // Wie Veras Stundenplan (Entscheidung Anna 2026-10-11): immer genau eine
+      // Aktion -- ab 15 Min. vor Beginn bis zum Ende der Live-Raum, sonst die
+      // Lektion. (Vera: erst ab Beginn; die 15 Min. zum rechtzeitigen Einwählen.)
+      const zumRaum = !vorbei && !!s.joinLink && `${tag.datum}T${minus15(s.start)}` <= jetzt;
       return [
         {
           id: e.scheduleEntryId,
