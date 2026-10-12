@@ -21,6 +21,8 @@ import {
   bewertungAbschliessbar,
   codewortKorrekt,
   demoZuruecksetzen,
+  diktatZuTexten,
+  eintraegeAnhaengen,
   eintragBearbeiten,
   eintragHinzufuegen,
   eintragLoeschen,
@@ -159,6 +161,33 @@ test("Planen zurück: Unterschritt für Unterschritt, vor dem ersten zu Analyse;
   const analyse = { ...null_, ...planenZurueck(null_) };
   assert.deepEqual([analyse.phase, analyse.planenSchritt], ["analyse", 0]);
   assert.deepEqual([analyse.werkzeuge, analyse.materialien], [drei, drei]);
+});
+
+// ---------- Diktat ----------
+
+test("Diktat: ein Satz je Eintrag, Satzpunkt am Ende weg, leere Teile ignoriert", () => {
+  assert.deepEqual(diktatZuTexten("Akkuschrauber. Maßband! Ist das alles?"), ["Akkuschrauber", "Maßband!", "Ist das alles?"]);
+  assert.deepEqual(diktatZuTexten("  Seitenschneider  "), ["Seitenschneider"]);
+  assert.deepEqual(diktatZuTexten("Kabel abisolieren.\n\nAdern prüfen..  "), ["Kabel abisolieren", "Adern prüfen"]);
+  assert.deepEqual(diktatZuTexten(""), []);
+  assert.deepEqual(diktatZuTexten(" . \n . "), []);
+  assert.deepEqual(diktatZuTexten("   \n  "), []);
+  assert.deepEqual(diktatZuTexten("..."), []);
+});
+
+test("Diktat: allein stehende Zahl bleibt beim folgenden Satz", () => {
+  assert.deepEqual(diktatZuTexten("1. Kabel abisolieren. 2. Adern prüfen."), ["1. Kabel abisolieren", "2. Adern prüfen"]);
+});
+
+test("Diktat: Texte werden unten angehängt und sind danach wie getippte Einträge sortierbar", () => {
+  let n = 0;
+  const neueId = () => `d${++n}`;
+  const l = eintraegeAnhaengen([{ id: "a", text: "A" }], ["B", "  ", "C"], neueId);
+  assert.equal(ids(l), "ad1d2");
+  assert.deepEqual(l.map((e) => e.text), ["A", "B", "C"]);
+  assert.equal(ids(eintragVerschieben(l, "d2", "hoch")), "ad2d1");
+  assert.equal(ids(eintragLoeschen(l, "d1")), "ad2");
+  assert.equal(eintragBearbeiten(l, "d1", "B neu")[1].text, "B neu");
 });
 
 // ---------- Durchführen ----------

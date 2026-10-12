@@ -105,6 +105,33 @@ export function planenZurueck(z: PlanenPosition): PlanenPosition {
   return { phase: "analyse", planenSchritt: 0 };
 }
 
+// ---------- Diktat (Planen) ----------
+
+/**
+ * Erkannter Diktat-Text → Texte für Listeneinträge: ein Satz je Eintrag
+ * (getrennt nach . ! ? oder Zeilenumbruch), leere Teile entfallen, ein Punkt
+ * am Satzende auch. Eine allein stehende Zahl ("1. Kabel abisolieren")
+ * bleibt beim folgenden Satz.
+ */
+export function diktatZuTexten(text: string): string[] {
+  const teile = text
+    .split(/(?<=[.!?])\s+|[\r\n]+/)
+    .map((t) => t.trim())
+    .filter((t) => t.length > 0);
+  const saetze: string[] = [];
+  for (const t of teile) {
+    const vorher = saetze[saetze.length - 1];
+    if (vorher !== undefined && /^\d+\.$/.test(vorher)) saetze[saetze.length - 1] = `${vorher} ${t}`;
+    else saetze.push(t);
+  }
+  return saetze.map((s) => s.replace(/\.+$/, "").trim()).filter((s) => s.length > 0);
+}
+
+/** Hängt diktierte Texte unten an die Liste an, je Text ein Eintrag (wie getippt). */
+export function eintraegeAnhaengen(liste: Eintrag[], texte: string[], neueId: () => string): Eintrag[] {
+  return texte.filter((t) => t.trim()).reduce((l, t) => eintragHinzufuegen(l, t, neueId()), liste);
+}
+
 // ---------- Durchführen ----------
 
 // Regel: Schritte nur streng nacheinander. Abgehakt ist immer ein lückenloser

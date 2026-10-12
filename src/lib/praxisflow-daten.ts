@@ -147,6 +147,13 @@ export const TEXTE = {
     unterschritt: (nr: number, gesamt: number) => `Schritt ${nr} von ${gesamt}`,
     gesperrt: "Trage mindestens einen Arbeitsschritt ein, dann geht es weiter zu Entscheiden.",
   },
+  diktat: {
+    starten: "Diktieren",
+    stoppen: "Stopp",
+    hoertZu: "Hört zu …",
+    verweigert: "Mikrofon nicht freigegeben. Du kannst die Einträge weiter tippen.",
+    fehler: "Diktat gerade nicht möglich. Du kannst die Einträge weiter tippen.",
+  },
   durchfuehren: {
     /** Hinweis an einem noch gesperrten Schritt; nr = Nummer des Vorgängers. */
     gesperrt: (nr: number) => `Zuerst Schritt ${nr} abschließen.`,

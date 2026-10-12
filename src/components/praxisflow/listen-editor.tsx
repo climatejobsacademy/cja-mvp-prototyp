@@ -5,6 +5,7 @@ import { ArrowDown, ArrowUp, Check, Pencil, Plus, Trash2, X, type LucideIcon } f
 
 import { cn } from "@/lib/utils";
 
+import { DiktatKnopf, type DiktatTexte } from "./diktat-knopf";
 import { EINGABE, ICON_BUTTON, SEKUNDAER } from "./stile";
 
 type Eintrag = { id: string; text: string };
@@ -12,7 +13,9 @@ type Eintrag = { id: string; text: string };
 /**
  * Eine Liste in Planen (Werkzeuge, Materialien, Arbeitsschritte): hinzufügen,
  * bearbeiten, löschen; mit `onVerschieben` zusätzlich Hoch/Runter und
- * Nummerierung. Hält nur den Eingabezustand selbst, die Liste kommt über Props.
+ * Nummerierung; mit `diktat` zusätzlich ein Mikrofon-Knopf (DiktatKnopf), dessen
+ * Sätze unten angehängt werden. Hält nur den Eingabezustand selbst, die Liste
+ * kommt über Props.
  */
 export function ListenEditor({
   id,
@@ -26,6 +29,7 @@ export function ListenEditor({
   onBearbeiten,
   onLoeschen,
   onVerschieben,
+  diktat,
 }: {
   id: string;
   titel: string;
@@ -39,6 +43,7 @@ export function ListenEditor({
   onBearbeiten: (id: string, text: string) => void;
   onLoeschen: (id: string) => void;
   onVerschieben?: (id: string, richtung: "hoch" | "runter") => void;
+  diktat?: { texte: DiktatTexte; onTexte: (texte: string[]) => void };
 }) {
   const [neu, setNeu] = useState("");
   const [bearbeitet, setBearbeitet] = useState<{ id: string; text: string } | null>(null);
@@ -136,7 +141,7 @@ export function ListenEditor({
           })}
         </ol>
       )}
-      <form onSubmit={hinzufuegen} className="flex flex-col gap-2 sm:flex-row">
+      <form onSubmit={hinzufuegen} className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
         <label htmlFor={`${id}-neu`} className="sr-only">
           {einzahl} hinzufügen
         </label>
@@ -147,6 +152,7 @@ export function ListenEditor({
           placeholder={platzhalter}
           className={cn(EINGABE, "flex-1")}
         />
+        {diktat && <DiktatKnopf einzahl={einzahl} texte={diktat.texte} onTexte={diktat.onTexte} />}
         <button type="submit" disabled={!neu.trim()} className={SEKUNDAER}>
           <Plus aria-hidden="true" />
           Hinzufügen

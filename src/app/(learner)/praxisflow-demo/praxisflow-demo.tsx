@@ -41,6 +41,7 @@ import {
   eintragBearbeiten,
   eintragHinzufuegen,
   eintragLoeschen,
+  eintraegeAnhaengen,
   eintragVerschieben,
   erledigtBereinigen,
   schrittStatus,
@@ -154,6 +155,8 @@ function Flow() {
       onHinzufuegen: (text: string) => liste(name, (l) => eintragHinzufuegen(l, text, neueId())),
       onBearbeiten: (id: string, text: string) => liste(name, (l) => eintragBearbeiten(l, id, text)),
       onLoeschen: (id: string) => liste(name, (l) => eintragLoeschen(l, id)),
+      // Diktierte Sätze unten anhängen; bei Arbeitsschritten danach wie getippte sortierbar.
+      diktat: { texte: TEXTE.diktat, onTexte: (texte: string[]) => liste(name, (l) => eintraegeAnhaengen(l, texte, neueId)) },
     };
   }
 
