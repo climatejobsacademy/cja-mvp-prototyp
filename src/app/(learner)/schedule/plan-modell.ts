@@ -37,6 +37,8 @@ export type Chip = {
   erledigt: boolean;
   /** Gleicher Titel wie ein Live-Termin desselben Tages → als "Wissen festigen" zeigen (Anna 2026-10-11) */
   refresher: boolean;
+  /** Sprachtraining-Demo (SR-31, nur demo): "Fachsprache des Tages" */
+  sprache?: boolean;
 };
 
 

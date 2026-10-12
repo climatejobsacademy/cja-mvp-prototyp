@@ -76,6 +76,7 @@ import {
   type DemoZustand,
   type Eintrag,
 } from "@/lib/praxisflow-logik";
+import { FachText } from "@/components/sprachtraining/fach-text";
 import { cn } from "@/lib/utils";
 
 function speicher(): Storage | null {
@@ -554,7 +555,10 @@ function AnalyseSchritte({ onWeiter }: { onWeiter: () => void }) {
     <>
       <div className="flex flex-col gap-3">
         <h3 className={UEBERSCHRIFT}>Arbeitsauftrag</h3>
-        <p className={TEXT}>{TEXTE.analyse.arbeitsauftrag}</p>
+        {/* Fachbegriffe zum Antippen (SR-24, Sprachtraining-Demo, nur demo) */}
+        <p className={TEXT}>
+          <FachText text={TEXTE.analyse.arbeitsauftrag} />
+        </p>
         {gelesen ? (
           <p className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink-muted">
             <Check className="size-4 text-brand" strokeWidth={3} aria-hidden="true" /> Gelesen

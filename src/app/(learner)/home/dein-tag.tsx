@@ -3,11 +3,13 @@ import type { ReactNode } from "react";
 
 import type { Tageszustand } from "@/lib/home-tag";
 import type { NaechsterTermin } from "@/lib/queries/schedule";
+import { SPRACHTRAINING_DEMO } from "@/lib/demo-schalter";
 import { cn } from "@/lib/utils";
 
 import { naechsterTagText, naechsterTagZeile, naechsterTerminText, nochOffenText } from "./home-hilfen";
 import {
   ErledigtLeiste,
+  FachspracheKaestchen,
   FlexLeiste,
   FokusErledigt,
   FokusFlex,
@@ -115,6 +117,10 @@ export function DeinTag({
     !leiste && naechster && zustand.zustand !== "D" && zustand.zustand !== "F"
       ? naechsterTagZeile(naechster, heute)
       : null;
+  // Sprachtraining-Demo (SR-31, VORLÄUFIG, nur demo): an Tagen mit
+  // Live-Unterricht (A-D) "Deine Fachsprache" unter dem rechten Kästchen.
+  const sprache = SPRACHTRAINING_DEMO && ["A", "B", "C", "D"].includes(zustand.zustand);
+  const rechts = !!(leiste || naechsterZeile || sprache);
   return (
     <section aria-labelledby="dein-tag" className="flex min-w-0 flex-col gap-4">
       <div className="flex items-baseline justify-between gap-4">
@@ -130,12 +136,17 @@ export function DeinTag({
       </div>
       {/* Entscheidung Anna 2026-10-12: die Leiste steht rechts neben der
           Fokus-Karte statt darunter, gleich hoch wie die Karte. */}
-      <div className={cn("grid gap-4", (leiste || naechsterZeile) && "min-[960px]:grid-cols-[2fr_1fr]")}>
+      <div className={cn("grid gap-4", rechts && "min-[960px]:grid-cols-[2fr_1fr]")}>
         {fokus}
-        {(leiste || naechsterZeile) && (
-          <div className="flex min-w-0 flex-col gap-4">
-            {leiste}
-            {naechsterZeile && <NaechsterTagZeile {...naechsterZeile} />}
+        {rechts && (
+          // Ab 960 px bestimmt nur die Fokus-Karte die Höhe: die rechte
+          // Spalte füllt genau diese Höhe, statt sie zu vergrößern.
+          <div className="min-w-0 min-[960px]:relative">
+            <div className="flex flex-col gap-4 min-[960px]:absolute min-[960px]:inset-0">
+              {leiste}
+              {naechsterZeile && <NaechsterTagZeile {...naechsterZeile} />}
+              {sprache && <FachspracheKaestchen />}
+            </div>
           </div>
         )}
       </div>

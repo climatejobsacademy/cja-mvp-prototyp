@@ -2,6 +2,7 @@ import { FlaskConical } from "lucide-react";
 
 import { ModulZeichen } from "@/components/modul-zeichen";
 import { ProgrammZeile } from "@/components/programm-zeile";
+import { SPRACHTRAINING_DEMO } from "@/lib/demo-schalter";
 import { datumKurz, datumLang, heuteInBerlin, jetztInBerlin, montagDerWoche, plusTage } from "@/lib/date";
 import { parseNowParameter, themaTitel } from "@/lib/home-tag";
 import { gliederungFuer, modulZumDatum } from "@/lib/programm";
@@ -73,7 +74,14 @@ export default async function SchedulePage({
   const modelle = planModell(plan, heute, jetzt).map((t) => ({
     ...t,
     bloecke: t.bloecke.map((b) => ({ ...b, titel: themaTitel(b.titel) })),
-    chips: t.chips.map((c) => ({ ...c, titel: themaTitel(c.titel) })),
+    chips: [
+      ...t.chips.map((c) => ({ ...c, titel: themaTitel(c.titel) })),
+      // Sprachtraining-Demo (SR-31, VORLÄUFIG, nur demo, nicht nach dev):
+      // an Tagen mit Live-Unterricht "Fachsprache · 5 Min".
+      ...(SPRACHTRAINING_DEMO && t.bloecke.some((b) => b.art === "live")
+        ? [{ id: `sprache-${t.datum}`, titel: "Fachsprache · 5 Min", href: "/sprachtraining-demo?von=stundenplan", erledigt: false, refresher: false, sprache: true }]
+        : []),
+    ],
   }));
   const wochenTage = modelle.filter((t) => woche.includes(t.datum));
   const tag = modelle.find((t) => t.datum === datum)!;

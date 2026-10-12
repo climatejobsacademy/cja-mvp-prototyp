@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
 import { ModulZeichen } from "@/components/modul-zeichen";
+import { FachText } from "@/components/sprachtraining/fach-text";
 import { UnitProgressBadge } from "@/components/status-badge";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
@@ -99,7 +100,8 @@ export default async function LessonPage({
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="font-heading text-[28px] leading-tight text-ink md:text-[36px]">
-            {themaTitel(lesson.name)}
+            {/* Fachbegriffe zum Antippen (SR-24, Sprachtraining-Demo, nur demo) */}
+            <FachText text={themaTitel(lesson.name)} />
           </h1>
           <UnitProgressBadge status={lesson.status} />
         </div>

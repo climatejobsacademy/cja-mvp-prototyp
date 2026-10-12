@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { ArrowRight, BookOpen, CalendarDays, Check, Video, Wrench } from "lucide-react";
+import { ArrowRight, BookOpen, CalendarDays, Check, MessageCircle, Video, Wrench } from "lucide-react";
 
 import { themaTitel, type ErledigtEintrag, type LiveAktivitaet, type PraxisAktivitaet } from "@/lib/home-tag";
 import { Ring } from "@/components/fortschritts-ring";
@@ -20,8 +20,6 @@ import { MehrMenue } from "./mehr-menue";
 // Coral-Verlauf; Buttons darauf in Lime.
 const PRIMAER_BUTTON =
   "inline-flex min-h-11 items-center gap-2 rounded-full bg-lime px-5 text-[15px] font-bold text-on-lime outline-none transition-[filter] duration-150 hover:brightness-95 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand motion-reduce:transition-none";
-
-const LINK_FOKUS = "rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-brand";
 
 const hhmm = (zeit: string) => zeit.slice(0, 5);
 const lektionHref = (lessonId: string) => `/content/${lessonId}?von=home`;
@@ -371,48 +369,13 @@ export function FokusRuhig({ naechsterTermin }: { naechsterTermin: string | null
 // ---------------------------------------------------------------------------
 // Schmale Leisten unter der Fokus-Karte (Home v12)
 
-// Ab 960 px rechts neben der Fokus-Karte (Entscheidung Anna 2026-10-12):
-// dann untereinander und so hoch wie die Karte, die Aktion unten.
-const LEISTE =
-  "flex flex-wrap items-center gap-[18px] rounded-zeile px-6 py-5 text-ink min-[960px]:flex-1 min-[960px]:flex-col min-[960px]:flex-nowrap min-[960px]:items-start min-[960px]:py-6";
-// Aktion als graue Pill (Annas Skizze 2026-10-12).
-const LEISTE_AKTION =
-  "inline-flex items-center rounded-full bg-subtle px-4 py-2 text-sm font-semibold whitespace-nowrap min-[960px]:mt-auto";
-const LEISTE_NEUTRAL = "bg-card shadow-card";
 const LEISTE_LINK =
   "outline-none transition-[box-shadow] duration-150 hover:shadow-card focus-visible:ring-2 focus-visible:ring-brand motion-reduce:transition-none";
 
-function LeistenIcon({ children }: { children: ReactNode }) {
-  return (
-    <span className="flex size-10 flex-none items-center justify-center rounded-xl bg-subtle text-progress">
-      {children}
-    </span>
-  );
-}
-
-function LeistenText({ kopf, art, titel, zeile }: { kopf: string; art?: string; titel: string; zeile?: string }) {
-  return (
-    <span className="flex min-w-0 flex-[1_1_240px] flex-col gap-[3px] min-[960px]:flex-none">
-      <span className="text-[13px] text-ink-subtle">
-        <span className="font-semibold">{kopf}</span>
-        {art && ` · ${art}`}
-      </span>
-      <span className="text-base leading-snug font-semibold">{titel}</span>
-      {zeile && <span className="text-sm text-ink-muted">{zeile}</span>}
-    </span>
-  );
-}
-
 /**
- * Selbstlernen rechts neben der Fokus-Karte, als knapper Aufruf
- * (Entscheidung Anna 2026-10-12): "Wissen festigen" bzw. "Nachholen" im
- * Titel-Stil der Karte,
- * klein wann + Lektion, unten der Knopf. Neutral statt Lila, damit nur die
- * Fokus-Karte farbig ist: weiße Karte wie "Im Modul … stärkst du" (Wahl
- * Anna 2026-10-12).
- * Keine "Stärkt"-Pills hier, die stehen schon auf der Karte.
- * Auch während des Unterrichts (B) aktiv mit "Jetzt festigen" --
- * Entscheidung Anna 2026-10-12, statt ausgegraut "Nach dem Unterricht".
+ * Selbstlernen rechts neben der Fokus-Karte (Entscheidung Anna 2026-10-12):
+ * kompaktes weißes Kästchen "Wissen festigen" bzw. "Nachholen" mit dem Titel
+ * der Lektion -- auch während des Unterrichts (B) anklickbar.
  */
 export function FlexLeiste({
   lektion,
@@ -423,59 +386,48 @@ export function FlexLeiste({
   kopf?: string;
 }) {
   const nachholen = !!kopf;
-  const inhalt = (
-    <>
-      {/* Gleicher Aufbau wie die Fokus-Karte daneben (Anna 2026-10-12):
-          "Wissen festigen" in der Größe des Lektionsthemas, darunter der
-          Titel der Lektion. */}
-      <span className="flex flex-col gap-2">
-        {/* "Flexibel" weg (Anna 2026-10-12); nur "Noch offen von …" bleibt. */}
-        {kopf && <span className="text-sm text-ink-muted">{kopf}</span>}
-        <span className={cn("flex items-center gap-2.5 text-ink", KARTEN_TITEL)}>
-          {/* Selbstlernen-Zeichen wie überall: Buch in Eco Green. */}
-          <BookOpen className="size-[22px] flex-none text-self" aria-hidden="true" />
-          {nachholen ? "Nachholen" : "Wissen festigen"}
-        </span>
-        <span className="line-clamp-2 text-[15px] text-ink-muted">{themaTitel(lektion.titel)}</span>
-      </span>
-      <span
-        className={cn(
-          // Leichter Knopf (Entscheidung Anna 2026-10-12): Grau statt Dunkel.
-          "mt-auto inline-flex min-h-11 items-center gap-2 self-start rounded-full bg-subtle px-5 text-[15px] font-semibold text-ink",
-        )}
-      >
-        {nachholen ? "Jetzt nachholen" : "Jetzt festigen"}
-        <ArrowRight className="size-[17px]" aria-hidden="true" />
-      </span>
-    </>
-  );
-  const rahmen = cn(
-    "flex flex-col gap-5 rounded-karte p-6 min-[960px]:flex-1 md:px-7 md:py-7",
-    "bg-card shadow-card",
-  );
+  // Gleiches Prinzip wie "Deine Fachsprache" darunter (Anna 2026-10-12):
+  // Symbol, Titel und Pfeil in einer Zeile, darunter der Titel der Lektion.
+  // Beide Kästchen teilen sich die Höhe der Fokus-Karte.
   return (
-    <Link href={lektionHref(lektion.lessonId)} className={cn(rahmen, LEISTE_LINK)}>
-      {inhalt}
+    <Link
+      href={lektionHref(lektion.lessonId)}
+      className={cn(KAESTCHEN, LEISTE_LINK)}
+    >
+      <BookOpen className="size-[22px] flex-none text-self" aria-hidden="true" />
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="text-[17px] font-semibold">{nachholen ? "Nachholen" : "Wissen festigen"}</span>
+        <span className="line-clamp-2 text-sm text-ink-muted">
+          {kopf ? `${kopf} · ` : ""}
+          {themaTitel(lektion.titel)}
+        </span>
+      </span>
+      <ArrowRight className="size-[17px] flex-none text-ink-muted" aria-hidden="true" />
     </Link>
   );
 }
 
+// Kompaktes Kästchen rechts neben der Fokus-Karte, gleiches Prinzip für alle
+// (Anna 2026-10-12): Symbol, kurzer Titel, eine Zeile darunter, Pfeil; das
+// ganze Kästchen ist der Link. Mehrere teilen sich die Höhe der Fokus-Karte.
+const KAESTCHEN = "flex items-center gap-3 rounded-karte bg-card px-5 py-4 text-ink shadow-card min-[960px]:min-h-0 min-[960px]:flex-1";
+
 /** C: zuletzt erledigte Live-Session mit Weg zu den Unterlagen. */
 export function ErledigtLeiste({ erledigt }: { erledigt: ErledigtEintrag[] }) {
   const live = [...erledigt].reverse().find((e) => e.typ === "live");
-  if (!live || live.typ !== "live") return null;
+  if (!live || live.typ !== "live" || !live.lessonId) return null;
   return (
-    <div className={cn(LEISTE, LEISTE_NEUTRAL)}>
-      <LeistenIcon>
-        <Check className="size-5" aria-hidden="true" />
-      </LeistenIcon>
-      <LeistenText kopf="Erledigt" art={`Live-Unterricht ${hhmm(live.start)}`} titel={themaTitel(live.titel)} />
-      {live.lessonId && (
-        <Link href={lektionHref(live.lessonId)} className={cn(LEISTE_AKTION, LINK_FOKUS)}>
-          Unterlagen ansehen →
-        </Link>
-      )}
-    </div>
+    <Link href={lektionHref(live.lessonId)} className={cn(KAESTCHEN, LEISTE_LINK)}>
+      <Check className="size-[22px] flex-none text-progress" strokeWidth={2.5} aria-hidden="true" />
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="text-[17px] font-semibold">Unterlagen ansehen</span>
+        <span className="line-clamp-1 text-sm text-ink-muted">
+          <span className="sr-only">Erledigt: Live-Unterricht {hhmm(live.start)}, </span>
+          {themaTitel(live.titel)}
+        </span>
+      </span>
+      <ArrowRight className="size-[17px] flex-none text-ink-muted" aria-hidden="true" />
+    </Link>
   );
 }
 
@@ -485,29 +437,17 @@ const ERLEDIGT_TEXT: Record<ErledigtEintrag["typ"], string> = {
   praxis: "Praxisaufgabe",
 };
 
-/** D: was heute erledigt wurde, mit Häkchen. */
+/** D: was heute erledigt wurde, mit Weg zur Woche. */
 export function HeuteErledigtLeiste({ erledigt }: { erledigt: ErledigtEintrag[] }) {
   return (
-    <div className={cn(LEISTE, LEISTE_NEUTRAL)}>
-      <LeistenIcon>
-        <Check className="size-5" aria-hidden="true" />
-      </LeistenIcon>
-      <span className="flex min-w-0 flex-[1_1_240px] flex-col gap-1.5 min-[960px]:flex-none">
-        <span className="text-[13px] font-semibold text-ink-subtle">Heute erledigt</span>
-        <ul className="flex flex-wrap gap-x-5 gap-y-1">
-          {erledigt.map((e, i) => (
-            <li key={i} className="inline-flex items-center gap-1.5 text-[15px]">
-              <Check className="size-4 shrink-0 text-progress" aria-hidden="true" />
-              {ERLEDIGT_TEXT[e.typ]}
-              <span className="sr-only">: {e.titel}</span>
-            </li>
-          ))}
-        </ul>
+    <Link href="/schedule?ansicht=woche" className={cn(KAESTCHEN, LEISTE_LINK)}>
+      <Check className="size-[22px] flex-none text-progress" strokeWidth={2.5} aria-hidden="true" />
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="text-[17px] font-semibold">Heute erledigt</span>
+        <span className="line-clamp-1 text-sm text-ink-muted">{erledigt.map((e) => ERLEDIGT_TEXT[e.typ]).join(" · ")}</span>
       </span>
-      <Link href="/schedule?ansicht=woche" className={cn(LEISTE_AKTION, LINK_FOKUS)}>
-        Woche ansehen →
-      </Link>
-    </div>
+      <ArrowRight className="size-[17px] flex-none text-ink-muted" aria-hidden="true" />
+    </Link>
   );
 }
 
@@ -517,5 +457,23 @@ export function NaechsterTagZeile({ wann, was }: { wann: string; was: string }) 
     <p className="rounded-zeile border border-dashed border-line px-5 py-4 text-sm text-ink-muted">
       {wann}: <span className="font-semibold text-ink">{was}</span>
     </p>
+  );
+}
+
+/**
+ * Sprachtraining-Demo (SR-31, VORLÄUFIG, nur demo, nicht nach dev): kleines
+ * Kästchen "Deine Fachsprache" unter "Wissen festigen" -- nur Symbol und
+ * Titel (Anna 2026-10-12), Farbe wie Selbstlernen.
+ */
+export function FachspracheKaestchen() {
+  return (
+    <Link
+      href="/sprachtraining-demo"
+      className={cn(KAESTCHEN, LEISTE_LINK)}
+    >
+      <MessageCircle className="size-[22px] flex-none text-self" aria-hidden="true" />
+      <span className="min-w-0 flex-1 text-[17px] font-semibold">Deine Fachsprache</span>
+      <ArrowRight className="size-[17px] flex-none text-ink-muted" aria-hidden="true" />
+    </Link>
   );
 }

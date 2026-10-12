@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, Check, Video, Wrench } from "lucide-react";
+import { ArrowRight, BookOpen, Check, MessageCircle, Video, Wrench } from "lucide-react";
 
 import { spuren, stunden, type Tagestyp } from "@/lib/stundenplan";
 import { cn } from "@/lib/utils";
@@ -53,7 +53,7 @@ export function AbweichungsLabel({ typ, haupt }: { typ: Tagestyp | null; haupt: 
 
 /** Tag mit Inhalten, die alle erledigt sind (Häkchen in der Tagesliste, Punkt 8). */
 export function tagErledigt(tag: TagModell): boolean {
-  const alle = [...tag.bloecke.map((b) => b.status === "erledigt"), ...tag.chips.map((c) => c.erledigt)];
+  const alle = [...tag.bloecke.map((b) => b.status === "erledigt"), ...tag.chips.filter((c) => !c.sprache).map((c) => c.erledigt)];
   return alle.length > 0 && alle.every(Boolean);
 }
 
@@ -67,13 +67,17 @@ export function FlexChip({ chip }: { chip: Chip }) {
     <Link
       href={chip.href}
       title={chip.refresher ? chip.titel : undefined}
-      aria-label={`Selbstlernen, flexibel, ${chip.refresher ? "Wissen festigen: " : ""}${chip.titel}, ${chip.erledigt ? "erledigt" : "offen"}`}
+      aria-label={chip.sprache ? `Fachsprache des Tages, 5 Minuten` : `Selbstlernen, flexibel, ${chip.refresher ? "Wissen festigen: " : ""}${chip.titel}, ${chip.erledigt ? "erledigt" : "offen"}`}
       className={cn(
         "flex min-w-0 items-start gap-2 rounded-xl px-3 py-2.5 text-[13px] leading-snug font-semibold outline-none transition-[box-shadow] duration-150 hover:shadow-card focus-visible:ring-2 focus-visible:ring-brand motion-reduce:transition-none",
         chip.erledigt ? "text-ink-muted" : "bg-self-tint text-ink"
       )}
     >
-      <BookOpen className="mt-px size-4 shrink-0 text-self" aria-hidden="true" />
+      {chip.sprache ? (
+        <MessageCircle className="mt-px size-4 shrink-0 text-self" aria-hidden="true" />
+      ) : (
+        <BookOpen className="mt-px size-4 shrink-0 text-self" aria-hidden="true" />
+      )}
       {/* Voller Titel (Anna 2026-10-11): das Thema steht oft in der Klammer.
           Gleicher Titel wie der Live-Unterricht des Tages: nur "Wissen festigen" (Anna 2026-10-11, vorher "Refresher"). */}
       <span className="min-w-0 flex-1 hyphens-auto break-words">{chip.refresher ? "Wissen festigen" : chip.titel}</span>
@@ -95,7 +99,7 @@ export function FlexLeiste({ chip, gross }: { chip: Chip; gross: boolean }) {
     <Link
       href={chip.href}
       title={chip.refresher ? chip.titel : undefined}
-      aria-label={`Selbstlernen, flexibel, ${chip.refresher ? "Wissen festigen: " : ""}${chip.titel}, ${chip.erledigt ? "erledigt" : "weiterlernen"}`}
+      aria-label={chip.sprache ? `Fachsprache des Tages, 5 Minuten` : `Selbstlernen, flexibel, ${chip.refresher ? "Wissen festigen: " : ""}${chip.titel}, ${chip.erledigt ? "erledigt" : "weiterlernen"}`}
       style={{ marginLeft: rand.links, marginRight: rand.rechts }}
       className={cn(
         "flex min-w-0 items-center gap-2 rounded-xl px-3 py-2 text-[13px] font-semibold outline-none transition-[box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-brand motion-reduce:transition-none",
@@ -104,7 +108,11 @@ export function FlexLeiste({ chip, gross }: { chip: Chip; gross: boolean }) {
           : "bg-self-tint text-ink hover:shadow-card"
       )}
     >
-      <BookOpen className="size-4 shrink-0 text-self" aria-hidden="true" />
+      {chip.sprache ? (
+        <MessageCircle className="size-4 shrink-0 text-self" aria-hidden="true" />
+      ) : (
+        <BookOpen className="size-4 shrink-0 text-self" aria-hidden="true" />
+      )}
       <span className="min-w-0 flex-1">{chip.refresher ? "Wissen festigen" : chip.titel}</span>
       {chip.erledigt ? (
         <Check className="size-3.5 shrink-0 text-progress" strokeWidth={3} aria-hidden="true" />
@@ -219,8 +227,8 @@ export function MonatsTags({ tag }: { tag: TagModell }) {
     })),
     ...tag.chips.map((c) => ({
       id: c.id,
-      text: "Selbstlernen",
-      lang: `Selbstlernen: ${c.titel}`,
+      text: c.sprache ? "Fachsprache" : "Selbstlernen",
+      lang: c.sprache ? "Fachsprache des Tages" : `Selbstlernen: ${c.titel}`,
       erledigt: c.erledigt,
       vorbei: c.erledigt,
       punkt: "bg-self",
