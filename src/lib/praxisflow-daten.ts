@@ -19,6 +19,11 @@ export const PHASEN: { id: PhaseId; name: string }[] = [
   { id: "bewerten", name: "Bewerten" },
 ];
 
+// Instruktionstext und Box "Hast du alles?" je Phase (PHASEN_TEXTE). Beide
+// vorerst ausgeblendet; true blendet sie wieder ein. Kein Weiter hängt daran.
+export const ZEIGE_INSTRUKTION = false;
+export const ZEIGE_CHECKLISTE = false;
+
 // Für das Investor-Demo aus, für Energiehelden auf true.
 // (Box "Prüfprotokoll auf Papier" in der Phase Kontrolle, TEXTE.kontrolle.hinweisProtokoll)
 export const ZEIGE_PRUEFPROTOKOLL_HINWEIS = false;

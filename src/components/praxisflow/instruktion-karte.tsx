@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 import { FOKUS, KARTE, TEXT } from "./stile";
 
-/** Karte einer Phase: Kopf, Instruktion, Box "Hast du alles?" (wenn Kriterien da), darunter der Inhalt. */
+/** Karte einer Phase: Kopf, Instruktion (wenn gesetzt), Box "Hast du alles?" (wenn Kriterien da), darunter der Inhalt. */
 export function InstruktionKarte({
   icon: Icon,
   titel,
@@ -15,7 +15,7 @@ export function InstruktionKarte({
 }: {
   icon: LucideIcon;
   titel: string;
-  instruktion: string;
+  instruktion?: string;
   hastDuAlles?: string[];
   hastDuAllesTitel: string;
   children?: React.ReactNode;
@@ -28,7 +28,7 @@ export function InstruktionKarte({
           {titel}
         </h2>
       </div>
-      <p className={TEXT}>{instruktion}</p>
+      {instruktion && <p className={TEXT}>{instruktion}</p>}
       {hastDuAlles && hastDuAlles.length > 0 && (
         <div className="rounded-lg border border-border bg-subtle p-3">
           <ListeBlock titel={hastDuAllesTitel} eintraege={hastDuAlles} />

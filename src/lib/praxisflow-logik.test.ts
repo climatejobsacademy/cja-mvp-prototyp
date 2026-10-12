@@ -61,7 +61,7 @@ function fakeStorage(start: Record<string, string> = {}) {
 
 // ---------- Fixtures ----------
 
-test("Fixtures: jede Phase hat Instruktion und Hast-du-alles-Liste", () => {
+test("Fixtures: Instruktion und Hast-du-alles bleiben erhalten (Anzeige per Schalter)", () => {
   for (const p of PHASEN) {
     assert.ok(PHASEN_TEXTE[p.id].instruktion.trim().length > 0, p.id);
     assert.ok(Array.isArray(PHASEN_TEXTE[p.id].hastDuAlles), p.id);
@@ -89,6 +89,7 @@ test("Startzustand: Analyse, alle drei Listen leer, keine Bewertung", () => {
   assert.deepEqual([z.werkzeuge, z.materialien, z.schritte], [[], [], []]);
   assert.deepEqual([z.selbst, z.fremd], [{}, {}]);
   assert.equal(z.fremdFreigegeben, false);
+  assert.equal(z.planenSchritt, 0);
 });
 
 test("Einträge hinzufügen, bearbeiten, löschen; leerer Text wird ignoriert", () => {
@@ -156,7 +157,7 @@ test("Bereinigung: Haken nur bis zur ersten Lücke und nur für vorhandene Schri
 
 test("Gespeicherter Stand mit Lücke wird beim Laden bereinigt", () => {
   const z = { ...startZustand(), phase: "durchfuehren" as const, schritte: drei, erledigt: ["a", "c"] };
-  const s = fakeStorage({ "p:zustand-v2": JSON.stringify(z) });
+  const s = fakeStorage({ "p:zustand-v3": JSON.stringify(z) });
   assert.deepEqual(zustandLaden(s, "p:").erledigt, ["a"]);
 });
 
@@ -201,20 +202,27 @@ test("Abschluss erst mit Selbst- und Fremdeinschätzung und Freigabe per Codewor
 
 // ---------- Speichern ----------
 
-test("Speichern und Laden über den Fake-Speicher unter Schlüssel v2", () => {
+test("Speichern und Laden über den Fake-Speicher unter Schlüssel v3", () => {
   const s = fakeStorage();
   const z = { ...startZustand(), phase: "durchfuehren" as const, schritte: drei, erledigt: ["a"], selbst: { k1: 9 } };
   zustandSpeichern(s, "p:", z);
-  assert.deepEqual([...s.daten.keys()], ["p:zustand-v2"]);
-  assert.equal(speicherSchluessel("p:"), "p:zustand-v2");
+  assert.deepEqual([...s.daten.keys()], ["p:zustand-v3"]);
+  assert.equal(speicherSchluessel("p:"), "p:zustand-v3");
   assert.deepEqual(zustandLaden(s, "p:"), z);
 });
 
-test("Alter Stand (v1) und kaputter oder fremder Inhalt ergeben den Startzustand", () => {
+test("Alte Stände (v1, v2) und kaputter oder fremder Inhalt ergeben den Startzustand", () => {
   const v1 = JSON.stringify({ phase: "planen", schritte: [{ id: "s1", text: "A", kontrollierbar: true }], erledigt: [], noten: {}, bewertungAbgeschlossen: false });
+  // v2: Struktur ohne Planen-Unterschritt
+  const v2Zustand: Record<string, unknown> = { ...startZustand(), phase: "durchfuehren", schritte: drei };
+  delete v2Zustand.planenSchritt;
+  const v2 = JSON.stringify(v2Zustand);
   assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v1": v1 }), "p:"), startZustand());
-  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v2": v1 }), "p:"), startZustand());
-  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v2": "{kaputt" }), "p:"), startZustand());
+  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v2": v2 }), "p:"), startZustand());
+  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v3": v1 }), "p:"), startZustand());
+  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v3": v2 }), "p:"), startZustand());
+  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v3": JSON.stringify({ ...startZustand(), planenSchritt: 3 }) }), "p:"), startZustand());
+  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v3": "{kaputt" }), "p:"), startZustand());
   assert.deepEqual(zustandLaden(null, "p:"), startZustand());
 });
 
@@ -241,6 +249,7 @@ test("Zurücksetzen löscht nur Schlüssel mit dem Demo-Präfix, auch alte Versi
   const s = fakeStorage({
     [`${SPEICHER_PRAEFIX}zustand-v1`]: "{}",
     [`${SPEICHER_PRAEFIX}zustand-v2`]: "{}",
+    [`${SPEICHER_PRAEFIX}zustand-v3`]: "{}",
     fremd: "bleibt",
   });
   demoZuruecksetzen(s, SPEICHER_PRAEFIX);

@@ -21,11 +21,16 @@ export type DemoZustand = {
   /** Fremdeinschätzung per Codewort freigeschaltet. */
   fremdFreigegeben: boolean;
   bewertungAbgeschlossen: boolean;
+  /** Unterschritt in Planen: 0 Werkzeuge, 1 Materialien, 2 Arbeitsschritte. */
+  planenSchritt: number;
 };
 
-/** v2: Struktur mit drei Listen und Selbst-/Fremdeinschätzung (v1 wird ignoriert). */
+/**
+ * v3: zusätzlich der Planen-Unterschritt. Ältere Stände (v1, v2) werden nicht
+ * gelesen, das Demo startet dann neu; "Demo zurücksetzen" löscht auch sie.
+ */
 export function speicherSchluessel(praefix: string): string {
-  return `${praefix}zustand-v2`;
+  return `${praefix}zustand-v3`;
 }
 
 /** Planen startet leer. */
@@ -40,6 +45,7 @@ export function startZustand(): DemoZustand {
     fremd: {},
     fremdFreigegeben: false,
     bewertungAbgeschlossen: false,
+    planenSchritt: 0,
   };
 }
 
@@ -192,7 +198,10 @@ function istZustand(x: unknown): x is DemoZustand {
     istPunkte(z.selbst) &&
     istPunkte(z.fremd) &&
     typeof z.fremdFreigegeben === "boolean" &&
-    typeof z.bewertungAbgeschlossen === "boolean"
+    typeof z.bewertungAbgeschlossen === "boolean" &&
+    Number.isInteger(z.planenSchritt) &&
+    (z.planenSchritt as number) >= 0 &&
+    (z.planenSchritt as number) <= 2
   );
 }
 

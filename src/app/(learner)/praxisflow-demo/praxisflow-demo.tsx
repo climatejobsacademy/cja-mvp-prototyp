@@ -26,6 +26,8 @@ import {
   PUNKTE_SKALA,
   SPEICHER_PRAEFIX,
   TEXTE,
+  ZEIGE_CHECKLISTE,
+  ZEIGE_INSTRUKTION,
   ZEIGE_PRUEFPROTOKOLL_HINWEIS,
   type PhaseId,
 } from "@/lib/praxisflow-daten";
@@ -142,9 +144,10 @@ function Flow() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  // Instruktion und "Hast du alles?" per Schalter (praxisflow-daten.ts).
   const karte = {
-    instruktion: texte.instruktion,
-    hastDuAlles: texte.hastDuAlles,
+    instruktion: ZEIGE_INSTRUKTION ? texte.instruktion : undefined,
+    hastDuAlles: ZEIGE_CHECKLISTE ? texte.hastDuAlles : [],
     hastDuAllesTitel: TEXTE.hastDuAllesTitel,
   };
 
