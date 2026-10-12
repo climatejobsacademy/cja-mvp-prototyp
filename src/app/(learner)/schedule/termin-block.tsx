@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ArrowRight, Check, Video, Wrench } from "lucide-react";
 
+import { Avatar } from "@/components/avatar";
+import { TRAINER_DEMO, TRAINER_PRAXIS_DEMO } from "@/lib/demo-personen";
 import { cn } from "@/lib/utils";
 
 import { zeitText, type Block } from "./plan-modell";
@@ -24,6 +26,7 @@ const STATUS_TEXT = { erledigt: "erledigt", vorbei: "vorbei", offen: "offen" } a
 
 export function TerminBlock({ block, gross, style }: { block: Block; gross: boolean; style: React.CSSProperties }) {
   const art = ART[block.art];
+  const trainer = block.art === "live" ? TRAINER_DEMO : TRAINER_PRAXIS_DEMO;
   const label = [
     art.text,
     `${zeitText(block)} Uhr${block.standardzeit ? " (Uhrzeit vorläufig)" : ""}`,
@@ -53,6 +56,18 @@ export function TerminBlock({ block, gross, style }: { block: Block; gross: bool
         <art.Icon className={cn("size-[13px] shrink-0", block.naechster ? art.ankerIcon : art.icon)} aria-hidden="true" />
         {zeitText(block)}
         {gross && ` · ${art.text}`}
+        {/* Wer unterrichtet bzw. begleitet (Anna 2026-10-12, Demo: Trainer fest
+            im Code) -- Live Malte, Praxis Slawa. */}
+        <span className="ml-auto inline-flex items-center gap-1.5 font-medium">
+          {gross && <span className="truncate">{trainer.vorname}</span>}
+          <Avatar
+            name={trainer.name}
+            foto={trainer.foto}
+            groesse="xs"
+            flaeche={block.naechster && block.art === "live" ? "bg-white/25 text-white" : "bg-white text-ink"}
+          />
+          <span className="sr-only">mit {trainer.name}</span>
+        </span>
         {block.status === "erledigt" && <Check className={cn("ml-auto size-3", block.naechster ? art.ankerIcon : "text-progress")} strokeWidth={3} aria-hidden="true" />}
       </span>
       {/* Immer genau eine Aktion (wie Veras Stundenplan, Anna 2026-10-11): ab

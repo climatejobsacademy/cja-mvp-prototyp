@@ -2,7 +2,9 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { ArrowRight, BookOpen, Video } from "lucide-react";
 
+import { Avatar } from "@/components/avatar";
 import { datumLang, tagRelativ } from "@/lib/date";
+import { TRAINER_DEMO } from "@/lib/demo-personen";
 import { cn } from "@/lib/utils";
 
 // Live-Lektion (SR folgt), Entscheidung Anna 2026-10-12: der Termin als
@@ -80,6 +82,11 @@ export function TerminKarte({
             <span className="sr-only">Live-Unterricht: </span>
             {datumLang(termin.datum)} · {hhmm(termin.start)}–{hhmm(termin.ende)} Uhr
           </span>
+        </p>
+        {/* Wer unterrichtet (Anna 2026-10-12, Demo: Trainer fest im Code). */}
+        <p className="flex items-center gap-2.5 text-[15px] text-white/85">
+          <Avatar name={TRAINER_DEMO.name} foto={TRAINER_DEMO.foto} groesse="md" flaeche="bg-white/20 text-white" />
+          mit {TRAINER_DEMO.name}
         </p>
         {(beitretbar || festigenHref) && (
           <div className="mt-2 flex flex-wrap gap-2">

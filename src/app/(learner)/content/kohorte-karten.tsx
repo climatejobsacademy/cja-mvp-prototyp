@@ -1,3 +1,5 @@
+import { Avatar } from "@/components/avatar";
+import { TRAINER_DEMO, TRAINER_PRAXIS_DEMO } from "@/lib/demo-personen";
 import { cn } from "@/lib/utils";
 
 // Programmseite v8 (docs/design_handoff_programm_v8, Brief 2.4 rechts, SR folgt):
@@ -14,8 +16,8 @@ import { cn } from "@/lib/utils";
 const BEISPIEL_MITGLIEDER = ["AK", "MS", "KB", "JL", "SY"];
 const BEISPIEL_ANZAHL = 12;
 const BEISPIEL_KONTAKTE = [
-  { kuerzel: "MS", name: "Malte Schmiedinghoff", rolle: "Trainer · Live-Unterricht" },
-  { kuerzel: "TK", name: "Tom Krüger", rolle: "Lernbegleitung · Fragen zum Programm" },
+  { name: TRAINER_DEMO.name, foto: TRAINER_DEMO.foto, rolle: "Trainer · Live-Unterricht" },
+  { name: TRAINER_PRAXIS_DEMO.name, foto: TRAINER_PRAXIS_DEMO.foto, rolle: "Trainer · Praxistage" },
 ];
 const AVATAR_FLAECHEN = ["bg-brand-tint", "bg-self-tint", "bg-praxis-tint", "bg-subtle", "bg-brand-tint"];
 
@@ -62,12 +64,8 @@ export function KohorteKarten() {
           {BEISPIEL_KONTAKTE.map((p) => (
             // Namen oben bündig, auch wenn eine Rolle zweizeilig ist (Anna 2026-10-12).
             <li key={p.name} className="flex items-start gap-3">
-              <span
-                aria-hidden="true"
-                className="flex size-10 shrink-0 items-center justify-center rounded-full bg-subtle text-sm font-bold text-ink"
-              >
-                {p.kuerzel}
-              </span>
+              {/* Foto, sonst Initialen (Anna 2026-10-12) */}
+              <Avatar name={p.name} foto={p.foto} groesse="md" className="size-10" flaeche="bg-subtle text-ink" />
               <span className="flex min-w-0 flex-col gap-0.5">
                 <span className="text-[15px] font-semibold">{p.name}</span>
                 <span className="text-[13px] text-ink-muted">{p.rolle}</span>

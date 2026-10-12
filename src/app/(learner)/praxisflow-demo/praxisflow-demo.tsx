@@ -77,6 +77,8 @@ import {
   type Eintrag,
 } from "@/lib/praxisflow-logik";
 import { FachText } from "@/components/sprachtraining/fach-text";
+import { Avatar } from "@/components/avatar";
+import { TRAINER_PRAXIS_DEMO } from "@/lib/demo-personen";
 import { cn } from "@/lib/utils";
 
 function speicher(): Storage | null {
@@ -124,6 +126,11 @@ export function PraxisflowDemo({ zurueck }: { zurueck: Zurueck }) {
       <div className="flex flex-col gap-2">
         <span className="text-sm text-ink-muted">Praxisaufgabe</span>
         <h1 className="font-heading text-[28px] leading-tight text-ink md:text-[36px]">{DEMO_AUFTRAG.titel}</h1>
+        {/* Wer begleitet die Aufgabe (Anna 2026-10-12, Demo: Trainer fest im Code). */}
+        <span className="inline-flex items-center gap-2 text-[15px] text-ink-muted">
+          <Avatar name={TRAINER_PRAXIS_DEMO.name} foto={TRAINER_PRAXIS_DEMO.foto} groesse="sm" />
+          mit {TRAINER_PRAXIS_DEMO.name}
+        </span>
       </div>
       {imBrowser ? <Flow /> : <p className="text-sm text-ink-muted">Demo wird geladen …</p>}
     </div>

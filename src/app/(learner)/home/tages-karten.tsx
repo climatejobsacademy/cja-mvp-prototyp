@@ -3,7 +3,9 @@ import type { ReactNode } from "react";
 import { ArrowRight, BookOpen, CalendarDays, Check, MessageCircle, Video, Wrench } from "lucide-react";
 
 import { themaTitel, type ErledigtEintrag, type LiveAktivitaet, type PraxisAktivitaet } from "@/lib/home-tag";
+import { Avatar } from "@/components/avatar";
 import { Ring } from "@/components/fortschritts-ring";
+import { TRAINER_DEMO, TRAINER_PRAXIS_DEMO } from "@/lib/demo-personen";
 import { ModulZeichen } from "@/components/modul-zeichen";
 import { cn } from "@/lib/utils";
 
@@ -220,6 +222,12 @@ export function FokusLive({
       }
     >
       <FokusTitel titel={live.titel} icon={<Video className="size-[22px]" />} art="Live-Unterricht" stil={stil} />
+      {/* Personen im Mittelpunkt (Anna 2026-10-12): wer unterrichtet. Demo:
+          Trainer fest im Code, an Terminen nicht gepflegt (demo-personen.ts). */}
+      <span className="inline-flex items-center gap-2 text-sm text-white/85">
+        <Avatar name={TRAINER_DEMO.name} foto={TRAINER_DEMO.foto} groesse="sm" flaeche="bg-white/20 text-white" />
+        Live mit {TRAINER_DEMO.vorname}
+      </span>
       <StaerktPills kompetenzen={staerkt} />
       {ziel && (
         <PrimaerAktion
@@ -347,6 +355,11 @@ export function FokusPraxis({
         {praxis.standort ? `Praxisaufgabe · ${praxis.standort}` : "Praxisaufgabe"}
       </span>
       <FokusTitel titel={praxis.titel} stil={stil} aufCoral />
+      {/* Wer begleitet den Praxistag (Anna 2026-10-12, Demo: Trainer fest im Code). */}
+      <span className="inline-flex items-center gap-2 text-sm text-ink">
+        <Avatar name={TRAINER_PRAXIS_DEMO.name} foto={TRAINER_PRAXIS_DEMO.foto} groesse="sm" flaeche="bg-white/55 text-ink" />
+        Praxis mit {TRAINER_PRAXIS_DEMO.vorname}
+      </span>
       <StaerktPills kompetenzen={staerkt} aufCoral />
       <PrimaerAktion href="/praxisflow-demo">Praxisaufgabe öffnen</PrimaerAktion>
     </FokusRahmen>

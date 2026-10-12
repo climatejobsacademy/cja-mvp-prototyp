@@ -1,7 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { CircleAlert, KeyRound, UserCheck } from "lucide-react";
+import { CircleAlert, KeyRound } from "lucide-react";
+
+import { Avatar } from "@/components/avatar";
+import { TRAINER_PRAXIS_DEMO } from "@/lib/demo-personen";
 
 import { cn } from "@/lib/utils";
 
@@ -52,9 +55,13 @@ export function CodewortGate({
     // Angleichung 2026-10-12: helle Fläche statt gestrichelter Rahmen.
     <form onSubmit={absenden} className="flex flex-col gap-3 rounded-zeile bg-subtle p-4">
       {/* Wichtiger Hinweis zur Trainer:in: gut sichtbar als hell-lila Kasten (Anna 2026-10-12). */}
-      <p className="flex items-start gap-2.5 rounded-xl bg-brand-tint p-3 text-[15px] text-ink">
-        <UserCheck className="mt-0.5 size-[18px] shrink-0 text-brand" aria-hidden="true" />
-        <span>{hinweis}</span>
+      {/* Mit Foto der begleitenden Person (Anna 2026-10-12, Demo: Slawa fest im Code). */}
+      <p className="flex items-start gap-3 rounded-xl bg-brand-tint p-3 text-[15px] text-ink">
+        <Avatar name={TRAINER_PRAXIS_DEMO.name} foto={TRAINER_PRAXIS_DEMO.foto} groesse="md" />
+        <span className="flex flex-col gap-0.5">
+          <span className="text-[13px] font-semibold text-ink-muted">{TRAINER_PRAXIS_DEMO.name} · Trainer</span>
+          <span>{hinweis}</span>
+        </span>
       </p>
       <label htmlFor={id} className="flex items-center gap-2 text-sm font-semibold text-ink">
         <KeyRound className="size-4 text-ink-muted" aria-hidden="true" />

@@ -1,0 +1,9 @@
+Demo-Bilder (nur Branch demo, Anna 2026-10-12)
+
+Hier die Fotos ablegen, genau mit diesen Dateinamen:
+  trainer-malte.jpg     Porträt von Malte Schmiedinghoff, Live-Unterricht (quadratisch, z. B. 400 x 400 px)
+  trainer-slawa.png     Porträt von Slawa Wolkow, Praxistage (quadratisch)
+
+Fehlt eine Datei, zeigt die App Initialen.
+Nur Fotos mit Einverständnis der abgebildeten Person verwenden: Das Projekt ist
+öffentlich, Bilder hier sind ohne Login abrufbar und bleiben in der Versionsgeschichte.
