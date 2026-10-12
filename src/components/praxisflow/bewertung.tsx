@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Clock } from "lucide-react";
 
 import { StatusBadge } from "@/components/status-badge";
@@ -12,6 +13,8 @@ type Kriterium = { id: string; titel: string };
 /**
  * Einschätzung je Kriterium mit fester Punkteskala (Buttons). Wird für die
  * Selbst- und die Fremdeinschätzung verwendet. Keine Summe, kein Durchschnitt.
+ * Unter jeder Skala steht die Beschreibung der Stufe unter der Maus, mit
+ * Tastatur-Fokus oder (beim Antippen) der gewählten Stufe.
  */
 export function Einschaetzung({
   id,
@@ -19,6 +22,7 @@ export function Einschaetzung({
   text,
   kriterien,
   skala,
+  beschreibungen,
   werte,
   onWert,
   gesperrt = false,
@@ -28,6 +32,7 @@ export function Einschaetzung({
   text: string;
   kriterien: Kriterium[];
   skala: readonly number[];
+  beschreibungen: Record<number, string>;
   werte: Record<string, number>;
   onWert: (kriteriumId: string, punkte: number) => void;
   gesperrt?: boolean;
@@ -41,32 +46,83 @@ export function Einschaetzung({
         <p className="text-sm text-muted-foreground">{text}</p>
       </div>
       {kriterien.map((k) => (
-        <fieldset key={k.id} disabled={gesperrt} className="flex flex-col gap-2 disabled:opacity-60">
-          <legend className="mb-2 text-[15px] font-medium text-ink">{k.titel}</legend>
-          <div className="grid grid-cols-3 gap-2 sm:grid-cols-6">
-            {skala.map((p) => {
-              const gewaehlt = werte[k.id] === p;
-              return (
-                <button
-                  key={p}
-                  type="button"
-                  aria-pressed={gewaehlt}
-                  onClick={() => onWert(k.id, p)}
-                  className={cn(
-                    "flex min-h-11 flex-col items-center justify-center rounded-lg border text-ink disabled:cursor-not-allowed",
-                    gewaehlt ? "border-brand bg-subtle font-semibold" : "border-border enabled:hover:bg-subtle",
-                    FOKUS
-                  )}
-                >
-                  <span className="text-[15px]">{p}</span>
-                  <span className="text-xs text-muted-foreground">Punkte</span>
-                </button>
-              );
-            })}
-          </div>
-        </fieldset>
+        <KriteriumSkala
+          key={k.id}
+          id={`${id}-${k.id}`}
+          titel={k.titel}
+          skala={skala}
+          beschreibungen={beschreibungen}
+          wert={werte[k.id]}
+          onWert={(p) => onWert(k.id, p)}
+          gesperrt={gesperrt}
+        />
       ))}
     </section>
+  );
+}
+
+function KriteriumSkala({
+  id,
+  titel,
+  skala,
+  beschreibungen,
+  wert,
+  onWert,
+  gesperrt,
+}: {
+  id: string;
+  titel: string;
+  skala: readonly number[];
+  beschreibungen: Record<number, string>;
+  wert: number | undefined;
+  onWert: (punkte: number) => void;
+  gesperrt: boolean;
+}) {
+  // Hover nur mit Maus: bei Touch bliebe er nach dem Antippen hängen.
+  const [hover, setHover] = useState<number | null>(null);
+  const [fokus, setFokus] = useState<number | null>(null);
+  const angezeigt = hover ?? fokus ?? wert ?? null;
+
+  return (
+    <fieldset disabled={gesperrt} className="flex flex-col gap-2 disabled:opacity-60">
+      <legend className="mb-2 text-[15px] font-medium text-ink">{titel}</legend>
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-6" onPointerLeave={() => setHover(null)}>
+        {skala.map((p) => {
+          const gewaehlt = wert === p;
+          return (
+            <button
+              key={p}
+              type="button"
+              aria-pressed={gewaehlt}
+              aria-describedby={`${id}-${p}-text`}
+              onClick={() => onWert(p)}
+              onPointerEnter={(e) => e.pointerType === "mouse" && setHover(p)}
+              onFocus={() => setFokus(p)}
+              onBlur={() => setFokus(null)}
+              className={cn(
+                "flex min-h-11 flex-col items-center justify-center rounded-lg border text-ink disabled:cursor-not-allowed",
+                gewaehlt ? "border-brand bg-subtle font-semibold" : "border-border enabled:hover:bg-subtle",
+                FOKUS
+              )}
+            >
+              <span className="text-[15px]">{p}</span>
+              <span className="text-xs text-muted-foreground">Punkte</span>
+            </button>
+          );
+        })}
+      </div>
+      {/* Beschreibungen für Screenreader (aria-describedby), außerhalb der Buttons */}
+      <div className="sr-only">
+        {skala.map((p) => (
+          <span key={p} id={`${id}-${p}-text`}>
+            {beschreibungen[p]}
+          </span>
+        ))}
+      </div>
+      <p className="min-h-5 text-sm text-muted-foreground" aria-hidden="true">
+        {angezeigt !== null && beschreibungen[angezeigt] ? `${angezeigt} Punkte: ${beschreibungen[angezeigt]}` : ""}
+      </p>
+    </fieldset>
   );
 }
 

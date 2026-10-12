@@ -21,11 +21,15 @@ import {
   DATEIEN_ORDNER,
   DEMO_AUFTRAG,
   DEMO_CODEWORT,
+  NOTEN_BESCHREIBUNGEN,
   PHASEN,
   PHASEN_TEXTE,
+  PLANEN_UNTERSCHRITTE,
   PUNKTE_SKALA,
   SPEICHER_PRAEFIX,
   TEXTE,
+  ZEIGE_CHECKLISTE,
+  ZEIGE_INSTRUKTION,
   ZEIGE_PRUEFPROTOKOLL_HINWEIS,
   type PhaseId,
 } from "@/lib/praxisflow-daten";
@@ -35,14 +39,17 @@ import {
   codewortKorrekt,
   demoZuruecksetzen,
   eintragBearbeiten,
-  eintragHinzufuegen,
   eintragLoeschen,
+  eintraegeAnhaengen,
   eintragVerschieben,
   erledigtBereinigen,
   schrittStatus,
   schrittUmschalten,
   fremdFreigabeMoeglich,
   planBereit,
+  planenWeiter,
+  planenWeiterMoeglich,
+  planenZurueck,
   startZustand,
   zustandLaden,
   zustandSpeichern,
@@ -100,6 +107,12 @@ export function PraxisflowDemo({ zurueck }: { zurueck: Zurueck }) {
 
 type Liste = "werkzeuge" | "materialien" | "schritte";
 
+const EDITOR: Record<Liste, { icon: typeof Wrench; einzahl: string; leerText: string; platzhalter: string }> = {
+  werkzeuge: { icon: Wrench, einzahl: "Werkzeug", leerText: "Noch keine Werkzeuge eingetragen.", platzhalter: "Werkzeug eintragen …" },
+  materialien: { icon: Package, einzahl: "Material", leerText: "Noch keine Materialien eingetragen.", platzhalter: "Material eintragen …" },
+  schritte: { icon: ListOrdered, einzahl: "Schritt", leerText: "Noch keine Arbeitsschritte eingetragen.", platzhalter: "Arbeitsschritt eintragen …" },
+};
+
 function Flow() {
   const [zustand, setZustand] = useState<DemoZustand>(() => zustandLaden(speicher(), SPEICHER_PRAEFIX));
   // Erhöht sich beim Zurücksetzen, damit Eingabefelder und Foto neu starten.
@@ -117,6 +130,15 @@ function Flow() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  // Planen: Unterschritt wechseln (bzw. Phase am Anfang und Ende der Abfolge).
+  function planenGehen(richtung: "weiter" | "zurueck") {
+    setZustand((z) => {
+      const ziel = richtung === "weiter" ? planenWeiter(z, PLANEN_UNTERSCHRITTE.length) : planenZurueck(z);
+      return { ...z, ...ziel, erledigt: erledigtBereinigen(z.erledigt, z.schritte) };
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
   function liste(name: Liste, aendern: (l: Eintrag[]) => Eintrag[]) {
     setZustand((z) => {
       const neu = aendern(z[name]);
@@ -129,9 +151,12 @@ function Flow() {
   function editorProps(name: Liste) {
     return {
       eintraege: zustand[name],
-      onHinzufuegen: (text: string) => liste(name, (l) => eintragHinzufuegen(l, text, neueId())),
+      // Neue Einträge (getippte Zeilen oder diktierte Sätze) unten anhängen;
+      // bei Arbeitsschritten danach wie bisher sortierbar.
+      onHinzufuegen: (texte: string[]) => liste(name, (l) => eintraegeAnhaengen(l, texte, neueId)),
       onBearbeiten: (id: string, text: string) => liste(name, (l) => eintragBearbeiten(l, id, text)),
       onLoeschen: (id: string) => liste(name, (l) => eintragLoeschen(l, id)),
+      eingabeTexte: TEXTE.eingabe,
     };
   }
 
@@ -142,9 +167,10 @@ function Flow() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  // Instruktion und "Hast du alles?" per Schalter (praxisflow-daten.ts).
   const karte = {
-    instruktion: texte.instruktion,
-    hastDuAlles: texte.hastDuAlles,
+    instruktion: ZEIGE_INSTRUKTION ? texte.instruktion : undefined,
+    hastDuAlles: ZEIGE_CHECKLISTE ? texte.hastDuAlles : [],
     hastDuAllesTitel: TEXTE.hastDuAllesTitel,
   };
 
@@ -153,7 +179,7 @@ function Flow() {
       <DemoLeiste kennzeichnung={DEMO_AUFTRAG.kennzeichnung} text={DEMO_AUFTRAG.banner} onZuruecksetzen={zuruecksetzen} />
       <PhasenAnzeige phasen={PHASEN} aktuell={aktuell} />
 
-      <div key={`${durchlauf}-${zustand.phase}`} className="flex flex-col gap-6">
+      <div key={`${durchlauf}-${zustand.phase}-${zustand.planenSchritt}`} className="flex flex-col gap-6">
         {zustand.phase === "analyse" && (
           <InstruktionKarte icon={Search} titel="Analyse" {...karte}>
             <div className="flex flex-col gap-1.5">
@@ -169,56 +195,26 @@ function Flow() {
         )}
 
         {zustand.phase === "planen" && (
-          <InstruktionKarte icon={ListOrdered} titel="Planen" {...karte}>
-            <div className="grid gap-3 sm:grid-cols-2">
+          <PlanenAbfolge
+            karte={karte}
+            nr={zustand.planenSchritt}
+            schritte={zustand.schritte}
+            editor={(name) => (
               <ListenEditor
-                id="werkzeuge"
-                titel="Werkzeuge"
-                icon={Wrench}
-                einzahl="Werkzeug"
-                leerText="Noch keine Werkzeuge eingetragen."
-                platzhalter="Werkzeug eintragen …"
-                {...editorProps("werkzeuge")}
+                id={name}
+                titel={PLANEN_UNTERSCHRITTE.find((u) => u.id === name)!.titel}
+                {...EDITOR[name]}
+                {...editorProps(name)}
+                onVerschieben={
+                  name === "schritte"
+                    ? (id, richtung) => liste("schritte", (l) => eintragVerschieben(l, id, richtung))
+                    : undefined
+                }
               />
-              <ListenEditor
-                id="materialien"
-                titel="Materialien"
-                icon={Package}
-                einzahl="Material"
-                leerText="Noch keine Materialien eingetragen."
-                platzhalter="Material eintragen …"
-                {...editorProps("materialien")}
-              />
-            </div>
-            <ListenEditor
-              id="schritte"
-              titel="Arbeitsschritte"
-              icon={ListOrdered}
-              einzahl="Schritt"
-              leerText="Noch keine Arbeitsschritte eingetragen."
-              platzhalter="Arbeitsschritt eintragen …"
-              {...editorProps("schritte")}
-              onVerschieben={(id, richtung) => liste("schritte", (l) => eintragVerschieben(l, id, richtung))}
-            />
-            <div className="flex flex-col gap-2">
-              <button
-                type="button"
-                onClick={() => zuPhase("entscheiden")}
-                disabled={!planBereit(zustand.schritte)}
-                aria-describedby={planBereit(zustand.schritte) ? undefined : "planen-gesperrt"}
-                className={PRIMAER}
-              >
-                Weiter zu Entscheiden
-                <ArrowRight aria-hidden="true" />
-              </button>
-              {!planBereit(zustand.schritte) && (
-                <p id="planen-gesperrt" className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                  <Info className="size-4 shrink-0" aria-hidden="true" />
-                  {TEXTE.planen.gesperrt}
-                </p>
-              )}
-            </div>
-          </InstruktionKarte>
+            )}
+            onWeiter={() => planenGehen("weiter")}
+            onZurueck={() => planenGehen("zurueck")}
+          />
         )}
 
         {zustand.phase === "entscheiden" && (
@@ -296,6 +292,7 @@ function Flow() {
               text={TEXTE.bewerten.selbstText}
               kriterien={BEWERTUNGSKRITERIEN}
               skala={PUNKTE_SKALA}
+              beschreibungen={NOTEN_BESCHREIBUNGEN}
               werte={zustand.selbst}
               onWert={(k, p) => setZustand((z) => ({ ...z, selbst: { ...z.selbst, [k]: p } }))}
               gesperrt={zustand.fremdFreigegeben}
@@ -319,6 +316,7 @@ function Flow() {
               text={TEXTE.bewerten.fremdText}
               kriterien={BEWERTUNGSKRITERIEN}
               skala={PUNKTE_SKALA}
+              beschreibungen={NOTEN_BESCHREIBUNGEN}
               werte={zustand.fremd}
               onWert={(k, p) => setZustand((z) => ({ ...z, fremd: { ...z.fremd, [k]: p } }))}
               gesperrt={!zustand.fremdFreigegeben || zustand.bewertungAbgeschlossen}
@@ -339,5 +337,65 @@ function Flow() {
         )}
       </div>
     </>
+  );
+}
+
+type Karte = { instruktion?: string; hastDuAlles: string[]; hastDuAllesTitel: string };
+
+/**
+ * Planen in drei Unterschritten nacheinander (Werkzeuge, Materialien,
+ * Arbeitsschritte): je Unterschritt nur ein Editor, "Zurück" und "Weiter".
+ * Nach dem letzten Unterschritt geht es zu Entscheiden.
+ */
+function PlanenAbfolge({
+  karte,
+  nr,
+  schritte,
+  editor,
+  onWeiter,
+  onZurueck,
+}: {
+  karte: Karte;
+  nr: number;
+  schritte: Eintrag[];
+  editor: (name: Liste) => React.ReactNode;
+  onWeiter: () => void;
+  onZurueck: () => void;
+}) {
+  const gesamt = PLANEN_UNTERSCHRITTE.length;
+  const unterschritt = PLANEN_UNTERSCHRITTE[nr] ?? PLANEN_UNTERSCHRITTE[0];
+  const letzter = nr === gesamt - 1;
+  const weiterMoeglich = planenWeiterMoeglich(nr, schritte, gesamt);
+  return (
+    <InstruktionKarte icon={ListOrdered} titel="Planen" {...karte}>
+      <p className="text-sm font-medium text-muted-foreground" aria-live="polite">
+        {TEXTE.planen.unterschritt(nr + 1, gesamt)}: {unterschritt.titel}
+      </p>
+      {editor(unterschritt.id)}
+      <div className="flex flex-col gap-2">
+        <div className="flex flex-col-reverse gap-2 sm:flex-row">
+          <button type="button" onClick={onZurueck} className={SEKUNDAER}>
+            <ArrowLeft aria-hidden="true" />
+            Zurück
+          </button>
+          <button
+            type="button"
+            onClick={onWeiter}
+            disabled={!weiterMoeglich}
+            aria-describedby={weiterMoeglich ? undefined : "planen-gesperrt"}
+            className={PRIMAER}
+          >
+            Weiter
+            <ArrowRight aria-hidden="true" />
+          </button>
+        </div>
+        {letzter && !planBereit(schritte) && (
+          <p id="planen-gesperrt" className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <Info className="size-4 shrink-0" aria-hidden="true" />
+            {TEXTE.planen.gesperrt}
+          </p>
+        )}
+      </div>
+    </InstruktionKarte>
   );
 }

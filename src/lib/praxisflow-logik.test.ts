@@ -8,8 +8,10 @@ import {
   BEWERTUNGSKRITERIEN,
   DATEIEN,
   DEMO_CODEWORT,
+  NOTEN_BESCHREIBUNGEN,
   PHASEN,
   PHASEN_TEXTE,
+  PLANEN_UNTERSCHRITTE,
   PUNKTE_SKALA,
   SPEICHER_PRAEFIX,
   // @ts-expect-error TS5097: .ts-Endung für node:test nötig
@@ -19,6 +21,9 @@ import {
   bewertungAbschliessbar,
   codewortKorrekt,
   demoZuruecksetzen,
+  diktatZuTexten,
+  eintraegeAnhaengen,
+  zeilenZuTexten,
   eintragBearbeiten,
   eintragHinzufuegen,
   eintragLoeschen,
@@ -27,6 +32,9 @@ import {
   erledigtBereinigen,
   fremdFreigabeMoeglich,
   planBereit,
+  planenWeiter,
+  planenWeiterMoeglich,
+  planenZurueck,
   schrittStatus,
   schrittUmschalten,
   speicherSchluessel,
@@ -61,7 +69,7 @@ function fakeStorage(start: Record<string, string> = {}) {
 
 // ---------- Fixtures ----------
 
-test("Fixtures: jede Phase hat Instruktion und Hast-du-alles-Liste", () => {
+test("Fixtures: Instruktion und Hast-du-alles bleiben erhalten (Anzeige per Schalter)", () => {
   for (const p of PHASEN) {
     assert.ok(PHASEN_TEXTE[p.id].instruktion.trim().length > 0, p.id);
     assert.ok(Array.isArray(PHASEN_TEXTE[p.id].hastDuAlles), p.id);
@@ -89,6 +97,7 @@ test("Startzustand: Analyse, alle drei Listen leer, keine Bewertung", () => {
   assert.deepEqual([z.werkzeuge, z.materialien, z.schritte], [[], [], []]);
   assert.deepEqual([z.selbst, z.fremd], [{}, {}]);
   assert.equal(z.fremdFreigegeben, false);
+  assert.equal(z.planenSchritt, 0);
 });
 
 test("Einträge hinzufügen, bearbeiten, löschen; leerer Text wird ignoriert", () => {
@@ -112,6 +121,84 @@ test("Hoch/Runter tauscht Nachbarn, an den Rändern keine Änderung", () => {
 test("Weiter zu Entscheiden erst mit mindestens einem Arbeitsschritt", () => {
   assert.equal(planBereit([]), false);
   assert.equal(planBereit([{ id: "s1", text: "Schritt" }]), true);
+});
+
+test("Fixtures: Planen-Unterschritte in der Reihenfolge Werkzeuge, Materialien, Arbeitsschritte", () => {
+  assert.deepEqual(
+    PLANEN_UNTERSCHRITTE.map((u: { id: string }) => u.id),
+    ["werkzeuge", "materialien", "schritte"]
+  );
+});
+
+test("Fixtures: jede Punktestufe hat eine als Platzhalter markierte Beschreibung", () => {
+  for (const p of PUNKTE_SKALA) {
+    assert.match(NOTEN_BESCHREIBUNGEN[p] ?? "", /\(Platzhalter\)/, String(p));
+  }
+});
+
+test("Planen: Werkzeuge → Materialien → Arbeitsschritte → Entscheiden, Weiter ohne Checkliste", () => {
+  const anzahl = 3;
+  let z: ReturnType<typeof startZustand> = { ...startZustand(), phase: "planen" };
+  // Unterschritt 1 und 2: Weiter auch mit leeren Listen
+  assert.equal(planenWeiterMoeglich(0, [], anzahl), true);
+  z = { ...z, ...planenWeiter(z, anzahl) };
+  assert.deepEqual([z.phase, z.planenSchritt], ["planen", 1]);
+  z = { ...z, ...planenWeiter(z, anzahl) };
+  assert.deepEqual([z.phase, z.planenSchritt], ["planen", 2]);
+  // Unterschritt 3: erst mit mindestens einem Arbeitsschritt
+  assert.equal(planenWeiterMoeglich(2, [], anzahl), false);
+  assert.deepEqual(planenWeiter(z, anzahl), { phase: "planen", planenSchritt: 2 });
+  z = { ...z, schritte: [{ id: "s1", text: "Schritt" }] };
+  assert.equal(planenWeiterMoeglich(2, z.schritte, anzahl), true);
+  assert.deepEqual(planenWeiter(z, anzahl), { phase: "entscheiden", planenSchritt: 2 });
+});
+
+test("Planen zurück: Unterschritt für Unterschritt, vor dem ersten zu Analyse; Listen bleiben", () => {
+  const z = { ...startZustand(), phase: "planen" as const, planenSchritt: 2, werkzeuge: drei, materialien: drei };
+  const eins = { ...z, ...planenZurueck(z) };
+  assert.deepEqual([eins.phase, eins.planenSchritt], ["planen", 1]);
+  const null_ = { ...eins, ...planenZurueck(eins) };
+  assert.deepEqual([null_.phase, null_.planenSchritt], ["planen", 0]);
+  const analyse = { ...null_, ...planenZurueck(null_) };
+  assert.deepEqual([analyse.phase, analyse.planenSchritt], ["analyse", 0]);
+  assert.deepEqual([analyse.werkzeuge, analyse.materialien], [drei, drei]);
+});
+
+// ---------- Eingabe und Diktat ----------
+
+test("Eingabe: mehrzeiliger Text wird zeilenweise zu Einträgen, leere Zeilen ignoriert", () => {
+  assert.deepEqual(zeilenZuTexten("Akkuschrauber\nMaßband\r\n\n  Seitenschneider  \r"), ["Akkuschrauber", "Maßband", "Seitenschneider"]);
+  assert.deepEqual(zeilenZuTexten("Kabel abisolieren. Adern prüfen."), ["Kabel abisolieren. Adern prüfen."]);
+  assert.deepEqual(zeilenZuTexten(" \n\t\n"), []);
+});
+
+test("Diktat: Sätze und Zeilen aufgeteilt", () => {
+  assert.deepEqual(diktatZuTexten("Akkuschrauber. Maßband\nSeitenschneider"), ["Akkuschrauber", "Maßband", "Seitenschneider"]);
+});
+
+test("Diktat: ein Satz je Eintrag, Satzpunkt am Ende weg, leere Teile ignoriert", () => {
+  assert.deepEqual(diktatZuTexten("Akkuschrauber. Maßband! Ist das alles?"), ["Akkuschrauber", "Maßband!", "Ist das alles?"]);
+  assert.deepEqual(diktatZuTexten("  Seitenschneider  "), ["Seitenschneider"]);
+  assert.deepEqual(diktatZuTexten("Kabel abisolieren.\n\nAdern prüfen..  "), ["Kabel abisolieren", "Adern prüfen"]);
+  assert.deepEqual(diktatZuTexten(""), []);
+  assert.deepEqual(diktatZuTexten(" . \n . "), []);
+  assert.deepEqual(diktatZuTexten("   \n  "), []);
+  assert.deepEqual(diktatZuTexten("..."), []);
+});
+
+test("Diktat: allein stehende Zahl bleibt beim folgenden Satz", () => {
+  assert.deepEqual(diktatZuTexten("1. Kabel abisolieren. 2. Adern prüfen."), ["1. Kabel abisolieren", "2. Adern prüfen"]);
+});
+
+test("Diktat: Texte werden unten angehängt und sind danach wie getippte Einträge sortierbar", () => {
+  let n = 0;
+  const neueId = () => `d${++n}`;
+  const l = eintraegeAnhaengen([{ id: "a", text: "A" }], ["B", "  ", "C"], neueId);
+  assert.equal(ids(l), "ad1d2");
+  assert.deepEqual(l.map((e) => e.text), ["A", "B", "C"]);
+  assert.equal(ids(eintragVerschieben(l, "d2", "hoch")), "ad2d1");
+  assert.equal(ids(eintragLoeschen(l, "d1")), "ad2");
+  assert.equal(eintragBearbeiten(l, "d1", "B neu")[1].text, "B neu");
 });
 
 // ---------- Durchführen ----------
@@ -156,7 +243,7 @@ test("Bereinigung: Haken nur bis zur ersten Lücke und nur für vorhandene Schri
 
 test("Gespeicherter Stand mit Lücke wird beim Laden bereinigt", () => {
   const z = { ...startZustand(), phase: "durchfuehren" as const, schritte: drei, erledigt: ["a", "c"] };
-  const s = fakeStorage({ "p:zustand-v2": JSON.stringify(z) });
+  const s = fakeStorage({ "p:zustand-v3": JSON.stringify(z) });
   assert.deepEqual(zustandLaden(s, "p:").erledigt, ["a"]);
 });
 
@@ -201,20 +288,27 @@ test("Abschluss erst mit Selbst- und Fremdeinschätzung und Freigabe per Codewor
 
 // ---------- Speichern ----------
 
-test("Speichern und Laden über den Fake-Speicher unter Schlüssel v2", () => {
+test("Speichern und Laden über den Fake-Speicher unter Schlüssel v3", () => {
   const s = fakeStorage();
   const z = { ...startZustand(), phase: "durchfuehren" as const, schritte: drei, erledigt: ["a"], selbst: { k1: 9 } };
   zustandSpeichern(s, "p:", z);
-  assert.deepEqual([...s.daten.keys()], ["p:zustand-v2"]);
-  assert.equal(speicherSchluessel("p:"), "p:zustand-v2");
+  assert.deepEqual([...s.daten.keys()], ["p:zustand-v3"]);
+  assert.equal(speicherSchluessel("p:"), "p:zustand-v3");
   assert.deepEqual(zustandLaden(s, "p:"), z);
 });
 
-test("Alter Stand (v1) und kaputter oder fremder Inhalt ergeben den Startzustand", () => {
+test("Alte Stände (v1, v2) und kaputter oder fremder Inhalt ergeben den Startzustand", () => {
   const v1 = JSON.stringify({ phase: "planen", schritte: [{ id: "s1", text: "A", kontrollierbar: true }], erledigt: [], noten: {}, bewertungAbgeschlossen: false });
+  // v2: Struktur ohne Planen-Unterschritt
+  const v2Zustand: Record<string, unknown> = { ...startZustand(), phase: "durchfuehren", schritte: drei };
+  delete v2Zustand.planenSchritt;
+  const v2 = JSON.stringify(v2Zustand);
   assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v1": v1 }), "p:"), startZustand());
-  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v2": v1 }), "p:"), startZustand());
-  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v2": "{kaputt" }), "p:"), startZustand());
+  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v2": v2 }), "p:"), startZustand());
+  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v3": v1 }), "p:"), startZustand());
+  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v3": v2 }), "p:"), startZustand());
+  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v3": JSON.stringify({ ...startZustand(), planenSchritt: 3 }) }), "p:"), startZustand());
+  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v3": "{kaputt" }), "p:"), startZustand());
   assert.deepEqual(zustandLaden(null, "p:"), startZustand());
 });
 
@@ -241,6 +335,7 @@ test("Zurücksetzen löscht nur Schlüssel mit dem Demo-Präfix, auch alte Versi
   const s = fakeStorage({
     [`${SPEICHER_PRAEFIX}zustand-v1`]: "{}",
     [`${SPEICHER_PRAEFIX}zustand-v2`]: "{}",
+    [`${SPEICHER_PRAEFIX}zustand-v3`]: "{}",
     fremd: "bleibt",
   });
   demoZuruecksetzen(s, SPEICHER_PRAEFIX);

@@ -21,11 +21,16 @@ export type DemoZustand = {
   /** Fremdeinschätzung per Codewort freigeschaltet. */
   fremdFreigegeben: boolean;
   bewertungAbgeschlossen: boolean;
+  /** Unterschritt in Planen: 0 Werkzeuge, 1 Materialien, 2 Arbeitsschritte. */
+  planenSchritt: number;
 };
 
-/** v2: Struktur mit drei Listen und Selbst-/Fremdeinschätzung (v1 wird ignoriert). */
+/**
+ * v3: zusätzlich der Planen-Unterschritt. Ältere Stände (v1, v2) werden nicht
+ * gelesen, das Demo startet dann neu; "Demo zurücksetzen" löscht auch sie.
+ */
 export function speicherSchluessel(praefix: string): string {
-  return `${praefix}zustand-v2`;
+  return `${praefix}zustand-v3`;
 }
 
 /** Planen startet leer. */
@@ -40,6 +45,7 @@ export function startZustand(): DemoZustand {
     fremd: {},
     fremdFreigegeben: false,
     bewertungAbgeschlossen: false,
+    planenSchritt: 0,
   };
 }
 
@@ -73,6 +79,65 @@ export function eintragVerschieben(liste: Eintrag[], id: string, richtung: "hoch
 /** Gate vor Entscheiden: mindestens ein Arbeitsschritt. */
 export function planBereit(schritte: Eintrag[]): boolean {
   return schritte.length > 0;
+}
+
+// Planen als geführte Abfolge: Unterschritt 0 bis anzahl-1 (Werkzeuge,
+// Materialien, Arbeitsschritte). Die Listen bleiben beim Zurückgehen erhalten,
+// hier wechselt nur die Position.
+
+type PlanenPosition = Pick<DemoZustand, "phase" | "planenSchritt">;
+
+/** Weiter ist in den ersten Unterschritten immer möglich, im letzten erst mit einem Arbeitsschritt. */
+export function planenWeiterMoeglich(planenSchritt: number, schritte: Eintrag[], anzahl: number): boolean {
+  return planenSchritt < anzahl - 1 || planBereit(schritte);
+}
+
+/** Nächster Unterschritt; nach dem letzten weiter zu Entscheiden. Gesperrt: keine Änderung. */
+export function planenWeiter(z: PlanenPosition & Pick<DemoZustand, "schritte">, anzahl: number): PlanenPosition {
+  if (!planenWeiterMoeglich(z.planenSchritt, z.schritte, anzahl)) return { phase: z.phase, planenSchritt: z.planenSchritt };
+  if (z.planenSchritt < anzahl - 1) return { phase: "planen", planenSchritt: z.planenSchritt + 1 };
+  return { phase: "entscheiden", planenSchritt: z.planenSchritt };
+}
+
+/** Vorheriger Unterschritt; vor dem ersten zurück zu Analyse. */
+export function planenZurueck(z: PlanenPosition): PlanenPosition {
+  if (z.planenSchritt > 0) return { phase: "planen", planenSchritt: z.planenSchritt - 1 };
+  return { phase: "analyse", planenSchritt: 0 };
+}
+
+// ---------- Eingabe und Diktat (Planen) ----------
+
+/** Getippter Text → Texte für Listeneinträge: eine Zeile je Eintrag, leere Zeilen entfallen. */
+export function zeilenZuTexten(text: string): string[] {
+  return text
+    .split(/\r?\n|\r/)
+    .map((t) => t.trim())
+    .filter((t) => t.length > 0);
+}
+
+/**
+ * Erkannter Diktat-Text → Texte für Listeneinträge: ein Satz je Eintrag
+ * (getrennt nach . ! ? oder Zeilenumbruch), leere Teile entfallen, ein Punkt
+ * am Satzende auch. Eine allein stehende Zahl ("1. Kabel abisolieren")
+ * bleibt beim folgenden Satz.
+ */
+export function diktatZuTexten(text: string): string[] {
+  const teile = text
+    .split(/(?<=[.!?])\s+|[\r\n]+/)
+    .map((t) => t.trim())
+    .filter((t) => t.length > 0);
+  const saetze: string[] = [];
+  for (const t of teile) {
+    const vorher = saetze[saetze.length - 1];
+    if (vorher !== undefined && /^\d+\.$/.test(vorher)) saetze[saetze.length - 1] = `${vorher} ${t}`;
+    else saetze.push(t);
+  }
+  return saetze.map((s) => s.replace(/\.+$/, "").trim()).filter((s) => s.length > 0);
+}
+
+/** Hängt diktierte Texte unten an die Liste an, je Text ein Eintrag (wie getippt). */
+export function eintraegeAnhaengen(liste: Eintrag[], texte: string[], neueId: () => string): Eintrag[] {
+  return texte.filter((t) => t.trim()).reduce((l, t) => eintragHinzufuegen(l, t, neueId()), liste);
 }
 
 // ---------- Durchführen ----------
@@ -192,7 +257,10 @@ function istZustand(x: unknown): x is DemoZustand {
     istPunkte(z.selbst) &&
     istPunkte(z.fremd) &&
     typeof z.fremdFreigegeben === "boolean" &&
-    typeof z.bewertungAbgeschlossen === "boolean"
+    typeof z.bewertungAbgeschlossen === "boolean" &&
+    Number.isInteger(z.planenSchritt) &&
+    (z.planenSchritt as number) >= 0 &&
+    (z.planenSchritt as number) <= 2
   );
 }
 

@@ -19,6 +19,11 @@ export const PHASEN: { id: PhaseId; name: string }[] = [
   { id: "bewerten", name: "Bewerten" },
 ];
 
+// Instruktionstext und Box "Hast du alles?" je Phase (PHASEN_TEXTE). Beide
+// vorerst ausgeblendet; true blendet sie wieder ein. Kein Weiter hängt daran.
+export const ZEIGE_INSTRUKTION = false;
+export const ZEIGE_CHECKLISTE = false;
+
 // Für das Investor-Demo aus, für Energiehelden auf true.
 // (Box "Prüfprotokoll auf Papier" in der Phase Kontrolle, TEXTE.kontrolle.hinweisProtokoll)
 export const ZEIGE_PRUEFPROTOKOLL_HINWEIS = false;
@@ -28,6 +33,13 @@ export const DEMO_CODEWORT = "werkstatt";
 
 /** Feste Punkteskala der Bewertung (keine Schulnoten). */
 export const PUNKTE_SKALA = [10, 9, 7, 5, 3, 0] as const;
+
+/** Planen als geführte Abfolge: ein Editor je Unterschritt, in dieser Reihenfolge. */
+export const PLANEN_UNTERSCHRITTE: { id: "werkzeuge" | "materialien" | "schritte"; titel: string }[] = [
+  { id: "werkzeuge", titel: "Werkzeuge" },
+  { id: "materialien", titel: "Materialien" },
+  { id: "schritte", titel: "Arbeitsschritte" },
+];
 
 /** Präfix aller Browser-Schlüssel dieses Demos; "Demo zurücksetzen" löscht nur diese. */
 export const SPEICHER_PRAEFIX = "cja-praxisflow-demo:";
@@ -87,15 +99,17 @@ export const PHASEN_TEXTE: Record<PhaseId, { instruktion: string; hastDuAlles: s
 // Neuer Eintrag: Datei nach public/praxisflow-demo/ legen und hier
 // { titel: "Anzeigename", dateiname: "dateiname.pdf" } ergänzen. Dateiname
 // nur mit a-z, 0-9 und Bindestrich, keine Leerzeichen. Die App verlinkt
-// /praxisflow-demo/<dateiname> (Anzeigen im Vorschau-Fenster und Herunterladen).
+// /praxisflow-demo/<dateiname>: ab md eingebettete Vorschau mit Umschalter,
+// darunter "In neuem Tab öffnen" und "Herunterladen"; auf dem Handy je Datei
+// eine Karte, die das PDF im nativen Viewer öffnet.
 // Keine externen Links. Die Dateien sind nur mit Login erreichbar
 // (middleware.ts), liegen aber im Repo -- nichts Vertrauliches ablegen.
 // ---------------------------------------------------------------------------
 export const DATEIEN_ORDNER = "/praxisflow-demo";
 
 export const DATEIEN: { titel: string; dateiname: string }[] = [
-  { titel: "Vorlage Übungsaufbau (Platzhalter)", dateiname: "platzhalter-vorlage.pdf" },
-  { titel: "Arbeitsblatt Ablauf (Platzhalter)", dateiname: "platzhalter-arbeitsblatt.pdf" },
+  { titel: "Auftragsblatt AA-E-02 – Leitungsverlängerung 230 V", dateiname: "aa-e-02-leitungsverlaengerung-230v.pdf" },
+  { titel: "Arbeitsunterlage AU-E-02 – Leitungsverlängerung 230 V", dateiname: "au-e-02-leitungsverlaengerung-230v.pdf" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -110,6 +124,18 @@ export const BEWERTUNGSKRITERIEN: { id: string; titel: string }[] = [
   { id: "k4", titel: "Kriterium 4 (Platzhalter): Ordnung am Arbeitsplatz" },
 ];
 
+// Beschreibung je Punktestufe, erscheint bei Hover, Antippen und
+// Tastatur-Fokus (Selbst- und Fremdeinschätzung). Für jede Stufe aus
+// PUNKTE_SKALA ein Text.
+export const NOTEN_BESCHREIBUNGEN: Record<number, string> = {
+  10: "Vollständig und fehlerfrei, ohne Hilfe. (Platzhalter)",
+  9: "Fast vollständig, kleine Ungenauigkeiten. (Platzhalter)",
+  7: "Überwiegend richtig, einzelne Fehler. (Platzhalter)",
+  5: "Teilweise richtig, mehrere Fehler oder Hilfe nötig. (Platzhalter)",
+  3: "Nur in Ansätzen erfüllt. (Platzhalter)",
+  0: "Nicht erfüllt. (Platzhalter)",
+};
+
 // ---------------------------------------------------------------------------
 // 4. Übrige Texte
 // ---------------------------------------------------------------------------
@@ -120,7 +146,17 @@ export const TEXTE = {
       "Baue den Übungsaufbau auf dem Werkstattbrett nach der Vorlage auf. Arbeite sauber und so, dass eine zweite Person jeden Schritt nachvollziehen kann. (Platzhalter)",
   },
   planen: {
+    unterschritt: (nr: number, gesamt: number) => `Schritt ${nr} von ${gesamt}`,
     gesperrt: "Trage mindestens einen Arbeitsschritt ein, dann geht es weiter zu Entscheiden.",
+  },
+  // Eingabezeile in Planen (Tippen oder Diktat)
+  eingabe: {
+    hinzufuegen: "Hinzufügen",
+    diktieren: "Diktieren",
+    stoppen: "Stopp",
+    hoertZu: "Hört zu …",
+    verweigert: "Mikrofon nicht freigegeben. Du kannst die Einträge weiter tippen.",
+    fehler: "Diktat gerade nicht möglich. Du kannst die Einträge weiter tippen.",
   },
   durchfuehren: {
     /** Hinweis an einem noch gesperrten Schritt; nr = Nummer des Vorgängers. */
