@@ -2,20 +2,39 @@
 
 import { useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, ChevronLeft, ClipboardCheck, Hammer, Info, ListOrdered, Package, Search, Star, UserCheck, Wrench } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  ClipboardCheck,
+  Hammer,
+  Info,
+  ListOrdered,
+  Package,
+  Search,
+  Star,
+  UserCheck,
+  Wrench,
+} from "lucide-react";
 
-import { PageHeader } from "@/components/page-header";
-import { Einschaetzung, VerifizierungStatus } from "@/components/praxisflow/bewertung";
+import { Einschaetzung } from "@/components/praxisflow/bewertung";
 import { CodewortGate } from "@/components/praxisflow/codewort-gate";
 import { DemoLeiste } from "@/components/praxisflow/demo-leiste";
 import { FotoVorschau } from "@/components/praxisflow/foto-vorschau";
+import { Einblenden } from "@/components/praxisflow/einblenden";
 import { DateienBlock, Hinweis, InstruktionKarte } from "@/components/praxisflow/instruktion-karte";
 import { ListenEditor } from "@/components/praxisflow/listen-editor";
 import { PhasenAnzeige } from "@/components/praxisflow/phasen-anzeige";
 import { PlanUebersicht } from "@/components/praxisflow/plan-uebersicht";
-import { SchritteCheckliste } from "@/components/praxisflow/schritte-checkliste";
-import { FOKUS, PRIMAER, SEKUNDAER, TEXT } from "@/components/praxisflow/stile";
 import {
+  AufgabeGeschafft,
+  BewertungVergleich,
+  EtappeGeschafft,
+  FokusDurchfuehren,
+} from "@/components/praxisflow/spiel-elemente";
+import { FOKUS, PRIMAER, SEKUNDAER, TEXT, UEBERSCHRIFT } from "@/components/praxisflow/stile";
+import {
+  ABSCHLUSS_KOMPETENZEN,
   BEWERTUNGSKRITERIEN,
   DATEIEN,
   DATEIEN_ORDNER,
@@ -84,33 +103,61 @@ type Zurueck = { href: string; label: string };
  * Server kennt ihn nicht. So gibt es keinen Hydration-Unterschied.
  */
 export function PraxisflowDemo({ zurueck }: { zurueck: Zurueck }) {
-  const imBrowser = useSyncExternalStore(nichts, () => true, () => false);
+  const imBrowser = useSyncExternalStore(
+    nichts,
+    () => true,
+    () => false
+  );
 
   return (
-    <div className="flex flex-col gap-6">
+    // Kopf wie die Lektionsseite (Angleichung Anna 2026-10-12): Zurück-Link,
+    // klein "Praxisaufgabe", groß der Auftrag.
+    <div className="flex flex-col gap-5">
+      <Link
+        href={zurueck.href}
+        className={cn("flex w-fit items-center gap-1 rounded-sm text-sm text-ink-muted hover:text-ink", FOKUS)}
+      >
+        <ArrowLeft className="size-4" aria-hidden="true" /> Zurück zum {zurueck.label}
+      </Link>
       <div className="flex flex-col gap-2">
-        <Link
-          href={zurueck.href}
-          className={cn(
-            "-ml-2 inline-flex min-h-11 w-fit items-center gap-1 rounded-lg px-2 text-sm font-medium text-muted-foreground hover:bg-subtle hover:text-ink",
-            FOKUS
-          )}
-        >
-          <ChevronLeft className="size-4" aria-hidden="true" /> {zurueck.label}
-        </Link>
-        <PageHeader title={DEMO_AUFTRAG.titel} />
+        <span className="text-sm text-ink-muted">Praxisaufgabe</span>
+        <h1 className="font-heading text-[28px] leading-tight text-ink md:text-[36px]">{DEMO_AUFTRAG.titel}</h1>
       </div>
-      {imBrowser ? <Flow /> : <p className="text-sm text-muted-foreground">Demo wird geladen …</p>}
+      {imBrowser ? <Flow /> : <p className="text-sm text-ink-muted">Demo wird geladen …</p>}
     </div>
   );
 }
 
 type Liste = "werkzeuge" | "materialien" | "schritte";
 
+const PHASEN_SYMBOL: Record<PhaseId, typeof Wrench> = {
+  analyse: Search,
+  planen: ListOrdered,
+  entscheiden: UserCheck,
+  durchfuehren: Hammer,
+  kontrolle: ClipboardCheck,
+  bewerten: Star,
+};
+
 const EDITOR: Record<Liste, { icon: typeof Wrench; einzahl: string; leerText: string; platzhalter: string }> = {
-  werkzeuge: { icon: Wrench, einzahl: "Werkzeug", leerText: "Noch keine Werkzeuge eingetragen.", platzhalter: "Werkzeug eintragen …" },
-  materialien: { icon: Package, einzahl: "Material", leerText: "Noch keine Materialien eingetragen.", platzhalter: "Material eintragen …" },
-  schritte: { icon: ListOrdered, einzahl: "Schritt", leerText: "Noch keine Arbeitsschritte eingetragen.", platzhalter: "Arbeitsschritt eintragen …" },
+  werkzeuge: {
+    icon: Wrench,
+    einzahl: "Werkzeug",
+    leerText: "Noch keine Werkzeuge eingetragen.",
+    platzhalter: "Werkzeug eintragen …",
+  },
+  materialien: {
+    icon: Package,
+    einzahl: "Material",
+    leerText: "Noch keine Materialien eingetragen.",
+    platzhalter: "Material eintragen …",
+  },
+  schritte: {
+    icon: ListOrdered,
+    einzahl: "Schritt",
+    leerText: "Noch keine Arbeitsschritte eingetragen.",
+    platzhalter: "Arbeitsschritt eintragen …",
+  },
 };
 
 function Flow() {
@@ -122,8 +169,19 @@ function Flow() {
     zustandSpeichern(speicher(), SPEICHER_PRAEFIX, zustand);
   }, [zustand]);
 
+  // Spielerisch (Vorschau Anna 2026-10-12): zwischen zwei Phasen erst
+  // "Etappe geschafft!" -- nur auf der Seite, nicht im gespeicherten Stand.
+  const [etappe, setEtappe] = useState<{ von: PhaseId; nach: PhaseId } | null>(null);
+
   const aktuell = PHASEN.findIndex((p) => p.id === zustand.phase);
   const texte = PHASEN_TEXTE[zustand.phase];
+  const phasenName = (id: PhaseId) => PHASEN.find((p) => p.id === id)?.name ?? "";
+
+  /** Vorwärts in die nächste Phase: zuerst der "Etappe geschafft"-Moment. */
+  function geschafft(nach: PhaseId) {
+    setEtappe({ von: zustand.phase, nach });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
   function zuPhase(phase: PhaseId) {
     setZustand((z) => ({ ...z, phase, erledigt: erledigtBereinigen(z.erledigt, z.schritte) }));
@@ -131,7 +189,16 @@ function Flow() {
   }
 
   // Planen: Unterschritt wechseln (bzw. Phase am Anfang und Ende der Abfolge).
-  function planenGehen(richtung: "weiter" | "zurueck") {
+  function planenGehen(richtung: "weiter" | "zurueck", ohneEtappe = false) {
+    // Nach dem letzten Unterschritt geht es zu Entscheiden -- erst feiern.
+    if (
+      !ohneEtappe &&
+      richtung === "weiter" &&
+      planenWeiter(zustand, PLANEN_UNTERSCHRITTE.length).phase === "entscheiden"
+    ) {
+      geschafft("entscheiden");
+      return;
+    }
     setZustand((z) => {
       const ziel = richtung === "weiter" ? planenWeiter(z, PLANEN_UNTERSCHRITTE.length) : planenZurueck(z);
       return { ...z, ...ziel, erledigt: erledigtBereinigen(z.erledigt, z.schritte) };
@@ -164,6 +231,7 @@ function Flow() {
     demoZuruecksetzen(speicher(), SPEICHER_PRAEFIX);
     setZustand(startZustand());
     setDurchlauf((d) => d + 1);
+    setEtappe(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -172,29 +240,44 @@ function Flow() {
     instruktion: ZEIGE_INSTRUKTION ? texte.instruktion : undefined,
     hastDuAlles: ZEIGE_CHECKLISTE ? texte.hastDuAlles : [],
     hastDuAllesTitel: TEXTE.hastDuAllesTitel,
+    fortschritt: <PhasenAnzeige phasen={PHASEN} aktuell={aktuell} />,
   };
 
   return (
     <>
-      <DemoLeiste kennzeichnung={DEMO_AUFTRAG.kennzeichnung} text={DEMO_AUFTRAG.banner} onZuruecksetzen={zuruecksetzen} />
-      <PhasenAnzeige phasen={PHASEN} aktuell={aktuell} />
-
-      <div key={`${durchlauf}-${zustand.phase}-${zustand.planenSchritt}`} className="flex flex-col gap-6">
-        {zustand.phase === "analyse" && (
-          <InstruktionKarte icon={Search} titel="Analyse" {...karte}>
-            <div className="flex flex-col gap-1.5">
-              <h3 className="text-sm font-semibold text-ink">Arbeitsauftrag</h3>
-              <p className={TEXT}>{TEXTE.analyse.arbeitsauftrag}</p>
-            </div>
-            <DateienBlock titel="Dateien" ordner={DATEIEN_ORDNER} dateien={DATEIEN} />
-            <button type="button" onClick={() => zuPhase("planen")} className={PRIMAER}>
-              Weiter zu Planen
-              <ArrowRight aria-hidden="true" />
-            </button>
+      <div
+        key={`${durchlauf}-${zustand.phase}-${zustand.planenSchritt}-${etappe?.nach ?? ""}`}
+        className="flex flex-col gap-6"
+      >
+        {etappe && (
+          <InstruktionKarte
+            icon={PHASEN_SYMBOL[etappe.nach]}
+            titel={phasenName(etappe.nach)}
+            {...karte}
+            instruktion={undefined}
+            hastDuAlles={[]}
+            fortschritt={<PhasenAnzeige phasen={PHASEN} aktuell={PHASEN.findIndex((p) => p.id === etappe.nach)} />}
+          >
+            <EtappeGeschafft
+              phase={phasenName(etappe.von)}
+              naechste={phasenName(etappe.nach)}
+              onWeiter={() => {
+                const { von, nach } = etappe;
+                setEtappe(null);
+                if (von === "planen") planenGehen("weiter", true);
+                else zuPhase(nach);
+              }}
+            />
           </InstruktionKarte>
         )}
 
-        {zustand.phase === "planen" && (
+        {!etappe && zustand.phase === "analyse" && (
+          <InstruktionKarte icon={Search} titel="Analyse" {...karte}>
+            <AnalyseSchritte onWeiter={() => geschafft("planen")} />
+          </InstruktionKarte>
+        )}
+
+        {!etappe && zustand.phase === "planen" && (
           <PlanenAbfolge
             karte={karte}
             nr={zustand.planenSchritt}
@@ -217,9 +300,13 @@ function Flow() {
           />
         )}
 
-        {zustand.phase === "entscheiden" && (
+        {!etappe && zustand.phase === "entscheiden" && (
           <InstruktionKarte icon={UserCheck} titel="Entscheiden" {...karte}>
-            <PlanUebersicht werkzeuge={zustand.werkzeuge} materialien={zustand.materialien} schritte={zustand.schritte} />
+            <PlanUebersicht
+              werkzeuge={zustand.werkzeuge}
+              materialien={zustand.materialien}
+              schritte={zustand.schritte}
+            />
             <CodewortGate
               id="gate-entscheiden"
               hinweis={TEXTE.gates.entscheiden}
@@ -227,32 +314,40 @@ function Flow() {
               buttonText="Plan freigeben"
               fehlerText={TEXTE.codewort.falsch}
               pruefen={pruefen}
-              onFreigabe={() => zuPhase("durchfuehren")}
+              onFreigabe={() => geschafft("durchfuehren")}
             />
           </InstruktionKarte>
         )}
 
-        {zustand.phase === "durchfuehren" && (
+        {!etappe && zustand.phase === "durchfuehren" && (
           <InstruktionKarte icon={Hammer} titel="Durchführen" {...karte}>
-            {/* "Ich komme nicht weiter" vorerst ausgeblendet, siehe schritte-checkliste.tsx */}
-            <SchritteCheckliste
+            {/* Fokus-Modus (Vorschau 2026-10-12): immer ein Schritt groß. Die
+                bisherige Checkliste liegt in schritte-checkliste.tsx. */}
+            <FokusDurchfuehren
               schritte={zustand.schritte}
               erledigt={zustand.erledigt}
-              status={Object.fromEntries(zustand.schritte.map((s) => [s.id, schrittStatus(zustand.schritte, zustand.erledigt, s.id)]))}
-              gesperrtHinweis={TEXTE.durchfuehren.gesperrt}
-              onUmschalten={(id) => setZustand((z) => ({ ...z, erledigt: schrittUmschalten(z.schritte, z.erledigt, id) }))}
+              status={Object.fromEntries(
+                zustand.schritte.map((s) => [s.id, schrittStatus(zustand.schritte, zustand.erledigt, s.id)])
+              )}
+              onUmschalten={(id) =>
+                setZustand((z) => ({ ...z, erledigt: schrittUmschalten(z.schritte, z.erledigt, id) }))
+              }
             />
-            <CodewortGate
-              id="gate-durchfuehren"
-              hinweis={TEXTE.gates.durchfuehren}
-              label={TEXTE.codewort.label}
-              buttonText="Durchführung freigeben"
-              aktiv={alleErledigt(zustand.schritte, zustand.erledigt)}
-              gesperrtText={TEXTE.codewort.gesperrtDurchfuehren}
-              fehlerText={TEXTE.codewort.falsch}
-              pruefen={pruefen}
-              onFreigabe={() => zuPhase("kontrolle")}
-            />
+            {alleErledigt(zustand.schritte, zustand.erledigt) && (
+              <Einblenden>
+                <CodewortGate
+                  id="gate-durchfuehren"
+                  hinweis={TEXTE.gates.durchfuehren}
+                  label={TEXTE.codewort.label}
+                  buttonText="Durchführung freigeben"
+                  aktiv={alleErledigt(zustand.schritte, zustand.erledigt)}
+                  gesperrtText={TEXTE.codewort.gesperrtDurchfuehren}
+                  fehlerText={TEXTE.codewort.falsch}
+                  pruefen={pruefen}
+                  onFreigabe={() => geschafft("kontrolle")}
+                />
+              </Einblenden>
+            )}
             <button type="button" onClick={() => zuPhase("planen")} className={cn(SEKUNDAER, "sm:self-start")}>
               <ArrowLeft aria-hidden="true" />
               Zurück zu Planen
@@ -260,13 +355,15 @@ function Flow() {
           </InstruktionKarte>
         )}
 
-        {zustand.phase === "kontrolle" && (
+        {!etappe && zustand.phase === "kontrolle" && (
           <InstruktionKarte icon={ClipboardCheck} titel="Kontrolle" {...karte}>
             <div className="flex flex-col gap-1.5">
-              <h3 className="text-sm font-semibold text-ink">Dokumentation</h3>
+              <h3 className={UEBERSCHRIFT}>Dokumentation</h3>
               <p className={TEXT}>{TEXTE.kontrolle.dokumentation}</p>
             </div>
-            {ZEIGE_PRUEFPROTOKOLL_HINWEIS && <Hinweis icon={ClipboardCheck}>{TEXTE.kontrolle.hinweisProtokoll}</Hinweis>}
+            {ZEIGE_PRUEFPROTOKOLL_HINWEIS && (
+              <Hinweis icon={ClipboardCheck}>{TEXTE.kontrolle.hinweisProtokoll}</Hinweis>
+            )}
             <FotoVorschau />
             <CodewortGate
               id="gate-kontrolle"
@@ -275,7 +372,7 @@ function Flow() {
               buttonText="Kontrolle freigeben"
               fehlerText={TEXTE.codewort.falsch}
               pruefen={pruefen}
-              onFreigabe={() => zuPhase("bewerten")}
+              onFreigabe={() => geschafft("bewerten")}
             />
             <button type="button" onClick={() => zuPhase("durchfuehren")} className={cn(SEKUNDAER, "sm:self-start")}>
               <ArrowLeft aria-hidden="true" />
@@ -284,63 +381,218 @@ function Flow() {
           </InstruktionKarte>
         )}
 
-        {zustand.phase === "bewerten" && (
+        {!etappe && zustand.phase === "bewerten" && zustand.bewertungAbgeschlossen && (
+          <InstruktionKarte
+            icon={Star}
+            titel="Geschafft"
+            {...karte}
+            instruktion={undefined}
+            hastDuAlles={[]}
+            fortschritt={<PhasenAnzeige phasen={PHASEN} aktuell={PHASEN.length} />}
+          >
+            <AufgabeGeschafft kompetenzen={ABSCHLUSS_KOMPETENZEN} />
+          </InstruktionKarte>
+        )}
+
+        {!etappe && zustand.phase === "bewerten" && !zustand.bewertungAbgeschlossen && (
           <InstruktionKarte icon={Star} titel="Bewerten" {...karte}>
-            <Einschaetzung
-              id="selbst"
-              titel={TEXTE.bewerten.selbstTitel}
-              text={TEXTE.bewerten.selbstText}
-              kriterien={BEWERTUNGSKRITERIEN}
-              skala={PUNKTE_SKALA}
-              beschreibungen={NOTEN_BESCHREIBUNGEN}
-              werte={zustand.selbst}
-              onWert={(k, p) => setZustand((z) => ({ ...z, selbst: { ...z.selbst, [k]: p } }))}
-              gesperrt={zustand.fremdFreigegeben}
-            />
-            {!zustand.fremdFreigegeben && (
-              <CodewortGate
-                id="gate-bewerten"
-                hinweis={TEXTE.gates.bewerten}
-                label={TEXTE.codewort.label}
-                buttonText="Fremdeinschätzung freischalten"
-                aktiv={fremdFreigabeMoeglich(BEWERTUNGSKRITERIEN, zustand.selbst, PUNKTE_SKALA)}
-                gesperrtText={TEXTE.codewort.gesperrtBewerten}
-                fehlerText={TEXTE.codewort.falsch}
-                pruefen={pruefen}
-                onFreigabe={() => setZustand((z) => ({ ...z, fremdFreigegeben: true }))}
-              />
-            )}
-            <Einschaetzung
-              id="fremd"
-              titel={TEXTE.bewerten.fremdTitel}
-              text={TEXTE.bewerten.fremdText}
-              kriterien={BEWERTUNGSKRITERIEN}
-              skala={PUNKTE_SKALA}
-              beschreibungen={NOTEN_BESCHREIBUNGEN}
-              werte={zustand.fremd}
-              onWert={(k, p) => setZustand((z) => ({ ...z, fremd: { ...z.fremd, [k]: p } }))}
-              gesperrt={!zustand.fremdFreigegeben || zustand.bewertungAbgeschlossen}
-            />
-            {zustand.bewertungAbgeschlossen ? (
-              <VerifizierungStatus label={TEXTE.bewerten.status} />
-            ) : (
-              <button
-                type="button"
-                onClick={() => setZustand((z) => ({ ...z, bewertungAbgeschlossen: true }))}
-                disabled={!bewertungAbschliessbar(zustand, BEWERTUNGSKRITERIEN, PUNKTE_SKALA)}
-                className={PRIMAER}
-              >
-                Bewertung abschließen
-              </button>
-            )}
+            <BewertenSchritte zustand={zustand} setZustand={setZustand} />
           </InstruktionKarte>
         )}
       </div>
+      <DemoLeiste onZuruecksetzen={zuruecksetzen} />
     </>
   );
 }
 
-type Karte = { instruktion?: string; hastDuAlles: string[]; hastDuAllesTitel: string };
+/** Erledigter Schritt als eine Zeile mit Häkchen (optional "Ändern"). */
+function ErledigtZeile({ text, onAendern }: { text: string; onAendern?: () => void }) {
+  return (
+    <div className="flex items-center gap-3 rounded-zeile bg-subtle px-4 py-3">
+      <span className="flex size-6 flex-none items-center justify-center rounded-full bg-brand text-white" aria-hidden="true">
+        <Check className="size-3.5" strokeWidth={3} />
+      </span>
+      <span className="min-w-0 flex-1 text-[15px] font-semibold text-ink">{text}</span>
+      {onAendern && (
+        <button type="button" onClick={onAendern} className={cn("rounded-sm text-[13px] font-semibold text-ink-muted hover:text-ink", FOKUS)}>
+          Ändern
+        </button>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Bewerten eins nach dem anderen (Anna 2026-10-12): Selbsteinschätzung →
+ * Freigabe per Codewort → Fremdeinschätzung → Vergleich und Abschluss.
+ * Erledigte Schritte klappen zu einer Zeile mit Häkchen zusammen. Regeln
+ * und gespeicherter Stand wie bisher (praxisflow-logik.ts).
+ */
+function BewertenSchritte({
+  zustand,
+  setZustand,
+}: {
+  zustand: DemoZustand;
+  setZustand: React.Dispatch<React.SetStateAction<DemoZustand>>;
+}) {
+  const selbstKomplett = fremdFreigabeMoeglich(BEWERTUNGSKRITERIEN, zustand.selbst, PUNKTE_SKALA);
+  const fremdKomplett = fremdFreigabeMoeglich(BEWERTUNGSKRITERIEN, zustand.fremd, PUNKTE_SKALA);
+  const [selbstFertig, setSelbstFertig] = useState(zustand.fremdFreigegeben);
+  const [fremdFertig, setFremdFertig] = useState(zustand.fremdFreigegeben && fremdKomplett);
+
+  if (!selbstFertig) {
+    return (
+      <>
+        <Einschaetzung
+          id="selbst"
+          titel={TEXTE.bewerten.selbstTitel}
+          text={TEXTE.bewerten.selbstText}
+          kriterien={BEWERTUNGSKRITERIEN}
+          skala={PUNKTE_SKALA}
+          beschreibungen={NOTEN_BESCHREIBUNGEN}
+          werte={zustand.selbst}
+          onWert={(k, p) => setZustand((z) => ({ ...z, selbst: { ...z.selbst, [k]: p } }))}
+          gesperrt={zustand.fremdFreigegeben}
+        />
+        {selbstKomplett ? (
+          <Einblenden>
+            <button type="button" onClick={() => setSelbstFertig(true)} className={cn(PRIMAER, "sm:self-start")}>
+              Weiter <ArrowRight aria-hidden="true" />
+            </button>
+          </Einblenden>
+        ) : (
+          <p className="text-[13px] text-ink-muted">{TEXTE.codewort.gesperrtBewerten}</p>
+        )}
+      </>
+    );
+  }
+
+  const selbstZeile = (
+    <ErledigtZeile
+      text={TEXTE.bewerten.selbstTitel}
+      onAendern={zustand.fremdFreigegeben ? undefined : () => setSelbstFertig(false)}
+    />
+  );
+
+  if (!zustand.fremdFreigegeben) {
+    return (
+      <>
+        {selbstZeile}
+        <Einblenden>
+          <CodewortGate
+            id="gate-bewerten"
+            hinweis={TEXTE.gates.bewerten}
+            label={TEXTE.codewort.label}
+            buttonText="Fremdeinschätzung freischalten"
+            fehlerText={TEXTE.codewort.falsch}
+            pruefen={pruefen}
+            onFreigabe={() => setZustand((z) => ({ ...z, fremdFreigegeben: true }))}
+          />
+        </Einblenden>
+      </>
+    );
+  }
+
+  if (!fremdFertig) {
+    return (
+      <>
+        {selbstZeile}
+        <Einblenden>
+          <Einschaetzung
+            id="fremd"
+            titel={TEXTE.bewerten.fremdTitel}
+            text={TEXTE.bewerten.fremdText}
+            kriterien={BEWERTUNGSKRITERIEN}
+            skala={PUNKTE_SKALA}
+            beschreibungen={NOTEN_BESCHREIBUNGEN}
+            werte={zustand.fremd}
+            onWert={(k, p) => setZustand((z) => ({ ...z, fremd: { ...z.fremd, [k]: p } }))}
+            gesperrt={zustand.bewertungAbgeschlossen}
+          />
+          {fremdKomplett && (
+            <button type="button" onClick={() => setFremdFertig(true)} className={cn(PRIMAER, "sm:self-start")}>
+              Weiter zum Vergleich <ArrowRight aria-hidden="true" />
+            </button>
+          )}
+        </Einblenden>
+      </>
+    );
+  }
+
+  return (
+    <>
+      {selbstZeile}
+      <ErledigtZeile text={TEXTE.bewerten.fremdTitel} onAendern={() => setFremdFertig(false)} />
+      <BewertungVergleich kriterien={BEWERTUNGSKRITERIEN} selbst={zustand.selbst} fremd={zustand.fremd} />
+      <Einblenden>
+        <button
+          type="button"
+          onClick={() => setZustand((z) => ({ ...z, bewertungAbgeschlossen: true }))}
+          disabled={!bewertungAbschliessbar(zustand, BEWERTUNGSKRITERIEN, PUNKTE_SKALA)}
+          className={cn(PRIMAER, "sm:self-start")}
+        >
+          Bewertung abschließen <Check aria-hidden="true" />
+        </button>
+      </Einblenden>
+    </>
+  );
+}
+
+/**
+ * Analyse Schritt für Schritt (Anna 2026-10-12): Phasen-Übersicht bleibt
+ * oben, darunter erscheint der nächste Schritt erst, wenn der vorige erledigt
+ * ist -- Arbeitsauftrag lesen → Unterlagen ansehen → Weiter zu Planen. Der
+ * Stand gilt nur, solange die Phase offen ist.
+ */
+function AnalyseSchritte({ onWeiter }: { onWeiter: () => void }) {
+  const [gelesen, setGelesen] = useState(false);
+  const [angesehen, setAngesehen] = useState<Set<string>>(new Set());
+  const alleAngesehen = DATEIEN.every((d) => angesehen.has(d.dateiname));
+  return (
+    <>
+      <div className="flex flex-col gap-3">
+        <h3 className={UEBERSCHRIFT}>Arbeitsauftrag</h3>
+        <p className={TEXT}>{TEXTE.analyse.arbeitsauftrag}</p>
+        {gelesen ? (
+          <p className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink-muted">
+            <Check className="size-4 text-brand" strokeWidth={3} aria-hidden="true" /> Gelesen
+          </p>
+        ) : (
+          <button type="button" onClick={() => setGelesen(true)} className={cn(PRIMAER, "sm:self-start")}>
+            Gelesen <Check aria-hidden="true" />
+          </button>
+        )}
+      </div>
+      {gelesen && (
+        <Einblenden>
+          <DateienBlock
+            titel="Unterlagen ansehen"
+            ordner={DATEIEN_ORDNER}
+            dateien={DATEIEN}
+            angesehen={angesehen}
+            onOeffnen={(name) => setAngesehen((alt) => new Set(alt).add(name))}
+          />
+          {!alleAngesehen && <p className="text-[13px] text-ink-muted">Öffne alle Unterlagen, dann geht es weiter.</p>}
+        </Einblenden>
+      )}
+      {gelesen && alleAngesehen && (
+        <Einblenden>
+          <button type="button" onClick={onWeiter} className={cn(PRIMAER, "sm:self-start")}>
+            Weiter zu Planen
+            <ArrowRight aria-hidden="true" />
+          </button>
+        </Einblenden>
+      )}
+    </>
+  );
+}
+
+type Karte = {
+  instruktion?: string;
+  hastDuAlles: string[];
+  hastDuAllesTitel: string;
+  fortschritt?: React.ReactNode;
+};
 
 /**
  * Planen in drei Unterschritten nacheinander (Werkzeuge, Materialien,
@@ -368,7 +620,7 @@ function PlanenAbfolge({
   const weiterMoeglich = planenWeiterMoeglich(nr, schritte, gesamt);
   return (
     <InstruktionKarte icon={ListOrdered} titel="Planen" {...karte}>
-      <p className="text-sm font-medium text-muted-foreground" aria-live="polite">
+      <p className="text-sm font-semibold text-ink-muted" aria-live="polite">
         {TEXTE.planen.unterschritt(nr + 1, gesamt)}: {unterschritt.titel}
       </p>
       {editor(unterschritt.id)}
@@ -390,7 +642,7 @@ function PlanenAbfolge({
           </button>
         </div>
         {letzter && !planBereit(schritte) && (
-          <p id="planen-gesperrt" className="flex items-center gap-1.5 text-sm text-muted-foreground">
+          <p id="planen-gesperrt" className="flex items-center gap-1.5 text-sm text-ink-muted">
             <Info className="size-4 shrink-0" aria-hidden="true" />
             {TEXTE.planen.gesperrt}
           </p>

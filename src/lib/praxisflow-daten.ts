@@ -191,3 +191,12 @@ export const TEXTE = {
     gesperrtBewerten: "Erst die Selbsteinschätzung für alle Kriterien ausfüllen.",
   },
 };
+
+// ---------------------------------------------------------------------------
+// 5. Spielerische Elemente (Vorschau Anna 2026-10-12): Beispiel-Kompetenz
+// im Abschluss -- Platzhalter, Malte/Vera ersetzen ihn.
+// ---------------------------------------------------------------------------
+/** Beispiel: Kompetenzen, die die Demo-Aufgabe stärkt (Zuordnung fehlt in den Daten). */
+export const ABSCHLUSS_KOMPETENZEN: { name: string; prozent: number }[] = [
+  { name: "Bauelemente identifizieren (Beispiel)", prozent: 67 },
+];

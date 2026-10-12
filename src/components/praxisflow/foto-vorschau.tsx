@@ -27,7 +27,7 @@ export function FotoVorschau({ hinweis }: { hinweis?: string }) {
       <label
         htmlFor="kontrolle-foto"
         className={cn(
-          "inline-flex min-h-11 w-fit cursor-pointer items-center gap-2 rounded-lg border border-border bg-white px-4 text-[15px] font-medium text-ink hover:bg-subtle has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand has-[:focus-visible]:ring-offset-2",
+          "inline-flex min-h-11 w-fit cursor-pointer items-center gap-2 rounded-full bg-subtle px-5 text-[15px] font-semibold text-ink hover:bg-praxis-tint has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand has-[:focus-visible]:ring-offset-2",
           FOKUS
         )}
       >
@@ -45,9 +45,9 @@ export function FotoVorschau({ hinweis }: { hinweis?: string }) {
           }}
         />
       </label>
-      {hinweis && <p className="text-sm text-muted-foreground">{hinweis}</p>}
+      {hinweis && <p className="text-sm text-ink-muted">{hinweis}</p>}
       {url && (
-        <div className="relative h-56 w-full max-w-md overflow-hidden rounded-lg border border-border bg-muted">
+        <div className="relative h-56 w-full max-w-md overflow-hidden rounded-zeile bg-subtle">
           <Image src={url} alt="Vorschau des ausgewählten Fotos" fill unoptimized sizes="448px" className="object-contain" />
         </div>
       )}

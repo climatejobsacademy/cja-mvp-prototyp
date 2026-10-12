@@ -38,12 +38,12 @@ export function Einschaetzung({
   gesperrt?: boolean;
 }) {
   return (
-    <section className="flex flex-col gap-4 rounded-lg border border-border p-3" aria-labelledby={`${id}-titel`}>
+    <section className="flex flex-col gap-4 rounded-zeile bg-subtle p-4" aria-labelledby={`${id}-titel`}>
       <div className="flex flex-col gap-1">
-        <h3 id={`${id}-titel`} className="text-[15px] font-semibold text-ink">
+        <h3 id={`${id}-titel`} className="text-base font-bold text-ink">
           {titel}
         </h3>
-        <p className="text-sm text-muted-foreground">{text}</p>
+        <p className="text-sm text-ink-muted">{text}</p>
       </div>
       {kriterien.map((k) => (
         <KriteriumSkala
@@ -100,13 +100,13 @@ function KriteriumSkala({
               onFocus={() => setFokus(p)}
               onBlur={() => setFokus(null)}
               className={cn(
-                "flex min-h-11 flex-col items-center justify-center rounded-lg border text-ink disabled:cursor-not-allowed",
-                gewaehlt ? "border-brand bg-subtle font-semibold" : "border-border enabled:hover:bg-subtle",
+                "flex min-h-11 flex-col items-center justify-center rounded-xl text-ink disabled:cursor-not-allowed",
+                gewaehlt ? "bg-brand font-bold text-white" : "bg-white enabled:hover:bg-brand-tint",
                 FOKUS
               )}
             >
               <span className="text-[15px]">{p}</span>
-              <span className="text-xs text-muted-foreground">Punkte</span>
+              <span className={cn("text-xs", gewaehlt ? "text-white/85" : "text-ink-subtle")}>Punkte</span>
             </button>
           );
         })}
@@ -119,7 +119,7 @@ function KriteriumSkala({
           </span>
         ))}
       </div>
-      <p className="min-h-5 text-sm text-muted-foreground" aria-hidden="true">
+      <p className="min-h-5 text-sm text-ink-muted" aria-hidden="true">
         {angezeigt !== null && beschreibungen[angezeigt] ? `${angezeigt} Punkte: ${beschreibungen[angezeigt]}` : ""}
       </p>
     </fieldset>

@@ -126,6 +126,12 @@ export function parseNowParameter(wert: string | undefined): string | null {
  * Multimeter) – Teil 2" → "Grundschaltungen – Teil 2" + "Umgang mit
  * Multimeter". Ohne Klammer bleibt der Titel unverändert.
  */
+/** Thema einer Lektion: der Klammertext, sonst der ganze Titel (groß angezeigt, Anna 2026-10-12). */
+export function themaTitel(titel: string): string {
+  const teile = titelTeile(titel);
+  return teile.untertitel ?? teile.titel;
+}
+
 export function titelTeile(titel: string): { titel: string; untertitel: string | null } {
   const m = /^(.*?)\s*\(([^()]+)\)\s*(.*)$/.exec(titel.trim());
   if (!m) return { titel: titel.trim(), untertitel: null };

@@ -3,49 +3,40 @@
 import { useState } from "react";
 import { RotateCcw } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
-import { SEKUNDAER } from "./stile";
+import { FOKUS } from "./stile";
 
-/** Kennzeichnung als Demo plus "Demo zurücksetzen" (mit Rückfrage), auf jeder Phase sichtbar. */
-export function DemoLeiste({
-  kennzeichnung,
-  text,
-  onZuruecksetzen,
-}: {
-  kennzeichnung: string;
-  text: string;
-  onZuruecksetzen: () => void;
-}) {
+const LINK = cn("rounded-sm text-[13px] font-semibold text-ink-muted hover:text-ink", FOKUS);
+
+/**
+ * Nur noch "Demo zurücksetzen" (mit Rückfrage) als kleiner Link unter dem
+ * Flow -- ohne Kasten und Demo-Hinweistext (Entscheidung Anna 2026-10-12).
+ */
+export function DemoLeiste({ onZuruecksetzen }: { onZuruecksetzen: () => void }) {
   const [fragen, setFragen] = useState(false);
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-dashed border-line bg-subtle p-3 sm:flex-row sm:items-center">
-      <div className="flex min-w-0 flex-1 items-start gap-2">
-        <Badge variant="info" className="shrink-0">
-          {kennzeichnung}
-        </Badge>
-        <p className="text-sm text-ink">{text}</p>
-      </div>
+    <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
       {fragen ? (
-        <div className="flex shrink-0 flex-col gap-2 sm:flex-row" role="group" aria-label="Demo zurücksetzen bestätigen">
+        <span className="flex items-center gap-3" role="group" aria-label="Demo zurücksetzen bestätigen">
           <button
             type="button"
             onClick={() => {
               setFragen(false);
               onZuruecksetzen();
             }}
-            className={SEKUNDAER}
+            className={cn(LINK, "text-praxis-text hover:text-praxis-text")}
           >
             Ja, alles zurücksetzen
           </button>
-          <button type="button" onClick={() => setFragen(false)} className={SEKUNDAER}>
+          <button type="button" onClick={() => setFragen(false)} className={LINK}>
             Abbrechen
           </button>
-        </div>
+        </span>
       ) : (
-        <button type="button" onClick={() => setFragen(true)} className={SEKUNDAER}>
-          <RotateCcw aria-hidden="true" />
+        <button type="button" onClick={() => setFragen(true)} className={cn(LINK, "inline-flex items-center gap-1.5")}>
+          <RotateCcw className="size-3.5" aria-hidden="true" />
           Demo zurücksetzen
         </button>
       )}

@@ -13,11 +13,11 @@ import { zeitText, type Block } from "./plan-modell";
 // (Der Transistor / Die Dioden)" -- das Thema steht in der Klammer.
 
 // Visuelles Update (docs/ux/visual-update, 2026-10-11): helle Typ-Fläche mit
-// 3-px-Streifen; nur der nächste Termin ist der Anker (voller Verlauf, weiße
-// Schrift, Lime-Button).
+// 3-px-Streifen; nur der nächste Termin ist der Anker (volle Fläche,
+// Lime-Button; Live mit weißer, Praxis auf hellem Coral mit dunkler Schrift).
 const ART = {
-  live: { text: "Live-Unterricht", Icon: Video, flaeche: "bg-brand-tint", streifen: "border-l-brand-2", icon: "text-brand", anker: "bg-anchor-brand shadow-anchor-brand", inhalt: "Zur Lektion" },
-  praxis: { text: "Praxisaufgabe", Icon: Wrench, flaeche: "bg-praxis-tint", streifen: "border-l-praxis", icon: "text-praxis-text", anker: "bg-anchor-praxis shadow-anchor-praxis", inhalt: "Zur Praxisaufgabe" },
+  live: { text: "Live-Unterricht", Icon: Video, flaeche: "bg-brand-tint", streifen: "border-l-brand-2", icon: "text-brand", anker: "bg-anchor-brand text-white shadow-anchor-brand", ankerIcon: "text-white", inhalt: "Zur Lektion" },
+  praxis: { text: "Praxisaufgabe", Icon: Wrench, flaeche: "bg-praxis-tint", streifen: "border-l-praxis", icon: "text-praxis-text", anker: "bg-anchor-praxis text-ink shadow-anchor-praxis", ankerIcon: "text-ink", inhalt: "Zur Praxisaufgabe" },
 } as const;
 
 const STATUS_TEXT = { erledigt: "erledigt", vorbei: "vorbei", offen: "offen" } as const;
@@ -45,7 +45,7 @@ export function TerminBlock({ block, gross, style }: { block: Block; gross: bool
         "group/termin absolute flex flex-col overflow-hidden rounded-block",
         gross ? "gap-2 px-[18px] py-3.5" : "gap-1 px-2.5 py-2",
         block.naechster
-          ? cn("z-10 text-white", art.anker)
+          ? cn("z-10", art.anker)
           : zurueck
             ? "border border-line bg-card text-ink-muted"
             : cn("border-l-[3px] text-ink", art.flaeche, art.streifen),
@@ -54,10 +54,10 @@ export function TerminBlock({ block, gross, style }: { block: Block; gross: bool
     >
       <span className="flex items-center gap-1.5 text-xs font-semibold">
         {/* Symbol immer in der Typfarbe wie auf Home und Kompetenzen (Anna 2026-10-11). */}
-        <art.Icon className={cn("size-[13px] shrink-0", block.naechster ? "text-white" : art.icon)} aria-hidden="true" />
+        <art.Icon className={cn("size-[13px] shrink-0", block.naechster ? art.ankerIcon : art.icon)} aria-hidden="true" />
         {zeitText(block)}
         {gross && ` · ${art.text}`}
-        {block.status === "erledigt" && <Check className={cn("ml-auto size-3", block.naechster ? "text-white" : "text-progress")} strokeWidth={3} aria-hidden="true" />}
+        {block.status === "erledigt" && <Check className={cn("ml-auto size-3", block.naechster ? art.ankerIcon : "text-progress")} strokeWidth={3} aria-hidden="true" />}
       </span>
       {/* Immer genau eine Aktion (wie Veras Stundenplan, Anna 2026-10-11): ab
           15 Min. vor Beginn bis zum Ende führt der ganze Block in den Live-Raum,

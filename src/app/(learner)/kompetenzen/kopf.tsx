@@ -64,8 +64,15 @@ export function KompetenzenKopf({
                         <span className="sr-only">abgeschlossen: </span>
                       </>
                     )}
+                    {/* Aktuelles Modul: Lime-Punkt statt " · aktuell" (Anna 2026-10-12),
+                        wie "Hier bist du" und "Läuft gerade" auf den anderen Seiten. */}
+                    {m.aktuell && (
+                      <>
+                        <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-lime shadow-glow-charge-sm" />
+                        <span className="sr-only">aktuell: </span>
+                      </>
+                    )}
                     Modul {m.nummer}
-                    {m.aktuell && " · aktuell"}
                     {m.zukuenftig && !gewaehlt && <span className="sr-only"> (Vorschau)</span>}
                   </Link>
                 </li>

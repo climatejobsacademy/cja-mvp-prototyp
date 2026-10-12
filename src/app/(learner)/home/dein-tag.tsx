@@ -17,6 +17,7 @@ import {
   HeuteErledigtLeiste,
   NaechsterTagZeile,
   type GestaerkteKompetenz,
+  type TitelStil,
   type StaerktKompetenz,
 } from "./tages-karten";
 
@@ -32,16 +33,17 @@ function karten(
   naechster: NaechsterTermin | null,
   staerkt: StaerktFn,
   gestaerkt: GestaerkteKompetenz[],
+  stil: TitelStil,
 ): { fokus: ReactNode; leiste: ReactNode } {
   switch (zustand.zustand) {
     case "A":
       return {
-        fokus: <FokusLive live={zustand.live} laeuft={false} staerkt={staerkt("lektion", zustand.live.lessonId)} />,
+        fokus: <FokusLive stil={stil} live={zustand.live} laeuft={false} staerkt={staerkt("lektion", zustand.live.lessonId)} />,
         leiste: zustand.danach && <FlexLeiste lektion={zustand.danach} />,
       };
     case "B":
       return {
-        fokus: <FokusLive live={zustand.live} laeuft staerkt={staerkt("lektion", zustand.live.lessonId)} />,
+        fokus: <FokusLive stil={stil} live={zustand.live} laeuft staerkt={staerkt("lektion", zustand.live.lessonId)} />,
         leiste: zustand.danach && <FlexLeiste lektion={zustand.danach} />,
       };
     case "C": {
@@ -49,6 +51,7 @@ function karten(
       return {
         fokus: (
           <FokusFlex
+            stil={stil}
             lektion={zustand.fokus}
             staerkt={staerkt("lektion", zustand.fokus.lessonId)}
             nurSelbstlernen={!hatteLive}
@@ -65,7 +68,7 @@ function karten(
       };
     case "E":
       return {
-        fokus: <FokusPraxis praxis={zustand.praxis} staerkt={staerkt("praxis", zustand.praxis.fieldJobId)} />,
+        fokus: <FokusPraxis stil={stil} praxis={zustand.praxis} staerkt={staerkt("praxis", zustand.praxis.fieldJobId)} />,
         leiste: zustand.danach ? (
           <FlexLeiste lektion={zustand.danach} />
         ) : (
@@ -96,14 +99,16 @@ export function DeinTag({
   naechster,
   staerkt,
   gestaerkt,
+  stil,
 }: {
   zustand: Tageszustand;
   heute: string;
   naechster: NaechsterTermin | null;
   staerkt: StaerktFn;
   gestaerkt: GestaerkteKompetenz[];
+  stil: TitelStil;
 }) {
-  const { fokus, leiste } = karten(zustand, heute, naechster, staerkt, gestaerkt);
+  const { fokus, leiste } = karten(zustand, heute, naechster, staerkt, gestaerkt, stil);
   // Home v13: steht sonst nichts unter der Fokus-Karte, eine dezente Zeile mit
   // dem nächsten Tag. Nicht in D und F -- dort nennt die Karte ihn schon.
   const naechsterZeile =

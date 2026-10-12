@@ -49,13 +49,15 @@ export function CodewortGate({
   }
 
   return (
-    <form onSubmit={absenden} className="flex flex-col gap-3 rounded-lg border border-dashed border-border p-3">
-      <p className="flex items-start gap-2 rounded-lg bg-brand-tint p-3 text-sm text-ink">
-        <UserCheck className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+    // Angleichung 2026-10-12: helle Fläche statt gestrichelter Rahmen.
+    <form onSubmit={absenden} className="flex flex-col gap-3 rounded-zeile bg-subtle p-4">
+      {/* Wichtiger Hinweis zur Trainer:in: gut sichtbar als hell-lila Kasten (Anna 2026-10-12). */}
+      <p className="flex items-start gap-2.5 rounded-xl bg-brand-tint p-3 text-[15px] text-ink">
+        <UserCheck className="mt-0.5 size-[18px] shrink-0 text-brand" aria-hidden="true" />
         <span>{hinweis}</span>
       </p>
-      <label htmlFor={id} className="flex items-center gap-2 text-sm font-medium text-ink">
-        <KeyRound className="size-4" aria-hidden="true" />
+      <label htmlFor={id} className="flex items-center gap-2 text-sm font-semibold text-ink">
+        <KeyRound className="size-4 text-ink-muted" aria-hidden="true" />
         {label}
       </label>
       <div className="flex flex-col gap-2 sm:flex-row">
@@ -71,14 +73,14 @@ export function CodewortGate({
           disabled={!aktiv}
           aria-invalid={fehler || undefined}
           aria-describedby={`${id}-info`}
-          className={cn(EINGABE, "flex-1 disabled:cursor-not-allowed disabled:bg-muted")}
+          className={cn(EINGABE, "flex-1 disabled:cursor-not-allowed disabled:opacity-60")}
         />
         <button type="submit" disabled={!aktiv || !eingabe.trim()} className={PRIMAER}>
           {buttonText}
         </button>
       </div>
       <p id={`${id}-info`} className="text-sm" role={fehler ? "alert" : undefined}>
-        {!aktiv && gesperrtText && <span className="text-muted-foreground">{gesperrtText}</span>}
+        {!aktiv && gesperrtText && <span className="text-ink-muted">{gesperrtText}</span>}
         {aktiv && fehler && (
           <span className="flex items-center gap-1.5 text-ink">
             <CircleAlert className="size-4 text-praxis-text" aria-hidden="true" />

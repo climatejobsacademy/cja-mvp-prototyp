@@ -73,6 +73,16 @@ export function modulFuerDatum(gliederung: GliederungsModul[], datum: string | n
   return gliederung.find((m) => m.von <= datum && datum <= m.bis)?.nummer ?? null;
 }
 
+/** Modul (Nummer + Name), in dessen Zeitraum `datum` liegt; null = keins. */
+export function modulZumDatum(
+  gliederung: GliederungsModul[] | null,
+  datum: string | null
+): { nummer: number; name: string } | null {
+  if (!gliederung || !datum) return null;
+  const m = gliederung.find((g) => g.von <= datum && datum <= g.bis);
+  return m ? { nummer: m.nummer, name: m.name } : null;
+}
+
 export type ModulStatus = "abgeschlossen" | "aktuell" | "kommend";
 
 /**

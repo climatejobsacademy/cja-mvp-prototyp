@@ -81,13 +81,13 @@ export function EingabeZeile({
           // Wächst mit dem Inhalt (bis 6 Zeilen); Abstand nach unten, damit die
           // Zeile beim Fokus nicht direkt an der Bildschirmtastatur klebt.
           className={cn(
-            "field-sizing-content max-h-40 min-h-11 min-w-0 flex-1 resize-none scroll-mb-24 rounded-[22px] border border-border bg-white px-4 py-2.5 text-[15px] text-ink placeholder:text-muted-foreground",
+            "field-sizing-content max-h-40 min-h-11 min-w-0 flex-1 resize-none scroll-mb-24 rounded-[22px] border border-line bg-white px-4 py-2.5 text-[15px] text-ink placeholder:text-ink-subtle",
             FOKUS
           )}
         />
         {diktat.hoert ? (
-          <button type="button" onClick={diktat.stoppen} aria-label={`${texte.hoertZu} ${texte.stoppen}`} className={cn(rund, "border-brand")}>
-            <span className="size-2 shrink-0 animate-pulse rounded-full bg-brand" aria-hidden="true" />
+          <button type="button" onClick={diktat.stoppen} aria-label={`${texte.hoertZu} ${texte.stoppen}`} className={cn(rund, "bg-praxis-tint")}>
+            <span className="size-2 shrink-0 animate-pulse rounded-full bg-praxis" aria-hidden="true" />
             <span aria-hidden="true">{texte.hoertZu}</span>
             <Square aria-hidden="true" />
           </button>
@@ -102,7 +102,7 @@ export function EingabeZeile({
           </button>
         )}
       </form>
-      <p role="status" className={diktat.meldung ? "text-sm text-muted-foreground" : "sr-only"}>
+      <p role="status" className={diktat.meldung ? "text-sm text-ink-muted" : "sr-only"}>
         {diktat.meldung ?? (diktat.hoert ? texte.hoertZu : "")}
       </p>
     </div>

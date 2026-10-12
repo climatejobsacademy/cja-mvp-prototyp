@@ -16,6 +16,7 @@ import { getKompetenzFortschritt } from "@/lib/queries/competencies";
 import { getContentLibrary } from "@/lib/queries/content";
 import { getModuleMitTeilschritten } from "@/lib/queries/kompetenzen-seite";
 import { getDbModule, getKohortenZeitraum } from "@/lib/queries/programm";
+import { ProgrammZeile } from "@/components/programm-zeile";
 import { requireCurrentLearner } from "@/lib/queries/session";
 import { getStundenplan } from "@/lib/queries/stundenplan";
 import { panelWochen } from "@/lib/programm-inhalte";
@@ -153,7 +154,9 @@ export default async function ProgrammPage({
       )}
 
       <section className="flex flex-col gap-2.5">
-        <span className="text-[13px] text-ink-subtle">Dein Programm</span>
+        {/* Überzeile im Stil der Programmzeile von Home, Stundenplan und
+            Kompetenzen (Anna 2026-10-12); groß bleibt der Programmname. */}
+        <ProgrammZeile name="Dein Programm" />
         <h1 className="font-heading text-[34px] leading-[1.05] md:text-[52px]">{learner.programmeName}</h1>
         {kopfZeile.length > 0 && <span className="text-[15px] text-ink-muted">{kopfZeile.join(" · ")}</span>}
       </section>

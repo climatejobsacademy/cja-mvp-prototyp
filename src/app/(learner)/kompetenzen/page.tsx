@@ -2,7 +2,7 @@ import { heuteInBerlin } from "@/lib/date";
 import { parseNowParameter } from "@/lib/home-tag";
 import { getKompetenzFortschritt } from "@/lib/queries/competencies";
 import { getAktuellesModul } from "@/lib/queries/home-modul";
-import { modulStatus } from "@/lib/programm";
+import { modulStatus, modulZumDatum } from "@/lib/programm";
 import { getHeuteStepIds, getLernaktivitaeten, getModuleMitTeilschritten, type ModulInfo } from "@/lib/queries/kompetenzen-seite";
 import { getGliederungsModule } from "@/lib/queries/programm";
 import { getTagesAgenda } from "@/lib/queries/schedule";
@@ -160,7 +160,14 @@ export default async function KompetenzenPage({
           ueberzeile={`Kompetenz · Modul ${gewaehlt.nummer}`}
           schliessenHref={`/kompetenzen?modul=${gewaehlt.id}${zusatz}`}
         >
-          <KompetenzDetail kompetenz={detail} aktivitaeten={aktivitaeten} heute={heute} heuteStepIds={heuteStepIds} />
+          <KompetenzDetail
+            kompetenz={detail}
+            aktivitaeten={aktivitaeten}
+            heute={heute}
+            heuteStepIds={heuteStepIds}
+            // "Hier lernst du das": groß das Thema, klein das Modul (Anna 2026-10-12).
+            modulZu={(d) => modulZumDatum(gliederung, d)}
+          />
         </KompetenzPanel>
       )}
     </div>

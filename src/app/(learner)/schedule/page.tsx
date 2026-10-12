@@ -1,8 +1,10 @@
 import { FlaskConical } from "lucide-react";
 
+import { ModulZeichen } from "@/components/modul-zeichen";
 import { ProgrammZeile } from "@/components/programm-zeile";
 import { datumKurz, datumLang, heuteInBerlin, jetztInBerlin, montagDerWoche, plusTage } from "@/lib/date";
-import { parseNowParameter } from "@/lib/home-tag";
+import { parseNowParameter, themaTitel } from "@/lib/home-tag";
+import { gliederungFuer, modulZumDatum } from "@/lib/programm";
 import { requireCurrentLearner } from "@/lib/queries/session";
 import { getKohortenStart, getStundenplan } from "@/lib/queries/stundenplan";
 import {
@@ -66,7 +68,13 @@ export default async function SchedulePage({
     learnerId: learner.personId,
   };
   const [plan, kohortenStart] = await Promise.all([getStundenplan(ctx, von, bis), getKohortenStart(learner.cohortId)]);
-  const modelle = planModell(plan, heute, jetzt);
+  // Entscheidung Anna 2026-10-12 (auf allen Seiten gleich): Termine zeigen
+  // das Thema der Lektion, das Modul steht einmal unter der Überschrift.
+  const modelle = planModell(plan, heute, jetzt).map((t) => ({
+    ...t,
+    bloecke: t.bloecke.map((b) => ({ ...b, titel: themaTitel(b.titel) })),
+    chips: t.chips.map((c) => ({ ...c, titel: themaTitel(c.titel) })),
+  }));
   const wochenTage = modelle.filter((t) => woche.includes(t.datum));
   const tag = modelle.find((t) => t.datum === datum)!;
 
@@ -81,6 +89,10 @@ export default async function SchedulePage({
 
   // Entscheidung Anna 2026-10-12: neben dem Zeitraum nur das Symbol der
   // Wochenart, ohne "Woche 2 · Theorie (online)".
+  const gliederung = gliederungFuer(learner.programmeName, kohortenStart);
+  const wochenModule = [woche[0], woche[woche.length - 1]]
+    .map((d) => modulZumDatum(gliederung, d))
+    .filter((m, i, alle): m is NonNullable<typeof m> => !!m && alle.findIndex((x) => x?.nummer === m.nummer) === i);
   const zusatz = haupt ? <WochenTypIcon typ={haupt} /> : null;
   const ohneJahr = (text: string) => text.replace(/\s\d{4}$/, "");
   // Visuelles Update (Anna 2026-10-11, wie im Mock-up): Steuerleiste und
@@ -101,6 +113,15 @@ export default async function SchedulePage({
         <div className="flex flex-col gap-2 text-ink">
           <ProgrammZeile name={learner.programmeName} />
           <h1 className="font-heading text-[52px] leading-none">Stundenplan</h1>
+          {/* Das Modul der gezeigten Woche als eigene Zeile unter der
+              Überschrift, nicht neben dem Wochen-Symbol (Anna 2026-10-12). */}
+          {wochenModule.length > 0 && (
+            <div className="flex flex-wrap gap-x-4 gap-y-1">
+              {wochenModule.map((m) => (
+                <ModulZeichen key={m.nummer} nummer={m.nummer} name={m.name} />
+              ))}
+            </div>
+          )}
         </div>
 
         {desktopAnsicht === "woche" && (

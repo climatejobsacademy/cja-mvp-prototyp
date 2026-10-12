@@ -1,11 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
+import { ModulZeichen } from "@/components/modul-zeichen";
 import { UnitProgressBadge } from "@/components/status-badge";
-import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
+import { heuteInBerlin, jetztInBerlin } from "@/lib/date";
+import { themaTitel } from "@/lib/home-tag";
+import { gliederungFuer, modulZumDatum } from "@/lib/programm";
+import { getKohortenStart } from "@/lib/queries/stundenplan";
 import { requireCurrentLearner } from "@/lib/queries/session";
 import { getLessonDetail } from "@/lib/queries/content";
 import { getLektionThread } from "@/lib/queries/lektion-thread";
@@ -16,6 +20,7 @@ import { LektionThread } from "./lektion-thread";
 import { MarkCompleteButton } from "./mark-complete-button";
 import { MaterialienListe } from "./materialien-liste";
 import { ScormPlayer } from "./scorm-player";
+import { TerminKarte } from "./termin-karte";
 
 const TYP_LABEL: Record<string, string> = { live: "Live-Termin", scorm: "Selbstlernmodul" };
 // Visuelles Update (Anna 2026-10-11): Typ als Pill in der Typfarbe.
@@ -63,6 +68,16 @@ export default async function LessonPage({
   const herkunft = new URLSearchParams({ ...(von ? { von } : {}), ...(datum ? { datum } : {}) }).toString();
 
   const done = lesson.status === "abgeschlossen";
+  const festigenHref = liveKontext?.festigenLessonId
+    ? `/content/${liveKontext.festigenLessonId}${herkunft ? `?${herkunft}` : ""}`
+    : null;
+  // Entscheidung Anna 2026-10-12 (auf allen Seiten gleich): groß das Thema,
+  // klein das Modul -- über den Tag des Termins, sonst den Tag aus der
+  // Adresse bzw. heute (Selbstlernen hat keinen festen Termin).
+  const modul = modulZumDatum(
+    gliederungFuer(learner.programmeName, await getKohortenStart(learner.cohortId)),
+    termin?.datum ?? (datum && /^\d{4}-\d{2}-\d{2}$/.test(datum) ? datum : heuteInBerlin())
+  );
 
   return (
     <div className="flex flex-col gap-4">
@@ -75,11 +90,17 @@ export default async function LessonPage({
 
       <div className="flex flex-col gap-2">
         {/* Typ als Meta-Zeile -- die Lektionsnamen tragen ihn seit 2026-09-29 nicht mehr. */}
-        {TYP_LABEL[lesson.contentType] && (
-          <p className={cn("self-start rounded-full px-2.5 py-0.5 text-xs font-semibold", TYP_PILL[lesson.contentType])}>{TYP_LABEL[lesson.contentType]}</p>
-        )}
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="font-heading text-[28px] leading-tight text-ink md:text-[36px]">{lesson.name}</h1>
+          {/* Live ohne Pill: das Kamera-Symbol steht in der Termin-Karte (Anna 2026-10-12). */}
+          {TYP_LABEL[lesson.contentType] && lesson.contentType !== "live" && (
+            <p className={cn("self-start rounded-full px-2.5 py-0.5 text-xs font-semibold", TYP_PILL[lesson.contentType])}>{TYP_LABEL[lesson.contentType]}</p>
+          )}
+          {modul && <ModulZeichen nummer={modul.nummer} name={modul.name} />}
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <h1 className="font-heading text-[28px] leading-tight text-ink md:text-[36px]">
+            {themaTitel(lesson.name)}
+          </h1>
           <UnitProgressBadge status={lesson.status} />
         </div>
       </div>
@@ -111,42 +132,9 @@ export default async function LessonPage({
       )}
 
       {lesson.contentType === "live" && (
-        // Anker der Seite: der Termin (Lila-Verlauf, Lime-Knopf).
-        <Card className="bg-anchor-brand text-white shadow-anchor-brand">
-          <CardContent className="flex flex-col gap-3">
-            {termin ? (
-              <>
-                <p className="text-[17px] font-semibold text-white">
-                  {new Date(`${termin.datum}T00:00:00`).toLocaleDateString("de-DE", {
-                    weekday: "long",
-                    day: "2-digit",
-                    month: "long",
-                  })}
-                  , {termin.start.slice(0, 5)}–{termin.ende.slice(0, 5)} Uhr
-                </p>
-                {(termin.joinLink || liveKontext?.festigenLessonId) && (
-                  <div className="flex flex-wrap gap-2">
-                    {termin.joinLink && (
-                      <a href={termin.joinLink} target="_blank" rel="noreferrer" className={cn(buttonVariants(), "h-10 bg-lime px-5 font-bold text-on-lime hover:bg-lime hover:brightness-95")}>
-                        Beitreten
-                      </a>
-                    )}
-                    {liveKontext?.festigenLessonId && (
-                      <Link
-                        href={`/content/${liveKontext.festigenLessonId}${herkunft ? `?${herkunft}` : ""}`}
-                        className={cn(buttonVariants(), "h-10 bg-white/15 px-5 text-white hover:bg-white/25")}
-                      >
-                        Wissen festigen <ArrowRight className="size-4" aria-hidden="true" />
-                      </Link>
-                    )}
-                  </div>
-                )}
-              </>
-            ) : (
-              <p className="text-sm text-white/85">Kein Termin hinterlegt.</p>
-            )}
-          </CardContent>
-        </Card>
+        // Anker der Seite wie die Fokus-Karte auf Home (Anna 2026-10-12),
+        // "Beitreten" und "Wissen festigen" in derselben Karte.
+        <TerminKarte termin={termin ?? null} heute={heuteInBerlin()} jetzt={jetztInBerlin()} festigenHref={festigenHref} />
       )}
 
       {lesson.contentType === "live" && materialien.length > 0 && (

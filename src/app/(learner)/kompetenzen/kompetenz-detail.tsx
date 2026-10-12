@@ -3,8 +3,10 @@ import type { ReactNode } from "react";
 import { BookOpen, Check, ChevronDown, ChevronRight, Clock, ThumbsDown, Video, Wrench } from "lucide-react";
 
 import { Ring } from "@/components/fortschritts-ring";
+import { ModulZeichen } from "@/components/modul-zeichen";
 import { TypIcon } from "@/components/typ-icon";
-import { aktivitaetMeta } from "@/lib/kompetenz-aktivitaet";
+import { themaTitel } from "@/lib/home-tag";
+import { AKTIVITAET_ART, aktivitaetMeta } from "@/lib/kompetenz-aktivitaet";
 import type { CompetencyStepView, CompetencyView } from "@/lib/queries/competencies";
 import type { Lernaktivitaet } from "@/lib/queries/kompetenzen-seite";
 import { cn } from "@/lib/utils";
@@ -116,7 +118,18 @@ const TYP: Record<Lernaktivitaet["art"], { Icon: typeof Video; kachel: string }>
  * Demo-Seite /praxisflow-demo. Ohne Zuordnung: Bereich ausgeblendet.
  * Wunsch Anna 2026-10-11: aufklappbar, beim Öffnen einer Kompetenz zu.
  */
-function HierLernstDu({ aktivitaeten, heute }: { aktivitaeten: Lernaktivitaet[]; heute: string }) {
+/** Modul zu einem Tag, sonst null (Anna 2026-10-12: klein das Modul, groß das Thema). */
+type ModulZu = (datum: string | null) => { nummer: number; name: string } | null;
+
+function HierLernstDu({
+  aktivitaeten,
+  heute,
+  modulZu,
+}: {
+  aktivitaeten: Lernaktivitaet[];
+  heute: string;
+  modulZu?: ModulZu;
+}) {
   if (aktivitaeten.length === 0) return null;
   return (
     // Beim Öffnen des Panels zu (Anna 2026-10-12, wie schon 2026-10-11).
@@ -142,8 +155,21 @@ function HierLernstDu({ aktivitaeten, heute }: { aktivitaeten: Lernaktivitaet[];
                   <Icon className="size-[17px]" aria-hidden="true" />
                 </span>
                 <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                  <span className="text-[15px] leading-snug font-semibold">{a.titel}</span>
-                  <span className="text-[13px] text-ink-muted">{aktivitaetMeta(a, heute)}</span>
+                  <span className="text-[15px] leading-snug font-semibold">{a.art === "praxis" ? a.titel : themaTitel(a.titel)}</span>
+                  <span className="flex flex-wrap items-center gap-x-1.5 text-[13px] text-ink-muted">
+                    <span className="sr-only">{AKTIVITAET_ART[a.art]}: </span>
+                    {(() => {
+                      const modul = modulZu?.(a.datum);
+                      const wann = aktivitaetMeta(a, heute);
+                      return (
+                        <>
+                          {modul && <ModulZeichen klein nummer={modul.nummer} name={modul.name} />}
+                          {modul && wann && <span aria-hidden="true">·</span>}
+                          {wann && <span>{wann}</span>}
+                        </>
+                      );
+                    })()}
+                  </span>
                 </span>
                 <ChevronRight className="size-4 shrink-0 text-ink-muted" aria-hidden="true" />
               </Link>
@@ -160,12 +186,14 @@ export function KompetenzDetail({
   aktivitaeten,
   heute,
   heuteStepIds,
+  modulZu,
 }: {
   kompetenz: CompetencyView;
   aktivitaeten: Lernaktivitaet[];
   heute: string;
   /** Teilschritte, auf die heute eine Aktivität einzahlt */
   heuteStepIds: Set<string>;
+  modulZu?: ModulZu;
 }) {
   const heuteDran = kompetenz.steps.some((s) => heuteStepIds.has(s.id));
   // Lehrplan-Reihenfolge als Ersatz für ein eigenes Reihenfolge-Feld.
@@ -203,7 +231,7 @@ export function KompetenzDetail({
       </div>
 
       {/* key: beim Wechsel der Kompetenz wieder zugeklappt */}
-      <HierLernstDu key={kompetenz.id} aktivitaeten={aktivitaeten} heute={heute} />
+      <HierLernstDu key={kompetenz.id} aktivitaeten={aktivitaeten} heute={heute} modulZu={modulZu} />
     </section>
   );
 }

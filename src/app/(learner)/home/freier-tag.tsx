@@ -4,7 +4,7 @@ import { BookOpen, Check, Video, Wrench } from "lucide-react";
 import { Ring } from "@/components/fortschritts-ring";
 import { datumKurz, tageZwischen, wochentagLang } from "@/lib/date";
 import type { FreiText, WochenTag } from "@/lib/home-frei";
-import { titelTeile, type NachholLektion } from "@/lib/home-tag";
+import { themaTitel, type NachholLektion } from "@/lib/home-tag";
 import type { NaechsterTermin } from "@/lib/queries/schedule";
 import { cn } from "@/lib/utils";
 
@@ -100,7 +100,7 @@ export function FreiZeilen({
           <BookOpen className="size-[18px] shrink-0 text-self" aria-hidden="true" />
           <span className="min-w-0 flex-1 text-[15px]">
             <span className="text-ink-muted">Wenn du magst:</span>{" "}
-            <span className="font-semibold">{titelTeile(offen.titel).titel}</span>{" "}
+            <span className="font-semibold">{themaTitel(offen.titel)}</span>{" "}
             <span className="text-ink-muted">· Selbstlernen</span>
           </span>
           <span className="shrink-0 text-sm font-semibold">Weiterlernen →</span>

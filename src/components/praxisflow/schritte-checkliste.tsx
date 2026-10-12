@@ -40,7 +40,7 @@ export function SchritteCheckliste({
 
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-sm text-muted-foreground" aria-live="polite">
+      <p className="text-sm text-ink-muted" aria-live="polite">
         {erledigt.length} von {schritte.length} Schritten erledigt
       </p>
       <ol className="flex flex-col gap-2">
@@ -53,9 +53,9 @@ export function SchritteCheckliste({
             <li
               key={s.id}
               className={cn(
-                "flex flex-col gap-2 rounded-lg border p-2",
-                fertig ? "border-brand bg-subtle" : "border-border",
-                st === "gesperrt" && "bg-muted/40"
+                "flex flex-col gap-2 rounded-zeile px-3 py-1.5",
+                fertig ? "bg-praxis-tint" : "bg-subtle",
+                st === "gesperrt" && "opacity-70"
               )}
             >
               <div className="flex flex-col gap-1 sm:flex-row sm:items-center">
@@ -63,7 +63,7 @@ export function SchritteCheckliste({
                   className={cn(
                     "flex min-h-11 flex-1 items-center gap-3 px-1 text-[15px]",
                     bedienbar ? "cursor-pointer text-ink" : "cursor-not-allowed",
-                    st === "gesperrt" ? "text-muted-foreground" : "text-ink"
+                    st === "gesperrt" ? "text-ink-muted" : "text-ink"
                   )}
                 >
                   <input
@@ -79,7 +79,7 @@ export function SchritteCheckliste({
                       {i + 1}. {s.text}
                     </span>
                     {st === "gesperrt" && i > 0 && (
-                      <span id={hinweisId} className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <span id={hinweisId} className="flex items-center gap-1 text-xs text-ink-muted">
                         <Lock className="size-3" aria-hidden="true" />
                         {gesperrtHinweis(i)}
                       </span>
@@ -102,7 +102,7 @@ export function SchritteCheckliste({
                 )}
               </div>
               {nichtWeiterAnzeigen && offen === s.id && (
-                <p className="rounded-lg bg-brand-tint p-3 text-sm text-ink">{s.hinweis ?? hinweisStandard}</p>
+                <p className="rounded-zeile bg-white p-3 text-sm text-ink">{s.hinweis ?? hinweisStandard}</p>
               )}
             </li>
           );

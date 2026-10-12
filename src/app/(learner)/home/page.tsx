@@ -155,6 +155,7 @@ export default async function HomePage({
         naechster={naechster}
         staerkt={staerkt}
         gestaerkt={zeigtFortschritt ? [] : gestaerkt}
+        stil={{ modul }}
       />
       {modul && zeigtFortschritt && <ModulFortschritt modulNummer={modul.nummer} kompetenzen={ringe} />}
     </div>

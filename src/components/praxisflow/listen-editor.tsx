@@ -55,19 +55,24 @@ export function ListenEditor({
   }
 
   return (
-    <section className="flex flex-col gap-3 rounded-lg border border-border p-3" aria-labelledby={`${id}-titel`}>
-      <h3 id={`${id}-titel`} className="flex items-center gap-2 text-sm font-semibold text-ink">
-        <Icon className="size-4" aria-hidden="true" />
-        {titel} ({eintraege.length})
+    <section className="flex flex-col gap-3" aria-labelledby={`${id}-titel`}>
+      <h3 id={`${id}-titel`} className="flex items-center gap-2 text-base font-bold text-ink">
+        <Icon className="size-[18px] text-praxis-text" aria-hidden="true" />
+        {titel}
+        <span className="text-sm font-medium text-ink-subtle tabular-nums">· {eintraege.length}</span>
       </h3>
-      {eintraege.length === 0 && <p className="text-sm text-muted-foreground">{leerText}</p>}
+      {eintraege.length === 0 && <p className="text-sm text-ink-subtle">{leerText}</p>}
       {eintraege.length > 0 && (
         <ol className="flex flex-col gap-2">
           {eintraege.map((e, i) => {
             const name = sortierbar ? `${einzahl} ${i + 1}` : `${einzahl} „${e.text}“`;
             return (
-              <li key={e.id} className="flex items-center gap-1 rounded-lg border border-border bg-white p-1.5 pl-2">
-                {sortierbar && <span className="w-6 shrink-0 text-center text-sm font-semibold text-muted-foreground">{i + 1}.</span>}
+              <li key={e.id} className="flex items-center gap-1 rounded-zeile bg-subtle py-1 pr-1 pl-3">
+                {sortierbar && (
+                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-praxis text-xs font-bold text-ink">
+                    {i + 1}
+                  </span>
+                )}
                 {bearbeitet?.id === e.id ? (
                   <input
                     aria-label={`${name} bearbeiten`}
@@ -81,7 +86,7 @@ export function ListenEditor({
                     className={cn(EINGABE, "min-w-0 flex-1")}
                   />
                 ) : (
-                  <span className="min-w-0 flex-1 text-[15px] break-words text-ink">{e.text}</span>
+                  <span className="min-w-0 flex-1 px-1 text-[15px] break-words text-ink">{e.text}</span>
                 )}
                 <span className="flex shrink-0 items-center">
                   {bearbeitet?.id === e.id ? (
