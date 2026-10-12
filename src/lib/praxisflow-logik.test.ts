@@ -23,6 +23,7 @@ import {
   demoZuruecksetzen,
   diktatZuTexten,
   eintraegeAnhaengen,
+  zeilenZuTexten,
   eintragBearbeiten,
   eintragHinzufuegen,
   eintragLoeschen,
@@ -163,7 +164,17 @@ test("Planen zurück: Unterschritt für Unterschritt, vor dem ersten zu Analyse;
   assert.deepEqual([analyse.werkzeuge, analyse.materialien], [drei, drei]);
 });
 
-// ---------- Diktat ----------
+// ---------- Eingabe und Diktat ----------
+
+test("Eingabe: mehrzeiliger Text wird zeilenweise zu Einträgen, leere Zeilen ignoriert", () => {
+  assert.deepEqual(zeilenZuTexten("Akkuschrauber\nMaßband\r\n\n  Seitenschneider  \r"), ["Akkuschrauber", "Maßband", "Seitenschneider"]);
+  assert.deepEqual(zeilenZuTexten("Kabel abisolieren. Adern prüfen."), ["Kabel abisolieren. Adern prüfen."]);
+  assert.deepEqual(zeilenZuTexten(" \n\t\n"), []);
+});
+
+test("Diktat: Sätze und Zeilen aufgeteilt", () => {
+  assert.deepEqual(diktatZuTexten("Akkuschrauber. Maßband\nSeitenschneider"), ["Akkuschrauber", "Maßband", "Seitenschneider"]);
+});
 
 test("Diktat: ein Satz je Eintrag, Satzpunkt am Ende weg, leere Teile ignoriert", () => {
   assert.deepEqual(diktatZuTexten("Akkuschrauber. Maßband! Ist das alles?"), ["Akkuschrauber", "Maßband!", "Ist das alles?"]);

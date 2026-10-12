@@ -105,7 +105,15 @@ export function planenZurueck(z: PlanenPosition): PlanenPosition {
   return { phase: "analyse", planenSchritt: 0 };
 }
 
-// ---------- Diktat (Planen) ----------
+// ---------- Eingabe und Diktat (Planen) ----------
+
+/** Getippter Text → Texte für Listeneinträge: eine Zeile je Eintrag, leere Zeilen entfallen. */
+export function zeilenZuTexten(text: string): string[] {
+  return text
+    .split(/\r?\n|\r/)
+    .map((t) => t.trim())
+    .filter((t) => t.length > 0);
+}
 
 /**
  * Erkannter Diktat-Text → Texte für Listeneinträge: ein Satz je Eintrag

@@ -2,15 +2,11 @@
 
 // Nur Demo – Audio wird vom Browser-Anbieter verarbeitet, für Pilot Datenschutzprüfung nötig.
 // Web Speech API (lang de-DE): Chrome und Safari schicken das Audio an ihren
-// Spracherkennungsdienst. Ohne API (z. B. Firefox) wird der Knopf nicht angezeigt.
+// Spracherkennungsdienst. Ohne API (z. B. Firefox) ist `verfuegbar` false.
 
 import { useEffect, useRef, useState } from "react";
-import { Mic, Square } from "lucide-react";
 
 import { diktatZuTexten } from "@/lib/praxisflow-logik";
-import { cn } from "@/lib/utils";
-
-import { SEKUNDAER } from "./stile";
 
 // Minimaltypen: lib.dom von TypeScript enthält SpeechRecognition selbst nicht.
 type ErgebnisListe = ArrayLike<{ isFinal: boolean; 0: { transcript: string } }>;
@@ -36,23 +32,14 @@ function erkennerKlasse(): ErkennerKlasse | null {
   }
 }
 
-export type DiktatTexte = { starten: string; stoppen: string; hoertZu: string; verweigert: string; fehler: string };
+export type DiktatMeldungen = { verweigert: string; fehler: string };
 
 /**
- * Mikrofon-Knopf für einen Listen-Editor: jeder erkannte Satz geht als eigener
- * Text an `onTexte`. Zustand "hört zu" am Knopf, erneuter Klick stoppt.
- * Fehler (Mikrofon verweigert, Dienst nicht erreichbar) als kurze Meldung;
- * Tippen funktioniert immer weiter.
+ * Diktat per Antippen starten und erneut antippen zum Stoppen. Jeder erkannte
+ * Satz geht als eigener Text an `onTexte`. Fehler (Mikrofon verweigert,
+ * Dienst nicht erreichbar) landen in `meldung`; nichts davon wirft.
  */
-export function DiktatKnopf({
-  einzahl,
-  texte,
-  onTexte,
-}: {
-  einzahl: string;
-  texte: DiktatTexte;
-  onTexte: (texte: string[]) => void;
-}) {
+export function useDiktat(onTexte: (texte: string[]) => void, meldungen: DiktatMeldungen) {
   // Der Flow rendert nur im Browser, window ist hier vorhanden.
   const [Klasse] = useState(erkennerKlasse);
   const [hoert, setHoert] = useState(false);
@@ -67,13 +54,11 @@ export function DiktatKnopf({
   // Beim Verlassen des Unterschritts: Erkennung sofort beenden.
   useEffect(() => () => erkenner.current?.abort(), []);
 
-  if (!Klasse) return null;
-  const KlasseVorhanden = Klasse;
-
   function starten() {
+    if (!Klasse) return;
     setMeldung(null);
     try {
-      const r = new KlasseVorhanden();
+      const r = new Klasse();
       r.lang = "de-DE";
       r.continuous = true;
       r.interimResults = false;
@@ -86,8 +71,8 @@ export function DiktatKnopf({
         if (neu.length > 0) onTexteRef.current(neu);
       };
       r.onerror = (e) => {
-        if (e.error === "not-allowed" || e.error === "service-not-allowed") setMeldung(texte.verweigert);
-        else if (e.error !== "no-speech" && e.error !== "aborted") setMeldung(texte.fehler);
+        if (e.error === "not-allowed" || e.error === "service-not-allowed") setMeldung(meldungen.verweigert);
+        else if (e.error !== "no-speech" && e.error !== "aborted") setMeldung(meldungen.fehler);
       };
       r.onend = () => {
         erkenner.current = null;
@@ -99,7 +84,7 @@ export function DiktatKnopf({
     } catch {
       erkenner.current = null;
       setHoert(false);
-      setMeldung(texte.fehler);
+      setMeldung(meldungen.fehler);
     }
   }
 
@@ -112,32 +97,5 @@ export function DiktatKnopf({
     }
   }
 
-  return (
-    <>
-      <button
-        type="button"
-        onClick={hoert ? stoppen : starten}
-        aria-pressed={hoert}
-        aria-label={hoert ? `${texte.hoertZu} ${texte.stoppen}` : `${einzahl} ${texte.starten.toLowerCase()}`}
-        className={cn(SEKUNDAER, hoert && "border-brand")}
-      >
-        {hoert ? (
-          <>
-            <span className="size-2 shrink-0 animate-pulse rounded-full bg-brand" aria-hidden="true" />
-            {texte.hoertZu}
-            <Square aria-hidden="true" />
-            {texte.stoppen}
-          </>
-        ) : (
-          <>
-            <Mic aria-hidden="true" />
-            {texte.starten}
-          </>
-        )}
-      </button>
-      <span role="status" className={meldung ? "text-sm text-muted-foreground sm:basis-full" : "sr-only"}>
-        {meldung ?? (hoert ? texte.hoertZu : "")}
-      </span>
-    </>
-  );
+  return { verfuegbar: Klasse !== null, hoert, meldung, starten, stoppen };
 }

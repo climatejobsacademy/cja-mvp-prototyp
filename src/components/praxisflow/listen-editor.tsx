@@ -1,20 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowDown, ArrowUp, Check, Pencil, Plus, Trash2, X, type LucideIcon } from "lucide-react";
+import { ArrowDown, ArrowUp, Check, Pencil, Trash2, X, type LucideIcon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-import { DiktatKnopf, type DiktatTexte } from "./diktat-knopf";
-import { EINGABE, ICON_BUTTON, SEKUNDAER } from "./stile";
+import { EingabeZeile, type EingabeTexte } from "./eingabe-zeile";
+import { EINGABE, ICON_BUTTON } from "./stile";
 
 type Eintrag = { id: string; text: string };
 
 /**
  * Eine Liste in Planen (Werkzeuge, Materialien, Arbeitsschritte): hinzufügen,
  * bearbeiten, löschen; mit `onVerschieben` zusätzlich Hoch/Runter und
- * Nummerierung; mit `diktat` zusätzlich ein Mikrofon-Knopf (DiktatKnopf), dessen
- * Sätze unten angehängt werden. Hält nur den Eingabezustand selbst, die Liste
+ * Nummerierung. Neue Einträge über die Eingabezeile (Tippen oder Diktat),
+ * immer unten angehängt. Hält nur den Bearbeiten-Zustand selbst, die Liste
  * kommt über Props.
  */
 export function ListenEditor({
@@ -29,7 +29,7 @@ export function ListenEditor({
   onBearbeiten,
   onLoeschen,
   onVerschieben,
-  diktat,
+  eingabeTexte,
 }: {
   id: string;
   titel: string;
@@ -39,22 +39,15 @@ export function ListenEditor({
   einzahl: string;
   leerText: string;
   platzhalter: string;
-  onHinzufuegen: (text: string) => void;
+  /** Ein oder mehrere neue Texte (Zeilen bzw. diktierte Sätze) */
+  onHinzufuegen: (texte: string[]) => void;
   onBearbeiten: (id: string, text: string) => void;
   onLoeschen: (id: string) => void;
   onVerschieben?: (id: string, richtung: "hoch" | "runter") => void;
-  diktat?: { texte: DiktatTexte; onTexte: (texte: string[]) => void };
+  eingabeTexte: EingabeTexte;
 }) {
-  const [neu, setNeu] = useState("");
   const [bearbeitet, setBearbeitet] = useState<{ id: string; text: string } | null>(null);
   const sortierbar = !!onVerschieben;
-
-  function hinzufuegen(e: React.FormEvent) {
-    e.preventDefault();
-    if (!neu.trim()) return;
-    onHinzufuegen(neu);
-    setNeu("");
-  }
 
   function speichern() {
     if (bearbeitet && bearbeitet.text.trim()) onBearbeiten(bearbeitet.id, bearbeitet.text);
@@ -141,23 +134,7 @@ export function ListenEditor({
           })}
         </ol>
       )}
-      <form onSubmit={hinzufuegen} className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-        <label htmlFor={`${id}-neu`} className="sr-only">
-          {einzahl} hinzufügen
-        </label>
-        <input
-          id={`${id}-neu`}
-          value={neu}
-          onChange={(e) => setNeu(e.target.value)}
-          placeholder={platzhalter}
-          className={cn(EINGABE, "flex-1")}
-        />
-        {diktat && <DiktatKnopf einzahl={einzahl} texte={diktat.texte} onTexte={diktat.onTexte} />}
-        <button type="submit" disabled={!neu.trim()} className={SEKUNDAER}>
-          <Plus aria-hidden="true" />
-          Hinzufügen
-        </button>
-      </form>
+      <EingabeZeile id={`${id}-neu`} label={`${einzahl} hinzufügen`} platzhalter={platzhalter} texte={eingabeTexte} onTexte={onHinzufuegen} />
     </section>
   );
 }

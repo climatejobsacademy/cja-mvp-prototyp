@@ -147,8 +147,10 @@ export const TEXTE = {
     unterschritt: (nr: number, gesamt: number) => `Schritt ${nr} von ${gesamt}`,
     gesperrt: "Trage mindestens einen Arbeitsschritt ein, dann geht es weiter zu Entscheiden.",
   },
-  diktat: {
-    starten: "Diktieren",
+  // Eingabezeile in Planen (Tippen oder Diktat)
+  eingabe: {
+    hinzufuegen: "Hinzufügen",
+    diktieren: "Diktieren",
     stoppen: "Stopp",
     hoertZu: "Hört zu …",
     verweigert: "Mikrofon nicht freigegeben. Du kannst die Einträge weiter tippen.",

@@ -39,7 +39,6 @@ import {
   codewortKorrekt,
   demoZuruecksetzen,
   eintragBearbeiten,
-  eintragHinzufuegen,
   eintragLoeschen,
   eintraegeAnhaengen,
   eintragVerschieben,
@@ -152,11 +151,12 @@ function Flow() {
   function editorProps(name: Liste) {
     return {
       eintraege: zustand[name],
-      onHinzufuegen: (text: string) => liste(name, (l) => eintragHinzufuegen(l, text, neueId())),
+      // Neue Einträge (getippte Zeilen oder diktierte Sätze) unten anhängen;
+      // bei Arbeitsschritten danach wie bisher sortierbar.
+      onHinzufuegen: (texte: string[]) => liste(name, (l) => eintraegeAnhaengen(l, texte, neueId)),
       onBearbeiten: (id: string, text: string) => liste(name, (l) => eintragBearbeiten(l, id, text)),
       onLoeschen: (id: string) => liste(name, (l) => eintragLoeschen(l, id)),
-      // Diktierte Sätze unten anhängen; bei Arbeitsschritten danach wie getippte sortierbar.
-      diktat: { texte: TEXTE.diktat, onTexte: (texte: string[]) => liste(name, (l) => eintraegeAnhaengen(l, texte, neueId)) },
+      eingabeTexte: TEXTE.eingabe,
     };
   }
 
