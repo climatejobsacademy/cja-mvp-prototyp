@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { ArrowRight, BookOpen, CalendarDays, Check, Video, Wrench } from "lucide-react";
 
-import { themaTitel, titelTeile, type ErledigtEintrag, type LiveAktivitaet, type PraxisAktivitaet } from "@/lib/home-tag";
+import { themaTitel, type ErledigtEintrag, type LiveAktivitaet, type PraxisAktivitaet } from "@/lib/home-tag";
 import { Ring } from "@/components/fortschritts-ring";
 import { ModulZeichen } from "@/components/modul-zeichen";
 import { cn } from "@/lib/utils";
@@ -425,16 +425,18 @@ export function FlexLeiste({
   const nachholen = !!kopf;
   const inhalt = (
     <>
+      {/* Gleicher Aufbau wie die Fokus-Karte daneben (Anna 2026-10-12):
+          "Wissen festigen" in der Größe des Lektionsthemas, darunter der
+          Titel der Lektion. */}
       <span className="flex flex-col gap-2">
+        {/* "Flexibel" weg (Anna 2026-10-12); nur "Noch offen von …" bleibt. */}
+        {kopf && <span className="text-sm text-ink-muted">{kopf}</span>}
         <span className={cn("flex items-center gap-2.5 text-ink", KARTEN_TITEL)}>
           {/* Selbstlernen-Zeichen wie überall: Buch in Eco Green. */}
           <BookOpen className="size-[22px] flex-none text-self" aria-hidden="true" />
           {nachholen ? "Nachholen" : "Wissen festigen"}
         </span>
-        <span className="line-clamp-2 text-[15px] text-ink-muted">
-          {/* Wie ursprünglich (Anna 2026-10-12): der Teil vor der Klammer, nicht das Thema. */}
-          {kopf ?? "Flexibel"} · {titelTeile(lektion.titel).titel}
-        </span>
+        <span className="line-clamp-2 text-[15px] text-ink-muted">{themaTitel(lektion.titel)}</span>
       </span>
       <span
         className={cn(
