@@ -99,15 +99,17 @@ export const PHASEN_TEXTE: Record<PhaseId, { instruktion: string; hastDuAlles: s
 // Neuer Eintrag: Datei nach public/praxisflow-demo/ legen und hier
 // { titel: "Anzeigename", dateiname: "dateiname.pdf" } ergänzen. Dateiname
 // nur mit a-z, 0-9 und Bindestrich, keine Leerzeichen. Die App verlinkt
-// /praxisflow-demo/<dateiname> (Anzeigen im neuen Tab und Herunterladen).
+// /praxisflow-demo/<dateiname>: ab md eingebettete Vorschau mit Umschalter,
+// darunter "In neuem Tab öffnen" und "Herunterladen"; auf dem Handy je Datei
+// eine Karte, die das PDF im nativen Viewer öffnet.
 // Keine externen Links. Die Dateien sind nur mit Login erreichbar
 // (middleware.ts), liegen aber im Repo -- nichts Vertrauliches ablegen.
 // ---------------------------------------------------------------------------
 export const DATEIEN_ORDNER = "/praxisflow-demo";
 
 export const DATEIEN: { titel: string; dateiname: string }[] = [
-  { titel: "Vorlage Übungsaufbau (Platzhalter)", dateiname: "platzhalter-vorlage.pdf" },
-  { titel: "Arbeitsblatt Ablauf (Platzhalter)", dateiname: "platzhalter-arbeitsblatt.pdf" },
+  { titel: "Auftragsblatt AA-E-02 – Leitungsverlängerung 230 V", dateiname: "aa-e-02-leitungsverlaengerung-230v.pdf" },
+  { titel: "Arbeitsunterlage AU-E-02 – Leitungsverlängerung 230 V", dateiname: "au-e-02-leitungsverlaengerung-230v.pdf" },
 ];
 
 // ---------------------------------------------------------------------------
