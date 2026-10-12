@@ -166,7 +166,18 @@ export function BewertungVergleich({
 // ---------------------------------------------------------------------------
 // "Etappe geschafft!" zwischen zwei Phasen
 
-export function EtappeGeschafft({ phase, naechste, onWeiter }: { phase: string; naechste: string; onWeiter: () => void }) {
+export function EtappeGeschafft({
+  titel,
+  text,
+  naechste,
+  onWeiter,
+}: {
+  /** Je Phase eigener Titel, z. B. "Auftrag verstanden!" (praxisflow-daten.ts) */
+  titel: string;
+  text: string;
+  naechste: string;
+  onWeiter: () => void;
+}) {
   return (
     <section
       aria-live="polite"
@@ -177,8 +188,8 @@ export function EtappeGeschafft({ phase, naechste, onWeiter }: { phase: string; 
         <Sparkles className="absolute -top-2 -right-3 size-6 text-brand" aria-hidden="true" />
       </span>
       <div className="flex flex-col gap-1.5">
-        <h2 className="font-heading text-[36px] leading-none md:text-[44px]">{phase} geschafft!</h2>
-        <p className={cn(TEXT, "text-ink-muted")}>Weiter so – als Nächstes kommt {naechste}.</p>
+        <h2 className="font-heading text-[36px] leading-none md:text-[44px]">{titel}</h2>
+        <p className={cn(TEXT, "text-ink-muted")}>{text}</p>
       </div>
       <button type="button" onClick={onWeiter} className={PRIMAER}>
         Weiter zu {naechste} <ArrowRight aria-hidden="true" />

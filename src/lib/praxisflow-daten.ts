@@ -200,3 +200,13 @@ export const TEXTE = {
 export const ABSCHLUSS_KOMPETENZEN: { name: string; prozent: number }[] = [
   { name: "Bauelemente identifizieren (Beispiel)", prozent: 67 },
 ];
+
+// "Etappe geschafft" je Phase mit eigenem Text statt immer gleich (Anna 2026-10-12).
+export const ETAPPEN_TEXTE: Record<PhaseId, { titel: string; text: string }> = {
+  analyse: { titel: "Auftrag verstanden!", text: "Du weißt, worum es geht. Jetzt planst du deine Arbeit." },
+  planen: { titel: "Dein Plan steht!", text: "Zeig ihn deiner Trainer:in – gemeinsam entscheidet ihr, ob es so losgeht." },
+  entscheiden: { titel: "Plan freigegeben!", text: "Los geht’s – jetzt setzt du ihn Schritt für Schritt um." },
+  durchfuehren: { titel: "Stark gearbeitet!", text: "Alle Schritte sind erledigt. Jetzt prüfst du dein Ergebnis." },
+  kontrolle: { titel: "Ergebnis geprüft!", text: "Fast geschafft – zum Schluss schätzt du deine Arbeit ein." },
+  bewerten: { titel: "Aufgabe geschafft!", text: "Alle sechs Phasen sind abgeschlossen." },
+};

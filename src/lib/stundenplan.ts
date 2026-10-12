@@ -90,16 +90,22 @@ export function tagestypAus(tag: { live: number; praxis: number; flex: number })
 }
 
 /**
- * Brief 2.4/5: der nächste bzw. laufende Termin ab `jetzt` (über die ganze
- * angezeigte Woche) -- der, dessen Ende noch nicht vorbei ist.
+ * Brief 2.4/5: der Anker-Termin der angezeigten Woche ab `jetzt`. Der
+ * laufende bzw. nächste Termin von heute; ist heute alles vorbei, bleibt der
+ * letzte Termin von heute der Anker, bis der Tag wechselt (Anna 2026-10-12);
+ * ohne Termin heute der nächste kommende.
  */
 export function naechsterTerminId(
   termine: { id: string; datum: string; start: string; ende: string }[],
   jetzt: string
 ): string | null {
-  const offen = termine
-    .filter((t) => `${t.datum}T${t.ende}` > jetzt)
-    .sort((a, b) => `${a.datum}T${a.start}`.localeCompare(`${b.datum}T${b.start}`));
+  const heute = jetzt.slice(0, 10);
+  const nachStart = (a: { datum: string; start: string }, b: { datum: string; start: string }) =>
+    `${a.datum}T${a.start}`.localeCompare(`${b.datum}T${b.start}`);
+  const offen = termine.filter((t) => `${t.datum}T${t.ende}` > jetzt).sort(nachStart);
+  if (offen[0]?.datum === heute) return offen[0].id;
+  const heuteVorbei = termine.filter((t) => t.datum === heute).sort(nachStart);
+  if (heuteVorbei.length > 0) return heuteVorbei[heuteVorbei.length - 1].id;
   return offen[0]?.id ?? null;
 }
 

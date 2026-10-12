@@ -62,14 +62,23 @@ test("tagestypAus: Praxis vor Live vor Lernen", () => {
   assert.equal(tagestypAus({ live: 0, praxis: 0, flex: 0 }), null);
 });
 
-test("naechsterTerminId: laufender oder nächster, vorbei zählt nicht", () => {
+test("naechsterTerminId: laufender oder nächster; heute bleibt Anker bis Tageswechsel", () => {
   const t = [
     { id: "mo", datum: "2026-10-05", start: "09:00:00", ende: "12:00:00" },
     { id: "fr", datum: "2026-10-09", start: "13:00:00", ende: "16:00:00" },
   ];
   assert.equal(naechsterTerminId(t, "2026-10-09T09:00:00"), "fr");
   assert.equal(naechsterTerminId(t, "2026-10-09T14:00:00"), "fr"); // läuft
-  assert.equal(naechsterTerminId(t, "2026-10-09T16:00:00"), null);
+  assert.equal(naechsterTerminId(t, "2026-10-09T16:00:00"), "fr"); // vorbei, aber noch heute
+  assert.equal(naechsterTerminId(t, "2026-10-10T08:00:00"), null); // nächster Tag, nichts mehr
+  assert.equal(naechsterTerminId(t, "2026-10-05T13:00:00"), "mo"); // heute vorbei vor morgen
+  assert.equal(naechsterTerminId(t, "2026-10-06T08:00:00"), "fr"); // heute nichts, nächster kommt
+  const zwei = [
+    { id: "vormittag", datum: "2026-10-09", start: "09:00:00", ende: "10:00:00" },
+    { id: "nachmittag", datum: "2026-10-09", start: "13:00:00", ende: "14:00:00" },
+  ];
+  assert.equal(naechsterTerminId(zwei, "2026-10-09T11:00:00"), "nachmittag"); // heute noch einer offen
+  assert.equal(naechsterTerminId(zwei, "2026-10-09T18:00:00"), "nachmittag"); // letzter von heute
 });
 
 test("arbeitstage und naechsterArbeitstag", () => {

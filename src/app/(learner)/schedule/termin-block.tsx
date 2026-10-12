@@ -24,8 +24,6 @@ const STATUS_TEXT = { erledigt: "erledigt", vorbei: "vorbei", offen: "offen" } a
 
 export function TerminBlock({ block, gross, style }: { block: Block; gross: boolean; style: React.CSSProperties }) {
   const art = ART[block.art];
-  // Punkt 3 der Änderungsliste: Vergangenes weiß mit feinem Rand und grauem Text.
-  const zurueck = !block.naechster && block.status !== "offen";
   const label = [
     art.text,
     `${zeitText(block)} Uhr${block.standardzeit ? " (Uhrzeit vorläufig)" : ""}`,
@@ -44,11 +42,9 @@ export function TerminBlock({ block, gross, style }: { block: Block; gross: bool
       className={cn(
         "group/termin absolute flex flex-col overflow-hidden rounded-block",
         gross ? "gap-2 px-[18px] py-3.5" : "gap-1 px-2.5 py-2",
-        block.naechster
-          ? cn("z-10", art.anker)
-          : zurueck
-            ? "border border-line bg-card text-ink-muted"
-            : cn("border-l-[3px] text-ink", art.flaeche, art.streifen),
+        // Anna 2026-10-12: Vergangenes und Erledigtes sieht aus wie kommende
+        // Termine (helle Fläche mit Streifen); erledigt zeigt das Häkchen.
+        block.naechster ? cn("z-10", art.anker) : cn("border-l-[3px] text-ink", art.flaeche, art.streifen),
         (block.inhalt || block.liveRaum) && !block.naechster && "transition-[box-shadow] duration-150 hover:shadow-card motion-reduce:transition-none"
       )}
     >

@@ -40,6 +40,7 @@ import {
   DATEIEN_ORDNER,
   DEMO_AUFTRAG,
   DEMO_CODEWORT,
+  ETAPPEN_TEXTE,
   NOTEN_BESCHREIBUNGEN,
   PHASEN,
   PHASEN_TEXTE,
@@ -259,7 +260,8 @@ function Flow() {
             fortschritt={<PhasenAnzeige phasen={PHASEN} aktuell={PHASEN.findIndex((p) => p.id === etappe.nach)} />}
           >
             <EtappeGeschafft
-              phase={phasenName(etappe.von)}
+              titel={ETAPPEN_TEXTE[etappe.von].titel}
+              text={ETAPPEN_TEXTE[etappe.von].text}
               naechste={phasenName(etappe.nach)}
               onWeiter={() => {
                 const { von, nach } = etappe;
