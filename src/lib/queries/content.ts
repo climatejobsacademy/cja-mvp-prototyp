@@ -1,4 +1,5 @@
 import { heuteInBerlin } from "@/lib/date";
+import { eigenerLiveTermin, type Plan } from "@/lib/live-termin";
 import { createClient } from "@/lib/supabase/server";
 import type { ContentType, UnitProgressStatus } from "@/lib/database.types";
 
@@ -195,7 +196,8 @@ export type LessonDetail = {
 
 export async function getLessonDetail(
   lessonId: string,
-  learnerId: string
+  learnerId: string,
+  plan: Plan
 ): Promise<LessonDetail | null> {
   const supabase = await createClient();
 
@@ -215,13 +217,22 @@ export async function getLessonDetail(
 
   let liveSession: LessonDetail["liveSession"] = null;
   if (lesson.content_type === "live") {
-    const { data: session } = await supabase
+    // SR-15, SR-21: Termin aus dem Plan der eigenen Kohorte bzw. Einschreibung,
+    // nicht der früheste Termin der Lektion (Kohorten können sich eine
+    // Lektion teilen). Nichts im eigenen Plan → kein Termin.
+    const { data: sessions } = await supabase
       .from("live_session")
-      .select("datum, start, ende, join_link")
-      .eq("lesson_id", lessonId)
-      .order("datum", { ascending: true })
-      .limit(1)
-      .maybeSingle();
+      .select("id, datum, start, ende, join_link")
+      .eq("lesson_id", lessonId);
+    const { data: eintraege } = sessions?.length
+      ? await supabase
+          .from("schedule_entry")
+          .select("live_session_id, cohort_id, enrolment_id")
+          .eq("art", "live")
+          .in("live_session_id", sessions.map((s) => s.id))
+          .or(`cohort_id.eq.${plan.cohortId},enrolment_id.eq.${plan.enrolmentId}`)
+      : { data: [] };
+    const session = eigenerLiveTermin(sessions ?? [], eintraege ?? [], plan);
     if (session) {
       liveSession = {
         datum: session.datum,
