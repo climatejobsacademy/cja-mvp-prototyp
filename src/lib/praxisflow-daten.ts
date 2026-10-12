@@ -34,6 +34,13 @@ export const DEMO_CODEWORT = "werkstatt";
 /** Feste Punkteskala der Bewertung (keine Schulnoten). */
 export const PUNKTE_SKALA = [10, 9, 7, 5, 3, 0] as const;
 
+/** Planen als geführte Abfolge: ein Editor je Unterschritt, in dieser Reihenfolge. */
+export const PLANEN_UNTERSCHRITTE: { id: "werkzeuge" | "materialien" | "schritte"; titel: string }[] = [
+  { id: "werkzeuge", titel: "Werkzeuge" },
+  { id: "materialien", titel: "Materialien" },
+  { id: "schritte", titel: "Arbeitsschritte" },
+];
+
 /** Präfix aller Browser-Schlüssel dieses Demos; "Demo zurücksetzen" löscht nur diese. */
 export const SPEICHER_PRAEFIX = "cja-praxisflow-demo:";
 
@@ -115,6 +122,18 @@ export const BEWERTUNGSKRITERIEN: { id: string; titel: string }[] = [
   { id: "k4", titel: "Kriterium 4 (Platzhalter): Ordnung am Arbeitsplatz" },
 ];
 
+// Beschreibung je Punktestufe, erscheint bei Hover, Antippen und
+// Tastatur-Fokus (Selbst- und Fremdeinschätzung). Für jede Stufe aus
+// PUNKTE_SKALA ein Text.
+export const NOTEN_BESCHREIBUNGEN: Record<number, string> = {
+  10: "Vollständig und fehlerfrei, ohne Hilfe. (Platzhalter)",
+  9: "Fast vollständig, kleine Ungenauigkeiten. (Platzhalter)",
+  7: "Überwiegend richtig, einzelne Fehler. (Platzhalter)",
+  5: "Teilweise richtig, mehrere Fehler oder Hilfe nötig. (Platzhalter)",
+  3: "Nur in Ansätzen erfüllt. (Platzhalter)",
+  0: "Nicht erfüllt. (Platzhalter)",
+};
+
 // ---------------------------------------------------------------------------
 // 4. Übrige Texte
 // ---------------------------------------------------------------------------
@@ -125,6 +144,7 @@ export const TEXTE = {
       "Baue den Übungsaufbau auf dem Werkstattbrett nach der Vorlage auf. Arbeite sauber und so, dass eine zweite Person jeden Schritt nachvollziehen kann. (Platzhalter)",
   },
   planen: {
+    unterschritt: (nr: number, gesamt: number) => `Schritt ${nr} von ${gesamt}`,
     gesperrt: "Trage mindestens einen Arbeitsschritt ein, dann geht es weiter zu Entscheiden.",
   },
   durchfuehren: {

@@ -8,8 +8,10 @@ import {
   BEWERTUNGSKRITERIEN,
   DATEIEN,
   DEMO_CODEWORT,
+  NOTEN_BESCHREIBUNGEN,
   PHASEN,
   PHASEN_TEXTE,
+  PLANEN_UNTERSCHRITTE,
   PUNKTE_SKALA,
   SPEICHER_PRAEFIX,
   // @ts-expect-error TS5097: .ts-Endung für node:test nötig
@@ -27,6 +29,9 @@ import {
   erledigtBereinigen,
   fremdFreigabeMoeglich,
   planBereit,
+  planenWeiter,
+  planenWeiterMoeglich,
+  planenZurueck,
   schrittStatus,
   schrittUmschalten,
   speicherSchluessel,
@@ -113,6 +118,47 @@ test("Hoch/Runter tauscht Nachbarn, an den Rändern keine Änderung", () => {
 test("Weiter zu Entscheiden erst mit mindestens einem Arbeitsschritt", () => {
   assert.equal(planBereit([]), false);
   assert.equal(planBereit([{ id: "s1", text: "Schritt" }]), true);
+});
+
+test("Fixtures: Planen-Unterschritte in der Reihenfolge Werkzeuge, Materialien, Arbeitsschritte", () => {
+  assert.deepEqual(
+    PLANEN_UNTERSCHRITTE.map((u: { id: string }) => u.id),
+    ["werkzeuge", "materialien", "schritte"]
+  );
+});
+
+test("Fixtures: jede Punktestufe hat eine als Platzhalter markierte Beschreibung", () => {
+  for (const p of PUNKTE_SKALA) {
+    assert.match(NOTEN_BESCHREIBUNGEN[p] ?? "", /\(Platzhalter\)/, String(p));
+  }
+});
+
+test("Planen: Werkzeuge → Materialien → Arbeitsschritte → Entscheiden, Weiter ohne Checkliste", () => {
+  const anzahl = 3;
+  let z: ReturnType<typeof startZustand> = { ...startZustand(), phase: "planen" };
+  // Unterschritt 1 und 2: Weiter auch mit leeren Listen
+  assert.equal(planenWeiterMoeglich(0, [], anzahl), true);
+  z = { ...z, ...planenWeiter(z, anzahl) };
+  assert.deepEqual([z.phase, z.planenSchritt], ["planen", 1]);
+  z = { ...z, ...planenWeiter(z, anzahl) };
+  assert.deepEqual([z.phase, z.planenSchritt], ["planen", 2]);
+  // Unterschritt 3: erst mit mindestens einem Arbeitsschritt
+  assert.equal(planenWeiterMoeglich(2, [], anzahl), false);
+  assert.deepEqual(planenWeiter(z, anzahl), { phase: "planen", planenSchritt: 2 });
+  z = { ...z, schritte: [{ id: "s1", text: "Schritt" }] };
+  assert.equal(planenWeiterMoeglich(2, z.schritte, anzahl), true);
+  assert.deepEqual(planenWeiter(z, anzahl), { phase: "entscheiden", planenSchritt: 2 });
+});
+
+test("Planen zurück: Unterschritt für Unterschritt, vor dem ersten zu Analyse; Listen bleiben", () => {
+  const z = { ...startZustand(), phase: "planen" as const, planenSchritt: 2, werkzeuge: drei, materialien: drei };
+  const eins = { ...z, ...planenZurueck(z) };
+  assert.deepEqual([eins.phase, eins.planenSchritt], ["planen", 1]);
+  const null_ = { ...eins, ...planenZurueck(eins) };
+  assert.deepEqual([null_.phase, null_.planenSchritt], ["planen", 0]);
+  const analyse = { ...null_, ...planenZurueck(null_) };
+  assert.deepEqual([analyse.phase, analyse.planenSchritt], ["analyse", 0]);
+  assert.deepEqual([analyse.werkzeuge, analyse.materialien], [drei, drei]);
 });
 
 // ---------- Durchführen ----------

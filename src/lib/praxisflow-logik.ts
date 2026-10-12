@@ -81,6 +81,30 @@ export function planBereit(schritte: Eintrag[]): boolean {
   return schritte.length > 0;
 }
 
+// Planen als geführte Abfolge: Unterschritt 0 bis anzahl-1 (Werkzeuge,
+// Materialien, Arbeitsschritte). Die Listen bleiben beim Zurückgehen erhalten,
+// hier wechselt nur die Position.
+
+type PlanenPosition = Pick<DemoZustand, "phase" | "planenSchritt">;
+
+/** Weiter ist in den ersten Unterschritten immer möglich, im letzten erst mit einem Arbeitsschritt. */
+export function planenWeiterMoeglich(planenSchritt: number, schritte: Eintrag[], anzahl: number): boolean {
+  return planenSchritt < anzahl - 1 || planBereit(schritte);
+}
+
+/** Nächster Unterschritt; nach dem letzten weiter zu Entscheiden. Gesperrt: keine Änderung. */
+export function planenWeiter(z: PlanenPosition & Pick<DemoZustand, "schritte">, anzahl: number): PlanenPosition {
+  if (!planenWeiterMoeglich(z.planenSchritt, z.schritte, anzahl)) return { phase: z.phase, planenSchritt: z.planenSchritt };
+  if (z.planenSchritt < anzahl - 1) return { phase: "planen", planenSchritt: z.planenSchritt + 1 };
+  return { phase: "entscheiden", planenSchritt: z.planenSchritt };
+}
+
+/** Vorheriger Unterschritt; vor dem ersten zurück zu Analyse. */
+export function planenZurueck(z: PlanenPosition): PlanenPosition {
+  if (z.planenSchritt > 0) return { phase: "planen", planenSchritt: z.planenSchritt - 1 };
+  return { phase: "analyse", planenSchritt: 0 };
+}
+
 // ---------- Durchführen ----------
 
 // Regel: Schritte nur streng nacheinander. Abgehakt ist immer ein lückenloser
