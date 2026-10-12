@@ -200,7 +200,7 @@ export default async function ProgrammPage({
             }
           />
         )}
-        <KohorteKarten kohortenName={learner.cohortName} />
+        <KohorteKarten />
       </div>
 
     </div>

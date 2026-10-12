@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, Check } from "lucide-react";
+import { ArrowRight, BookOpen, Check, Video, Wrench } from "lucide-react";
 
 import { spuren, stunden, type Tagestyp } from "@/lib/stundenplan";
 import { cn } from "@/lib/utils";
@@ -14,12 +14,27 @@ import { TerminBlock } from "./termin-block";
 // immer Icon + Text, nie nur Farbe. Änderungsliste Anna 2026-10-10: ruhiger
 // -- kein Rahmen, feine Stundenlinien, Vergangenes weiß und grau.
 
-/** Zeitraum-Zusatz "· Theorie (online)" (Änderungsliste Punkt 1) */
-export const WOCHENTYP_TEXT: Record<Tagestyp, string> = {
-  theorie: "Theorie (online)",
-  praxis: "Praxis",
-  lernen: "Selbstlernen",
+/**
+ * Neben dem Zeitraum nur noch ein Symbol für die Art der Woche statt
+ * "· Woche 2 · Theorie (online)" (Entscheidung Anna 2026-10-12): Kamera =
+ * Theorie, Werkzeug = Praxis, Buch = Selbstlernen, in den Aktivitätsfarben.
+ * Der Name steht für Screenreader und als Tooltip dabei.
+ */
+const WOCHENTYP: Record<Tagestyp, { text: string; Icon: typeof Video; farbe: string }> = {
+  theorie: { text: "Theoriewoche", Icon: Video, farbe: "text-brand" },
+  praxis: { text: "Praxiswoche", Icon: Wrench, farbe: "text-praxis-text" },
+  lernen: { text: "Selbstlernwoche", Icon: BookOpen, farbe: "text-self" },
 };
+
+export function WochenTypIcon({ typ }: { typ: Tagestyp }) {
+  const { text, Icon, farbe } = WOCHENTYP[typ];
+  return (
+    <span title={text} className="inline-flex">
+      <Icon className={cn("size-5", farbe)} aria-hidden="true" />
+      <span className="sr-only">{text}</span>
+    </span>
+  );
+}
 
 const TAGESTYP: Record<Tagestyp, { text: string; farbe: string }> = {
   theorie: { text: "Theorietag", farbe: "text-ink" },

@@ -1,5 +1,5 @@
 // Home v6 (docs/design_handoff_home_v6, SR folgt): reine Hilfsfunktionen
-// der Home-Seite -- Termin-Texte (Datumsanzeige aus src/lib/date.ts), Tagestyp und die Umwandlung der
+// der Home-Seite -- Termin-Texte (Datumsanzeige aus src/lib/date.ts) und die Umwandlung der
 // Tagesagenda in die Eingabe von getDayState().
 
 import { datumKurz, tageZwischen, tagRelativ, wochentagLang } from "@/lib/date";
@@ -41,24 +41,6 @@ export function nochOffenText(datum: string, heute: string): string {
   if (tage === 1) return "Noch offen von gestern";
   if (tage > 1 && tage < 7) return `Noch offen von ${wochentagLang(datum)}`;
   return `Noch offen vom ${datumKurz(datum)}`;
-}
-
-export type Tagestyp = "praxis" | "theorie" | null;
-
-/**
- * Brief 2.2: Praxistag, sobald heute ein Field Job geplant ist (hat
- * Vorrang), sonst Theorietag, wenn heute Live-Unterricht stattfindet. Nur
- * Selbstlernen oder nichts geplant: kein Label.
- */
-export function tagestyp(tag: TagesAgenda): Tagestyp {
-  if (tag.istPraxistag) return "praxis";
-  if (tag.theorie.some((e) => e.art === "live")) return "theorie";
-  return null;
-}
-
-/** Home v12: "Theorietag · online", wenn ein heutiger Live-Termin einen Beitritts-Link hat. */
-export function istOnline(tag: TagesAgenda): boolean {
-  return tag.theorie.some((e) => e.art === "live" && !!e.liveSession?.joinLink);
 }
 
 /** Tagesagenda → Eingabe für getDayState (Live mit Uhrzeit, Selbstlernen, Praxis). */

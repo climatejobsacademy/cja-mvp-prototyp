@@ -53,7 +53,9 @@ export function TrackingKarte({
         // Mobil (Brief 2.6) ebenfalls drei nebeneinander, nur kompakter.
         <dl className="grid grid-cols-3 divide-x divide-line border-t border-line pt-5">
           {kacheln.map((k) => (
-            <div key={k.label} className="flex min-w-0 flex-col-reverse gap-1 px-2.5 first:pl-0 sm:px-6">
+            // Gleichmäßig (Anna 2026-10-12): jede Zahl mittig in ihrer Spalte,
+            // statt die erste am Rand und die anderen eingerückt.
+            <div key={k.label} className="flex min-w-0 flex-col-reverse items-center gap-1 px-2.5 text-center sm:px-6">
               <dt className="text-[11px] leading-tight text-ink-subtle hyphens-auto break-words sm:text-[13px] sm:leading-normal">{k.label}</dt>
               <dd className="font-heading text-[26px] leading-[1.1] whitespace-nowrap tabular-nums sm:text-[36px]">{k.wert}</dd>
             </div>

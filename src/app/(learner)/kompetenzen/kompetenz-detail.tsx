@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { ArrowLeft, BookOpen, Check, ChevronDown, ChevronRight, Clock, ThumbsDown, Video, Wrench } from "lucide-react";
+import { BookOpen, Check, ChevronDown, ChevronRight, Clock, ThumbsDown, Video, Wrench } from "lucide-react";
 
 import { Ring } from "@/components/fortschritts-ring";
 import { TypIcon } from "@/components/typ-icon";
@@ -119,6 +119,7 @@ const TYP: Record<Lernaktivitaet["art"], { Icon: typeof Video; kachel: string }>
 function HierLernstDu({ aktivitaeten, heute }: { aktivitaeten: Lernaktivitaet[]; heute: string }) {
   if (aktivitaeten.length === 0) return null;
   return (
+    // Beim Öffnen des Panels zu (Anna 2026-10-12, wie schon 2026-10-11).
     <details className="group/lernen flex flex-col">
       <summary className="flex cursor-pointer list-none items-center gap-2 rounded-lg py-1 outline-none focus-visible:ring-2 focus-visible:ring-brand [&::-webkit-details-marker]:hidden">
         <h3 className="text-[15px] font-bold">Hier lernst du das</h3>
@@ -159,15 +160,12 @@ export function KompetenzDetail({
   aktivitaeten,
   heute,
   heuteStepIds,
-  zurueck,
 }: {
   kompetenz: CompetencyView;
   aktivitaeten: Lernaktivitaet[];
   heute: string;
   /** Teilschritte, auf die heute eine Aktivität einzahlt */
   heuteStepIds: Set<string>;
-  /** Mobil (eigene Detailansicht, Brief 2.4): Zurück zur Liste */
-  zurueck: { href: string; label: string };
 }) {
   const heuteDran = kompetenz.steps.some((s) => heuteStepIds.has(s.id));
   // Lehrplan-Reihenfolge als Ersatz für ein eigenes Reihenfolge-Feld.
@@ -177,18 +175,9 @@ export function KompetenzDetail({
       aria-labelledby="kompetenz-detail"
       className="flex min-w-0 flex-col gap-7 rounded-karte bg-card p-6 text-ink shadow-card md:p-8"
     >
-      <Link
-        href={zurueck.href}
-        scroll={false}
-        className="-mb-2 inline-flex items-center gap-2 self-start rounded-sm text-sm font-semibold outline-none focus-visible:ring-2 focus-visible:ring-brand min-[960px]:hidden"
-      >
-        <ArrowLeft className="size-4" aria-hidden="true" />
-        {zurueck.label}
-      </Link>
       <div className="flex flex-wrap items-center gap-6">
         <Ring prozent={kompetenz.fortschrittProzent} glow={heuteDran} groesse={112} />
         <div className="flex min-w-0 flex-[1_1_220px] flex-col gap-1.5">
-          {heuteDran && <span className="text-[13px] font-semibold text-brand">Heute dran</span>}
           <h2 id="kompetenz-detail" className="text-[22px] leading-tight font-bold md:text-[26px]">
             {kompetenz.name}
           </h2>

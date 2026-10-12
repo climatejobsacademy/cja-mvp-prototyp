@@ -3,6 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { CircleCheck, Download, ExternalLink, Eye, FileText, Link2 } from "lucide-react";
 
+import { DateiVorschau } from "@/components/datei-vorschau";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { erstelleDownloadMarker, markierteIds } from "@/lib/download-marker";
@@ -17,8 +18,8 @@ const downloadMarker = erstelleDownloadMarker(() =>
 const AKTION = cn(buttonVariants({ variant: "secondary" }), "h-11 gap-2 bg-subtle px-3.5 hover:bg-brand-tint hover:text-brand sm:h-9");
 
 /**
- * Liste der Lernmaterialien einer Lektion (SR-68). Vorschau/Download sind
- * normale Links in einen neuen Tab; der signierte Link entsteht erst beim
+ * Liste der Lernmaterialien einer Lektion (SR-68). Die Vorschau öffnet ein
+ * Fenster über der Seite (DateiVorschau), Download ist ein normaler Link; der signierte Link entsteht erst beim
  * Aufruf im Route Handler. Kein next/link, damit nichts vorab geladen wird.
  * Bilder werden nirgends inline gezeigt (kein img), der Titel steckt im
  * zugänglichen Namen der Aktionen.
@@ -75,15 +76,15 @@ export function MaterialienListe({
               {m.art === "datei" ? (
                 <>
                   {m.vorschau && (
-                    <a
+                    // Vorschau als Fenster über der Seite (Anna 2026-10-12).
+                    <DateiVorschau
+                      titel={m.titel}
                       href={`${basis}/${m.id}?aktion=vorschau`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={`Vorschau: ${m.titel} (öffnet in neuem Tab)`}
-                      className={AKTION}
+                      ausloeserLabel={`Vorschau: ${m.titel}`}
+                      ausloeserKlasse={AKTION}
                     >
                       <Eye aria-hidden="true" /> Vorschau
-                    </a>
+                    </DateiVorschau>
                   )}
                   <a
                     href={`${basis}/${m.id}?aktion=download`}

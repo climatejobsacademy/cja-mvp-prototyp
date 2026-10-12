@@ -34,14 +34,16 @@ export type GliederungsModul = { nummer: number; ueberzeile: string; name: strin
 /** Woche 1 = Woche des Kohortenstarts; letzter Tag 4 = Freitag, 5 = Samstag (Praxis-Samstage). */
 type Vorlage = { nummer: number; ueberzeile: string; name: string; ersteWoche: number; letzteWoche: number; letzterTag: 4 | 5 };
 
+// \u00AD = weiches Trennzeichen: lange Namen brechen im Modulpfad an der
+// Wortfuge statt mitten im Wort (Anna 2026-10-12), sonst unsichtbar.
 const EFK_EE: Vorlage[] = [
   { nummer: 1, ueberzeile: "Modul 1", name: "Grundlagen Elektrotechnik", ersteWoche: 1, letzteWoche: 5, letzterTag: 4 },
-  { nummer: 2, ueberzeile: "Modul 2", name: "Gebäudeinstallation", ersteWoche: 6, letzteWoche: 9, letzterTag: 5 },
+  { nummer: 2, ueberzeile: "Modul 2", name: "Gebäude\u00ADinstallation", ersteWoche: 6, letzteWoche: 9, letzterTag: 5 },
   { nummer: 3, ueberzeile: "Modul 3", name: "Grundlagen IT-Systemtechnik", ersteWoche: 10, letzteWoche: 12, letzterTag: 5 },
   // Wochen 13-14: Weihnachtspause
-  { nummer: 4, ueberzeile: "Modul 4", name: "Schaltschrankbau", ersteWoche: 15, letzteWoche: 18, letzterTag: 5 },
-  { nummer: 5, ueberzeile: "Modul 5", name: "Grundlagen Erneuerbaren Energien", ersteWoche: 19, letzteWoche: 20, letzterTag: 4 },
-  { nummer: 6, ueberzeile: "Abschluss", name: "Prüfungsvorbereitung", ersteWoche: 21, letzteWoche: 21, letzterTag: 4 },
+  { nummer: 4, ueberzeile: "Modul 4", name: "Schaltschrank\u00ADbau", ersteWoche: 15, letzteWoche: 18, letzterTag: 5 },
+  { nummer: 5, ueberzeile: "Modul 5", name: "Grundlagen Erneuer\u00ADbaren Energien", ersteWoche: 19, letzteWoche: 20, letzterTag: 4 },
+  { nummer: 6, ueberzeile: "Abschluss", name: "Prüfungs\u00ADvorbereitung", ersteWoche: 21, letzteWoche: 21, letzterTag: 4 },
 ];
 
 /**

@@ -78,9 +78,9 @@ function AnsichtUmschalter({ aktiv, href }: { aktiv: Ansicht; href: (a: Ansicht)
   );
 }
 
+// Entscheidung Anna 2026-10-12: kein "Heute"-Link mehr in der Steuerleiste.
 export function Steuerleiste({
   ansicht,
-  heuteHref,
   zurueckHref,
   vorHref,
   zurueckLabel,
@@ -90,14 +90,12 @@ export function Steuerleiste({
   umschalterHref,
 }: {
   ansicht: Ansicht;
-  /** null = die Ansicht zeigt schon heute */
-  heuteHref: string | null;
   zurueckHref: string;
   vorHref: string;
   zurueckLabel: string;
   vorLabel: string;
   titel: string;
-  /** Grau rechts neben dem Zeitraum, z. B. "· Woche 2 · Theorie (online)" */
+  /** Rechts neben dem Zeitraum, z. B. das Symbol der Wochenart */
   zusatz: ReactNode;
   umschalterHref: (a: Ansicht) => string;
 }) {
@@ -112,8 +110,7 @@ export function Steuerleiste({
       <h2 className="ml-2 text-xl font-bold" aria-live="polite">
         {titel}
       </h2>
-      <span className="ml-1.5 text-sm text-ink-muted">{zusatz}</span>
-      <HeuteLink href={heuteHref} className="ml-4" />
+      <span className="ml-2.5 inline-flex items-center gap-2 text-sm text-ink-muted">{zusatz}</span>
       <div className="ml-auto">
         <AnsichtUmschalter aktiv={ansicht} href={umschalterHref} />
       </div>

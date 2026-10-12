@@ -1,5 +1,6 @@
 import { FlaskConical } from "lucide-react";
 
+import { ProgrammZeile } from "@/components/programm-zeile";
 import { datumKurz, datumLang, heuteInBerlin, jetztInBerlin, montagDerWoche, plusTage } from "@/lib/date";
 import { parseNowParameter } from "@/lib/home-tag";
 import { requireCurrentLearner } from "@/lib/queries/session";
@@ -16,7 +17,7 @@ import {
 } from "@/lib/stundenplan";
 
 import { inWochen, MobilAnsicht, MonatsAnsicht, Steuerleiste, TagesAnsicht, WochenAnsicht, type Ansicht } from "./ansichten";
-import { AbweichungsLabel, WOCHENTYP_TEXT } from "./plan-bausteine";
+import { AbweichungsLabel, WochenTypIcon } from "./plan-bausteine";
 import { planModell } from "./plan-modell";
 
 // Stundenplan v2 (docs/design_handoff_stundenplan_v2, SR folgt): Kalender
@@ -73,15 +74,14 @@ export default async function SchedulePage({
   const haupt = haupttyp(wochenTage.map((t) => t.typ));
 
   const nowZusatz = simuliert && now ? `&now=${encodeURIComponent(now)}` : "";
-  // "Heute" (Entscheidung Anna 2026-10-11): am Wochenende springt es aus der
-  // Woche (Mo–Fr, ohne Sa/So) in die Tagesansicht des Wochenendtags. Zeigt
-  // die Ansicht schon heute, ist der Link aus (null).
+  // "Heute"-Link nur noch mobil; am Desktop entfällt er (Entscheidung Anna
+  // 2026-10-12). Zeigt die Ansicht schon heute, ist der Link aus (null).
   const href = (a: Ansicht, d: string) => `/schedule?ansicht=${a}&datum=${d}${nowZusatz}`;
   const tagHref = (d: string) => href("tag", d);
 
-  // Punkt 1: "5. – 9. Oktober · Woche 2 · Theorie (online)"
-  const zusatzTeile = [wocheNr ? `Woche ${wocheNr}` : null, haupt ? WOCHENTYP_TEXT[haupt] : null].filter(Boolean);
-  const zusatz = zusatzTeile.length ? `· ${zusatzTeile.join(" · ")}` : null;
+  // Entscheidung Anna 2026-10-12: neben dem Zeitraum nur das Symbol der
+  // Wochenart, ohne "Woche 2 · Theorie (online)".
+  const zusatz = haupt ? <WochenTypIcon typ={haupt} /> : null;
   const ohneJahr = (text: string) => text.replace(/\s\d{4}$/, "");
   // Visuelles Update (Anna 2026-10-11, wie im Mock-up): Steuerleiste und
   // Kalender stehen auf einer weißen Karte.
@@ -99,7 +99,7 @@ export default async function SchedulePage({
       {/* Desktop (ab 768 px): Woche, Tag oder Monat */}
       <div className="hidden flex-col gap-6 md:flex">
         <div className="flex flex-col gap-2 text-ink">
-          <span className="text-[13px] text-ink-subtle">{learner.programmeName}</span>
+          <ProgrammZeile name={learner.programmeName} />
           <h1 className="font-heading text-[52px] leading-none">Stundenplan</h1>
         </div>
 
@@ -107,7 +107,6 @@ export default async function SchedulePage({
           <div className={KALENDER_KARTE}>
             <Steuerleiste
               ansicht="woche"
-              heuteHref={wochenende ? href("tag", heute) : woche.includes(heute) ? null : href("woche", heute)}
               zurueckHref={href("woche", plusTage(datum, -7))}
               vorHref={href("woche", plusTage(datum, 7))}
               zurueckLabel="Vorherige Woche"
@@ -124,7 +123,6 @@ export default async function SchedulePage({
           <div className={KALENDER_KARTE}>
             <Steuerleiste
               ansicht="tag"
-              heuteHref={datum === heute ? null : href("tag", heute)}
               zurueckHref={href("tag", naechsterArbeitstag(datum, -1))}
               vorHref={href("tag", naechsterArbeitstag(datum, 1))}
               zurueckLabel="Vorheriger Tag"
@@ -153,7 +151,6 @@ export default async function SchedulePage({
           <div className={KALENDER_KARTE}>
             <Steuerleiste
               ansicht="monat"
-              heuteHref={datum.slice(0, 7) === heute.slice(0, 7) ? null : href("monat", heute)}
               zurueckHref={href("monat", plusMonate(datum, -1))}
               vorHref={href("monat", plusMonate(datum, 1))}
               zurueckLabel="Vorheriger Monat"

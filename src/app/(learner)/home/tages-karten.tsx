@@ -18,7 +18,7 @@ import { MehrMenue } from "./mehr-menue";
 // der Anker der Seite -- Live/Selbstlernen/Erledigt im Lila-Verlauf, Praxis im
 // Coral-Verlauf; Buttons darauf in Lime.
 const PRIMAER_BUTTON =
-  "inline-flex min-h-12 items-center gap-2.5 rounded-full bg-lime px-[22px] text-[15px] font-bold text-on-lime outline-none transition-[filter] duration-150 hover:brightness-95 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand motion-reduce:transition-none";
+  "inline-flex min-h-11 items-center gap-2 rounded-full bg-lime px-5 text-[15px] font-bold text-on-lime outline-none transition-[filter] duration-150 hover:brightness-95 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand motion-reduce:transition-none";
 
 const LINK_FOKUS = "rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-brand";
 
@@ -82,8 +82,8 @@ function FokusRahmen({
   return (
     <article
       className={cn(
-        "flex flex-wrap items-start gap-x-9 gap-y-5 rounded-karte p-6 text-white md:px-9 md:py-8",
-        praxis ? "bg-anchor-praxis shadow-anchor-praxis" : "bg-anchor-brand shadow-anchor-brand"
+        "flex flex-wrap items-start gap-x-7 gap-y-4 rounded-karte p-6 text-white md:px-7 md:py-7",
+        praxis ? "bg-anchor-praxis shadow-anchor-praxis" : "bg-anchor-brand shadow-anchor-brand",
       )}
     >
       {links && <div className="flex flex-none flex-col gap-1.5 pt-0.5">{links}</div>}
@@ -97,21 +97,42 @@ function FokusRahmen({
 function LimePill({ children, puls }: { children: ReactNode; puls?: boolean }) {
   return (
     <span className="inline-flex items-center gap-1.5 self-start rounded-full bg-lime px-2.5 py-0.5 text-xs font-semibold text-on-lime">
-      <span aria-hidden="true" className={cn("size-1.5 rounded-full bg-on-lime", puls && "motion-safe:animate-pulse")} />
+      <span
+        aria-hidden="true"
+        className={cn("size-1.5 rounded-full bg-on-lime", puls && "motion-safe:animate-pulse")}
+      />
       {children}
     </span>
   );
 }
 
 const ALS_NAECHSTES = <LimePill>Als Nächstes</LimePill>;
-const GROSS = "font-heading text-[48px] leading-none tabular-nums md:text-[64px]";
+const GROSS = "font-heading text-[44px] leading-none tabular-nums md:text-[56px]";
 
 /** Kurzer Titel (max. 2 Zeilen) + Untertitel aus dem Klammertext. */
-function FokusTitel({ titel }: { titel: string }) {
+// Titel-Stil der Fokus-Karte, auch für "Wissen festigen" rechts daneben.
+const KARTEN_TITEL = "text-[20px] leading-tight font-semibold md:text-[22px]";
+
+/**
+ * Optional ein Typ-Icon direkt vor dem Titel statt einer eigenen Zeile
+ * "Live-Unterricht" (Entscheidung Anna 2026-10-12); `art` liest der
+ * Screenreader mit.
+ */
+function FokusTitel({ titel, icon, art }: { titel: string; icon?: ReactNode; art?: string }) {
   const teile = titelTeile(titel);
   return (
     <>
-      <h3 className="line-clamp-2 text-[20px] leading-tight font-semibold md:text-[24px]">{teile.titel}</h3>
+      <h3 className={cn("flex items-center gap-2.5", KARTEN_TITEL)}>
+        {icon && (
+          <span aria-hidden="true" className="flex flex-none text-white/85">
+            {icon}
+          </span>
+        )}
+        <span className="line-clamp-2">
+          {art && <span className="sr-only">{art}: </span>}
+          {teile.titel}
+        </span>
+      </h3>
       {teile.untertitel && <p className="text-[15px] text-white/85">{teile.untertitel}</p>}
     </>
   );
@@ -130,15 +151,15 @@ function StaerktPills({ kompetenzen }: { kompetenzen?: StaerktKompetenz[] }) {
         <li key={id}>
           <Link
             href={kompetenzHref(id)}
-            className="inline-flex items-center gap-2.5 rounded-full bg-white/15 py-1.5 pr-3.5 pl-1.5 text-sm font-medium text-white outline-none transition-[background-color] duration-150 hover:bg-white/25 focus-visible:ring-2 focus-visible:ring-white motion-reduce:transition-none"
+            className="inline-flex items-center gap-2 rounded-full bg-white/15 py-1 pr-3 pl-1 text-[13px] text-white outline-none transition-[background-color] duration-150 hover:bg-white/25 focus-visible:ring-2 focus-visible:ring-white motion-reduce:transition-none"
           >
-            <span aria-hidden="true" className="flex size-6 rounded-full shadow-glow-charge-sm">
-              <svg viewBox="0 0 24 24" className="size-6">
-                <circle cx="12" cy="12" r="8.5" strokeWidth="3.5" className="fill-transparent stroke-white/40" />
+            <span aria-hidden="true" className="flex size-5 rounded-full shadow-glow-charge-sm">
+              <svg viewBox="0 0 20 20" className="size-5">
+                <circle cx="10" cy="10" r="7" strokeWidth="3" className="fill-transparent stroke-white/40" />
               </svg>
             </span>
             <span>
-              <span className="text-white/85">Stärkt</span> {name}
+              <span className="text-white/85">Stärkt</span> <span className="font-semibold">{name}</span>
             </span>
           </Link>
         </li>
@@ -148,7 +169,15 @@ function StaerktPills({ kompetenzen }: { kompetenzen?: StaerktKompetenz[] }) {
 }
 
 /** A (bevorstehend) und B (läuft gerade). */
-export function FokusLive({ live, laeuft, staerkt }: { live: LiveAktivitaet; laeuft: boolean; staerkt?: StaerktKompetenz[] }) {
+export function FokusLive({
+  live,
+  laeuft,
+  staerkt,
+}: {
+  live: LiveAktivitaet;
+  laeuft: boolean;
+  staerkt?: StaerktKompetenz[];
+}) {
   const ziel = live.joinLink ?? (live.lessonId ? lektionHref(live.lessonId) : null);
   return (
     <FokusRahmen
@@ -166,13 +195,7 @@ export function FokusLive({ live, laeuft, staerkt }: { live: LiveAktivitaet; lae
         )
       }
     >
-      <span className="inline-flex items-center gap-2 text-sm text-white/85">
-        <AnkerIcon>
-          <Video className="size-4" aria-hidden="true" />
-        </AnkerIcon>
-        {laeuft ? `Live-Unterricht · seit ${hhmm(live.start)}` : "Live-Unterricht"}
-      </span>
-      <FokusTitel titel={live.titel} />
+      <FokusTitel titel={live.titel} icon={<Video className="size-[22px]" />} art="Live-Unterricht" />
       <StaerktPills kompetenzen={staerkt} />
       {ziel && (
         <PrimaerAktion
@@ -223,8 +246,8 @@ export function FokusFlex({
 
 /**
  * D: alles erledigt, Vorschau auf den nächsten geplanten Tag. Die heute
- * gestärkten Ringe nur, wenn es keine Kompetenz-Spalte gibt (sonst stehen
- * sie dort schon unter "Heute dran").
+ * gestärkten Ringe nur, wenn es keinen Modul-Fortschritt gibt (sonst stehen
+ * sie dort schon unter "Heute stärkst du").
  */
 export function FokusErledigt({
   naechsterTag,
@@ -314,30 +337,29 @@ export function FokusRuhig({ naechsterTermin }: { naechsterTermin: string | null
 // ---------------------------------------------------------------------------
 // Schmale Leisten unter der Fokus-Karte (Home v12)
 
-// Leisten: Selbstlernen auf heller Grün-Fläche, alles andere neutral weiß.
-const LEISTE = "flex flex-wrap items-center gap-[18px] rounded-zeile px-6 py-5 text-ink";
+// Ab 960 px rechts neben der Fokus-Karte (Entscheidung Anna 2026-10-12):
+// dann untereinander und so hoch wie die Karte, die Aktion unten.
+const LEISTE =
+  "flex flex-wrap items-center gap-[18px] rounded-zeile px-6 py-5 text-ink min-[960px]:flex-1 min-[960px]:flex-col min-[960px]:flex-nowrap min-[960px]:items-start min-[960px]:py-6";
+// Aktion als graue Pill (Annas Skizze 2026-10-12).
+const LEISTE_AKTION =
+  "inline-flex items-center rounded-full bg-subtle px-4 py-2 text-sm font-semibold whitespace-nowrap min-[960px]:mt-auto";
 const LEISTE_NEUTRAL = "bg-card shadow-card";
-const LEISTE_SELBST = "bg-self-tint";
 const LEISTE_LINK =
   "outline-none transition-[box-shadow] duration-150 hover:shadow-card focus-visible:ring-2 focus-visible:ring-brand motion-reduce:transition-none";
 
-function LeistenIcon({ children, selbst }: { children: ReactNode; selbst?: boolean }) {
+function LeistenIcon({ children }: { children: ReactNode }) {
   return (
-    <span
-      className={cn(
-        "flex size-11 flex-none items-center justify-center rounded-xl",
-        selbst ? "bg-white text-self" : "bg-subtle text-progress"
-      )}
-    >
+    <span className="flex size-10 flex-none items-center justify-center rounded-xl bg-subtle text-progress">
       {children}
     </span>
   );
 }
 
-/** Typ-Icon auf einer Anker-Fläche: weiß in halbtransparenter Kachel. */
+/** Typ-Icon auf einer Anker-Fläche: schlicht, ohne Kachel (Annas Skizze 2026-10-12). */
 function AnkerIcon({ children }: { children: ReactNode }) {
   return (
-    <span aria-hidden="true" className="flex size-7 flex-none items-center justify-center rounded-lg bg-white/15 text-white">
+    <span aria-hidden="true" className="flex flex-none text-white/85">
       {children}
     </span>
   );
@@ -345,51 +367,66 @@ function AnkerIcon({ children }: { children: ReactNode }) {
 
 function LeistenText({ kopf, art, titel, zeile }: { kopf: string; art?: string; titel: string; zeile?: string }) {
   return (
-    <span className="flex min-w-0 flex-[1_1_240px] flex-col gap-[3px]">
+    <span className="flex min-w-0 flex-[1_1_240px] flex-col gap-[3px] min-[960px]:flex-none">
       <span className="text-[13px] text-ink-subtle">
         <span className="font-semibold">{kopf}</span>
         {art && ` · ${art}`}
       </span>
-      <span className="text-[17px] leading-snug font-semibold">{titel}</span>
+      <span className="text-base leading-snug font-semibold">{titel}</span>
       {zeile && <span className="text-sm text-ink-muted">{zeile}</span>}
     </span>
   );
 }
 
 /**
- * Selbstlernen als Leiste: "Danach · flexibel" (A, E), ausgegraut "Nach dem
- * Unterricht" (B) oder "Noch offen von …" (E, F). Titel = kurzer
- * Lektionstitel (Entscheidung Anna 2026-10-10: nicht "Wiederholung zum
- * Live-Unterricht" wie in der v12-Referenz). Es gibt nur offen/erledigt,
- * keinen Stand "begonnen" -- daher "Noch offen" + "Weiterlernen" statt
- * "Starten".
+ * Selbstlernen rechts neben der Fokus-Karte, als knapper Aufruf
+ * (Entscheidung Anna 2026-10-12): "Wissen festigen" bzw. "Nachholen" im
+ * Titel-Stil der Karte,
+ * klein wann + Lektion, unten der Knopf. Neutral statt Lila, damit nur die
+ * Fokus-Karte farbig ist: weiße Karte wie "Im Modul … stärkst du" (Wahl
+ * Anna 2026-10-12).
+ * Keine "Stärkt"-Pills hier, die stehen schon auf der Karte.
+ * Auch während des Unterrichts (B) aktiv mit "Jetzt festigen" --
+ * Entscheidung Anna 2026-10-12, statt ausgegraut "Nach dem Unterricht".
  */
 export function FlexLeiste({
   lektion,
-  kopf = "Danach · flexibel",
-  gedimmt,
+  kopf,
 }: {
   lektion: OffeneLektion;
+  /** Gesetzt = Lektion von einem früheren Tag ("Noch offen von …"). */
   kopf?: string;
-  gedimmt?: boolean;
 }) {
+  const nachholen = !!kopf;
   const inhalt = (
     <>
-      <LeistenIcon selbst>
-        <BookOpen className="size-5" aria-hidden="true" />
-      </LeistenIcon>
-      <LeistenText kopf={kopf} art="Selbstlernen" titel={titelTeile(lektion.titel).titel} zeile="Noch offen" />
-      <span className="text-[15px] font-semibold whitespace-nowrap">
-        {gedimmt ? "Nach dem Unterricht" : "Weiterlernen →"}
+      <span className="flex flex-col gap-2">
+        <span className={cn("flex items-center gap-2.5 text-ink", KARTEN_TITEL)}>
+          {/* Selbstlernen-Zeichen wie überall: Buch in Eco Green. */}
+          <BookOpen className="size-[22px] flex-none text-self" aria-hidden="true" />
+          {nachholen ? "Nachholen" : "Wissen festigen"}
+        </span>
+        <span className="line-clamp-2 text-[15px] text-ink-muted">
+          {kopf ?? "Flexibel"} · {titelTeile(lektion.titel).titel}
+        </span>
+      </span>
+      <span
+        className={cn(
+          // Leichter Knopf (Entscheidung Anna 2026-10-12): Grau statt Dunkel.
+          "mt-auto inline-flex min-h-11 items-center gap-2 self-start rounded-full bg-subtle px-5 text-[15px] font-semibold text-ink",
+        )}
+      >
+        {nachholen ? "Jetzt nachholen" : "Jetzt festigen"}
+        <ArrowRight className="size-[17px]" aria-hidden="true" />
       </span>
     </>
   );
-  // B: bewusst kein Link -- während des Unterrichts keine zweite Aktion.
-  // Gedimmt über die Textfarbe (--ink-muted), nicht über Deckkraft.
-  return gedimmt ? (
-    <div className={cn(LEISTE, LEISTE_SELBST, "text-ink-muted")}>{inhalt}</div>
-  ) : (
-    <Link href={lektionHref(lektion.lessonId)} className={cn(LEISTE, LEISTE_SELBST, LEISTE_LINK)}>
+  const rahmen = cn(
+    "flex flex-col gap-5 rounded-karte p-6 min-[960px]:flex-1 md:px-7 md:py-7",
+    "bg-card shadow-card",
+  );
+  return (
+    <Link href={lektionHref(lektion.lessonId)} className={cn(rahmen, LEISTE_LINK)}>
       {inhalt}
     </Link>
   );
@@ -406,10 +443,7 @@ export function ErledigtLeiste({ erledigt }: { erledigt: ErledigtEintrag[] }) {
       </LeistenIcon>
       <LeistenText kopf="Erledigt" art={`Live-Unterricht ${hhmm(live.start)}`} titel={titelTeile(live.titel).titel} />
       {live.lessonId && (
-        <Link
-          href={lektionHref(live.lessonId)}
-          className={cn("text-[15px] font-semibold whitespace-nowrap", LINK_FOKUS)}
-        >
+        <Link href={lektionHref(live.lessonId)} className={cn(LEISTE_AKTION, LINK_FOKUS)}>
           Unterlagen ansehen →
         </Link>
       )}
@@ -430,7 +464,7 @@ export function HeuteErledigtLeiste({ erledigt }: { erledigt: ErledigtEintrag[] 
       <LeistenIcon>
         <Check className="size-5" aria-hidden="true" />
       </LeistenIcon>
-      <span className="flex min-w-0 flex-[1_1_240px] flex-col gap-1.5">
+      <span className="flex min-w-0 flex-[1_1_240px] flex-col gap-1.5 min-[960px]:flex-none">
         <span className="text-[13px] font-semibold text-ink-subtle">Heute erledigt</span>
         <ul className="flex flex-wrap gap-x-5 gap-y-1">
           {erledigt.map((e, i) => (
@@ -442,7 +476,7 @@ export function HeuteErledigtLeiste({ erledigt }: { erledigt: ErledigtEintrag[] 
           ))}
         </ul>
       </span>
-      <Link href="/schedule?ansicht=woche" className={cn("text-[15px] font-semibold whitespace-nowrap", LINK_FOKUS)}>
+      <Link href="/schedule?ansicht=woche" className={cn(LEISTE_AKTION, LINK_FOKUS)}>
         Woche ansehen →
       </Link>
     </div>

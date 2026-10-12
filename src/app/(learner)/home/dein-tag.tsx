@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import type { Tageszustand } from "@/lib/home-tag";
 import type { NaechsterTermin } from "@/lib/queries/schedule";
+import { cn } from "@/lib/utils";
 
 import { naechsterTagText, naechsterTagZeile, naechsterTerminText, nochOffenText } from "./home-hilfen";
 import {
@@ -30,7 +31,7 @@ function karten(
   heute: string,
   naechster: NaechsterTermin | null,
   staerkt: StaerktFn,
-  gestaerkt: GestaerkteKompetenz[]
+  gestaerkt: GestaerkteKompetenz[],
 ): { fokus: ReactNode; leiste: ReactNode } {
   switch (zustand.zustand) {
     case "A":
@@ -41,7 +42,7 @@ function karten(
     case "B":
       return {
         fokus: <FokusLive live={zustand.live} laeuft staerkt={staerkt("lektion", zustand.live.lessonId)} />,
-        leiste: zustand.danach && <FlexLeiste lektion={zustand.danach} gedimmt />,
+        leiste: zustand.danach && <FlexLeiste lektion={zustand.danach} />,
       };
     case "C": {
       const hatteLive = zustand.erledigt.some((e) => e.typ === "live");
@@ -69,7 +70,10 @@ function karten(
           <FlexLeiste lektion={zustand.danach} />
         ) : (
           zustand.nachholen && (
-            <FlexLeiste lektion={zustand.nachholen} kopf={nochOffenText(zustand.nachholen.datum, heute)} />
+            <FlexLeiste
+              lektion={zustand.nachholen}
+              kopf={nochOffenText(zustand.nachholen.datum, heute)}
+            />
           )
         ),
       };
@@ -77,7 +81,10 @@ function karten(
       return {
         fokus: <FokusRuhig naechsterTermin={naechster ? naechsterTerminText(naechster) : null} />,
         leiste: zustand.nachholen && (
-          <FlexLeiste lektion={zustand.nachholen} kopf={nochOffenText(zustand.nachholen.datum, heute)} />
+          <FlexLeiste
+            lektion={zustand.nachholen}
+            kopf={nochOffenText(zustand.nachholen.datum, heute)}
+          />
         ),
       };
   }
@@ -116,9 +123,17 @@ export function DeinTag({
           Woche ansehen →
         </Link>
       </div>
-      {fokus}
-      {leiste}
-      {naechsterZeile && <NaechsterTagZeile {...naechsterZeile} />}
+      {/* Entscheidung Anna 2026-10-12: die Leiste steht rechts neben der
+          Fokus-Karte statt darunter, gleich hoch wie die Karte. */}
+      <div className={cn("grid gap-4", (leiste || naechsterZeile) && "min-[960px]:grid-cols-[2fr_1fr]")}>
+        {fokus}
+        {(leiste || naechsterZeile) && (
+          <div className="flex min-w-0 flex-col gap-4">
+            {leiste}
+            {naechsterZeile && <NaechsterTagZeile {...naechsterZeile} />}
+          </div>
+        )}
+      </div>
     </section>
   );
 }

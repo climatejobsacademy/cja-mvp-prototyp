@@ -1,5 +1,6 @@
-import { Download, ExternalLink, FileText, type LucideIcon } from "lucide-react";
+import { Download, Eye, FileText, type LucideIcon } from "lucide-react";
 
+import { DateiVorschau } from "@/components/datei-vorschau";
 import { cn } from "@/lib/utils";
 
 import { FOKUS, KARTE, TEXT } from "./stile";
@@ -80,10 +81,11 @@ export function DateienBlock({
                 <span className="min-w-0 break-words">{d.titel}</span>
               </span>
               <span className="flex gap-1">
-                <a href={href} target="_blank" rel="noopener" className={link}>
-                  <ExternalLink className="size-4" aria-hidden="true" />
+                {/* Anzeigen als Fenster über der Seite (Anna 2026-10-12). */}
+                <DateiVorschau titel={d.titel} href={href} ausloeserLabel={`Anzeigen: ${d.titel}`} ausloeserKlasse={link}>
+                  <Eye className="size-4" aria-hidden="true" />
                   Anzeigen
-                </a>
+                </DateiVorschau>
                 <a href={href} download={d.dateiname} className={link}>
                   <Download className="size-4" aria-hidden="true" />
                   Herunterladen

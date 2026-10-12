@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Check } from "lucide-react";
 
+import { ProgrammZeile } from "@/components/programm-zeile";
 import { cn } from "@/lib/utils";
 
 // Kompetenzseite v1 (docs/design_handoff_kompetenzen_v1, Brief 2.2 + 2.3,
@@ -33,11 +34,7 @@ export function KompetenzenKopf({
   return (
     <section className="flex flex-wrap items-end justify-between gap-6">
       <div className="flex flex-col gap-2">
-        {programmName.trim() && (
-          <span className="text-[13px] text-ink-subtle">
-            {programmName}
-          </span>
-        )}
+        <ProgrammZeile name={programmName} />
         <h1 className="font-heading text-[40px] leading-none text-ink md:text-[52px]">
           Deine Kompetenzen
         </h1>
@@ -81,41 +78,43 @@ export function KompetenzenKopf({
   );
 }
 
-/** Brief 2.3: ruhige Zeile mit Balken + "{erreicht} von {gesamt} Teilschritten in Modul {n} erreicht". */
+/**
+ * Brief 2.3, geändert 2026-10-12 (Anna): Balken = Durchschnitt der
+ * Kompetenz-Ringe des Moduls, nicht mehr gezählte Kompetenzschritte.
+ */
 export function ModulFortschrittZeile({
   nummer,
-  erreicht,
-  gesamt,
+  prozent,
+  anzahl,
 }: {
   nummer: number;
-  erreicht: number;
-  gesamt: number;
+  /** Mittelwert der Kompetenz-Fortschritte, 0-100 */
+  prozent: number;
+  /** Zahl der Kompetenzen im Modul */
+  anzahl: number;
 }) {
-  if (gesamt === 0) {
+  if (anzahl === 0) {
     return (
       <p className="rounded-karte bg-card px-5 py-4 text-[15px] text-ink-muted shadow-card">
-        Für Modul {nummer} sind noch keine Kompetenzschritte hinterlegt.
+        Für Modul {nummer} sind noch keine Kompetenzen hinterlegt.
       </p>
     );
   }
-  const prozent = Math.round((erreicht / gesamt) * 100);
   return (
     <div className="flex flex-wrap items-center gap-3.5 rounded-karte bg-anchor-brand px-6 py-5 text-[15px] text-white/85 shadow-anchor-brand">
       <span
         role="progressbar"
         aria-valuemin={0}
-        aria-valuemax={gesamt}
-        aria-valuenow={erreicht}
-        aria-label={`Fortschritt in Modul ${nummer}`}
+        aria-valuemax={100}
+        aria-valuenow={prozent}
+        aria-label={`Fortschritt deiner Kompetenzen in Modul ${nummer}`}
         className="h-1.5 max-w-80 flex-[1_1_260px] rounded-full bg-white/25"
       >
         <span className="block h-1.5 rounded-full bg-lime" style={{ width: `${prozent}%` }} />
       </span>
       <span>
-        <span className="font-semibold text-white">
-          {erreicht} von {gesamt} Kompetenzschritten
-        </span>{" "}
-        in Modul {nummer} erreicht
+        Im Schnitt <span className="font-semibold text-white">{prozent} %</span> über{" "}
+        {anzahl === 1 ? "deine Kompetenz" : `alle ${anzahl} Kompetenzen`} in Modul {nummer}
       </span>
     </div>
   );

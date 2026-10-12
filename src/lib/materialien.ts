@@ -54,7 +54,7 @@ export function istSichererLink(url: string | null | undefined): url is string {
   }
 }
 
-/** Vorschau im neuen Tab für PDF und Bilder; Office-Dateien nur als Download. */
+/** Vorschau (Fenster über der Seite) für PDF und Bilder; Office-Dateien nur als Download. */
 export function hatVorschau(mimetype: string | null): boolean {
   return mimetype !== null && VORSCHAU_MIMETYPES.has(mimetype);
 }

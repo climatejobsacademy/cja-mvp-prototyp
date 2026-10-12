@@ -87,7 +87,7 @@ export const PHASEN_TEXTE: Record<PhaseId, { instruktion: string; hastDuAlles: s
 // Neuer Eintrag: Datei nach public/praxisflow-demo/ legen und hier
 // { titel: "Anzeigename", dateiname: "dateiname.pdf" } ergänzen. Dateiname
 // nur mit a-z, 0-9 und Bindestrich, keine Leerzeichen. Die App verlinkt
-// /praxisflow-demo/<dateiname> (Anzeigen im neuen Tab und Herunterladen).
+// /praxisflow-demo/<dateiname> (Anzeigen im Vorschau-Fenster und Herunterladen).
 // Keine externen Links. Die Dateien sind nur mit Login erreichbar
 // (middleware.ts), liegen aber im Repo -- nichts Vertrauliches ablegen.
 // ---------------------------------------------------------------------------
