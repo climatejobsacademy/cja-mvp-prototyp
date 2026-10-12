@@ -45,8 +45,8 @@ insert into competency (id, name, kompetenzbereich, quelle) values
 insert into competency_step (id, competency_id, name, typ) values
   ('00000000-0000-0000-0000-000000000232', '00000000-0000-0000-0000-000000000231', 'Praktischer Teilschritt', 'praktisch');
 
-insert into competency_competency_step (id, competency_id, competency_step_id) values
-  ('00000000-0000-0000-0000-000000000233', '00000000-0000-0000-0000-000000000231', '00000000-0000-0000-0000-000000000232');
+insert into competency_competency_step (id, competency_id, competency_step_id, reihenfolge) values
+  ('00000000-0000-0000-0000-000000000233', '00000000-0000-0000-0000-000000000231', '00000000-0000-0000-0000-000000000232', 1);
 
 insert into field_job_type (id, titel, status, programme_id, reihenfolge) values
   ('00000000-0000-0000-0000-000000000241', 'Veröffentlichter Field Job Type', 'published', '00000000-0000-0000-0000-000000000221', 1),

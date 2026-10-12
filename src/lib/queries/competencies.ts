@@ -53,14 +53,17 @@ export async function getKompetenzFortschritt(learnerId: string): Promise<Compet
     .from("competency_step")
     .select("id, name, typ");
   // N:M seit SR-69 (0019): ein Teilschritt kann an mehreren Kompetenzen
-  // hängen und zählt dann in jeder davon mit.
+  // hängen und zählt dann in jeder davon mit. Reihenfolge je Kompetenz aus
+  // competency_competency_step.reihenfolge (0027).
   const { data: competencySteps } = await supabase
     .from("competency_competency_step")
-    .select("competency_id, competency_step_id");
+    .select("competency_id, competency_step_id, reihenfolge")
+    .order("reihenfolge", { ascending: true });
 
   if (!competencies || !steps || !competencySteps) return [];
 
   const stepById = new Map(steps.map((s) => [s.id, s]));
+  // Eingefügt in reihenfolge-Sortierung, die Listen sind damit je Kompetenz sortiert.
   const stepIdsByCompetency = new Map<string, string[]>();
   for (const cs of competencySteps) {
     const list = stepIdsByCompetency.get(cs.competency_id) ?? [];
