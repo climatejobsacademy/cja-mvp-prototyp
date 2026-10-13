@@ -42,7 +42,7 @@ export default async function LessonPage({
   const zurueck = zurueckZiel(von, datum);
   const learner = await requireCurrentLearner();
   const [lesson, materialien] = await Promise.all([
-    getLessonDetail(lessonId, learner.personId),
+    getLessonDetail(lessonId, learner.personId, { cohortId: learner.cohortId, enrolmentId: learner.enrolmentId }),
     getLessonMaterialien(lessonId),
   ]);
 
