@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { redirect } from "next/navigation";
 
+import { type HeaderLogo, headerLogo } from "@/lib/org-logo";
 import { createClient } from "@/lib/supabase/server";
 
 export type CurrentLearner = {
@@ -13,6 +14,8 @@ export type CurrentLearner = {
   programmeId: string;
   programmeName: string;
   cohortName: string;
+  /** Logo der Organisation für den Header (SR-76), null = Fallback. */
+  organisationLogo: HeaderLogo | null;
 };
 
 /**
@@ -51,7 +54,7 @@ export const requireCurrentLearner = cache(async (): Promise<CurrentLearner> => 
     redirect("/login?error=kein-profil");
   }
 
-  // Bewusst als drei einfache Abfragen statt eines verschachtelten Selects:
+  // Bewusst als einfache Abfragen statt eines verschachtelten Selects:
   // hält die Typinferenz robust, ohne von den (hier von Hand geschriebenen,
   // nicht generierten) Relationships-Metadaten abhängig zu sein.
   const { data: enrolment, error: enrolmentError } = await supabase
@@ -67,11 +70,14 @@ export const requireCurrentLearner = cache(async (): Promise<CurrentLearner> => 
     redirect("/login?error=keine-einschreibung");
   }
 
-  const { data: cohort, error: cohortError } = await supabase
-    .from("cohort")
-    .select("programme_id, name")
-    .eq("id", enrolment.cohort_id)
-    .single();
+  // Organisation parallel zur Kohorte: kein zusätzlicher Roundtrip. Lesbar nur
+  // bei Mitgliedschaft (organisation_learner_select, 0009). Fehler oder keine
+  // Zeile (auch: Spalte logo_pfad noch nicht migriert) -> kein Logo, die Seite
+  // bricht daran nicht.
+  const [{ data: cohort, error: cohortError }, { data: organisation }] = await Promise.all([
+    supabase.from("cohort").select("programme_id, name").eq("id", enrolment.cohort_id).single(),
+    supabase.from("organisation").select("name, logo_pfad").eq("id", enrolment.organisation_id).maybeSingle(),
+  ]);
 
   if (cohortError || !cohort) {
     redirect("/login?error=keine-einschreibung");
@@ -97,5 +103,9 @@ export const requireCurrentLearner = cache(async (): Promise<CurrentLearner> => 
     programmeId: programme.id,
     programmeName: programme.name,
     cohortName: cohort.name,
+    organisationLogo: headerLogo(
+      organisation ? { name: organisation.name, logoPfad: organisation.logo_pfad } : null,
+      process.env.NEXT_PUBLIC_SUPABASE_URL
+    ),
   };
 });
