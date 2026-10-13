@@ -234,3 +234,10 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Folgen:** Ersetzt die fest eingetragenen Trainer:innen auf demo (`demo-personen.ts`, `public/demo-bilder`); `public/demo-bilder` bleibt nur auf demo. Fotos von Trainer:innen lädt AfCJ admin mit deren Einwilligung hoch. Beim Löschen eines Kontos bleibt eine Fotodatei im Speicher, weil Storage nicht kaskadiert; das gehört in den Löschpfad (Lücke aus dem Audit vom 30.09.2026). Home und Programm zeigen die Trainer:innen später.
 - **Status:** gültig (Entscheidung Vera)
 - **Belegt:** `0030_trainer_profilfotos.sql`; `019_trainer_profilfotos.test.sql`; `access-matrix.md`, Zeilen „Profilfoto“ und „Trainer:in je Termin“; Datenschutzerklärung, Abschnitt „Profilfotos“; SR-77, SR-78, SR-60
+
+### 2026-10-13 – Kann-Satz als eigenes Feld an der Kompetenz
+- **Entscheidung:** `competency.kann_satz` (Text, optional) nimmt den ausformulierten Kann-Satz aus der Importvorlage auf; `name` bleibt der Kurztitel. Das Import-Skript (`scripts/import-plan.mjs`) füllt das Feld, sobald die Spalte existiert (Migration 0031).
+- **Begründung:** Die Kann-Sätze von Content & Learning hatten kein Feld; im Namen wären sie für Listen und Ringe zu lang.
+- **Folgen:** Anzeige in der Kompetenz-Detailansicht folgt in einem eigenen PR. Keine neuen Policies (bestehende Lese- und Schreibregeln für `competency` gelten).
+- **Status:** gültig (Entscheidung Vera); SR folgt
+- **Belegt:** `0031_kompetenz_kann_satz.sql`; `020_kompetenz_kann_satz.test.sql`; `data-model.md`, Zeile „competency“
