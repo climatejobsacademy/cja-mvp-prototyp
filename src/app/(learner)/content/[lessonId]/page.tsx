@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, BookOpen, Video } from "lucide-react";
+import { ArrowLeft, Video } from "lucide-react";
 
+import { ModulZeichen } from "@/components/modul-zeichen";
 import { UnitProgressBadge } from "@/components/status-badge";
-import { TrainerZeile } from "@/components/trainer-zeile";
-import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { heuteInBerlin, jetztInBerlin } from "@/lib/date";
+import { cn } from "@/lib/utils";
 import { requireCurrentLearner } from "@/lib/queries/session";
 import { getLessonDetail } from "@/lib/queries/content";
 import { getLektionThread } from "@/lib/queries/lektion-thread";
@@ -18,8 +19,16 @@ import { LektionThread } from "./lektion-thread";
 import { MarkCompleteButton } from "./mark-complete-button";
 import { MaterialienListe } from "./materialien-liste";
 import { ScormPlayer } from "./scorm-player";
+import { TerminKarte } from "./termin-karte";
 
+// Lektionsseite wie demo (Entscheidungen Anna 2026-10-11/12): Typ als Pill
+// (Live ohne Pill -- das Kamera-Symbol steht in der Termin-Karte), groß das
+// Thema, klein das Modul (aus der Modul-Ebene), bei Live der Termin der
+// eigenen Kohorte als Anker-Karte mit "Beitreten", "Wissen festigen" und
+// Trainer:in (SR-15, SR-78), darunter Materialien (SR-68) und Fragen-Thread
+// (SR-74).
 const TYP_LABEL: Record<string, string> = { live: "Live-Termin", scorm: "Selbstlernmodul" };
+const TYP_PILL: Record<string, string> = { live: "bg-brand-tint text-brand", scorm: "bg-self-tint text-self" };
 
 /**
  * Zurück-Link je nach Herkunft: aus dem Stundenplan zurück zum selben Tag,
@@ -69,27 +78,31 @@ export default async function LessonPage({
     <div className="flex flex-col gap-4">
       <Link
         href={zurueck.href}
-        className="flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-eco-deep-green"
+        className="flex w-fit items-center gap-1 text-sm text-muted-foreground hover:text-ink"
       >
         <ArrowLeft className="size-4" /> {zurueck.label}
       </Link>
 
-      <div className="flex flex-col gap-1">
-        {/* Typ als Meta-Zeile -- die Lektionsnamen tragen ihn seit 2026-09-29 nicht mehr. */}
-        {TYP_LABEL[lesson.contentType] && (
-          <p className="text-[13px] text-muted-foreground">{TYP_LABEL[lesson.contentType]}</p>
-        )}
+      <div className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="font-heading text-xl text-eco-deep-green">{lesson.name}</h1>
+          {/* Typ als Pill in der Typfarbe; Live ohne Pill (Symbol in der Termin-Karte). */}
+          {TYP_LABEL[lesson.contentType] && lesson.contentType !== "live" && (
+            <p className={cn("self-start rounded-full px-2.5 py-0.5 text-xs font-semibold", TYP_PILL[lesson.contentType])}>
+              {TYP_LABEL[lesson.contentType]}
+            </p>
+          )}
+          {lesson.modul && <ModulZeichen ueberzeile={lesson.modul.ueberzeile} name={lesson.modul.name} />}
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Groß das Thema (lesson.thema, 0029), sonst der Titel. */}
+          <h1 className="font-heading text-[28px] leading-tight text-ink md:text-[36px]">{lesson.thema ?? lesson.name}</h1>
           <UnitProgressBadge status={lesson.status} />
         </div>
-        {/* Thema aus lesson.thema (SR-13, 0029) statt der Klammer im Titel. */}
-        {lesson.thema && <p className="text-[15px] text-eco-deep-green">{lesson.thema}</p>}
         {/* Selbstlern-Lektion: zugehöriger Live-Unterricht (SR-15, 0029). */}
         {lesson.liveLektion && (
           <Link
             href={lektionHref(lesson.liveLektion.id)}
-            className="flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-eco-deep-green"
+            className="flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-ink"
           >
             <Video className="size-4" aria-hidden="true" />
             Gehört zum Live-Unterricht: {lesson.liveLektion.titel}
@@ -127,46 +140,16 @@ export default async function LessonPage({
       )}
 
       {lesson.contentType === "live" && (
-        <Card>
-          <CardContent className="flex flex-col gap-2">
-            {lesson.liveSession ? (
-              <>
-                <p className="text-eco-deep-green">
-                  {new Date(`${lesson.liveSession.datum}T00:00:00`).toLocaleDateString("de-DE", {
-                    weekday: "long",
-                    day: "2-digit",
-                    month: "long",
-                  })}
-                  , {lesson.liveSession.start.slice(0, 5)}–{lesson.liveSession.ende.slice(0, 5)} Uhr
-                </p>
-                {trainer && <TrainerZeile art="live" trainer={trainer} className="text-eco-deep-green" />}
-                {lesson.liveSession.joinLink && (
-                  <a
-                    href={lesson.liveSession.joinLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={buttonVariants({ className: "self-start" })}
-                  >
-                    Beitreten
-                  </a>
-                )}
-              </>
-            ) : (
-              <p className="text-sm text-muted-foreground">Kein Termin hinterlegt.</p>
-            )}
-            {/* Zugehörige Selbstlern-Lektion (SR-15, 0029: live_lektion_id). */}
-            {lesson.festigen && (
-              <Link
-                href={lektionHref(lesson.festigen.id)}
-                className={buttonVariants({ variant: "outline", className: "self-start" })}
-              >
-                <BookOpen data-icon="inline-start" aria-hidden="true" />
-                Wissen festigen
-                <span className="sr-only">: {lesson.festigen.titel}</span>
-              </Link>
-            )}
-          </CardContent>
-        </Card>
+        // Anker der Seite wie die Fokus-Karte auf Home (Anna 2026-10-12),
+        // "Beitreten" und "Wissen festigen" in derselben Karte.
+        <TerminKarte
+          termin={lesson.liveSession}
+          heute={heuteInBerlin()}
+          jetzt={jetztInBerlin()}
+          festigenHref={lesson.festigen ? lektionHref(lesson.festigen.id) : null}
+          festigenTitel={lesson.festigen?.titel}
+          trainer={trainer}
+        />
       )}
 
       {lesson.contentType === "live" && materialien.length > 0 && (

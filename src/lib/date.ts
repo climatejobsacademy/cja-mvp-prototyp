@@ -76,6 +76,19 @@ export function datumLang(datum: string): string {
   return alsTag(datum).toLocaleDateString("de-DE", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
 }
 
+/**
+ * Zeitstempel kurz für Beiträge: "heute, 13:05", "gestern, 09:12", sonst
+ * "12.10., 13:05" -- Tag und Uhrzeit in Berlin.
+ */
+export function zeitpunktKurzInBerlin(iso: string, heute: string = heuteInBerlin()): string {
+  const [tag, uhrzeit] = jetztInBerlin(new Date(iso)).split("T");
+  const zeit = uhrzeit.slice(0, 5);
+  const tage = tageZwischen(tag, heute);
+  if (tage === 0) return `heute, ${zeit}`;
+  if (tage === 1) return `gestern, ${zeit}`;
+  return `${tag.slice(8, 10)}.${tag.slice(5, 7)}., ${zeit}`;
+}
+
 /** Kommender Tag relativ zu heute: "heute", "morgen", "Montag" (bis 6 Tage), sonst "Mo, 12.10." */
 export function tagRelativ(datum: string, heute: string): string {
   const tage = tageZwischen(heute, datum);
