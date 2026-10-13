@@ -97,19 +97,32 @@ function Programm({ name, mobile, ohneStrich }: { name: string; mobile?: boolean
 
 export function AppNav({
   name,
+  rufname,
+  fotoUrl,
   email,
   programmeName,
   cohortName,
   organisationLogo,
 }: {
   name: string;
+  rufname: string;
+  fotoUrl: string | null;
   email: string;
   programmeName: string;
   cohortName: string;
   organisationLogo: HeaderLogo | null;
 }) {
   const pathname = usePathname();
-  const menu = <AccountMenu name={name} email={email} programmeName={programmeName} cohortName={cohortName} />;
+  const menu = (
+    <AccountMenu
+      name={name}
+      rufname={rufname}
+      fotoUrl={fotoUrl}
+      email={email}
+      programmeName={programmeName}
+      cohortName={cohortName}
+    />
+  );
 
   return (
     <>

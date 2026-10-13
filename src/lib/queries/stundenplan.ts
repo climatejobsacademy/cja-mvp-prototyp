@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 
 import { getAgendaZeitraum, type TagesAgenda } from "./schedule";
+import { getMeineTrainer, type TrainerAnzeige } from "./trainer";
 
 // Stundenplan v2 (SR-13, SR-73): Daten für
 // Woche, Tag und Monat. Nutzt die Tagesagenda von Home (gebündelt über den
@@ -10,13 +11,18 @@ import { getAgendaZeitraum, type TagesAgenda } from "./schedule";
 export type Plantag = TagesAgenda & {
   /** live_session.id → Anwesenheit bestätigt "anwesend" */
   anwesend: Set<string>;
+  /** Trainer:innen im eigenen Plan nach person_id (SR-78, fn_meine_trainer) */
+  trainer: Map<string, TrainerAnzeige>;
 };
 
 type Ctx = { organisationId: string; cohortId: string; enrolmentId: string; learnerId: string };
 
 /** Alle Tage von `von` bis `bis` (einschließlich). */
 export async function getStundenplan(ctx: Ctx, von: string, bis: string): Promise<Plantag[]> {
-  const agenden = await getAgendaZeitraum(ctx.organisationId, ctx.cohortId, ctx.enrolmentId, ctx.learnerId, von, bis);
+  const [agenden, trainer] = await Promise.all([
+    getAgendaZeitraum(ctx.organisationId, ctx.cohortId, ctx.enrolmentId, ctx.learnerId, von, bis),
+    getMeineTrainer(),
+  ]);
   const liveIds = agenden.flatMap((a) => a.theorie.flatMap((e) => (e.liveSession ? [e.liveSession.id] : [])));
 
   const supabase = await createClient();
@@ -31,7 +37,7 @@ export async function getStundenplan(ctx: Ctx, von: string, bis: string): Promis
   // als "anwesend" bestätigt ist -- nicht schon, weil der Termin vorbei ist.
   const anwesend = new Set((anwesenheit ?? []).filter((a) => a.status === "anwesend").map((a) => a.live_session_id));
 
-  return agenden.map((a) => ({ ...a, anwesend }));
+  return agenden.map((a) => ({ ...a, anwesend, trainer }));
 }
 
 /**

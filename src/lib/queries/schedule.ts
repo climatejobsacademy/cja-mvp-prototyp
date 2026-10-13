@@ -16,6 +16,8 @@ export type FeldEintrag = {
   start: string | null;
   ende: string | null;
   status: "geplant" | "durchgeführt";
+  /** Begleitende Person (field_job.instructor_id, SR-78), sonst null */
+  trainerId: string | null;
 };
 
 export type TheorieEintrag = {
@@ -36,6 +38,8 @@ export type TheorieEintrag = {
     start: string;
     ende: string;
     joinLink: string | null;
+    /** Trainer:in des Termins (live_session.trainer_id, SR-78), sonst null */
+    trainerId: string | null;
   } | null;
 };
 
@@ -98,7 +102,7 @@ export async function getAgendaZeitraum(
     const fieldJobIds = feldEntries.map((r) => r.field_job_id!) as string[];
     const { data: fieldJobs } = await supabase
       .from("field_job")
-      .select("id, status, standort, start, ende, field_job_type_id")
+      .select("id, status, standort, start, ende, field_job_type_id, instructor_id")
       .in("id", fieldJobIds);
 
     const typeIds = [...new Set((fieldJobs ?? []).map((j) => j.field_job_type_id))];
@@ -123,6 +127,7 @@ export async function getAgendaZeitraum(
           start: job.start,
           ende: job.ende,
           status: job.status,
+          trainerId: job.instructor_id,
         });
       }
     }
@@ -144,9 +149,20 @@ export async function getAgendaZeitraum(
       liveSessionIds.length
         ? supabase
             .from("live_session")
-            .select("id, lesson_id, course_id, datum, start, ende, join_link")
+            .select("id, lesson_id, course_id, datum, start, ende, join_link, trainer_id")
             .in("id", liveSessionIds)
-        : Promise.resolve({ data: [] as { id: string; lesson_id: string | null; course_id: string | null; datum: string; start: string; ende: string; join_link: string | null }[] }),
+        : Promise.resolve({
+            data: [] as {
+              id: string;
+              lesson_id: string | null;
+              course_id: string | null;
+              datum: string;
+              start: string;
+              ende: string;
+              join_link: string | null;
+              trainer_id: string | null;
+            }[],
+          }),
     ]);
 
     // Live-Sessions können eigene lesson_id haben, die nicht auf dem
@@ -197,6 +213,7 @@ export async function getAgendaZeitraum(
             start: session.start,
             ende: session.ende,
             joinLink: session.join_link,
+            trainerId: session.trainer_id,
           },
         });
       } else if (entry.lesson_id) {

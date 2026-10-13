@@ -14,6 +14,8 @@ export default async function LearnerLayout({
     <div className="flex min-h-full flex-1 flex-col">
       <AppNav
         name={learner.name}
+        rufname={learner.rufname}
+        fotoUrl={learner.fotoUrl}
         email={learner.email}
         programmeName={learner.programmeName}
         cohortName={learner.cohortName}

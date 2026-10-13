@@ -3,12 +3,14 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, BookOpen, Video } from "lucide-react";
 
 import { UnitProgressBadge } from "@/components/status-badge";
+import { TrainerZeile } from "@/components/trainer-zeile";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { requireCurrentLearner } from "@/lib/queries/session";
 import { getLessonDetail } from "@/lib/queries/content";
 import { getLektionThread } from "@/lib/queries/lektion-thread";
 import { getLessonMaterialien } from "@/lib/queries/materialien";
+import { getMeineTrainer } from "@/lib/queries/trainer";
 import { begonnenSetzen } from "@/lib/lektion-begonnen";
 
 import { BegonnenMarker } from "./begonnen-marker";
@@ -53,6 +55,10 @@ export default async function LessonPage({
   // Fragen-Thread (SR-74): null bei chat_aktiv aus oder
   // ohne Leserecht, dann wird nichts angezeigt.
   const thread = await getLektionThread(lesson.id, lesson.chatAktiv, learner);
+
+  // "Live mit …" (SR-78): Trainer:in des eigenen Termins, Name und Foto aus fn_meine_trainer().
+  const trainerId = lesson.liveSession?.trainerId ?? null;
+  const trainer = trainerId ? ((await getMeineTrainer()).get(trainerId) ?? null) : null;
 
   const done = lesson.status === "abgeschlossen";
   // Herkunft (Stundenplan/Home) an die verknüpfte Lektion weitergeben.
@@ -133,6 +139,7 @@ export default async function LessonPage({
                   })}
                   , {lesson.liveSession.start.slice(0, 5)}–{lesson.liveSession.ende.slice(0, 5)} Uhr
                 </p>
+                {trainer && <TrainerZeile art="live" trainer={trainer} className="text-eco-deep-green" />}
                 {lesson.liveSession.joinLink && (
                   <a
                     href={lesson.liveSession.joinLink}

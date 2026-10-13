@@ -4,11 +4,15 @@ import { redirect } from "next/navigation";
 import { type HeaderLogo, headerLogo } from "@/lib/org-logo";
 import { createClient } from "@/lib/supabase/server";
 
+import { signierteFotoLinks } from "./trainer";
+
 export type CurrentLearner = {
   personId: string;
   name: string;
   /** Rufname für Begrüßung und Anzeige (person.rufname, 0029) */
   rufname: string;
+  /** Eigenes Profilfoto als signierter Link (SR-77, 1 Stunde), null = keins */
+  fotoUrl: string | null;
   email: string;
   enrolmentId: string;
   cohortId: string;
@@ -46,7 +50,7 @@ export const requireCurrentLearner = cache(async (): Promise<CurrentLearner> => 
 
   const { data: person, error: personError } = await supabase
     .from("person")
-    .select("id, name, rufname")
+    .select("id, name, rufname, foto_pfad")
     .eq("id", user.id)
     .single();
 
@@ -85,6 +89,8 @@ export const requireCurrentLearner = cache(async (): Promise<CurrentLearner> => 
     redirect("/login?error=keine-einschreibung");
   }
 
+  const fotoLinks = await signierteFotoLinks(supabase, person.foto_pfad ? [person.foto_pfad] : []);
+
   const { data: programme, error: programmeError } = await supabase
     .from("programme")
     .select("id, name")
@@ -99,6 +105,7 @@ export const requireCurrentLearner = cache(async (): Promise<CurrentLearner> => 
     personId: person.id,
     name: person.name,
     rufname: person.rufname,
+    fotoUrl: person.foto_pfad ? (fotoLinks.get(person.foto_pfad) ?? null) : null,
     email: user.email ?? "",
     enrolmentId: enrolment.id,
     cohortId: enrolment.cohort_id,
