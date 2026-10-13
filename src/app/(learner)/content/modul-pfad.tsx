@@ -22,7 +22,7 @@ export type PfadModul = {
   status: ModulStatus;
   /** "28.09. – 30.10.2026", eigene Zeile; null = noch keine Termine im Stundenplan */
   zeitraum: string | null;
-  /** Ende der Reise (Prüfungsvorbereitung): eigener Punkt mit Abschluss-Grafik */
+  /** Ende der Reise (Prüfungsvorbereitung): Hut am Ende der Linie */
   ziel: boolean;
 };
 
@@ -60,29 +60,32 @@ export function ModulPfad({
                 <span
                   className={cn(
                     "flex size-[30px] shrink-0 items-center justify-center rounded-full border-2 text-[13px] font-bold",
-                    m.ziel
-                      ? "border-lime bg-lime text-on-lime"
-                      : m.status === "abgeschlossen"
-                        ? "border-progress bg-progress text-white"
-                        : aktuell
-                          ? "border-brand bg-brand text-white"
-                          : "border-progress-track bg-white text-ink-muted"
+                    m.status === "abgeschlossen"
+                      ? "border-progress bg-progress text-white"
+                      : aktuell
+                        ? "border-brand bg-brand text-white"
+                        : "border-progress-track bg-white text-ink-muted"
                   )}
                 >
-                  {m.ziel ? (
-                    <GraduationCap className="size-4" strokeWidth={2.25} />
-                  ) : m.status === "abgeschlossen" ? (
-                    <Check className="size-3.5" strokeWidth={3} />
-                  ) : (
-                    m.nummer
-                  )}
+                  {/* Entscheidung Anna 2026-10-12: auch der Abschluss hat seine
+                      Nummer; der Hut steht als Ziel am Ende der Linie. */}
+                  {m.status === "abgeschlossen" ? <Check className="size-3.5" strokeWidth={3} /> : m.nummer}
                 </span>
                 <span
                   className={cn(
                     "ml-2 h-0.5 flex-1",
-                    letztes ? "bg-transparent" : m.status === "abgeschlossen" ? "bg-progress" : "bg-progress-track"
+                    letztes && !m.ziel
+                      ? "bg-transparent"
+                      : m.status === "abgeschlossen"
+                        ? "bg-progress"
+                        : "bg-progress-track"
                   )}
                 />
+                {letztes && m.ziel && (
+                  <span className="flex size-[30px] shrink-0 items-center justify-center rounded-full border-2 border-lime bg-lime text-on-lime">
+                    <GraduationCap className="size-4" strokeWidth={2.25} />
+                  </span>
+                )}
               </div>
               <Link
                 href={href(m.id)}
@@ -105,8 +108,10 @@ export function ModulPfad({
                 <span className={cn("block min-h-4 text-xs whitespace-nowrap tabular-nums", aktuell ? "text-white/85" : "text-ink-subtle")}>
                   {m.zeitraum ?? "noch nicht geplant"}
                 </span>
-                {/* Lange Wörter trennen statt über den Rahmen laufen. */}
-                <span className="w-full text-[15px] leading-snug font-bold hyphens-auto break-words">{m.name}</span>
+                {/* Ruhiger (Anna 2026-10-12): etwas kleiner; lange Wörter trennen statt
+                    über den Rahmen laufen (die Namen kommen aus der Datenbank, ohne
+                    weiche Trennstellen -- darum hyphens-auto). */}
+                <span className="w-full text-sm leading-snug font-bold hyphens-auto break-words">{m.name}</span>
                 {/* Rückmeldung Anna 2026-10-11: "Hier bist du"/"Als Nächstes" als Label
                     auf dem oberen Rand -- braucht keinen Platz in der Karte, so bleibt
                     nirgends eine leere Zeile. */}
@@ -126,8 +131,9 @@ export function ModulPfad({
                 <span
                   aria-hidden="true"
                   className={cn(
-                    "mt-auto pt-1 text-xs font-semibold",
-                    aktuell ? "text-white" : "text-ink group-hover/karte:text-brand"
+                    // Dezenter (Anna 2026-10-12): grau, erst beim Hover betont.
+                    "mt-auto pt-1 text-xs font-medium",
+                    aktuell ? "text-white/75" : "text-ink-subtle group-hover/karte:text-brand"
                   )}
                 >
                   Details
