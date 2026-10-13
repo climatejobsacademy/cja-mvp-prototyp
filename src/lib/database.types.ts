@@ -38,6 +38,9 @@ export type CourseTyp = "synchron" | "asynchron";
 export type ContentType = "scorm" | "live" | "repository";
 export type LessonResourceTyp = "datei" | "link";
 export type CompetencyQuelle = "TQ-ARP" | "EFKffT" | "EFK-EE";
+// Woche (Tabelle module, seit 0028)
+export type Wochentyp = "theorie" | "praxis";
+export type WochenLage = "online" | "praesenz" | "betrieb";
 export type CompetencyStepTyp = "theoretisch" | "praktisch";
 export type EnrolmentStatus = "aktiv" | "abgeschlossen" | "abgebrochen";
 export type ScheduleArt = "live" | "asynchron" | "feld";
@@ -148,11 +151,35 @@ type ProgrammeRow = Flatten<
   }
 >;
 
+// Modul-Ebene (0028): modul über den Wochen; module ist (noch) die Woche.
+type ModulRow = Flatten<
+  Timestamps & {
+    id: string;
+    programme_id: string;
+    ueberzeile: string;
+    name: string;
+    reihenfolge: number;
+  }
+>;
+
 type ModuleRow = Flatten<
   Timestamps & {
     id: string;
     programme_id: string;
+    modul_id: string;
     name: string;
+    reihenfolge: number;
+    wochentyp: Wochentyp;
+    lage: WochenLage;
+  }
+>;
+
+type ModulCompetencyRow = Flatten<
+  Timestamps & {
+    id: string;
+    modul_id: string;
+    competency_id: string;
+    kuerzel: string | null;
     reihenfolge: number;
   }
 >;
@@ -560,9 +587,26 @@ export type Database = {
         Flatten<Partial<Timestamps> & { id?: string; name: string; kuerzel: string; beschreibung?: string | null }>,
         Partial<ProgrammeRow>
       >;
+      modul: Table<
+        ModulRow,
+        Flatten<
+          Partial<Timestamps> & { id?: string; programme_id: string; ueberzeile: string; name: string; reihenfolge: number }
+        >,
+        Partial<ModulRow>
+      >;
       module: Table<
         ModuleRow,
-        Flatten<Partial<Timestamps> & { id?: string; programme_id: string; name: string; reihenfolge: number }>,
+        Flatten<
+          Partial<Timestamps> & {
+            id?: string;
+            programme_id: string;
+            modul_id: string;
+            name: string;
+            reihenfolge: number;
+            wochentyp: Wochentyp;
+            lage: WochenLage;
+          }
+        >,
         Partial<ModuleRow>
       >;
       course: Table<
@@ -649,6 +693,19 @@ export type Database = {
         FieldJobTypeCompetencyMappingRow,
         Flatten<Partial<Timestamps> & { id?: string; field_job_type_id: string; competency_step_id: string }>,
         Partial<FieldJobTypeCompetencyMappingRow>
+      >;
+      modul_competency: Table<
+        ModulCompetencyRow,
+        Flatten<
+          Partial<Timestamps> & {
+            id?: string;
+            modul_id: string;
+            competency_id: string;
+            kuerzel?: string | null;
+            reihenfolge: number;
+          }
+        >,
+        Partial<ModulCompetencyRow>
       >;
       competency_programme: Table<
         CompetencyProgrammeRow,
@@ -895,6 +952,8 @@ export type Database = {
       // Sichtbarkeit und Schreibrecht im Thread (0024), gleiche Regel wie die Policies.
       fn_kann_beitraege_lesen: { Args: { p_lesson_id: string; p_cohort_id: string }; Returns: boolean };
       fn_kann_beitrag_schreiben: { Args: { p_lesson_id: string; p_cohort_id: string }; Returns: boolean };
+      // Zeitraum je Modul aus dem Stundenplan der Kohorte (0028), RLS der aufrufenden Person.
+      fn_modul_zeitraum: { Args: { p_cohort_id: string }; Returns: { modul_id: string; von: string; bis: string }[] };
     };
   };
 };

@@ -213,3 +213,10 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Folgen:** Bei einer Kohorte mit mehreren Arbeitgebern gilt die Ausnahme weiter und wird dann neu bewertet. Alternative: Threads je Kohorte und Arbeitgeber trennen (PR #74).
 - **Status:** gültig (Entscheidung Vera)
 - **Belegt:** PR #74; `0024_lektion_beitrag.sql`; `access-matrix.md`, Zeile „Fragen-Thread“; SR-74, SR-75
+
+### 2026-10-13 – Echte Modul-Ebene über den Wochen
+- **Entscheidung:** Neue Tabelle `modul` über den Wochen; `module` bleibt vorerst die Woche und bekommt `modul_id`, `wochentyp` und `lage` (Migration 0028, additiv). Die Umbenennung von `module` in `woche` folgt nach dem Pilotstart am 02.11.2026 zusammen mit der Code-Umstellung. Zeiträume der Module kommen aus dem Stundenplan der Kohorte (`fn_modul_zeitraum`), ohne Versatz ab Kohortenstart; Module ohne Termine haben keinen Zeitraum. Kompetenzen je Modul stehen explizit in `modul_competency` mit Kürzel und Reihenfolge. Die Nummer einer Woche im Modul wird abgeleitet, nicht gespeichert. Die Prüfungsvorbereitung ist ein Modul mit der Überzeile „Abschluss“.
+- **Begründung:** Das Modul stand bisher nur im Code (`gliederungFuer`, Branch demo) und passte nicht zu verschobenen Kohorten oder Ferien. Modul II (Start 02.11.2026) soll direkt in diese Struktur importiert werden. Zwei Schritte, damit vor dem Pilotstart kein bestehender Code bricht.
+- **Folgen:** Wochennamen ohne feste Daten anlegen, die Zeiträume kommen aus dem Stundenplan. Home, Programm, Kompetenz-Reiter und Chat-Kanäle lesen die Module künftig aus der Datenbank statt aus `gliederungFuer`.
+- **Status:** gültig (Entscheidung Vera)
+- **Belegt:** `0028_modul_ebene.sql`; `017_modul_ebene.test.sql`; `data-model.md`, Group 2; SR-05
