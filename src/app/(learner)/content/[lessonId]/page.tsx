@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, BookOpen, Video } from "lucide-react";
 
 import { UnitProgressBadge } from "@/components/status-badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -9,7 +9,9 @@ import { requireCurrentLearner } from "@/lib/queries/session";
 import { getLessonDetail } from "@/lib/queries/content";
 import { getLektionThread } from "@/lib/queries/lektion-thread";
 import { getLessonMaterialien } from "@/lib/queries/materialien";
+import { begonnenSetzen } from "@/lib/lektion-begonnen";
 
+import { BegonnenMarker } from "./begonnen-marker";
 import { LektionThread } from "./lektion-thread";
 import { MarkCompleteButton } from "./mark-complete-button";
 import { MaterialienListe } from "./materialien-liste";
@@ -53,6 +55,9 @@ export default async function LessonPage({
   const thread = await getLektionThread(lesson.id, lesson.chatAktiv, learner);
 
   const done = lesson.status === "abgeschlossen";
+  // Herkunft (Stundenplan/Home) an die verknüpfte Lektion weitergeben.
+  const herkunft = new URLSearchParams({ ...(von ? { von } : {}), ...(datum ? { datum } : {}) }).toString();
+  const lektionHref = (id: string) => `/content/${id}${herkunft ? `?${herkunft}` : ""}`;
 
   return (
     <div className="flex flex-col gap-4">
@@ -72,7 +77,22 @@ export default async function LessonPage({
           <h1 className="font-heading text-xl text-eco-deep-green">{lesson.name}</h1>
           <UnitProgressBadge status={lesson.status} />
         </div>
+        {/* Thema aus lesson.thema (SR-13, 0029) statt der Klammer im Titel. */}
+        {lesson.thema && <p className="text-[15px] text-eco-deep-green">{lesson.thema}</p>}
+        {/* Selbstlern-Lektion: zugehöriger Live-Unterricht (SR-15, 0029). */}
+        {lesson.liveLektion && (
+          <Link
+            href={lektionHref(lesson.liveLektion.id)}
+            className="flex w-fit items-center gap-1.5 text-sm text-muted-foreground hover:text-eco-deep-green"
+          >
+            <Video className="size-4" aria-hidden="true" />
+            Gehört zum Live-Unterricht: {lesson.liveLektion.titel}
+          </Link>
+        )}
       </div>
+
+      {/* "begonnen" beim ersten Öffnen (SR-73, Datenlücke Nr. 9). */}
+      {begonnenSetzen(lesson.contentType, lesson.status) && <BegonnenMarker lessonId={lesson.id} />}
 
       {/* Lernmaterialien (SR-68): bei SCORM über dem Player, bei Live unter
           der Session, bei Repository als Hauptinhalt. Ohne Materialien kein
@@ -126,6 +146,17 @@ export default async function LessonPage({
               </>
             ) : (
               <p className="text-sm text-muted-foreground">Kein Termin hinterlegt.</p>
+            )}
+            {/* Zugehörige Selbstlern-Lektion (SR-15, 0029: live_lektion_id). */}
+            {lesson.festigen && (
+              <Link
+                href={lektionHref(lesson.festigen.id)}
+                className={buttonVariants({ variant: "outline", className: "self-start" })}
+              >
+                <BookOpen data-icon="inline-start" aria-hidden="true" />
+                Wissen festigen
+                <span className="sr-only">: {lesson.festigen.titel}</span>
+              </Link>
             )}
           </CardContent>
         </Card>

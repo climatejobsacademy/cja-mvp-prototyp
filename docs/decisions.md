@@ -220,3 +220,10 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Folgen:** Wochennamen ohne feste Daten anlegen, die Zeiträume kommen aus dem Stundenplan. Home, Programm, Kompetenz-Reiter und Chat-Kanäle lesen die Module künftig aus der Datenbank statt aus `gliederungFuer`.
 - **Status:** gültig (Entscheidung Vera)
 - **Belegt:** `0028_modul_ebene.sql`; `017_modul_ebene.test.sql`; `data-model.md`, Group 2; SR-05
+
+### 2026-10-13 – Thema, Selbstlernen ↔ Live, „begonnen“ und Rufname als eigene Felder
+- **Entscheidung:** `lesson.thema` statt Klammer im Titel; `lesson.live_lektion_id` verknüpft eine Selbstlern-Lektion 1:1 mit ihrer Live-Lektion statt Abgleich über gleichen Titel am selben Tag; „in Bearbeitung“ wird beim ersten Öffnen einer Selbstlern-Lektion gesetzt (nur Code, nie Update); `person.rufname` als Pflichtfeld, das Lernende selbst ändern dürfen (Migration 0029). Migration 0029 ändert `lesson.name` nicht; die Klammer entfernt das Datenskript `scripts/sql/lektion_klammer_entfernen.sql` nach der Demo am 15.10.2026 auf Staging und im Release auf Production.
+- **Begründung:** Titelvergleich und Klammer-Zerlegung im Code sind fehleranfällig (Datenlücken Nr. 4, 8, 9, 10). Die demo-Preview läuft gegen Staging und zerlegt den Titel dort noch selbst, darum vor der Demo keine Namensänderung.
+- **Folgen:** Der Import schreibt das Thema direkt in `thema`. Mehrdeutige Paare Selbstlernen ↔ Live bleiben beim Backfill leer und werden von Hand zugeordnet.
+- **Status:** gültig (Entscheidung Vera)
+- **Belegt:** `0029_felder_lektion_person.sql`; `018_felder_lektion_person.test.sql`; `data-model.md`, Groups 1 und 2; SR-13, SR-15, SR-48, SR-73

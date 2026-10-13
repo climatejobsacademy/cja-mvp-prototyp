@@ -156,6 +156,7 @@ function AktivitaetZeile({ a, heute }: { a: Lernaktivitaet; heute: string }) {
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="text-[15px] leading-snug font-semibold">{a.titel}</span>
+        {a.thema && <span className="text-[13px] leading-snug text-ink">{a.thema}</span>}
         <span className="flex flex-wrap items-center gap-x-1.5 text-[13px] text-ink-muted">
           <span className="sr-only">{AKTIVITAET_ART[a.art]}: </span>
           {wann && <span>{wann}</span>}

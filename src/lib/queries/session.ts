@@ -7,6 +7,8 @@ import { createClient } from "@/lib/supabase/server";
 export type CurrentLearner = {
   personId: string;
   name: string;
+  /** Rufname für Begrüßung und Anzeige (person.rufname, 0029) */
+  rufname: string;
   email: string;
   enrolmentId: string;
   cohortId: string;
@@ -44,7 +46,7 @@ export const requireCurrentLearner = cache(async (): Promise<CurrentLearner> => 
 
   const { data: person, error: personError } = await supabase
     .from("person")
-    .select("id, name")
+    .select("id, name, rufname")
     .eq("id", user.id)
     .single();
 
@@ -96,6 +98,7 @@ export const requireCurrentLearner = cache(async (): Promise<CurrentLearner> => 
   return {
     personId: person.id,
     name: person.name,
+    rufname: person.rufname,
     email: user.email ?? "",
     enrolmentId: enrolment.id,
     cohortId: enrolment.cohort_id,

@@ -9,8 +9,8 @@ import { zeitText, type Block } from "./plan-modell";
 // kein Klick-Fenster -- "Zur Lektion →" steht direkt im Block, der ganze
 // Block öffnet die Lektion (bzw. Praxisaufgabe). Ab 15 Min. vor Beginn bis
 // zum Ende eines Live-Termins stattdessen der Live-Raum. Titel immer
-// vollständig: die Lektionen heißen z. B. "Grundlagen der Elektrotechnik
-// (Der Transistor / Die Dioden)" -- das Thema steht in der Klammer.
+// vollständig. Das Thema steht seit 0029 in lesson.thema (Datenlücke Nr. 4)
+// und erscheint als zweite Zeile unter dem Titel, nicht mehr in der Klammer.
 
 // Visuelles Update (docs/ux/visual-update, 2026-10-11): helle Typ-Fläche mit
 // 3-px-Streifen; nur der nächste Termin ist der Anker (voller Verlauf, weiße
@@ -30,6 +30,7 @@ export function TerminBlock({ block, gross, style }: { block: Block; gross: bool
     art.text,
     `${zeitText(block)} Uhr`,
     block.titel,
+    block.thema,
     block.ort,
     block.naechster ? "als Nächstes" : STATUS_TEXT[block.status],
   ]
@@ -38,7 +39,15 @@ export function TerminBlock({ block, gross, style }: { block: Block; gross: bool
   const klickflaeche =
     "outline-none after:absolute after:inset-0 after:rounded-block after:content-[''] focus-visible:after:ring-2 focus-visible:after:ring-brand";
   const titel = (
-    <span className={cn("leading-snug font-semibold", gross ? "text-base" : "line-clamp-3 text-[13px]")}>{block.titel}</span>
+    <span className={cn("leading-snug font-semibold", gross ? "text-base" : "line-clamp-3 text-[13px]")}>
+      {block.titel}
+      {block.thema && (
+        <>
+          <br />
+          <span className={cn("font-normal", gross ? "text-sm" : "text-xs")}>{block.thema}</span>
+        </>
+      )}
+    </span>
   );
 
   return (

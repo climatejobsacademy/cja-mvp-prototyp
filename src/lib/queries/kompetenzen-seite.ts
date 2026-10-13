@@ -1,3 +1,4 @@
+import { lektionTitel } from "@/lib/lektion-titel";
 import { createClient } from "@/lib/supabase/server";
 
 // Kompetenzseite v1 (SR-61, SR-62, SR-63, SR-73): "Hier lernst du das" und
@@ -8,7 +9,10 @@ export type Lernaktivitaet = {
   art: "live" | "selbst" | "praxis";
   /** Lektion bzw. Field-Job-Typ */
   id: string;
+  /** Lektion: Titel ohne Klammer, wenn thema gesetzt ist (SR-13, 0029) */
   titel: string;
+  /** Lektion: lesson.thema, sonst null */
+  thema: string | null;
   /** Geplanter Tag "JJJJ-MM-TT" der lernenden Person (Kohorte/Einschreibung), sonst null */
   datum: string | null;
   /** Live-Termin: Startzeit "HH:MM:SS" */
@@ -43,7 +47,7 @@ export async function getLernaktivitaeten(
   const leer = Promise.resolve({ data: [] as never[] });
   const [{ data: lessons }, { data: liveSessions }, { data: asyncPlan }, { data: progress }, { data: typen }, { data: jobs }] =
     await Promise.all([
-      lessonIds.length ? supabase.from("lesson").select("id, name, content_type").in("id", lessonIds) : leer,
+      lessonIds.length ? supabase.from("lesson").select("id, name, thema, content_type").in("id", lessonIds) : leer,
       lessonIds.length
         ? supabase.from("live_session").select("id, lesson_id, datum, start").in("lesson_id", lessonIds)
         : leer,
@@ -104,7 +108,8 @@ export async function getLernaktivitaeten(
     return {
       art: l.content_type === "live" || live ? "live" : "selbst",
       id: l.id,
-      titel: l.name,
+      titel: lektionTitel(l.name, l.thema).titel,
+      thema: lektionTitel(l.name, l.thema).thema,
       datum: live?.datum ?? datumJeLektion.get(l.id) ?? null,
       start: live?.start ?? null,
       erledigt: erledigteLektionen.has(l.id),
@@ -119,6 +124,7 @@ export async function getLernaktivitaeten(
       art: "praxis",
       id: t.id,
       titel: t.titel,
+      thema: null,
       datum: job?.datum ?? null,
       start: null,
       erledigt: job?.status === "durchgeführt",

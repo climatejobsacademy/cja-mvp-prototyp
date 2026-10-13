@@ -99,6 +99,7 @@ type PersonRow = Flatten<
     geschlecht: string | null;
     vorerfahrung: string | null;
     sprache: Sprache;
+    rufname: string; // 0029, SR-48/SR-73
   }
 >;
 
@@ -205,6 +206,8 @@ type LessonRow = Flatten<
     inhalt: Json | null;
     reihenfolge: number;
     chat_aktiv: boolean;
+    thema: string | null; // 0029, SR-13
+    live_lektion_id: string | null; // 0029, SR-15: Selbstlernen -> Live, 1:1
   }
 >;
 
@@ -539,6 +542,7 @@ export type Database = {
             geschlecht?: string | null;
             vorerfahrung?: string | null;
             sprache?: Sprache;
+            rufname?: string; // Trigger belegt ihn aus name vor
           }
         >,
         Partial<PersonRow>
@@ -641,6 +645,8 @@ export type Database = {
             inhalt?: Json | null;
             reihenfolge: number;
             chat_aktiv?: boolean;
+            thema?: string | null;
+            live_lektion_id?: string | null;
           }
         >,
         Partial<LessonRow>
