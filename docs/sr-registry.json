@@ -79,7 +79,10 @@
     76,
     77,
     78,
-    79
+    79,
+    80,
+    81,
+    82
   ],
   "legacyFiles": [
     "supabase/migrations/**"

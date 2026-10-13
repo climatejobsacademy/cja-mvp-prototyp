@@ -445,6 +445,10 @@ type AttendanceRow = Flatten<
     live_session_id: string;
     status: AttendanceStatus;
     bestaetigt_von: string | null;
+    /** Zeitpunkt der Bestätigung (0032, SR-07) */
+    bestaetigt_am: string;
+    /** Storno: korrigiert diese Zeile (0032, E4); aktueller Wert über attendance_aktuell */
+    korrigiert_id: string | null;
   }
 >;
 
@@ -492,6 +496,8 @@ type VerificationRow = Flatten<
     entscheidung: VerificationEntscheidung;
     verifiziert_am: string;
     kommentar: string | null;
+    /** Storno: ersetzt diese Entscheidung (0032, E4); aktueller Wert über verification_aktuell */
+    korrigiert_id: string | null;
   }
 >;
 
@@ -880,6 +886,8 @@ export type Database = {
             live_session_id: string;
             status?: AttendanceStatus;
             bestaetigt_von?: string | null;
+            bestaetigt_am?: string;
+            korrigiert_id?: string | null;
           }
         >,
         Partial<AttendanceRow>
@@ -962,6 +970,9 @@ export type Database = {
       competency_evidence: View<CompetencyEvidenceRow>;
       // SR-72 (0021): AND-Logik je Learner und Kompetenz, ebenfalls kein Write.
       competency_fulfilment: View<CompetencyFulfilmentRow>;
+      // 0032 (SR-07, E4): aktuelle Zeilen ohne Storno, RLS über die Basistabellen.
+      attendance_aktuell: View<AttendanceRow>;
+      verification_aktuell: View<VerificationRow>;
     };
     Functions: {
       // Soft-Delete eines Beitrags (0024): Autor:in eigene, Moderation alle der Kohorte.
