@@ -234,3 +234,10 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Folgen:** Ersetzt die fest eingetragenen Trainer:innen auf demo (`demo-personen.ts`, `public/demo-bilder`); `public/demo-bilder` bleibt nur auf demo. Fotos von Trainer:innen lädt AfCJ admin mit deren Einwilligung hoch. Beim Löschen eines Kontos bleibt eine Fotodatei im Speicher, weil Storage nicht kaskadiert; das gehört in den Löschpfad (Lücke aus dem Audit vom 30.09.2026). Home und Programm zeigen die Trainer:innen später.
 - **Status:** gültig (Entscheidung Vera)
 - **Belegt:** `0030_trainer_profilfotos.sql`; `019_trainer_profilfotos.test.sql`; `access-matrix.md`, Zeilen „Profilfoto“ und „Trainer:in je Termin“; Datenschutzerklärung, Abschnitt „Profilfotos“; SR-77, SR-78, SR-60
+
+### 2026-10-13 – Eigene Personendaten: nur Rufname und Foto selbst änderbar
+- **Entscheidung:** Spalten-Grant auf `person`: Angemeldete ändern nur `rufname` und `foto_pfad` (eigene Zeile über `person_self_update`). Alle anderen Felder pflegt AfCJ admin im Dashboard.
+- **Begründung:** `person_self_update` gab die ganze eigene Zeile frei; über die API ließen sich E-Mail, Name und Geburtsdatum ändern, `person.email` konnte von `auth.users.email` abweichen (Paket-G-Analyse).
+- **Folgen:** Auch AfCJ admin ändert in der App nur diese beiden Spalten (heute ohne Bedeutung, Pflege im Dashboard). Ob Lernende Vorerfahrung oder Sprache selbst ändern, entscheidet die Profilseite (Übergabe).
+- **Status:** gültig (Entscheidung Vera)
+- **Belegt:** `0033_person_spaltenrechte.sql`; `022_person_spaltenrechte.test.sql`; `access-matrix.md`; SR-77
