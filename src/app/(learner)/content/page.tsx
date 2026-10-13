@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { FlaskConical } from "lucide-react";
 
+import { ProgrammZeile } from "@/components/programm-zeile";
 import { datumKurz, heuteInBerlin, jetztInBerlin } from "@/lib/date";
 import { datumPunkt, zeitraumPunkt } from "@/lib/programm";
 import { panelWochen } from "@/lib/programm-inhalte";
@@ -131,7 +132,7 @@ export default async function ProgrammPage({
       )}
 
       <section className="flex flex-col gap-2.5">
-        <span className="text-[13px] text-ink-subtle">Dein Programm</span>
+        <ProgrammZeile name="Dein Programm" />
         <h1 className="font-heading text-[34px] leading-[1.05] md:text-[52px]">{learner.programmeName}</h1>
         {kopfZeile.length > 0 && <span className="text-[15px] text-ink-muted">{kopfZeile.join(" · ")}</span>}
       </section>
