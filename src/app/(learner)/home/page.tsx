@@ -1,161 +1,170 @@
-import Link from "next/link";
-import { Calendar, ChevronRight } from "lucide-react";
-
-import { CurriculumCard } from "@/components/curriculum-card";
-import { LinkRow } from "@/components/link-row";
-import { TypIcon, typFuerContentType, type Typ } from "@/components/typ-icon";
-import { PageHeader } from "@/components/page-header";
-import { heuteInBerlin } from "@/lib/date";
-import { cn } from "@/lib/utils";
-import { getCurriculumFortschritt } from "@/lib/queries/competencies";
+import { heuteInBerlin, jetztInBerlin, montagDerWoche, plusTage } from "@/lib/date";
+import { freiText, wochenrueckblick, zaehlText } from "@/lib/home-frei";
+import { getDayState } from "@/lib/home-tag";
+import { getKompetenzFortschritt } from "@/lib/queries/competencies";
+import { getHeutigeKompetenzen, getNachholLektion, getZuletztKompetenzIds } from "@/lib/queries/home";
+import { getAktuellesModul, getModulKompetenzen } from "@/lib/queries/modul";
 import { getNaechsterTermin, getTagesAgenda } from "@/lib/queries/schedule";
 import { requireCurrentLearner } from "@/lib/queries/session";
+import { getKohortenStart, getStundenplan } from "@/lib/queries/stundenplan";
+import { getMeineTrainer } from "@/lib/queries/trainer";
+import { parseNowParameter } from "@/lib/stundenplan";
+import { cn } from "@/lib/utils";
 
-function kurzerWochentag(date: Date): string {
-  return date.toLocaleDateString("de-DE", { weekday: "short", timeZone: "UTC" }).replace(".", "");
-}
+import { Begruessung, TestzeitHinweis } from "./begruessung";
+import { DeinTag, type StaerktFn } from "./dein-tag";
+import { AlleKompetenzen, FreiKarte, FreiZeilen } from "./freier-tag";
+import { aktivitaeten, istOnline, tagestyp } from "./home-hilfen";
+import { HeuteSpalte, ModulFortschritt, type RingKompetenz } from "./kompetenz-bereich";
+import type { GestaerkteKompetenz } from "./tages-karten";
 
-/** Überschrift: "Di, 29. September" */
-function formatUeberschrift(dateStr: string): string {
-  const d = new Date(`${dateStr}T00:00:00Z`);
-  const tagMonat = d.toLocaleDateString("de-DE", { day: "numeric", month: "long", timeZone: "UTC" });
-  return `${kurzerWochentag(d)}, ${tagMonat}`;
-}
+// Home (docs/design_handoff_home_v6; SR-73): lädt die Daten und setzt
+// Begrüßung, "Dein Tag" und Kompetenzbereich zusammen. Seit Paket D auf der
+// Modul-Ebene (0028): aktuelles Modul aus fn_modul_zeitraum, seine
+// Kompetenzen ausdrücklich aus modul_competency (Entscheidung 2026-10-13);
+// Thema, "Wissen festigen", "begonnen" und Rufname aus den Feldern von 0029;
+// Trainer:innen aus fn_meine_trainer() (0030); "Heute frei" mit
+// Wochenrückblick (SR-79). Ersetzt die frühere CurriculumCard.
 
-/** Fließtext: "Mi, 30.09." */
-function formatKurz(dateStr: string): string {
-  const d = new Date(`${dateStr}T00:00:00Z`);
-  const tagMonat = d.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", timeZone: "UTC" });
-  // de-DE liefert "30.09." inklusive Schlusspunkt.
-  return `${kurzerWochentag(d)}, ${tagMonat}`;
-}
-
-type HeuteZeile = {
-  key: string;
-  zeit: string;
-  sortierung: string;
-  typ: Typ;
-  titel: string;
-  /** Thema der Lektion (lesson.thema, SR-13), sonst null */
-  thema: string | null;
-  href: string | null;
-};
-
-const KARTE = "flex flex-col overflow-hidden rounded-xl border border-border";
-const ZEILE_BASIS = "flex min-h-14 items-center gap-3 border-t border-border px-4";
-
-export default async function HomePage() {
+export default async function HomePage({ searchParams }: { searchParams: Promise<{ now?: string }> }) {
   const learner = await requireCurrentLearner();
-  // Wie der Stundenplan (schedule/page.tsx) über heuteInBerlin(), damit beide
-  // Seiten denselben Tag als "heute" nehmen, und zwar den Berliner.
-  const heute = heuteInBerlin();
+  const { now } = await searchParams;
 
-  const [tag, curriculum, naechster] = await Promise.all([
+  // Brief 8.2: simuliertes "jetzt" zum Testen der Zustände, z. B.
+  // /home?now=2026-10-09T13:05 (Berliner Zeit). Nur lokal und in Previews,
+  // nie auf Production. Sonst wie der Stundenplan über die Berlin-Helfer.
+  const simuliert = process.env.VERCEL_ENV !== "production" ? parseNowParameter(now) : null;
+  const jetzt = simuliert ?? jetztInBerlin();
+  const heute = simuliert ? simuliert.slice(0, 10) : heuteInBerlin();
+
+  const [tag, naechster, modul, alleKompetenzen, nachholen, zuletztIds, trainer] = await Promise.all([
     getTagesAgenda(learner.organisationId, learner.cohortId, learner.enrolmentId, learner.personId, heute),
-    getCurriculumFortschritt(learner.personId, learner.programmeId),
     getNaechsterTermin(learner.organisationId, learner.cohortId, learner.enrolmentId, heute),
+    getAktuellesModul(learner.programmeId, learner.cohortId, heute),
+    getKompetenzFortschritt(learner.personId, learner.programmeId),
+    getNachholLektion(learner.organisationId, learner.cohortId, learner.enrolmentId, learner.personId, heute),
+    getZuletztKompetenzIds(learner.personId),
+    getMeineTrainer(),
   ]);
+  const heuteAktiv = { ...aktivitaeten(tag), nachholen };
+  const zustand = getDayState(jetzt, heuteAktiv);
+  const [modulKompetenzen, heutige] = await Promise.all([
+    getModulKompetenzen(modul ? [modul.id] : []),
+    getHeutigeKompetenzen(
+      [...heuteAktiv.live.flatMap((l) => (l.lessonId ? [l.lessonId] : [])), ...heuteAktiv.flex.map((f) => f.lessonId)],
+      heuteAktiv.praxis.map((p) => p.fieldJobId)
+    ),
+  ]);
+  // Alle Kompetenzen, die eine heutige Aktivität stärkt (Glow, Brief 2.4).
+  const heuteIds = new Set([...heutige.proLektion.values(), ...heutige.proFieldJob.values()].flat());
 
-  const zeilen: HeuteZeile[] = [
-    ...tag.theorie.map((e) => {
-      const zeit = e.liveSession ? e.liveSession.start.slice(0, 5) : "flexibel";
-      return {
-        key: e.scheduleEntryId,
-        zeit,
-        // Termine mit Uhrzeit zuerst, chronologisch; flexible danach.
-        sortierung: e.liveSession ? e.liveSession.start : "99",
-        typ: typFuerContentType(e.contentType),
-        titel: e.titel,
-        thema: e.thema,
-        href: e.lessonId ? `/content/${e.lessonId}?von=home` : null,
-      };
-    }),
-    // Praxistage haben kein Zeitfeld -- Spalte bleibt leer.
-    ...tag.feld.map((e) => ({
-      key: e.scheduleEntryId,
-      zeit: "",
-      sortierung: "98",
-      typ: "praxis" as const,
-      titel: e.titel,
-      thema: null,
-      href: `/praxistag/${e.fieldJobId}`,
-    })),
-  ].sort((a, b) => a.sortierung.localeCompare(b.sortierung));
+  // Ringe in der Reihenfolge von modul_competency. Ring-Prozent wie auf der
+  // Kompetenzseite: nur erreichte Teilschritte zählen (competency_fulfilment).
+  const kompetenzById = new Map(alleKompetenzen.map((k) => [k.id, k]));
+  const ringe: RingKompetenz[] = (modul ? (modulKompetenzen.get(modul.id) ?? []) : []).flatMap((mk) => {
+    const k = kompetenzById.get(mk.competencyId);
+    return k
+      ? [
+          {
+            id: k.id,
+            name: k.name,
+            prozent: k.fortschrittProzent,
+            heute: heuteIds.has(k.id),
+            teilschritteErreicht: k.teilschritteErfuellt,
+            teilschritteGesamt: k.teilschritteGesamt,
+          },
+        ]
+      : [];
+  });
 
-  // Rufname aus person.rufname (0029, Datenlücke Nr. 10) statt erstem Wort von name.
+  // alleKompetenzen ist nach Lehrplan sortiert -- so auch die "Stärkt"-Namen.
+  // Höchstens zwei, damit die Zeile auf der Fokus-Karte kurz bleibt.
+  const staerkt: StaerktFn = (art, id) => {
+    const ids = new Set(id ? ((art === "lektion" ? heutige.proLektion : heutige.proFieldJob).get(id) ?? []) : []);
+    return alleKompetenzen
+      .filter((k) => ids.has(k.id))
+      .slice(0, 2)
+      .map((k) => ({ id: k.id, name: k.name }));
+  };
+  const gestaerkt: GestaerkteKompetenz[] = alleKompetenzen
+    .filter((k) => heuteIds.has(k.id))
+    .map((k) => ({ id: k.id, name: k.name, prozent: k.fortschrittProzent }));
+
+  // Variante C (Entscheidung Anna 2026-10-10): rechts neben "Dein Tag" die
+  // heute gestärkten Kompetenzen des Moduls (ersatzweise die zuletzt
+  // geübte), darunter über die volle Breite das ganze Modul. Ohne aktuelles
+  // Modul entfällt beides; ohne zugeordnete Kompetenzen (bis zum Import) nur
+  // ein ruhiger Hinweis im Modulbereich.
+  const heuteRinge = ringe.filter((k) => k.heute);
+  const zuletzt =
+    heuteRinge.length === 0
+      ? (zuletztIds.map((id) => ringe.find((k) => k.id === id)).find((k) => k !== undefined) ?? null)
+      : null;
+  const spalte =
+    modul && (heuteRinge.length > 0 || zuletzt) ? (
+      <HeuteSpalte modul={modul} programmName={learner.programmeName} kompetenzen={heuteRinge} zuletzt={zuletzt} />
+    ) : null;
+
   const vorname = learner.rufname.trim();
+  const begruessung = <Begruessung vorname={vorname} heute={heute} typ={tagestyp(tag)} online={istOnline(tag)} />;
+
+  // SR-79: heute nichts geplant (Zustand F) → Karte "Heute frei" mit
+  // Rückblick auf die laufende Woche (Montag bis gestern), zwei Zeilen
+  // darunter, rechts alle Kompetenzen des Moduls; kein Modul-Fortschritt.
+  if (zustand.zustand === "F") {
+    const montag = montagDerWoche(heute);
+    const [plan, kohortenStart, aeltesteOffene] = await Promise.all([
+      montag < heute
+        ? getStundenplan(
+            {
+              organisationId: learner.organisationId,
+              cohortId: learner.cohortId,
+              enrolmentId: learner.enrolmentId,
+              learnerId: learner.personId,
+            },
+            montag,
+            plusTage(heute, -1)
+          )
+        : Promise.resolve([]),
+      getKohortenStart(learner.cohortId),
+      getNachholLektion(learner.organisationId, learner.cohortId, learner.enrolmentId, learner.personId, heute, true),
+    ]);
+    const rueckblick = wochenrueckblick(plan, heute);
+    const text = freiText(rueckblick, vorname, heute, naechster?.datum ?? null, !!kohortenStart && kohortenStart < heute);
+    return (
+      <div data-breit className="flex flex-col gap-9">
+        {simuliert && <TestzeitHinweis heute={heute} jetzt={jetzt} />}
+        {begruessung}
+        <div className={cn("grid items-start gap-12", modul && ringe.length > 0 && "min-[960px]:grid-cols-[2fr_1fr]")}>
+          <section aria-label="Dein Tag" className="flex min-w-0 flex-col gap-4">
+            <FreiKarte text={text} zaehlung={zaehlText(rueckblick)} tage={rueckblick?.tage ?? []} />
+            <FreiZeilen naechster={naechster} offen={aeltesteOffene} heute={heute} />
+          </section>
+          {modul && ringe.length > 0 && <AlleKompetenzen modul={modul} kompetenzen={ringe} />}
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col gap-6">
-      <PageHeader title={vorname ? `Hallo ${vorname}` : "Hallo"} />
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <section aria-labelledby="heute" className={KARTE}>
-          <div className="flex items-center gap-2 p-4">
-            <Calendar className="size-[18px] shrink-0 text-eco-deep-green" aria-hidden="true" />
-            <h2 id="heute" className="text-[15px] font-semibold text-eco-deep-green">
-              Heute
-            </h2>
-            <span className="ml-auto text-[13px] text-muted-foreground">{formatUeberschrift(heute)}</span>
-          </div>
-
-          {zeilen.length > 0 ? (
-            <ul>
-              {zeilen.map((z) => {
-                const inhalt = (
-                  <>
-                    <span className="w-[52px] shrink-0 text-[13px] font-semibold tabular-nums text-eco-deep-green">
-                      {z.zeit}
-                    </span>
-                    <TypIcon typ={z.typ} />
-                    <span className="min-w-0 flex-1 text-sm font-medium text-eco-deep-green">
-                      {z.titel}
-                      {z.thema && <span className="block text-[13px] font-normal text-muted-foreground">{z.thema}</span>}
-                    </span>
-                    {z.href && (
-                      <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
-                    )}
-                  </>
-                );
-                return (
-                  <li key={z.key}>
-                    {/* Ohne Zielseite kein Hover und kein Pfeil. */}
-                    {z.href ? (
-                      <Link
-                        href={z.href}
-                        className={cn(
-                          ZEILE_BASIS,
-                          "outline-none transition-[background-color] duration-150 hover:bg-eco-green/10 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-eco-green motion-reduce:transition-none"
-                        )}
-                      >
-                        {inhalt}
-                      </Link>
-                    ) : (
-                      <div className={ZEILE_BASIS}>{inhalt}</div>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          ) : (
-            <div className="flex flex-col gap-1 border-t border-border p-4">
-              <p className="text-sm font-medium text-eco-deep-green">Heute finden keine Kurse statt.</p>
-              {naechster && (
-                <p className="text-[13px] text-muted-foreground">
-                  Nächster Termin: {formatKurz(naechster.datum)}
-                  {naechster.start && `, ${naechster.start.slice(0, 5)}`}
-                </p>
-              )}
-            </div>
-          )}
-
-          <div className="mt-auto">
-            <LinkRow href="/schedule">Zum Stundenplan</LinkRow>
-          </div>
-        </section>
-
-        <CurriculumCard fortschritt={curriculum} link={{ href: "/kompetenzen", label: "Zu den Kompetenzen" }} />
+    <div data-breit className="flex flex-col gap-10">
+      {simuliert && <TestzeitHinweis heute={heute} jetzt={jetzt} />}
+      {begruessung}
+      {/* Rechte Spalte nur so hoch wie ihr Inhalt (Option 1, 2026-10-10). */}
+      <div className={cn("grid gap-8", spalte && "min-[960px]:grid-cols-[2fr_1fr]")}>
+        <DeinTag
+          zustand={zustand}
+          heute={heute}
+          naechster={naechster}
+          staerkt={staerkt}
+          // In D stehen die heute gestärkten Ringe in der dunklen Karte, außer
+          // die rechte Spalte zeigt sie schon.
+          gestaerkt={heuteRinge.length > 0 ? [] : gestaerkt}
+          trainer={trainer}
+        />
+        {spalte}
       </div>
+      {modul && <ModulFortschritt modul={modul} kompetenzen={ringe} />}
     </div>
   );
 }

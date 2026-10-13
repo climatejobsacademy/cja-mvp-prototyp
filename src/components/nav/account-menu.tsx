@@ -27,10 +27,10 @@ function InfoZeile({
 }) {
   return (
     <div className="flex items-start gap-3">
-      <Icon className="mt-0.5 size-[18px] shrink-0 text-eco-deep-green" aria-hidden="true" />
+      <Icon className="mt-0.5 size-[18px] shrink-0 text-ink" aria-hidden="true" />
       <div className="flex min-w-0 flex-col gap-0.5">
         <span className="text-xs text-muted-foreground">{label}</span>
-        <span className="text-sm leading-snug font-medium text-eco-deep-green">{wert}</span>
+        <span className="text-sm leading-snug font-medium text-ink">{wert}</span>
       </div>
     </div>
   );
@@ -64,13 +64,14 @@ export function AccountMenu({
       <DropdownMenu>
         <DropdownMenuTrigger
           aria-label="Account-Menü"
-          className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-[15px] font-semibold text-eco-deep-green outline-none transition-[background-color,box-shadow] duration-150 hover:bg-eco-green/10 focus-visible:ring-2 focus-visible:ring-eco-green focus-visible:ring-offset-2 data-popup-open:bg-eco-green/10 data-popup-open:ring-2 data-popup-open:ring-eco-green data-popup-open:ring-offset-2 motion-reduce:transition-none"
+          // Header wie demo (3B): Avatar in Lila, Initiale weiß; mit Foto das Foto.
+          className="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand text-sm font-semibold text-white outline-none transition-[background-color,box-shadow] duration-150 hover:bg-brand/90 focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 data-popup-open:ring-2 data-popup-open:ring-brand data-popup-open:ring-offset-2 motion-reduce:transition-none"
         >
           <PersonAvatar
             name={anzeigeName}
             fotoUrl={fotoUrl}
             className="size-full after:hidden"
-            fallbackClassName="bg-transparent text-[15px] text-eco-deep-green"
+            fallbackClassName="bg-transparent text-sm text-white"
           />
         </DropdownMenuTrigger>
         <DropdownMenuContent
@@ -84,10 +85,10 @@ export function AccountMenu({
                 name={anzeigeName}
                 fotoUrl={fotoUrl}
                 className="size-10"
-                fallbackClassName="bg-muted text-[15px] text-eco-deep-green"
+                fallbackClassName="bg-brand text-[15px] text-white"
               />
               <span className="flex min-w-0 flex-col">
-                <span className="text-[15px] font-semibold text-eco-deep-green">{name}</span>
+                <span className="text-[15px] font-semibold text-ink">{name}</span>
                 <span className="truncate text-[13px] text-muted-foreground">{email}</span>
               </span>
             </DropdownMenuLabel>
@@ -104,14 +105,14 @@ export function AccountMenu({
           <div className="border-t border-border p-1">
             <DropdownMenuItem
               onClick={() => setProfilOffen(true)}
-              className="min-h-11 gap-2 rounded-lg px-3 text-sm text-eco-deep-green focus:bg-eco-green/10 focus:text-eco-deep-green"
+              className="min-h-11 gap-2 rounded-lg px-3 text-sm text-ink focus:bg-subtle focus:text-ink"
             >
               <UserRound className="size-[18px]" aria-hidden="true" />
               Profil bearbeiten
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => signOut()}
-              className="min-h-11 gap-2 rounded-lg px-3 text-sm text-eco-deep-green focus:bg-eco-green/10 focus:text-eco-deep-green"
+              className="min-h-11 gap-2 rounded-lg px-3 text-sm text-ink focus:bg-subtle focus:text-ink"
             >
               <LogOut className="size-[18px]" aria-hidden="true" />
               Abmelden
