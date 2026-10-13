@@ -7,6 +7,7 @@ import {
   aktuellerModulIndex,
   datumPunkt,
   modulStatus,
+  waehleModul,
   zeitraumPunkt,
   // @ts-expect-error TS5097: .ts-Endung für node:test nötig
 } from "./programm.ts";
@@ -57,4 +58,18 @@ test("aktuellerModulIndex: ohne Module oder ohne Planung -1", () => {
   assert.equal(aktuellerModulIndex([], "2026-10-13"), -1);
   assert.equal(aktuellerModulIndex([{ von: null, bis: null }], "2026-10-13"), -1);
   assert.equal(aktuellerModulIndex(geplant, "2026-11-01"), 1);
+});
+
+test("waehleModul: Adresse, dann Kompetenz (aktuelles Modul bevorzugt), dann aktuelles, dann erstes", () => {
+  const m = [
+    { id: "m1", kompetenzIds: new Set(["k1", "k2"]) },
+    { id: "m2", kompetenzIds: new Set(["k2", "k3"]) },
+    { id: "m3", kompetenzIds: new Set<string>() },
+  ];
+  assert.equal(waehleModul(m, "m2", "m3", "k1")?.id, "m3");
+  assert.equal(waehleModul(m, "m2", undefined, "k2")?.id, "m2");
+  assert.equal(waehleModul(m, "m2", undefined, "k1")?.id, "m1");
+  assert.equal(waehleModul(m, "m2", "unbekannt", undefined)?.id, "m2");
+  assert.equal(waehleModul(m, null, undefined, "k9")?.id, "m1");
+  assert.equal(waehleModul([], null, undefined, undefined), null);
 });

@@ -47,3 +47,26 @@ export function modulStatus(module: ModulZeitraum[], heute: string): ModulStatus
 export function aktuellerModulIndex(module: ModulZeitraum[], heute: string): number {
   return module.findIndex((m) => m.bis !== null && m.bis >= heute);
 }
+
+/**
+ * Kompetenzseite, Modul-Reiter (Brief 2.2): welches Modul gewählt ist --
+ * das aus der Adresse; kommt man nur mit ?kompetenz=… (Link von Home), das
+ * aktuelle Modul, wenn die Kompetenz dazugehört, sonst das erste Modul mit
+ * ihr; sonst das aktuelle bzw. erste Modul. null ohne Module.
+ */
+export function waehleModul<T extends { id: string; kompetenzIds: Set<string> }>(
+  module: T[],
+  aktuellId: string | null,
+  modulParam: string | undefined,
+  kompetenzParam: string | undefined
+): T | null {
+  const aktuell = module.find((m) => m.id === aktuellId);
+  const ausAdresse = module.find((m) => m.id === modulParam);
+  if (ausAdresse) return ausAdresse;
+  if (kompetenzParam) {
+    if (aktuell?.kompetenzIds.has(kompetenzParam)) return aktuell;
+    const mitKompetenz = module.find((m) => m.kompetenzIds.has(kompetenzParam));
+    if (mitKompetenz) return mitKompetenz;
+  }
+  return aktuell ?? module[0] ?? null;
+}
