@@ -4,19 +4,19 @@ import { cn } from "@/lib/utils";
 
 /**
  * Icon-Kachel mit fester Farbe je Typ -- überall gleich (Stundenplan, Home,
- * Programm, Kompetenzen): Live-Termin Lylac, Selbstlernmodul/Theorie Grün,
- * Praxis Coral. Flächen nur als helle Töne, Icon immer Deep Green
- * (design-specifications.md Abschnitt 1: Lylac/Coral/Grün als Fläche).
+ * Programm, Kompetenzen): Live-Termin Lila, Selbstlernmodul/Theorie Grün,
+ * Praxis Coral. Helle Typ-Fläche, Icon in der Typfarbe (visuelles Update
+ * 2026-10-11, docs/ux/visual-update).
  */
 export type Typ = "live" | "selbstlern" | "theorie" | "praxis" | "dokument" | "kurs";
 
 const TYPEN: Record<Typ, { icon: typeof BookOpen; flaeche: string }> = {
-  live: { icon: Video, flaeche: "bg-lylac/20" },
-  selbstlern: { icon: BookOpen, flaeche: "bg-eco-green/15" },
-  theorie: { icon: BookOpen, flaeche: "bg-eco-green/15" },
-  praxis: { icon: Wrench, flaeche: "bg-coral/25" },
-  dokument: { icon: FileText, flaeche: "bg-muted" },
-  kurs: { icon: BookOpen, flaeche: "bg-muted" },
+  live: { icon: Video, flaeche: "bg-brand-tint text-brand" },
+  selbstlern: { icon: BookOpen, flaeche: "bg-self-tint text-self" },
+  theorie: { icon: BookOpen, flaeche: "bg-self-tint text-self" },
+  praxis: { icon: Wrench, flaeche: "bg-praxis-tint text-praxis-text" },
+  dokument: { icon: FileText, flaeche: "bg-subtle text-ink" },
+  kurs: { icon: BookOpen, flaeche: "bg-subtle text-ink" },
 };
 
 const GROESSE = {
@@ -52,7 +52,7 @@ export function TypIcon({
       className={cn("flex shrink-0 items-center justify-center", g.kachel, flaeche, className)}
       {...(label ? { role: "img", "aria-label": label } : { "aria-hidden": true })}
     >
-      <Icon className={cn(g.icon, "text-eco-deep-green")} aria-hidden="true" />
+      <Icon className={g.icon} aria-hidden="true" />
     </span>
   );
 }

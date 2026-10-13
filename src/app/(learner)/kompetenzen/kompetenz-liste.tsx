@@ -22,18 +22,21 @@ export type ListenKompetenz = {
 export function KompetenzListe({
   kompetenzen,
   zusatz,
+  leerText = "Für dein Programm sind noch keine Kompetenzen hinterlegt.",
+  label = "Kompetenzen deines Programms",
 }: {
   kompetenzen: ListenKompetenz[];
-  /** Weitere Query-Parameter, z. B. "&now=…" zum Testen */
+  /** Weitere Query-Parameter, z. B. "&modul=…&now=…" */
   zusatz: string;
+  /** Hinweis ohne Kompetenzen, z. B. für ein Modul ohne Zuordnung */
+  leerText?: string;
+  label?: string;
 }) {
   if (kompetenzen.length === 0) {
-    return (
-      <p className="text-[15px] text-ink-muted">Für dein Programm sind noch keine Kompetenzen hinterlegt.</p>
-    );
+    return <p className="text-[15px] text-ink-muted">{leerText}</p>;
   }
   return (
-    <section aria-label="Kompetenzen deines Programms">
+    <section aria-label={label}>
       {/* Gleichmäßige Reihen (Anna 2026-10-12): drei Spalten nur, wenn die
           Zahl aufgeht (3, 6, 9 …), sonst zwei -- 4 also als 2 × 2. */}
       <ul

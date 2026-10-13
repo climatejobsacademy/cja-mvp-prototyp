@@ -29,6 +29,8 @@ export type TheorieEintrag = {
   titel: string;
   /** Thema der Lektion (lesson.thema), sonst null */
   thema: string | null;
+  /** Selbstlern-Lektion: zugehörige Live-Lektion (lesson.live_lektion_id, 0029), sonst null */
+  liveLektionId: string | null;
   contentType: ContentType | "kurs";
   unitProgressStatus: UnitProgressStatus | null;
   liveSession: {
@@ -141,8 +143,16 @@ export async function getAgendaZeitraum(
 
     const [{ data: lessons }, { data: courses }, { data: liveSessions }] = await Promise.all([
       lessonIds.length
-        ? supabase.from("lesson").select("id, name, thema, content_type").in("id", lessonIds)
-        : Promise.resolve({ data: [] as { id: string; name: string; thema: string | null; content_type: ContentType }[] }),
+        ? supabase.from("lesson").select("id, name, thema, content_type, live_lektion_id").in("id", lessonIds)
+        : Promise.resolve({
+            data: [] as {
+              id: string;
+              name: string;
+              thema: string | null;
+              content_type: ContentType;
+              live_lektion_id: string | null;
+            }[],
+          }),
       courseIds.length
         ? supabase.from("course").select("id, name").in("id", courseIds)
         : Promise.resolve({ data: [] as { id: string; name: string }[] }),
@@ -174,7 +184,7 @@ export async function getAgendaZeitraum(
     if (liveSessionLessonIds.length > 0) {
       const { data: extraLessons } = await supabase
         .from("lesson")
-        .select("id, name, thema, content_type")
+        .select("id, name, thema, content_type, live_lektion_id")
         .in("id", liveSessionLessonIds);
       allLessons = [...allLessons, ...(extraLessons ?? [])];
     }
@@ -205,6 +215,7 @@ export async function getAgendaZeitraum(
           art: "live",
           titel: titel?.titel ?? course?.name ?? "Live-Termin",
           thema: titel?.thema ?? null,
+          liveLektionId: null,
           contentType: "live",
           unitProgressStatus: lesson ? progressByLesson.get(lesson.id) ?? "offen" : null,
           liveSession: {
@@ -228,6 +239,7 @@ export async function getAgendaZeitraum(
           art: "asynchron",
           titel: titel.titel,
           thema: titel.thema,
+          liveLektionId: lesson.live_lektion_id,
           contentType: lesson.content_type,
           unitProgressStatus: progressByLesson.get(lesson.id) ?? "offen",
           liveSession: null,
@@ -243,6 +255,7 @@ export async function getAgendaZeitraum(
           art: "asynchron",
           titel: course.name,
           thema: null,
+          liveLektionId: null,
           contentType: "kurs",
           unitProgressStatus: null,
           liveSession: null,
