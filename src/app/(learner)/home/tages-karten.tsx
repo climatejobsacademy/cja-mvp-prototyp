@@ -89,8 +89,9 @@ function FokusRahmen({
   return (
     <article
       className={cn(
-        "flex flex-wrap items-start gap-x-9 gap-y-5 rounded-karte p-6 text-white md:px-9 md:py-8",
-        praxis ? "bg-anchor-praxis shadow-anchor-praxis" : "bg-anchor-brand shadow-anchor-brand"
+        "flex flex-wrap items-start gap-x-9 gap-y-5 rounded-karte p-6 md:px-9 md:py-8",
+        // Praxis im Marken-Coral mit dunkler Schrift (Anna 2026-10-12, Weiß auf Coral nur 1.93:1).
+        praxis ? "bg-anchor-praxis text-ink shadow-anchor-praxis" : "bg-anchor-brand text-white shadow-anchor-brand"
       )}
     >
       {links && <div className="flex flex-none flex-col gap-1.5 pt-0.5">{links}</div>}
@@ -114,11 +115,11 @@ const ALS_NAECHSTES = <LimePill>Als Nächstes</LimePill>;
 const GROSS = "font-heading text-[48px] leading-none tabular-nums md:text-[64px]";
 
 /** Titel (max. 2 Zeilen) + Thema der Lektion (lesson.thema, 0029) als Untertitel. */
-function FokusTitel({ titel, thema }: { titel: string; thema?: string | null }) {
+function FokusTitel({ titel, thema, aufCoral }: { titel: string; thema?: string | null; aufCoral?: boolean }) {
   return (
     <>
       <h3 className="line-clamp-2 text-[20px] leading-tight font-semibold md:text-[24px]">{titel}</h3>
-      {thema && <p className="text-[15px] text-white/85">{thema}</p>}
+      {thema && <p className={cn("text-[15px]", aufCoral ? "text-ink" : "text-white/85")}>{thema}</p>}
     </>
   );
 }
@@ -126,7 +127,7 @@ function FokusTitel({ titel, thema }: { titel: string; thema?: string | null }) 
 /** "Live mit …" / "Praxis mit …" mit Foto (SR-78); ohne eingetragene Person nichts. */
 function FokusTrainer({ art, trainer }: { art: "live" | "praxis"; trainer?: TrainerAnzeige | null }) {
   if (!trainer) return null;
-  return <TrainerZeile art={art} trainer={trainer} className="mt-1 text-white/85" />;
+  return <TrainerZeile art={art} trainer={trainer} className={cn("mt-1", art === "praxis" ? "text-ink" : "text-white/85")} />;
 }
 
 /**
@@ -134,7 +135,7 @@ function FokusTrainer({ art, trainer }: { art: "live" | "praxis"; trainer?: Trai
  * Mini-Ring und kleinem Glow, Klick führt auf die Kompetenzseite. Ohne
  * Zuordnung Lektion → Kompetenz: nichts.
  */
-function StaerktPills({ kompetenzen }: { kompetenzen?: StaerktKompetenz[] }) {
+function StaerktPills({ kompetenzen, aufCoral }: { kompetenzen?: StaerktKompetenz[]; aufCoral?: boolean }) {
   if (!kompetenzen || kompetenzen.length === 0) return null;
   return (
     <ul className="mt-2 flex flex-wrap gap-2">
@@ -142,15 +143,20 @@ function StaerktPills({ kompetenzen }: { kompetenzen?: StaerktKompetenz[] }) {
         <li key={id}>
           <Link
             href={kompetenzHref(id)}
-            className="inline-flex items-center gap-2.5 rounded-full bg-white/15 py-1.5 pr-3.5 pl-1.5 text-sm font-medium text-white outline-none transition-[background-color] duration-150 hover:bg-white/25 focus-visible:ring-2 focus-visible:ring-white motion-reduce:transition-none"
+            className={cn(
+              "inline-flex items-center gap-2.5 rounded-full py-1.5 pr-3.5 pl-1.5 text-sm font-medium outline-none transition-[background-color] duration-150 focus-visible:ring-2 motion-reduce:transition-none",
+              aufCoral
+                ? "bg-white/45 text-ink hover:bg-white/65 focus-visible:ring-ink"
+                : "bg-white/15 text-white hover:bg-white/25 focus-visible:ring-white"
+            )}
           >
             <span aria-hidden="true" className="flex size-6 rounded-full shadow-glow-charge-sm">
               <svg viewBox="0 0 24 24" className="size-6">
-                <circle cx="12" cy="12" r="8.5" strokeWidth="3.5" className="fill-transparent stroke-white/40" />
+                <circle cx="12" cy="12" r="8.5" strokeWidth="3.5" className={cn("fill-transparent", aufCoral ? "stroke-ink/30" : "stroke-white/40")} />
               </svg>
             </span>
             <span>
-              <span className="text-white/85">Stärkt</span> {name}
+              <span className={aufCoral ? "text-ink" : "text-white/85"}>Stärkt</span> {name}
             </span>
           </Link>
         </li>
@@ -318,15 +324,15 @@ export function FokusPraxis({
         </>
       }
     >
-      <span className="inline-flex items-center gap-2 text-sm text-white/85">
-        <AnkerIcon>
+      <span className="inline-flex items-center gap-2 text-sm text-ink">
+        <AnkerIcon aufCoral>
           <Wrench className="size-4" aria-hidden="true" />
         </AnkerIcon>
         {praxis.standort ? `Praxisaufgabe · ${praxis.standort}` : "Praxisaufgabe"}
       </span>
-      <FokusTitel titel={praxis.titel} />
+      <FokusTitel titel={praxis.titel} aufCoral />
       <FokusTrainer art="praxis" trainer={trainer} />
-      <StaerktPills kompetenzen={staerkt} />
+      <StaerktPills kompetenzen={staerkt} aufCoral />
       <PrimaerAktion href={`/praxistag/${praxis.fieldJobId}?von=home`}>Praxisaufgabe öffnen</PrimaerAktion>
     </FokusRahmen>
   );
@@ -369,9 +375,15 @@ function LeistenIcon({ children, selbst }: { children: ReactNode; selbst?: boole
 }
 
 /** Typ-Icon auf einer Anker-Fläche: weiß in halbtransparenter Kachel. */
-function AnkerIcon({ children }: { children: ReactNode }) {
+function AnkerIcon({ children, aufCoral }: { children: ReactNode; aufCoral?: boolean }) {
   return (
-    <span aria-hidden="true" className="flex size-7 flex-none items-center justify-center rounded-lg bg-white/15 text-white">
+    <span
+      aria-hidden="true"
+      className={cn(
+        "flex size-7 flex-none items-center justify-center rounded-lg",
+        aufCoral ? "bg-white/45 text-ink" : "bg-white/15 text-white"
+      )}
+    >
       {children}
     </span>
   );
