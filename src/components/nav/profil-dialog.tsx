@@ -15,7 +15,7 @@ import {
   mittigerAusschnitt,
 } from "@/lib/profilfoto";
 
-const FOKUS = "outline-none focus-visible:ring-2 focus-visible:ring-eco-green focus-visible:ring-offset-2";
+const FOKUS = "outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2";
 
 /** Bild laden (HEIC nur in Safari), Orientierung übernimmt der Browser. */
 function bildLaden(datei: File): Promise<HTMLImageElement> {
@@ -109,7 +109,7 @@ export function ProfilDialog({
     >
       <DialogContent className="gap-5">
         <DialogHeader>
-          <DialogTitle className="text-eco-deep-green">Profil bearbeiten</DialogTitle>
+          <DialogTitle className="text-ink">Profil bearbeiten</DialogTitle>
           <DialogDescription>
             Dein Foto sehen nur du, deine Trainer:innen und das Team der Academy.
           </DialogDescription>
@@ -120,7 +120,7 @@ export function ProfilDialog({
             name={rufname || name}
             fotoUrl={fotoUrl}
             className="size-16"
-            fallbackClassName="bg-muted text-xl text-eco-deep-green"
+            fallbackClassName="bg-muted text-xl text-ink"
           />
           <div className="flex flex-col items-start gap-1">
             <input
@@ -165,7 +165,7 @@ export function ProfilDialog({
             startTransition(async () => melden(await rufnameSpeichern(entwurf), "Rufname gespeichert."));
           }}
         >
-          <label htmlFor="rufname" className="text-sm font-medium text-eco-deep-green">
+          <label htmlFor="rufname" className="text-sm font-medium text-ink">
             Rufname
           </label>
           <div className="flex gap-2">
@@ -177,7 +177,7 @@ export function ProfilDialog({
               required
               autoComplete="given-name"
               onChange={(e) => setEntwurf(e.target.value)}
-              className={`h-11 min-w-0 flex-1 rounded-lg border border-border bg-white px-3 text-[15px] text-eco-deep-green ${FOKUS}`}
+              className={`h-11 min-w-0 flex-1 rounded-lg border border-border bg-white px-3 text-[15px] text-ink ${FOKUS}`}
             />
             <Button type="submit" className="h-11" disabled={laeuft || entwurf.trim() === rufname.trim()}>
               Speichern
@@ -188,7 +188,7 @@ export function ProfilDialog({
 
         <p
           role={meldung?.fehler ? "alert" : "status"}
-          className={meldung?.fehler ? "text-sm text-destructive" : "text-sm text-eco-deep-green"}
+          className={meldung?.fehler ? "text-sm text-destructive" : "text-sm text-ink"}
         >
           {laeuft ? "Wird gespeichert …" : (meldung?.text ?? "")}
         </p>

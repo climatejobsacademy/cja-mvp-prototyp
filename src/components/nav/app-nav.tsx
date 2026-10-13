@@ -3,14 +3,18 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, Calendar, GraduationCap, House, Target } from "lucide-react";
+import { BookOpen, Calendar, House, Target } from "lucide-react";
 
 import { AccountMenu } from "@/components/nav/account-menu";
 import type { HeaderLogo } from "@/lib/org-logo";
 import { cn } from "@/lib/utils";
 
-// Handoff 2a (docs/design_handoff_lernplattform/README.md, "Kopfleiste").
-// /home ist neu (Redesign-Schritt c).
+// Kopfleiste wie demo (Home v12, docs/design_handoff_home_v6/design/home-v12-referenz.html;
+// Paket 3 B): Wortmarke und Logo der eigenen Organisation links (SR-76),
+// Navigation als Segmented Control in der Mitte, Avatar mit Konto-Menü
+// rechts (SR-77: "Profil bearbeiten"). Der Programmname steht nicht mehr im
+// Kopf (Entscheidung Anna 2026-10-10), sondern im Konto-Menü. Keine Glocke,
+// kein Chat-Knopf.
 const ITEMS = [
   { href: "/home", label: "Home", icon: House },
   { href: "/schedule", label: "Stundenplan", icon: Calendar },
@@ -18,8 +22,7 @@ const ITEMS = [
   { href: "/content", label: "Programm", icon: BookOpen },
 ];
 
-const FOKUS =
-  "outline-none focus-visible:ring-2 focus-visible:ring-eco-green focus-visible:ring-offset-2";
+const FOKUS = "outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2";
 
 function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
@@ -33,10 +36,7 @@ function Wortmarke() {
       aria-label="The Academy for Climate Jobs – zur Startseite"
       className={cn("flex min-h-11 shrink-0 items-center rounded-lg", FOKUS)}
     >
-      <span
-        aria-hidden="true"
-        className="font-heading text-[10px] leading-[1.05] text-eco-deep-green uppercase"
-      >
+      <span aria-hidden="true" className="font-heading text-[10px] leading-[1.05] text-ink uppercase">
         The
         <br />
         Academy
@@ -53,11 +53,11 @@ function Wortmarke() {
  * Logo der eigenen Organisation (SR-76) hinter einem Trennstrich. Fester Kasten
  * (mobil kleiner): kein Layout-Sprung beim Laden, object-contain verzerrt nicht.
  * unoptimized: Datei kommt direkt aus dem öffentlichen Bucket, ohne
- * remotePatterns in next.config.ts.
+ * remotePatterns in next.config.ts. Ohne Logo bleibt der Platz leer.
  */
 function OrgLogo({ logo, mobile }: { logo: HeaderLogo; mobile?: boolean }) {
   return (
-    <div className={cn("flex shrink-0 items-center border-l border-border", mobile ? "h-7 pl-3" : "h-8 pl-4")}>
+    <div className={cn("flex shrink-0 items-center border-l border-line", mobile ? "h-7 pl-3" : "h-8 pl-4")}>
       <div className={cn("relative", mobile ? "h-6 w-[72px]" : "h-8 w-[120px]")}>
         <Image
           src={logo.src}
@@ -68,29 +68,6 @@ function OrgLogo({ logo, mobile }: { logo: HeaderLogo; mobile?: boolean }) {
           className="object-contain object-left"
         />
       </div>
-    </div>
-  );
-}
-
-/** Mit Logo davor: nur Abstand, kein zweiter Trennstrich. */
-function Programm({ name, mobile, ohneStrich }: { name: string; mobile?: boolean; ohneStrich?: boolean }) {
-  return (
-    <div
-      className={cn(
-        "flex h-8 min-w-0 items-center gap-2",
-        !ohneStrich && "border-l border-border pl-4",
-        mobile && "flex-1"
-      )}
-    >
-      <GraduationCap className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-      <span
-        className={cn(
-          "text-muted-foreground",
-          mobile ? "truncate text-xs" : "truncate text-[13px]"
-        )}
-      >
-        {name}
-      </span>
     </div>
   );
 }
@@ -126,15 +103,16 @@ export function AppNav({
 
   return (
     <>
-      <header className="sticky top-0 z-20 border-b border-border bg-white">
-        {/* Desktop */}
-        <div className="hidden h-16 items-center gap-4 px-8 md:flex">
-          <Wortmarke />
-          {organisationLogo && <OrgLogo logo={organisationLogo} />}
-          {programmeName.trim() && <Programm name={programmeName} ohneStrich={!!organisationLogo} />}
-          <nav aria-label="Hauptnavigation" className="ml-auto">
-            <ul className="flex items-center gap-1">
-              {ITEMS.map(({ href, label, icon: Icon }) => {
+      <header className="sticky top-0 z-20 border-b border-line bg-white">
+        {/* Desktop: Wortmarke + Logo links, Navigation in der Mitte, Avatar rechts. */}
+        <div className="mx-auto hidden max-w-[1120px] items-center gap-6 px-10 py-3 md:flex">
+          <div className="flex min-w-0 flex-1 items-center gap-4">
+            <Wortmarke />
+            {organisationLogo && <OrgLogo logo={organisationLogo} />}
+          </div>
+          <nav aria-label="Hauptnavigation">
+            <ul className="flex items-center gap-0.5 rounded-full bg-white p-1 shadow-card">
+              {ITEMS.map(({ href, label }) => {
                 const active = isActive(pathname, href);
                 return (
                   <li key={href}>
@@ -142,17 +120,11 @@ export function AppNav({
                       href={href}
                       aria-current={active ? "page" : undefined}
                       className={cn(
-                        "flex h-11 items-center gap-2 rounded-lg px-3.5 text-[15px] transition-[background-color,box-shadow] duration-150 motion-reduce:transition-none",
+                        "flex min-h-9 items-center rounded-full px-4 text-sm transition-[background-color,box-shadow,color] duration-150 motion-reduce:transition-none",
                         FOKUS,
-                        active
-                          ? "bg-charge-green/35 font-semibold text-eco-deep-green"
-                          : "text-muted-foreground hover:bg-eco-green/10 hover:text-eco-deep-green"
+                        active ? "bg-brand font-semibold text-white" : "text-ink-muted hover:text-ink"
                       )}
                     >
-                      <Icon
-                        className={cn("size-[18px] shrink-0", active && "text-eco-deep-green")}
-                        aria-hidden="true"
-                      />
                       {label}
                     </Link>
                   </li>
@@ -160,18 +132,14 @@ export function AppNav({
               })}
             </ul>
           </nav>
-          {menu}
+          <div className="flex flex-1 justify-end">{menu}</div>
         </div>
 
         {/* Mobile: Kopf ohne Nav, Nav als Bottom-Bar unten */}
         <div className="flex h-[60px] items-center gap-3 px-4 md:hidden">
           <Wortmarke />
           {organisationLogo && <OrgLogo logo={organisationLogo} mobile />}
-          {programmeName.trim() ? (
-            <Programm name={programmeName} mobile ohneStrich={!!organisationLogo} />
-          ) : (
-            <span className="flex-1" />
-          )}
+          <span className="flex-1" />
           {menu}
         </div>
       </header>
@@ -179,7 +147,7 @@ export function AppNav({
       <nav
         aria-label="Hauptnavigation"
         data-bottom-nav
-        className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-white pb-[env(safe-area-inset-bottom)] md:hidden"
+        className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-white pb-[env(safe-area-inset-bottom)] md:hidden"
       >
         <ul className="grid grid-cols-4">
           {ITEMS.map(({ href, label, icon: Icon }) => {
@@ -192,19 +160,16 @@ export function AppNav({
                   className={cn(
                     "flex min-h-14 flex-col items-center justify-center gap-0.5 rounded-lg text-xs",
                     FOKUS,
-                    active ? "font-semibold text-eco-deep-green" : "text-muted-foreground"
+                    active ? "font-semibold text-brand" : "text-ink-muted"
                   )}
                 >
                   <span
                     className={cn(
                       "flex h-[30px] w-14 items-center justify-center rounded-full transition-[background-color] duration-150 motion-reduce:transition-none",
-                      active && "bg-charge-green/35"
+                      active && "bg-brand-tint"
                     )}
                   >
-                    <Icon
-                      className={cn("size-5", active && "text-eco-deep-green")}
-                      aria-hidden="true"
-                    />
+                    <Icon className={cn("size-5", active && "text-brand")} aria-hidden="true" />
                   </span>
                   {label}
                 </Link>

@@ -171,28 +171,26 @@
   --info: #ede6fa;
   --info-foreground: var(--eco-deep-green);
 
-  --background: #ffffff;
+  --background: var(--page);
   --foreground: var(--eco-deep-green);
   --card: #ffffff;
   --card-foreground: var(--eco-deep-green);
   --popover: #ffffff;
   --popover-foreground: var(--eco-deep-green);
-  --primary: var(--eco-green);
+  --primary: var(--brand);
   --primary-foreground: #ffffff;
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: var(--eco-deep-green);
   --muted: oklch(0.97 0 0);
-  /* shadcn-Default (oklch(0.556 0 0), ~4.3:1) unterschreitet 4.5:1 auf Weiß —
-     genau die in design-specifications.md (Abschnitt 1, Barrierefreiheit)
-     benannte Lücke ("text-muted-foreground liegt oft unter 4.5:1"). Hier auf
-     #666666 (5.74:1) korrigiert statt die Lücke offenzulassen. */
-  --muted-foreground: #666666;
+  /* shadcn-Default (~4.3:1) unterschreitet 4.5:1 -- seit dem visuellen
+     Update (2026-10-11) --ink-muted, 5.14:1 auf Off-White. */
+  --muted-foreground: var(--ink-muted);
   --accent: oklch(0.97 0 0);
   --accent-foreground: var(--eco-deep-green);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
+  --border: var(--line);
   --input: oklch(0.922 0 0);
-  --ring: var(--eco-green);
+  --ring: var(--brand);
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
