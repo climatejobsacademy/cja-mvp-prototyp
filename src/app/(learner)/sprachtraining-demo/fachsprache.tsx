@@ -7,7 +7,7 @@ import { ArrowLeft, ArrowRight, Check, CircleAlert, MessageCircle, PartyPopper, 
 import { Ring } from "@/components/fortschritts-ring";
 import { FachText } from "@/components/sprachtraining/fach-text";
 import { VorlesenKnopf } from "@/components/sprachtraining/vorlesen";
-import { WortBild } from "@/components/sprachtraining/wort-bilder";
+import { BildKnopf } from "@/components/sprachtraining/bild-knopf";
 import { FACHSPRACHE_DES_TAGES as F } from "@/lib/sprachtraining-daten";
 import { cn } from "@/lib/utils";
 
@@ -76,10 +76,8 @@ function Woerter({ onFertig }: { onFertig: () => void }) {
           <h2 id="wort" className="flex-1 font-heading text-[32px] leading-tight md:text-[40px]">
             {karte.wort}
           </h2>
+          <BildKnopf id={karte.id} titel={karte.wort} />
           <VorlesenKnopf text={karte.wort} />
-        </div>
-        <div className="rounded-xl bg-white p-4 text-ink">
-          <WortBild id={karte.id} className="mx-auto h-auto w-full max-w-[360px]" />
         </div>
         <p className="text-[17px] leading-relaxed">{karte.erklaerung}</p>
         <div className="flex items-start gap-3 rounded-xl bg-white p-4">
@@ -110,14 +108,12 @@ function Quiz({ onFertig, onZurueck }: { onFertig: () => void; onZurueck: () => 
   return (
     <section className={KARTE} aria-labelledby="frage">
       <div key={frage.id} className={cn("flex flex-col gap-4 rounded-zeile bg-self-tint p-5 md:p-6", EIN)}>
-        {frage.bild && (
-          <div className="rounded-xl bg-white p-4 text-ink">
-            <WortBild id={frage.bild} className="mx-auto h-auto w-full max-w-[320px]" />
-          </div>
-        )}
-        <h2 id="frage" className="text-[22px] leading-snug font-semibold md:text-[24px]">
-          {frage.frage}
-        </h2>
+        <div className="flex items-start gap-3">
+          <h2 id="frage" className="flex-1 text-[22px] leading-snug font-semibold md:text-[24px]">
+            {frage.frage}
+          </h2>
+          {frage.bild && <BildKnopf id={frage.bild} titel="Bild zur Frage" />}
+        </div>
         <div className="flex flex-col gap-2" role="group" aria-labelledby="frage">
           {frage.antworten.map((a, i) => {
             const gewaehlt = wahl === i;

@@ -32,7 +32,7 @@ export function VorlesenKnopf({ text, klein, className }: { text: string; klein?
       aria-label={`Vorlesen: ${text}`}
       title="Vorlesen"
       className={cn(
-        "inline-flex flex-none items-center justify-center rounded-full bg-self-tint text-self outline-none hover:bg-white focus-visible:ring-2 focus-visible:ring-brand",
+        "inline-flex flex-none items-center justify-center rounded-full bg-white text-self shadow-card outline-none hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand",
         klein ? "size-8" : "size-10",
         className
       )}

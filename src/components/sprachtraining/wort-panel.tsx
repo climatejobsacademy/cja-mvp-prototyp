@@ -7,11 +7,11 @@ import { MessageCircle, X } from "lucide-react";
 import type { BildId } from "@/lib/sprachtraining-daten";
 
 import { VorlesenKnopf } from "./vorlesen";
-import { WortBild } from "./wort-bilder";
+import { BildKnopf } from "./bild-knopf";
 
 // Fachbegriff im Panel von rechts (SR-24, Sprachtraining-Demo, nur demo),
-// wie "Inhalte des Moduls" auf der Programmseite (Anna 2026-10-12): Bild,
-// Erklärung in einfacher Sprache, Beispielsatz, jeweils mit Vorlesen.
+// wie "Inhalte des Moduls" auf der Programmseite (Anna 2026-10-12): Bild
+// per Symbol neben dem Wort, Erklärung in einfacher Sprache, Beispielsatz, jeweils mit Vorlesen.
 // Schließen per X, Klick daneben oder Esc.
 
 export function WortPanel({
@@ -52,13 +52,9 @@ export function WortPanel({
           </div>
           <div className="flex items-center gap-3">
             <Dialog.Title className="flex-1 font-heading text-[34px] leading-tight font-normal">{begriff}</Dialog.Title>
+            {bild && <BildKnopf id={bild} titel={begriff} />}
             <VorlesenKnopf text={begriff} />
           </div>
-          {bild && (
-            <div className="rounded-karte bg-white p-6 text-ink">
-              <WortBild id={bild} className="h-auto w-full" />
-            </div>
-          )}
           <Dialog.Description className="text-[17px] leading-relaxed">{erklaerung}</Dialog.Description>
           {beispiel && (
             <div className="flex items-start gap-3 rounded-zeile bg-card p-4 shadow-card">
