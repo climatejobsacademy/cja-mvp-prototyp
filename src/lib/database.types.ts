@@ -361,6 +361,9 @@ type FieldJobRow = Flatten<
     organisation_id: string;
     datum: string;
     standort: string | null;
+    // 0026_field_job_uhrzeit.sql (SR-13): beide oder keiner, ende > start.
+    start: string | null;
+    ende: string | null;
     field_job_type_id: string;
     learner_id: string;
     instructor_id: string | null;
@@ -746,6 +749,8 @@ export type Database = {
             organisation_id: string;
             datum: string;
             standort?: string | null;
+            start?: string | null;
+            ende?: string | null;
             field_job_type_id: string;
             learner_id: string;
             instructor_id?: string | null;
