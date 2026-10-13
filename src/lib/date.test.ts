@@ -8,7 +8,7 @@ import { test } from "node:test";
 // Node braucht die Endung .ts zum Auflösen; tsc (TS5097) erlaubt sie nur mit
 // allowImportingTsExtensions. Statt tsconfig.json global zu ändern, nur hier.
 // @ts-expect-error TS5097: .ts-Endung für node:test nötig
-import { heuteInBerlin, jetztInBerlin } from "./date.ts";
+import { heuteInBerlin, jetztInBerlin, zeitpunktKurzInBerlin } from "./date.ts";
 
 const FAELLE: { utc: string; heute: string; jetzt: string; hinweis: string }[] = [
   // Am 31.10. gilt schon Winterzeit (UTC+1): Berlin ist noch am 31.10.
@@ -88,4 +88,11 @@ test("plusTage und montagDerWoche", async () => {
   assert.equal(montagDerWoche("2026-10-09"), "2026-10-05"); // Freitag
   assert.equal(montagDerWoche("2026-10-05"), "2026-10-05"); // Montag
   assert.equal(montagDerWoche("2026-10-11"), "2026-10-05"); // Sonntag
+});
+
+test("zeitpunktKurzInBerlin: heute, gestern, sonst Datum -- in Berliner Zeit", () => {
+  // 2026-10-12T22:30Z ist in Berlin schon der 13.10., 00:30 (MESZ)
+  assert.equal(zeitpunktKurzInBerlin("2026-10-12T22:30:00Z", "2026-10-13"), "heute, 00:30");
+  assert.equal(zeitpunktKurzInBerlin("2026-10-12T11:05:00Z", "2026-10-13"), "gestern, 13:05");
+  assert.equal(zeitpunktKurzInBerlin("2026-10-09T07:00:00Z", "2026-10-13"), "09.10., 09:00");
 });

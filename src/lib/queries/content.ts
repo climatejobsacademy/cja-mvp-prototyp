@@ -221,6 +221,8 @@ export type LessonDetail = {
   festigen: VerknuepfteLektion | null;
   /** Selbstlern-Lektion: die zugehörige Live-Lektion */
   liveLektion: VerknuepfteLektion | null;
+  /** Modul der Lektion (Kurs → Woche → modul, 0028), klein über dem Titel; null ohne Zuordnung */
+  modul: { ueberzeile: string; name: string } | null;
 };
 
 export async function getLessonDetail(
@@ -232,10 +234,20 @@ export async function getLessonDetail(
 
   const { data: lesson } = await supabase
     .from("lesson")
-    .select("id, name, thema, content_type, chat_aktiv, live_lektion_id")
+    .select("id, name, thema, content_type, chat_aktiv, live_lektion_id, course_id")
     .eq("id", lessonId)
     .single();
   if (!lesson) return null;
+
+  // Modul über Kurs und Woche (module.modul_id, 0028) -- nicht über das
+  // Datum und eine feste Gliederung. Unveröffentlichtes filtert RLS heraus.
+  const { data: kurs } = await supabase.from("course").select("module_id").eq("id", lesson.course_id).maybeSingle();
+  const { data: woche } = kurs?.module_id
+    ? await supabase.from("module").select("modul_id").eq("id", kurs.module_id).maybeSingle()
+    : { data: null };
+  const { data: modul } = woche?.modul_id
+    ? await supabase.from("modul").select("ueberzeile, name").eq("id", woche.modul_id).maybeSingle()
+    : { data: null };
 
   // Selbstlernen <-> Live (SR-15, Datenlücke Nr. 8): über live_lektion_id an
   // der Selbstlern-Lektion, 1:1 -- nicht mehr über gleichen Titel am selben
@@ -332,5 +344,6 @@ export async function getLessonDetail(
     scorm,
     festigen: lesson.content_type === "live" ? verknuepfteLektion : null,
     liveLektion: lesson.content_type === "live" ? null : verknuepfteLektion,
+    modul: modul ? { ueberzeile: modul.ueberzeile, name: modul.name } : null,
   };
 }
