@@ -16,7 +16,17 @@ Rahmen: Bauzeit Mi 14.10. (ca. 8 h, davon ca. 2 h für den Import aus Paket C) u
 
 Ehrlich: Mi + Do reichen für **Nr. 7 in der Datenbank vollständig und in der Oberfläche zur Hälfte** plus die kleine Profil-Migration. Alles andere gehört in die Übergabe. Voraussetzung sind die Entscheidungen E1–E4 (unten) am Mi früh; ohne sie sollte keine der Migrationen am Fr nach Production.
 
-## Entscheidungen, die vor dem Bauen fallen müssen
+## Entscheidungen (Vera, 13.10.2026)
+
+- **E1:** Ja, Trainer:innen melden sich an (Magic Link wie Lernende).
+- **E2:** Ja, Trainer:innen prüfen Praxisberichte ihrer Kohorte.
+- **E3 (anders als vorgeschlagen):** Eine Trainer:in handelt für alle Termine und Praxisberichte einer Kohorte, in der sie mindestens einen Termin hat (`live_session.trainer_id` oder `field_job.instructor_id`), weil je Termin nur eine Person gespeichert ist.
+- **E4:** Update auf Anwesenheit und Verifizierung für alle gesperrt, Korrektur per Storno-Eintrag. Delete nicht gesperrt: bleibt nur für AfCJ admin, bis der Löschweg (DSGVO-Löschrecht) entschieden ist.
+- **Umfang bis Do 16 Uhr:** G1 (0032), G4 (0033), dann G2 (Trainer „Heute“, Anwesenheit bestätigen). Kohortensicht nur, wenn Do nach G2 Zeit ist. Glocke, Profilseite, Lernbegleitung: Übergabe.
+- **SR:** SR-81 (Trainer:in bestätigt Anwesenheit), SR-82 (Trainer:in prüft Praxisbericht); 0033 unter SR-77.
+- **Stand 13.10. abends:** G1 = PR #108 (0032, Probelauf Staging 31/31), G4 = PR #110 (0033, Probelauf Staging 11/11); beide nicht angewendet, nicht gemergt.
+
+Die ursprünglichen Fragen dazu (zur Nachvollziehbarkeit):
 
 - **E1 Trainer:innen melden sich an.** 0030 und `access-matrix.md` sagen ausdrücklich „Rolle `trainer` ohne Login-Nutzung“. Nr. 7 braucht die Anmeldung. Folge: Magic Link an echte Adressen der Trainer:innen (Production), eigener Bereich in der App, Datenschutzerklärung prüfen.
 - **E2 Trainer:innen prüfen Praxisberichte.** In der Matrix steht für „AfCJ trainer“ bei Field capture und Verification „—“. Prüfen dürfen bisher nur AfCJ admin (Prototyp) und laut SR-03 „die zuständige Instructor-Rolle (ab MVP)“. Nr. 7 erweitert das auf Trainer:innen. Das ist eine Ausweitung der Zugriffe (CLAUDE.md, Regel 3) und braucht deine ausdrückliche Entscheidung.
@@ -185,6 +195,8 @@ SR-48 (Basisfelder), SR-77 (Foto), SR-12 (Sprache, verschoben). SR fehlt: „Ler
 
 SR-30 („Learner können andere Mitglieder ihrer Kohorte mit Namen und Profilbild einsehen“) ist offen. `person` ist für Lernende auf die eigene Zeile beschränkt; 0030 gibt Fotos anderer Lernender ausdrücklich nicht frei („hängt an Nr. 6“). Kohorten können Lernende mehrerer Arbeitgeber enthalten (`decisions.md` 07.10., Ausnahme von SR-06 nur für den Fragen-Thread).
 
+**Ergänzung Vera 13.10.:** Kohorten sind derzeit nie organisationsübergreifend gemischt. `fn_meine_kohorte()` trotzdem auf **gleiche Kohorte und gleiche `organisation_id`** beschränken (Schutz für später). Priorität: nach G1, G4, G2; nur bauen, wenn Do nach G2 Zeit ist.
+
 ### Vorschlag Datenmodell (Entwurf 0034_kohortensicht.sql)
 
 ```sql
@@ -200,6 +212,8 @@ language sql stable security definer set search_path = public as $$
     from enrolment e
     join person p on p.id = e.learner_id
    where e.cohort_id in (select fn_current_cohort_ids())
+     and e.organisation_id in (select om.organisation_id from org_membership om
+                                where om.person_id = auth.uid())   -- gleiche Organisation (Ergänzung 13.10.)
      and e.status in ('aktiv', 'abgeschlossen')
      and p.id <> auth.uid()
      and p.in_kohorte_sichtbar;
@@ -217,7 +231,7 @@ Keine Lockerung der `person`-Policy: E-Mail, Geburtsdatum, Arbeitgeber bleiben v
 
 ### Datenschutz-Folgen
 
-- Kohorten über Arbeitgeber hinweg: Lernende sehen Personen anderer Betriebe. Das ist eine weitere Ausnahme von SR-06 und gehört in `decisions.md`.
+- Kohorten über Arbeitgeber hinweg: durch die Beschränkung auf die eigene Organisation ausgeschlossen (Ergänzung 13.10.), keine Ausnahme von SR-06 nötig.
 - Fotos anderer Lernender sind neu sichtbar: Datenschutzerklärung (Abschnitt Profilfotos) anpassen; Einwilligung bzw. Abwahl (`in_kohorte_sichtbar`) ist sinnvoll, weil Fotos freiwillig sind.
 - Abgebrochene Einschreibungen nicht anzeigen (Status `abgebrochen` ausgenommen).
 - Löschpfad (Audit 30.09.): Beim Löschen eines Kontos verschwindet die Person aus der Sicht automatisch; Foto-Datei bleibt (bekannte Lücke).
@@ -315,6 +329,13 @@ Aufwand je nach Option 2–12 h. Übergabe.
 | Mi | Import Paket C (ca. 2 h); PR G1 (0032 + Tests); PR G4 (0033 + Test) |
 | Do bis 12 Uhr | 0032 und 0033 Probelauf und Anwendung auf Staging (je mit Freigabe); PR G2 Trainer „Heute“ + Anwesenheit |
 | Do bis 16 Uhr | Puffer; ggf. 0034 Kohortensicht, wenn entschieden |
-| Übergabe | G3 Praxisberichte prüfen, G5 Profilseite, G6/G7 Kohortensicht, G8 Glocke, Lernbegleitung/Kontakt |
+| Übergabe | G3 Praxisberichte prüfen, G5 Profilseite, G6/G7 Kohortensicht (falls Do keine Zeit), G8 Glocke, Lernbegleitung/Kontakt |
+
+## Übergabe: Prüfpunkte
+
+- **Datenschutzerklärung (E1/E2):** Trainer:innen melden sich an und sehen Anwesenheit und Praxisberichte (Text, Antworten, Status) der Lernenden ihrer Kohorte, dazu Name und Rufname. Abschnitt zu Trainer:innen und Profilfotos entsprechend ergänzen, vor dem Production-Release von 0032.
+- Trainer-Konten auf Production mit echten Adressen (siehe Paket C, `trainer-production.csv`).
+- Fotos der Lernenden für Trainer:innen und „Unit progress read Cohort“ sind in 0032 bewusst nicht umgesetzt.
+- Löschweg (DSGVO): Delete auf `attendance`/`verification` bleibt bis dahin AfCJ admin vorbehalten.
 
 Risiken: Ohne E1/E2 kein G1. Trainer-Login auf Production braucht echte Konten (Paket C) und Prüfung der Datenschutzerklärung vor Fr. Lokale pgTAP-Tests laufen nicht (kein Docker); Tests nur über Probelauf auf Staging.
