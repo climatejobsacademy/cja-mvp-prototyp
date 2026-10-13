@@ -1,6 +1,6 @@
 -- 0031_kompetenz_kann_satz.sql
 -- competency.kann_satz: ausformulierter Kann-Satz einer Kompetenz ("Kann …")
--- neben dem Kurztitel in competency.name (Entscheidung 2026-10-13, SR folgt).
+-- neben dem Kurztitel in competency.name (Entscheidung 2026-10-13, SR-80).
 -- Quelle ist die Importvorlage von Content & Learning (Tab Kompetenzen,
 -- Spalte "Titel (Kann …)"); gefüllt durch scripts/import-plan.mjs. Die
 -- Anzeige in der Kompetenz-Detailansicht folgt in einem eigenen PR.

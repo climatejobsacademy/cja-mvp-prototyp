@@ -1,5 +1,5 @@
 -- 020_kompetenz_kann_satz.test.sql
--- competency.kann_satz (0031, SR folgt): Spalte nullable, leerer Text
+-- competency.kann_satz (0031, SR-80): Spalte nullable, leerer Text
 -- abgelehnt; Lernende lesen den Kann-Satz, schreiben ihn aber nicht;
 -- AfCJ admin schreibt ihn (bestehende Policies aus 0009).
 --

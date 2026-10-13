@@ -239,5 +239,5 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Entscheidung:** `competency.kann_satz` (Text, optional) nimmt den ausformulierten Kann-Satz aus der Importvorlage auf; `name` bleibt der Kurztitel. Das Import-Skript (`scripts/import-plan.mjs`) füllt das Feld, sobald die Spalte existiert (Migration 0031).
 - **Begründung:** Die Kann-Sätze von Content & Learning hatten kein Feld; im Namen wären sie für Listen und Ringe zu lang.
 - **Folgen:** Anzeige in der Kompetenz-Detailansicht folgt in einem eigenen PR. Keine neuen Policies (bestehende Lese- und Schreibregeln für `competency` gelten).
-- **Status:** gültig (Entscheidung Vera); SR folgt
-- **Belegt:** `0031_kompetenz_kann_satz.sql`; `020_kompetenz_kann_satz.test.sql`; `data-model.md`, Zeile „competency“
+- **Status:** gültig (Entscheidung Vera)
+- **Belegt:** `0031_kompetenz_kann_satz.sql`; `020_kompetenz_kann_satz.test.sql`; `data-model.md`, Zeile „competency“; SR-80
