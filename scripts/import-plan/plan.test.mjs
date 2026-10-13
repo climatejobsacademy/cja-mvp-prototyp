@@ -106,3 +106,22 @@ test("Unbekannter Typ bricht ab", () => {
   v.Teilschritte[0].Typ = "gemischt";
   assert.throws(() => erstellePlan(v, { module: ["II"] }), /weder theoretisch noch praktisch/);
 });
+
+test("Option ohnePraxis: Praxistermine des Moduls entfallen, Aufträge bleiben", () => {
+  const plan = erstellePlan(vorlage(), { module: ["II"], ohnePraxis: ["II"] });
+  assert.ok(!plan.termine.some((t) => t.art === "praxis"));
+  assert.equal(plan.auftraege.length, 3);
+  assert.ok(plan.meldungen.some((m) => m.art === "ohne-praxis"));
+  assert.ok(!plan.meldungen.some((m) => m.art === "praxisblock"));
+});
+
+test("Praxisblock wird als vorläufig gemeldet", () => {
+  const plan = erstellePlan(vorlage(), { module: ["II"] });
+  assert.ok(plan.meldungen.some((m) => m.art === "praxisblock" && m.text.includes("VORLÄUFIG")));
+});
+
+test("Kann-Satz wird übernommen", () => {
+  const v = vorlage();
+  v.Kompetenzen[0]["Titel (Kann …)"] = "Kann etwas.";
+  assert.equal(erstellePlan(v, { module: ["II"] }).kompetenzen[0].kannSatz, "Kann etwas.");
+});

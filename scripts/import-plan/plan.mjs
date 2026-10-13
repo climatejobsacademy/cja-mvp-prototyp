@@ -13,7 +13,9 @@
 // - Zeilen ohne Datum werden übersprungen und gemeldet; Spalte "Offen",
 //   SCORM, PDFs und Zoom-Links werden nicht gelesen.
 // - Aufträge eines Praxisblocks ohne Tagesbindung werden der Reihe nach auf
-//   die Blocktage verteilt (Vorschlag, ganztägig ohne Uhrzeit).
+//   die Blocktage verteilt -- vorläufig, Platzhalter bis zur Tagesplanung
+//   von Malte (ganztägig ohne Uhrzeit). Mit ohnePraxis: ["II"] entfallen die
+//   Praxistermine eines Moduls ganz (Production, bis die Planung da ist).
 
 const ROEMISCH = { I: 1, II: 2, III: 3, IV: 4, V: 5, Abschluss: 6 };
 
@@ -75,10 +77,13 @@ function theorietagKennung(modul, wert) {
 
 /**
  * @param {Record<string, Record<string,string>[]>} tabs  Ergebnis von leseXlsx
- * @param {{ module?: string[] }} optionen  Module im Umfang (Standard: I, II)
+ * @param {{ module?: string[], ohnePraxis?: string[] }} optionen
+ *   module: Module im Umfang (Standard: I, II); ohnePraxis: Module, deren
+ *   Praxistermine weggelassen werden (Aufträge und Zuordnungen bleiben)
  */
 export function erstellePlan(tabs, optionen = {}) {
   const umfang = new Set(optionen.module ?? ["I", "II"]);
+  const ohnePraxis = new Set(optionen.ohnePraxis ?? []);
   const meldungen = [];
   const melde = (art, text) => meldungen.push({ art, text });
 
@@ -103,6 +108,7 @@ export function erstellePlan(tabs, optionen = {}) {
       bisher: z["Bisheriges Kürzel"] || null,
       modul: z["Modul"],
       name: z["Kurztitel"],
+      kannSatz: z["Titel (Kann …)"] || null,
       reihenfolge: zahl(z["Reihenfolge im Modul"]),
     }));
   const kompetenzKennungen = new Set(kompetenzen.map((k) => k.kennung));
@@ -313,7 +319,11 @@ export function erstellePlan(tabs, optionen = {}) {
     else bloecke.push({ schluessel: t.auftraege.join(","), termine: [t] });
   }
   const verteilung = new Map();
-  for (const b of bloecke) {
+  for (const m of ohnePraxis) {
+    const anzahl = termineRoh.filter((t) => t.modul === m && t.art === "Praxis").length;
+    if (anzahl) melde("ohne-praxis", `Modul ${m}: ${anzahl} Praxistermine weggelassen (Option ohne Praxis).`);
+  }
+  for (const b of bloecke.filter((x) => !ohnePraxis.has(x.termine[0].modul))) {
     const auftr = b.termine[0].auftraege;
     const tage = b.termine.length;
     auftr.forEach((a, i) => {
@@ -322,7 +332,7 @@ export function erstellePlan(tabs, optionen = {}) {
     });
     melde(
       "praxisblock",
-      `Block ${b.termine[0].kennung}–${b.termine.at(-1).kennung}: ${auftr.length} Aufträge ohne Tagesbindung auf ${tage} Tage verteilt (Vorschlag, ganztägig): ` +
+      `Block ${b.termine[0].kennung}–${b.termine.at(-1).kennung}: ${auftr.length} Aufträge ohne Tagesbindung auf ${tage} Tage verteilt, VORLÄUFIG (Platzhalter, Tagesplanung von Malte fehlt; ganztägig): ` +
         b.termine.map((t) => `${t.datum.slice(8)}.${t.datum.slice(5, 7)}. ${(verteilung.get(t.kennung) ?? []).join("+") || "–"}`).join("; ")
     );
   }
@@ -339,6 +349,7 @@ export function erstellePlan(tabs, optionen = {}) {
       }
       termine.push({ ...basis, art: "begleit", begleitkurs: t.kurstitel });
     } else if (t.art === "Praxis") {
+      if (ohnePraxis.has(t.modul)) continue;
       if (!t.auftraege.length) {
         melde("praxis", `${t.kennung} übersprungen: keine Auftragsnummer.`);
         continue;

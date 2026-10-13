@@ -6,8 +6,9 @@
 --
 -- Legt nur temporäre Objekte an (pg_temp), keine Schemaänderung. Idempotent:
 -- Jede Zeile wird zuerst über ihren Schlüssel gesucht und nur angelegt oder
--- geändert, wenn sie fehlt oder abweicht. Gelöscht werden nur Zuordnungen, die
--- nach einer Typänderung gegen die Typ-Regel (SR-71) verstoßen würden.
+-- geändert, wenn sie fehlt oder abweicht. Schreibt nie in auth.users.
+-- Gelöscht werden nur Zuordnungen, die nach einer Typänderung gegen die
+-- Typ-Regel (SR-71) verstoßen würden.
 --
 -- Schlüssel (ohne eigene Kennungsspalte, keine Migration):
 --   modul                 Programm EFK-EE + Reihenfolge (I = 1 … Abschluss = 6)
@@ -22,7 +23,7 @@
 --   Begleitkurs           Programm + Name (Deutsch/Fachdeutsch, Softskills Coaching)
 --   live_session          Kohorte (über schedule_entry) + Lektion bzw. Kurs + Datum
 --   field_job             Lernende:r + Auftrag + Datum
---   Trainer:in            person.username = trainer-<kennung>, z. B. trainer-tr-02
+--   Trainer:in            Auth-Konto über die E-Mail aus --trainer-datei
 
 create temp table import_bericht (
   nr serial,
@@ -145,23 +146,31 @@ begin
     insert into _woche values (r->>'modul', (r->>'nummer')::int, v_id);
   end loop;
 
-  -- ========== Trainer:innen (person, Rolle trainer, ohne Login) ==========
+  -- ========== Trainer:innen (person + Rolle trainer an vorhandenem Auth-Konto) ==========
+  -- Die Konten legt AfCJ im Supabase-Dashboard an (echte E-Mail). Zuordnung
+  -- Kennung -> E-Mail aus --trainer-datei. Ohne Konto: Termine ohne Trainer:in.
   for r in select * from jsonb_array_elements(p->'trainer') loop
-    select id into v_id from person where username = 'trainer-' || lower(r->>'kennung');
+    v_id := null;
+    select u.id into v_id
+      from jsonb_array_elements(coalesce(p->'trainerKonten', '[]')) tk
+      join auth.users u on lower(u.email) = lower(tk->>'email')
+     where tk->>'kennung' = r->>'kennung';
     if v_id is null then
-      v_id := gen_random_uuid();
-      -- Auth-Konto ohne Passwort und ohne bestätigte E-Mail: Anmeldung nicht möglich.
-      -- Platzhalter-Adresse unter .invalid (RFC 2606), später händisch änderbar.
-      insert into auth.users (id, instance_id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
-      values (v_id, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
-              lower(r->>'kennung') || '@trainer.invalid',
-              '{"provider": "email", "providers": ["email"]}', '{}', now(), now());
-      insert into person (id, email, name, username, rufname)
-      values (v_id, lower(r->>'kennung') || '@trainer.invalid', r->>'anzeigename', 'trainer-' || lower(r->>'kennung'), r->>'anzeigename');
-      perform pg_temp.zaehle(p_lauf, 'person (Trainer:in)', 'neu');
-    else
-      -- Name und E-Mail werden nach dem Anlegen nicht überschrieben (händisch änderbar).
+      perform pg_temp.melde(p_lauf, 'trainer', format('%s: kein Auth-Konto (Zuordnungsdatei oder Dashboard), Termine ohne Trainer:in.', r->>'kennung'));
+      continue;
+    end if;
+    if exists (select 1 from role_assignment where person_id = v_id and rolle = 'learner') then
+      perform pg_temp.melde(p_lauf, 'trainer', format('%s: Konto gehört einer lernenden Person, nicht verknüpft (eigenes Konto anlegen).', r->>'kennung'));
+      continue;
+    end if;
+    if exists (select 1 from person where id = v_id) then
+      -- Name und Rufname bleiben, wie sie sind (händisch änderbar).
       perform pg_temp.zaehle(p_lauf, 'person (Trainer:in)', 'unverändert');
+    else
+      insert into person (id, email, name, username, rufname)
+      select v_id, u.email, r->>'anzeigename', 'trainer-' || lower(r->>'kennung'), r->>'anzeigename'
+        from auth.users u where u.id = v_id;
+      perform pg_temp.zaehle(p_lauf, 'person (Trainer:in)', 'neu');
     end if;
     insert into org_membership (person_id, organisation_id) values (v_id, v_afcj) on conflict do nothing;
     get diagnostics v_n = row_count;
@@ -211,6 +220,16 @@ begin
       update competency set name = r->>'name' where id = v_id and name is distinct from r->>'name';
       get diagnostics v_n = row_count;
       perform pg_temp.zaehle(p_lauf, 'competency', case when v_n > 0 then 'geändert' else 'unverändert' end);
+    end if;
+    -- competency.kann_satz (Migration 0031), nur wenn die Spalte schon existiert
+    if exists (select 1 from information_schema.columns
+                where table_schema = 'public' and table_name = 'competency' and column_name = 'kann_satz') then
+      execute 'update competency set kann_satz = $1 where id = $2 and kann_satz is distinct from $1'
+        using r->>'kannSatz', v_id;
+      get diagnostics v_n = row_count;
+      perform pg_temp.zaehle(p_lauf, 'competency.kann_satz', case when v_n > 0 then 'geändert' else 'unverändert' end);
+    elsif p_lauf = 1 and not exists (select 1 from import_meldung where art = 'kann-satz') then
+      perform pg_temp.melde(p_lauf, 'kann-satz', 'Spalte competency.kann_satz fehlt (Migration 0031), Kann-Sätze nicht übernommen.');
     end if;
     insert into competency_programme (competency_id, programme_id) values (v_id, v_prog) on conflict do nothing;
     get diagnostics v_n = row_count;

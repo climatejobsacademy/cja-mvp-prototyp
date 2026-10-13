@@ -7,7 +7,8 @@
 // 2026-10-13; SR-05, SR-71, SR-78). Anleitung: docs/import-plan.md.
 //
 //   node scripts/import-plan.mjs --datei <pfad.xlsx> --nur-analyse
-//   node scripts/import-plan.mjs --datei <pfad.xlsx> --ziel staging --kohorte "Energiehelden 28.09.26"
+//   node scripts/import-plan.mjs --datei <pfad.xlsx> --ziel staging \
+//        --trainer-datei <trainer-staging.csv> --kohorte "Energiehelden 28.09.26"
 //   node scripts/import-plan.mjs ... --ausfuehren                       (speichert)
 //   node scripts/import-plan.mjs ... --ziel production --production-freigabe [--ausfuehren]
 //
@@ -16,14 +17,16 @@
 // Mal ausgeführt; ändert der zweite Durchgang etwas, bricht das Skript ab
 // (Idempotenz). Erst mit --ausfuehren wird gespeichert (COMMIT).
 //
-// Die Excel-Datei enthält Trainer-Namen: nicht ins Repo kopieren. Das Skript
-// liest sie nur über --datei und schreibt den Plan nirgends auf die Platte
-// (psql bekommt ihn über stdin). Das Datenbank-Passwort kommt aus PGPASSWORD
+// Die Excel-Datei enthält Trainer-Namen, die Trainer-Datei E-Mail-Adressen:
+// beide nicht ins Repo kopieren. Das Skript liest sie nur über die Parameter,
+// gibt keine Adressen aus und schreibt den Plan nirgends auf die Platte (psql
+// bekommt ihn über stdin). Auf Staging nur eine Trainer-Datei mit "staging"
+// im Namen (Test-Adressen), weil Staging echte Mails über Brevo verschickt. Das Datenbank-Passwort kommt aus PGPASSWORD
 // oder dem macOS-Schlüsselbund und wird nie ausgegeben.
 
 import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { basename, dirname, join } from "node:path";
 import { createInterface } from "node:readline/promises";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
@@ -52,8 +55,9 @@ const ZIELE = {
 const NUTZUNG = `Nutzung:
   node scripts/import-plan.mjs --datei <pfad.xlsx> --nur-analyse
   node scripts/import-plan.mjs --datei <pfad.xlsx> --ziel staging|production
-       [--kohorte "Name" | --kohorte "Name@+7"]... [--module I,II]
-       [--production-freigabe] [--ausfuehren]`;
+       [--trainer-datei <pfad.csv>] [--kohorte "Name" | --kohorte "Name@+7"]...
+       [--module I,II] [--ohne-praxis II] [--production-freigabe]
+       [--ohne-zuordnung-erlauben] [--ausfuehren]`;
 
 function abbruch(text) {
   console.error(text);
@@ -66,6 +70,9 @@ const { values: arg } = parseArgs({
     ziel: { type: "string" },
     kohorte: { type: "string", multiple: true, default: [] },
     module: { type: "string", default: "I,II" },
+    "trainer-datei": { type: "string" },
+    "ohne-praxis": { type: "string", default: "" },
+    "ohne-zuordnung-erlauben": { type: "boolean", default: false },
     "nur-analyse": { type: "boolean", default: false },
     ausfuehren: { type: "boolean", default: false },
     "production-freigabe": { type: "boolean", default: false },
@@ -83,7 +90,8 @@ if (!existsSync(arg.datei)) abbruch(`Datei nicht gefunden: ${arg.datei}`);
 // ---------- Excel lesen und Plan bauen ----------
 let plan;
 try {
-  plan = erstellePlan(leseXlsx(arg.datei), { module: arg.module.split(",").map((m) => m.trim()) });
+  const kommaListe = (wert) => wert.split(",").map((m) => m.trim()).filter(Boolean);
+  plan = erstellePlan(leseXlsx(arg.datei), { module: kommaListe(arg.module), ohnePraxis: kommaListe(arg["ohne-praxis"]) });
 } catch (fehler) {
   abbruch(`Abbruch beim Lesen der Excel: ${fehler.message}`);
 }
@@ -140,6 +148,38 @@ if (!ziel) abbruch(`--ziel staging oder --ziel production angeben.\n${NUTZUNG}`)
 if (arg.ziel === "production" && !arg["production-freigabe"]) {
   abbruch("Abbruch: Production nur mit --production-freigabe (auch für den Probelauf).");
 }
+if (arg.ziel === "production" && plan.analyse.ohneZuordnung.length && !arg["ohne-zuordnung-erlauben"]) {
+  abbruch(
+    `Abbruch: ${plan.analyse.ohneZuordnung.length} Teilschritte ohne jede Zuordnung (Liste oben). ` +
+      "Production erst nach Korrektur in der Excel, oder bewusst mit --ohne-zuordnung-erlauben."
+  );
+}
+
+// ---------- Trainer-Datei (Kennung, E-Mail) ----------
+plan.trainerKonten = [];
+if (arg["trainer-datei"]) {
+  const pfad = arg["trainer-datei"];
+  const name = basename(pfad).toLowerCase();
+  if (!name.endsWith(".csv")) abbruch(`Abbruch: Trainer-Datei muss reine CSV sein (.csv), nicht ${basename(pfad)}.`);
+  if (arg.ziel === "staging" && !name.includes("staging")) {
+    abbruch("Abbruch: Auf Staging nur eine Trainer-Datei mit „staging“ im Namen (Test-Adressen, Staging verschickt echte Mails).");
+  }
+  if (arg.ziel === "production" && name.includes("staging")) abbruch("Abbruch: Staging-Trainer-Datei nicht für Production verwenden.");
+  if (!existsSync(pfad)) abbruch(`Trainer-Datei nicht gefunden: ${pfad}`);
+  const zeilen = readFileSync(pfad, "utf8").replace(/^\uFEFF/, "").split(/\r?\n/).map((z) => z.trim()).filter(Boolean);
+  const kopf = zeilen.shift()?.split(/[,;]/).map((k) => k.trim());
+  if (kopf?.[0] !== "Kennung" || kopf?.[1] !== "E-Mail") abbruch("Abbruch: Trainer-Datei braucht den Kopf „Kennung,E-Mail“.");
+  for (const zeile of zeilen) {
+    const [kennung, email] = zeile.split(/[,;]/).map((w) => w.trim());
+    if (!/^TR-\d+$/.test(kennung ?? "") || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email ?? "")) {
+      abbruch(`Abbruch: Trainer-Datei, ungültige Zeile für ${kennung || "(ohne Kennung)"}.`);
+    }
+    if (plan.trainer.some((t) => t.kennung === kennung)) plan.trainerKonten.push({ kennung, email });
+  }
+}
+const ohneAdresse = plan.trainer.filter((t) => !plan.trainerKonten.some((k) => k.kennung === t.kennung)).map((t) => t.kennung);
+if (ohneAdresse.length) console.log(`\nHinweis: keine E-Mail für ${ohneAdresse.join(", ")} – deren Termine ohne Trainer:in.`);
+
 if (!kohorten.length) {
   console.log("\nHinweis: keine --kohorte angegeben, es werden nur Inhalte und Kompetenzen importiert, keine Termine.");
 }
