@@ -5,6 +5,7 @@ import { ArrowRight, BookOpen, CalendarDays, Check, Video, Wrench } from "lucide
 import type { ErledigtEintrag, LiveAktivitaet, PraxisAktivitaet } from "@/lib/home-tag";
 import type { TrainerAnzeige } from "@/lib/queries/trainer";
 import { Ring } from "@/components/fortschritts-ring";
+import { ModulZeichen } from "@/components/modul-zeichen";
 import { TrainerZeile } from "@/components/trainer-zeile";
 import { cn } from "@/lib/utils";
 
@@ -20,9 +21,7 @@ import { MehrMenue } from "./mehr-menue";
 // der Anker der Seite -- Live/Selbstlernen/Erledigt im Lila-Verlauf, Praxis im
 // Coral-Verlauf; Buttons darauf in Lime.
 const PRIMAER_BUTTON =
-  "inline-flex min-h-12 items-center gap-2.5 rounded-full bg-lime px-[22px] text-[15px] font-bold text-on-lime outline-none transition-[filter] duration-150 hover:brightness-95 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand motion-reduce:transition-none";
-
-const LINK_FOKUS = "rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-brand";
+  "inline-flex min-h-11 items-center gap-2 rounded-full bg-lime px-5 text-[15px] font-bold text-on-lime outline-none transition-[filter] duration-150 hover:brightness-95 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand motion-reduce:transition-none";
 
 const hhmm = (zeit: string) => zeit.slice(0, 5);
 const lektionHref = (lessonId: string) => `/content/${lessonId}?von=home`;
@@ -89,7 +88,7 @@ function FokusRahmen({
   return (
     <article
       className={cn(
-        "flex flex-wrap items-start gap-x-9 gap-y-5 rounded-karte p-6 md:px-9 md:py-8",
+        "flex flex-wrap items-start gap-x-7 gap-y-4 rounded-karte p-6 md:px-7 md:py-7",
         // Praxis im Marken-Coral mit dunkler Schrift (Anna 2026-10-12, Weiß auf Coral nur 1.93:1).
         praxis ? "bg-anchor-praxis text-ink shadow-anchor-praxis" : "bg-anchor-brand text-white shadow-anchor-brand"
       )}
@@ -112,14 +111,50 @@ function LimePill({ children, puls }: { children: ReactNode; puls?: boolean }) {
 }
 
 const ALS_NAECHSTES = <LimePill>Als Nächstes</LimePill>;
-const GROSS = "font-heading text-[48px] leading-none tabular-nums md:text-[64px]";
+const GROSS = "font-heading text-[44px] leading-none tabular-nums md:text-[56px]";
 
-/** Titel (max. 2 Zeilen) + Thema der Lektion (lesson.thema, 0029) als Untertitel. */
-function FokusTitel({ titel, thema, aufCoral }: { titel: string; thema?: string | null; aufCoral?: boolean }) {
+/**
+ * Titel einer Lektion (Entscheidung Anna 2026-10-12, auf allen Seiten
+ * gleich): klein das Modul ("Modul I · Grundlagen Elektrotechnik", aus der
+ * Modul-Ebene), groß das Thema der Lektion (lesson.thema, sonst der Titel).
+ * Optional ein Typ-Icon direkt vor dem Thema; `art` liest der Screenreader mit.
+ */
+export type TitelStil = { modul: { ueberzeile: string; name: string } | null };
+
+const KARTEN_TITEL = "text-[20px] leading-tight font-semibold md:text-[22px]";
+
+function FokusTitel({
+  titel,
+  thema,
+  icon,
+  art,
+  stil,
+  aufCoral,
+}: {
+  titel: string;
+  thema?: string | null;
+  icon?: ReactNode;
+  art?: string;
+  stil?: TitelStil;
+  /** Praxis-Karte (helles Coral): dunkle Schrift */
+  aufCoral?: boolean;
+}) {
   return (
     <>
-      <h3 className="line-clamp-2 text-[20px] leading-tight font-semibold md:text-[24px]">{titel}</h3>
-      {thema && <p className={cn("text-[15px]", aufCoral ? "text-ink" : "text-white/85")}>{thema}</p>}
+      {stil?.modul && (
+        <ModulZeichen hell={!aufCoral} aufCoral={aufCoral} ueberzeile={stil.modul.ueberzeile} name={stil.modul.name} />
+      )}
+      <h3 className={cn("flex items-center gap-2.5", KARTEN_TITEL)}>
+        {icon && (
+          <span aria-hidden="true" className={cn("flex flex-none", aufCoral ? "text-ink" : "text-white/85")}>
+            {icon}
+          </span>
+        )}
+        <span className="line-clamp-2">
+          {art && <span className="sr-only">{art}: </span>}
+          {thema ?? titel}
+        </span>
+      </h3>
     </>
   );
 }
@@ -144,19 +179,20 @@ function StaerktPills({ kompetenzen, aufCoral }: { kompetenzen?: StaerktKompeten
           <Link
             href={kompetenzHref(id)}
             className={cn(
-              "inline-flex items-center gap-2.5 rounded-full py-1.5 pr-3.5 pl-1.5 text-sm font-medium outline-none transition-[background-color] duration-150 focus-visible:ring-2 motion-reduce:transition-none",
+              "inline-flex items-center gap-2 rounded-full py-1 pr-3 pl-1 text-[13px] outline-none transition-[background-color] duration-150 focus-visible:ring-2 motion-reduce:transition-none",
               aufCoral
                 ? "bg-white/45 text-ink hover:bg-white/65 focus-visible:ring-ink"
                 : "bg-white/15 text-white hover:bg-white/25 focus-visible:ring-white"
             )}
           >
-            <span aria-hidden="true" className="flex size-6 rounded-full shadow-glow-charge-sm">
-              <svg viewBox="0 0 24 24" className="size-6">
-                <circle cx="12" cy="12" r="8.5" strokeWidth="3.5" className={cn("fill-transparent", aufCoral ? "stroke-ink/30" : "stroke-white/40")} />
+            <span aria-hidden="true" className="flex size-5 rounded-full shadow-glow-charge-sm">
+              <svg viewBox="0 0 20 20" className="size-5">
+                <circle cx="10" cy="10" r="7" strokeWidth="3" className={cn("fill-transparent", aufCoral ? "stroke-ink/30" : "stroke-white/40")} />
               </svg>
             </span>
             <span>
-              <span className={aufCoral ? "text-ink" : "text-white/85"}>Stärkt</span> {name}
+              <span className={aufCoral ? "text-ink" : "text-white/85"}>Stärkt</span>{" "}
+              <span className="font-semibold">{name}</span>
             </span>
           </Link>
         </li>
@@ -171,11 +207,13 @@ export function FokusLive({
   laeuft,
   staerkt,
   trainer,
+  stil,
 }: {
   live: LiveAktivitaet;
   laeuft: boolean;
   staerkt?: StaerktKompetenz[];
   trainer?: TrainerAnzeige | null;
+  stil?: TitelStil;
 }) {
   const ziel = live.joinLink ?? (live.lessonId ? lektionHref(live.lessonId) : null);
   return (
@@ -194,13 +232,14 @@ export function FokusLive({
         )
       }
     >
-      <span className="inline-flex items-center gap-2 text-sm text-white/85">
-        <AnkerIcon>
-          <Video className="size-4" aria-hidden="true" />
-        </AnkerIcon>
-        {laeuft ? `Live-Unterricht · seit ${hhmm(live.start)}` : "Live-Unterricht"}
-      </span>
-      <FokusTitel titel={live.titel} thema={live.thema} />
+      {/* Wie demo (Anna 2026-10-12): Kamera-Symbol vor dem Thema, keine eigene Typzeile. */}
+      <FokusTitel
+        titel={live.titel}
+        thema={live.thema}
+        icon={<Video className="size-[22px]" />}
+        art={laeuft ? `Live-Unterricht, seit ${hhmm(live.start)}` : "Live-Unterricht"}
+        stil={stil}
+      />
       <FokusTrainer art="live" trainer={trainer} />
       <StaerktPills kompetenzen={staerkt} />
       {ziel && (
@@ -226,10 +265,12 @@ export function FokusFlex({
   lektion,
   staerkt,
   nurSelbstlernen,
+  stil,
 }: {
   lektion: OffeneLektion & { thema: string | null; festigt: boolean };
   staerkt?: StaerktKompetenz[];
   nurSelbstlernen?: boolean;
+  stil?: TitelStil;
 }) {
   return (
     <FokusRahmen
@@ -245,7 +286,7 @@ export function FokusFlex({
       <span className="text-sm text-white/85">
         {lektion.festigt ? "Selbstlernen · Wissen festigen" : "Selbstlernen · flexibel"}
       </span>
-      <FokusTitel titel={lektion.titel} thema={lektion.thema} />
+      <FokusTitel titel={lektion.titel} thema={lektion.thema} stil={stil} />
       <StaerktPills kompetenzen={staerkt} />
       <PrimaerAktion href={lektionHref(lektion.lessonId)}>{lektion.begonnen ? "Weiterlernen" : "Starten"}</PrimaerAktion>
     </FokusRahmen>
@@ -309,10 +350,12 @@ export function FokusPraxis({
   praxis,
   staerkt,
   trainer,
+  stil,
 }: {
   praxis: PraxisAktivitaet;
   staerkt?: StaerktKompetenz[];
   trainer?: TrainerAnzeige | null;
+  stil?: TitelStil;
 }) {
   return (
     <FokusRahmen
@@ -325,12 +368,10 @@ export function FokusPraxis({
       }
     >
       <span className="inline-flex items-center gap-2 text-sm text-ink">
-        <AnkerIcon aufCoral>
-          <Wrench className="size-4" aria-hidden="true" />
-        </AnkerIcon>
+        <Wrench className="size-4 flex-none" aria-hidden="true" />
         {praxis.standort ? `Praxisaufgabe · ${praxis.standort}` : "Praxisaufgabe"}
       </span>
-      <FokusTitel titel={praxis.titel} aufCoral />
+      <FokusTitel titel={praxis.titel} stil={stil} aufCoral />
       <FokusTrainer art="praxis" trainer={trainer} />
       <StaerktPills kompetenzen={staerkt} aufCoral />
       <PrimaerAktion href={`/praxistag/${praxis.fieldJobId}?von=home`}>Praxisaufgabe öffnen</PrimaerAktion>
@@ -352,90 +393,49 @@ export function FokusRuhig({ naechsterTermin }: { naechsterTermin: string | null
 }
 
 // ---------------------------------------------------------------------------
-// Schmale Leisten unter der Fokus-Karte (Home v12)
+// Kästchen rechts neben der Fokus-Karte (Entscheidung Anna 2026-10-12)
 
-// Leisten: Selbstlernen auf heller Grün-Fläche, alles andere neutral weiß.
-const LEISTE = "flex flex-wrap items-center gap-[18px] rounded-zeile px-6 py-5 text-ink";
-const LEISTE_NEUTRAL = "bg-card shadow-card";
-const LEISTE_SELBST = "bg-self-tint";
 const LEISTE_LINK =
   "outline-none transition-[box-shadow] duration-150 hover:shadow-card focus-visible:ring-2 focus-visible:ring-brand motion-reduce:transition-none";
 
-function LeistenIcon({ children, selbst }: { children: ReactNode; selbst?: boolean }) {
-  return (
-    <span
-      className={cn(
-        "flex size-11 flex-none items-center justify-center rounded-xl",
-        selbst ? "bg-white text-self" : "bg-subtle text-progress"
-      )}
-    >
-      {children}
-    </span>
-  );
-}
-
-/** Typ-Icon auf einer Anker-Fläche: weiß in halbtransparenter Kachel. */
-function AnkerIcon({ children, aufCoral }: { children: ReactNode; aufCoral?: boolean }) {
-  return (
-    <span
-      aria-hidden="true"
-      className={cn(
-        "flex size-7 flex-none items-center justify-center rounded-lg",
-        aufCoral ? "bg-white/45 text-ink" : "bg-white/15 text-white"
-      )}
-    >
-      {children}
-    </span>
-  );
-}
-
-function LeistenText({ kopf, art, titel, zeile }: { kopf: string; art?: string; titel: string; zeile?: string }) {
-  return (
-    <span className="flex min-w-0 flex-[1_1_240px] flex-col gap-[3px]">
-      <span className="text-[13px] text-ink-subtle">
-        <span className="font-semibold">{kopf}</span>
-        {art && ` · ${art}`}
-      </span>
-      <span className="text-[17px] leading-snug font-semibold">{titel}</span>
-      {zeile && <span className="text-sm text-ink-muted">{zeile}</span>}
-    </span>
-  );
-}
+// Kompaktes Kästchen, gleiches Prinzip für alle: Symbol, kurzer Titel, eine
+// Zeile darunter, Pfeil; das ganze Kästchen ist der Link. Mehrere teilen sich
+// die Höhe der Fokus-Karte.
+const KAESTCHEN =
+  "flex items-center gap-3 rounded-karte bg-card px-5 py-4 text-ink shadow-card min-[960px]:min-h-0 min-[960px]:flex-1";
 
 /**
- * Selbstlernen als Leiste: "Danach · flexibel" (A, E), ausgegraut "Nach dem
- * Unterricht" (B) oder "Noch offen von …" (E, F). Titel = Lektionstitel
- * ohne Klammer (Entscheidung Anna 2026-10-10: nicht "Wiederholung zum
- * Live-Unterricht" wie in der v12-Referenz). Mit Stand "in Bearbeitung"
- * (0029/Nr. 9) "Begonnen" + "Weiterlernen", sonst "Noch offen" + "Starten".
+ * Selbstlernen rechts neben der Fokus-Karte: kompaktes weißes Kästchen
+ * "Wissen festigen" bzw. "Nachholen" mit dem Titel der Lektion -- auch
+ * während des Unterrichts (B) anklickbar. "Wissen festigen" nur, wenn die
+ * Lektion zu einer Live-Lektion gehört (live_lektion_id, 0029); sonst
+ * "Selbstlernen". Zeile darunter: Starten bzw. Weiterlernen (Stand
+ * "in Bearbeitung", 0029/Nr. 9).
  */
 export function FlexLeiste({
   lektion,
-  kopf = "Danach · flexibel",
-  gedimmt,
+  kopf,
+  festigt = true,
 }: {
   lektion: OffeneLektion;
+  /** Gesetzt = Lektion von einem früheren Tag ("Noch offen von …"). */
   kopf?: string;
-  gedimmt?: boolean;
+  /** Gehört zu einer Live-Lektion ("Wissen festigen") */
+  festigt?: boolean;
 }) {
-  const inhalt = (
-    <>
-      <LeistenIcon selbst>
-        <BookOpen className="size-5" aria-hidden="true" />
-      </LeistenIcon>
-      <LeistenText kopf={kopf} art="Selbstlernen" titel={lektion.titel} zeile={lektion.begonnen ? "Begonnen" : "Noch offen"} />
-      <span className="text-[15px] font-semibold whitespace-nowrap">
-        {gedimmt ? "Nach dem Unterricht" : lektion.begonnen ? "Weiterlernen →" : "Starten →"}
+  const titel = kopf ? "Nachholen" : festigt ? "Wissen festigen" : "Selbstlernen";
+  return (
+    <Link href={lektionHref(lektion.lessonId)} className={cn(KAESTCHEN, LEISTE_LINK)}>
+      <BookOpen className="size-[22px] flex-none text-self" aria-hidden="true" />
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="text-[17px] font-semibold">{titel}</span>
+        <span className="line-clamp-2 text-sm text-ink-muted">
+          {kopf ? `${kopf} · ` : ""}
+          {lektion.titel}
+          <span className="sr-only">. {lektion.begonnen ? "Weiterlernen" : "Starten"}</span>
+        </span>
       </span>
-    </>
-  );
-  // B: bewusst kein Link -- während des Unterrichts keine zweite Aktion.
-  // Gedimmt über die Textfarbe (--ink-muted), nicht über Deckkraft.
-  return gedimmt ? (
-    <div className={cn(LEISTE, LEISTE_SELBST, "text-ink-muted")}>{inhalt}</div>
-  ) : (
-    <Link href={lektionHref(lektion.lessonId)} className={cn(LEISTE, LEISTE_SELBST, LEISTE_LINK)}>
-      {inhalt}
+      <ArrowRight className="size-[17px] flex-none text-ink-muted" aria-hidden="true" />
     </Link>
   );
 }
@@ -443,54 +443,41 @@ export function FlexLeiste({
 /** C: zuletzt erledigte Live-Session mit Weg zu den Unterlagen. */
 export function ErledigtLeiste({ erledigt }: { erledigt: ErledigtEintrag[] }) {
   const live = [...erledigt].reverse().find((e) => e.typ === "live");
-  if (!live || live.typ !== "live") return null;
+  if (!live || live.typ !== "live" || !live.lessonId) return null;
   return (
-    <div className={cn(LEISTE, LEISTE_NEUTRAL)}>
-      <LeistenIcon>
-        <Check className="size-5" aria-hidden="true" />
-      </LeistenIcon>
-      <LeistenText kopf="Erledigt" art={`Live-Unterricht ${hhmm(live.start)}`} titel={live.titel} />
-      {live.lessonId && (
-        <Link
-          href={lektionHref(live.lessonId)}
-          className={cn("text-[15px] font-semibold whitespace-nowrap", LINK_FOKUS)}
-        >
-          Unterlagen ansehen →
-        </Link>
-      )}
-    </div>
+    <Link href={lektionHref(live.lessonId)} className={cn(KAESTCHEN, LEISTE_LINK)}>
+      <Check className="size-[22px] flex-none text-progress" strokeWidth={2.5} aria-hidden="true" />
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="text-[17px] font-semibold">Unterlagen ansehen</span>
+        <span className="line-clamp-1 text-sm text-ink-muted">
+          <span className="sr-only">Erledigt: Live-Unterricht {hhmm(live.start)}, </span>
+          {live.titel}
+        </span>
+      </span>
+      <ArrowRight className="size-[17px] flex-none text-ink-muted" aria-hidden="true" />
+    </Link>
   );
 }
 
 const ERLEDIGT_TEXT: Record<ErledigtEintrag["typ"], string> = {
   live: "Live-Unterricht",
-  flex: "Selbstlernen",
+  flex: "Wissen festigen",
   praxis: "Praxisaufgabe",
 };
 
-/** D: was heute erledigt wurde, mit Häkchen. */
+/** D: was heute erledigt wurde, mit Weg zur Woche. */
 export function HeuteErledigtLeiste({ erledigt }: { erledigt: ErledigtEintrag[] }) {
   return (
-    <div className={cn(LEISTE, LEISTE_NEUTRAL)}>
-      <LeistenIcon>
-        <Check className="size-5" aria-hidden="true" />
-      </LeistenIcon>
-      <span className="flex min-w-0 flex-[1_1_240px] flex-col gap-1.5">
-        <span className="text-[13px] font-semibold text-ink-subtle">Heute erledigt</span>
-        <ul className="flex flex-wrap gap-x-5 gap-y-1">
-          {erledigt.map((e, i) => (
-            <li key={i} className="inline-flex items-center gap-1.5 text-[15px]">
-              <Check className="size-4 shrink-0 text-progress" aria-hidden="true" />
-              {ERLEDIGT_TEXT[e.typ]}
-              <span className="sr-only">: {e.titel}</span>
-            </li>
-          ))}
-        </ul>
+    <Link href="/schedule?ansicht=woche" className={cn(KAESTCHEN, LEISTE_LINK)}>
+      <Check className="size-[22px] flex-none text-progress" strokeWidth={2.5} aria-hidden="true" />
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="text-[17px] font-semibold">Heute erledigt</span>
+        <span className="line-clamp-1 text-sm text-ink-muted">
+          {erledigt.map((e) => ERLEDIGT_TEXT[e.typ]).join(" · ")}
+        </span>
       </span>
-      <Link href="/schedule?ansicht=woche" className={cn("text-[15px] font-semibold whitespace-nowrap", LINK_FOKUS)}>
-        Woche ansehen →
-      </Link>
-    </div>
+      <ArrowRight className="size-[17px] flex-none text-ink-muted" aria-hidden="true" />
+    </Link>
   );
 }
 
