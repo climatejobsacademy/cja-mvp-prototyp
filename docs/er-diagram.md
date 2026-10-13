@@ -23,6 +23,7 @@ erDiagram
         text email
         text name
         text rufname "seit 0029"
+        text foto_pfad "Bucket profilfotos, seit 0030"
         text username
         date geburtsdatum
         text geschlecht

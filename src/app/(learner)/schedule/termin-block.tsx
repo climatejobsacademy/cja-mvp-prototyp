@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Check, Video, Wrench } from "lucide-react";
 
+import { TrainerZeile } from "@/components/trainer-zeile";
 import { cn } from "@/lib/utils";
 
 import { zeitText, type Block } from "./plan-modell";
@@ -31,6 +32,7 @@ export function TerminBlock({ block, gross, style }: { block: Block; gross: bool
     `${zeitText(block)} Uhr`,
     block.titel,
     block.thema,
+    block.trainer ? `${block.art === "live" ? "Live" : "Praxis"} mit ${block.trainer.rufname}` : null,
     block.ort,
     block.naechster ? "als Nächstes" : STATUS_TEXT[block.status],
   ]
@@ -91,6 +93,15 @@ export function TerminBlock({ block, gross, style }: { block: Block; gross: bool
         </Link>
       ) : (
         <span aria-label={label}>{titel}</span>
+      )}
+      {/* Trainer:in des Termins (SR-78); steht auch im aria-label des Links. */}
+      {block.trainer && (
+        <TrainerZeile
+          art={block.art}
+          trainer={block.trainer}
+          klein={!gross}
+          className={cn("pointer-events-none", block.naechster ? "text-white" : undefined)}
+        />
       )}
       {/* Nur Anzeige -- geklickt wird die Fläche des Links darüber. Ohne
           pointer-events-none fängt der Knopf beim Hover (filter = eigene

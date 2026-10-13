@@ -3,7 +3,8 @@ export const metadata = { title: "Datenschutzerklärung" };
 export default function DatenschutzPage() {
   // SR-60 (Pflichtseite). Abschnitte „Fragen und Antworten zu Lektionen“
   // (SR-74, SR-75) und „Lernmaterialien und externe Links“ (SR-68) ergänzt
-  // 2026-10-08. Eigene Formulierung, nicht rechtlich geprüft.
+  // 2026-10-08; Abschnitt „Profilfotos“ (SR-77, SR-78) und Rufname ergänzt
+  // 2026-10-13. Eigene Formulierung, nicht rechtlich geprüft.
   // Optional, nach Veröffentlichung:
   // (1) DPF-Zertifizierung von Vercel optional prüfen und ergänzen.
   return (
@@ -38,7 +39,7 @@ export default function DatenschutzPage() {
         Klimajobs angelegt, eine Selbstregistrierung ist nicht möglich. Zur
         Anmeldung versenden wir einen Einmallink (Magic Link) an Ihre
         hinterlegte E-Mail-Adresse. Es wird kein Passwort gespeichert.
-        Verarbeitet werden E-Mail-Adresse, Name, Benutzername, zugeordnete Rolle
+        Verarbeitet werden E-Mail-Adresse, Name, Rufname, Benutzername, zugeordnete Rolle
         und Organisation, Zeitpunkte der Anmeldung sowie, soweit erfasst,
         Geburtsdatum, Geschlecht (die Angabe „keine Angabe“ ist möglich),
         Vorerfahrung und Sprache. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.
@@ -89,10 +90,35 @@ export default function DatenschutzPage() {
         Abs. 1 lit. b DSGVO.
       </p>
 
+      <h2>Profilfotos</h2>
+      <p>
+        Sie können im Konto-Menü freiwillig ein Profilfoto hochladen, ändern
+        und jederzeit selbst entfernen. Ihr Browser schneidet das Foto
+        quadratisch zu und verkleinert es, bevor es übertragen wird.
+        Gespeichert wird es in einem nicht öffentlichen Speicher unseres
+        Datenbankdienstes Supabase in der EU (Frankfurt). Abgerufen wird es nur
+        über zeitlich begrenzte Links (eine Stunde). Sichtbar ist Ihr Foto für
+        Sie selbst, für Ihre Trainerinnen und Trainer und für das zuständige
+        Personal der Akademie für Klimajobs, nicht für andere Teilnehmende.
+        Wenn Sie das Foto entfernen oder ein neues hochladen, löschen wir die
+        bisherige Datei; sie kann noch bis zu sieben Tage in den täglichen
+        Sicherungskopien (Backups) enthalten sein. Rechtsgrundlage: Ihre
+        Einwilligung, Art. 6 Abs. 1 lit. a DSGVO; Sie können sie jederzeit
+        widerrufen, indem Sie das Foto entfernen.
+      </p>
+      <p>
+        An Live-Terminen und Praxistagen zeigen wir Namen und, soweit
+        vorhanden, das Foto der Trainerin oder des Trainers. Diese Angaben sehen
+        nur die Teilnehmenden, für die der Termin geplant ist. Fotos von
+        Trainerinnen und Trainern stellen wir nur mit deren Einwilligung ein;
+        sie liegen im selben nicht öffentlichen Speicher.
+      </p>
+
       <h2>Uploads</h2>
       <p>
-        Derzeit können Lernende keine Dateien oder Medien auf die Plattform
-        hochladen. Sollte sich das ändern, ergänzen wir diese Erklärung vorab.
+        Außer dem Profilfoto können Lernende derzeit keine Dateien oder Medien
+        auf die Plattform hochladen. Sollte sich das ändern, ergänzen wir diese
+        Erklärung vorab.
       </p>
 
       <h2>E-Mail-Versand</h2>
@@ -216,7 +242,7 @@ export default function DatenschutzPage() {
         <a href="https://learn.climatejobsacademy.com/">
           https://learn.climatejobsacademy.com/
         </a>{" "}
-        und wurde zuletzt am 08.10.2026 aktualisiert.
+        und wurde zuletzt am 13.10.2026 aktualisiert.
       </p>
     </main>
   );

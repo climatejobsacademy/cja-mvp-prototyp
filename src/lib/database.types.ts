@@ -33,7 +33,7 @@ type Json = string | number | boolean | null | { [key: string]: Json | undefined
 export type OrganisationTyp = "afcj" | "employer";
 export type OrganisationStatus = "aktiv" | "trial" | "pausiert";
 export type Sprache = "DE" | "UK";
-export type Rolle = "learner" | "afcj_admin";
+export type Rolle = "learner" | "afcj_admin" | "trainer"; // trainer seit 0030 (SR-78)
 export type CourseTyp = "synchron" | "asynchron";
 export type ContentType = "scorm" | "live" | "repository";
 export type LessonResourceTyp = "datei" | "link";
@@ -100,6 +100,7 @@ type PersonRow = Flatten<
     vorerfahrung: string | null;
     sprache: Sprache;
     rufname: string; // 0029, SR-48/SR-73
+    foto_pfad: string | null; // 0030, SR-77: "<person_id>/<uuid>.jpg" im Bucket profilfotos
   }
 >;
 
@@ -543,6 +544,7 @@ export type Database = {
             vorerfahrung?: string | null;
             sprache?: Sprache;
             rufname?: string; // Trigger belegt ihn aus name vor
+            foto_pfad?: string | null;
           }
         >,
         Partial<PersonRow>
@@ -969,6 +971,13 @@ export type Database = {
       fn_kann_beitrag_schreiben: { Args: { p_lesson_id: string; p_cohort_id: string }; Returns: boolean };
       // Zeitraum je Modul aus dem Stundenplan der Kohorte (0028), RLS der aufrufenden Person.
       fn_modul_zeitraum: { Args: { p_cohort_id: string }; Returns: { modul_id: string; von: string; bis: string }[] };
+      // Trainer:innen im eigenen Plan, nur Rolle trainer (0030, SR-78).
+      fn_meine_trainer: {
+        Args: Record<string, never>;
+        Returns: { person_id: string; name: string; rufname: string; foto_pfad: string | null }[];
+      };
+      // Darf die eingeloggte Person die Fotos im Ordner sehen? (0030, SR-77)
+      fn_darf_foto_sehen: { Args: { p_ordner: string }; Returns: boolean };
     };
   };
 };

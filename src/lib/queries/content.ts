@@ -208,7 +208,14 @@ export type LessonDetail = {
   contentType: ContentType;
   chatAktiv: boolean;
   status: UnitProgressStatus;
-  liveSession: { datum: string; start: string; ende: string; joinLink: string | null } | null;
+  liveSession: {
+    datum: string;
+    start: string;
+    ende: string;
+    joinLink: string | null;
+    /** live_session.trainer_id (SR-78), sonst null */
+    trainerId: string | null;
+  } | null;
   scorm: { entryPointPfad: string; zipSignedUrl: string } | null;
   /** Live-Lektion: die zugehörige Selbstlern-Lektion ("Wissen festigen") */
   festigen: VerknuepfteLektion | null;
@@ -257,7 +264,7 @@ export async function getLessonDetail(
     // Lektion teilen). Nichts im eigenen Plan → kein Termin.
     const { data: sessions } = await supabase
       .from("live_session")
-      .select("id, datum, start, ende, join_link")
+      .select("id, datum, start, ende, join_link, trainer_id")
       .eq("lesson_id", lessonId);
     const { data: eintraege } = sessions?.length
       ? await supabase
@@ -274,6 +281,7 @@ export async function getLessonDetail(
         start: session.start,
         ende: session.ende,
         joinLink: session.join_link,
+        trainerId: session.trainer_id,
       };
     }
   }

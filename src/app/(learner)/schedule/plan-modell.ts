@@ -3,6 +3,7 @@
 // "Flexibel", Tagestyp. Reine Funktionen, keine Datenbank.
 
 import type { Plantag } from "@/lib/queries/stundenplan";
+import type { TrainerAnzeige } from "@/lib/queries/trainer";
 import { hatUhrzeit, naechsterTerminId, tagestypAus, type Tagestyp } from "@/lib/stundenplan";
 
 export type BlockStatus = "erledigt" | "vorbei" | "offen";
@@ -30,6 +31,8 @@ export type Block = {
   inhalt: string | null;
   lessonId: string | null;
   fieldJobId: string | null;
+  /** "Live mit …" / "Praxis mit …" (SR-78), null = niemand eingetragen */
+  trainer: TrainerAnzeige | null;
 };
 
 export type Chip = {
@@ -49,6 +52,8 @@ export type Ganztag = {
   status: BlockStatus;
   href: string;
   fieldJobId: string;
+  /** "Praxis mit …" (SR-78), null = niemand eingetragen */
+  trainer: TrainerAnzeige | null;
 };
 
 
@@ -78,6 +83,7 @@ export function zeitText(b: Pick<Block, "start" | "ende">): string {
 export function planModell(tage: Plantag[], heute: string, jetzt: string): TagModell[] {
   const modelle = tage.map((tag): TagModell => {
     const lektionHref = (lessonId: string) => `/content/${lessonId}?von=stundenplan&datum=${tag.datum}`;
+    const trainerVon = (id: string | null) => (id ? (tag.trainer.get(id) ?? null) : null);
 
     const live: Block[] = tag.theorie.flatMap((e) => {
       if (e.art !== "live" || !e.liveSession) return [];
@@ -105,6 +111,7 @@ export function planModell(tage: Plantag[], heute: string, jetzt: string): TagMo
           inhalt: e.lessonId ? lektionHref(e.lessonId) : null,
           lessonId: e.lessonId,
           fieldJobId: null,
+          trainer: trainerVon(s.trainerId),
         },
       ];
     });
@@ -133,6 +140,7 @@ export function planModell(tage: Plantag[], heute: string, jetzt: string): TagMo
               inhalt: `/praxistag/${e.fieldJobId}`,
               lessonId: null,
               fieldJobId: e.fieldJobId,
+              trainer: trainerVon(e.trainerId),
             },
           ]
         : []
@@ -146,6 +154,7 @@ export function planModell(tage: Plantag[], heute: string, jetzt: string): TagMo
         status: praxisStatus(e.status),
         href: `/praxistag/${e.fieldJobId}`,
         fieldJobId: e.fieldJobId,
+        trainer: trainerVon(e.trainerId),
       }));
 
     // Brief 2.4/5: Selbstlernen nur in "Flexibel", nie mit Uhrzeit.
