@@ -33,6 +33,11 @@ export type FieldJobTypeListItem = {
 export type ModuleGroup = {
   id: string | null; // null = Kurse hängen direkt am Programm, kein Modul
   name: string | null;
+  /** Modul der Woche (module.modul_id, 0028); null ohne Zuordnung bzw. ohne Woche */
+  modulId: string | null;
+  /** theorie/praxis und online/praesenz/betrieb (0028), null wenn nicht gepflegt */
+  wochentyp: "theorie" | "praxis" | null;
+  lage: "online" | "praesenz" | "betrieb" | null;
   courses: CourseListItem[];
   praxisTypen: FieldJobTypeListItem[];
 };
@@ -52,7 +57,7 @@ export async function getContentLibrary(
   const [{ data: modules }, { data: coursesViaProgramme }, { data: fieldJobTypesViaProgramme }] = await Promise.all([
     supabase
       .from("module")
-      .select("id, name, reihenfolge")
+      .select("id, name, reihenfolge, modul_id, wochentyp, lage")
       .eq("programme_id", programmeId)
       .order("reihenfolge", { ascending: true }),
     supabase
@@ -184,6 +189,9 @@ export async function getContentLibrary(
   const groups: ModuleGroup[] = (modules ?? []).map((m) => ({
     id: m.id,
     name: m.name,
+    modulId: m.modul_id,
+    wochentyp: m.wochentyp,
+    lage: m.lage,
     courses: allCourses.filter((c) => c.module_id === m.id).map(buildCourse),
     praxisTypen: allFieldJobTypes.filter((ft) => ft.module_id === m.id).map(buildPraxisTyp),
   }));
@@ -191,7 +199,15 @@ export async function getContentLibrary(
   const ungruppierteKurse = allCourses.filter((c) => !c.module_id).map(buildCourse);
   const ungruppiertePraxisTypen = allFieldJobTypes.filter((ft) => !ft.module_id).map(buildPraxisTyp);
   if (ungruppierteKurse.length > 0 || ungruppiertePraxisTypen.length > 0) {
-    groups.push({ id: null, name: null, courses: ungruppierteKurse, praxisTypen: ungruppiertePraxisTypen });
+    groups.push({
+      id: null,
+      name: null,
+      modulId: null,
+      wochentyp: null,
+      lage: null,
+      courses: ungruppierteKurse,
+      praxisTypen: ungruppiertePraxisTypen,
+    });
   }
 
   return groups;
