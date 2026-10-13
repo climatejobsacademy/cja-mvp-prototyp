@@ -27,13 +27,13 @@ type Step = "vorbereitung" | "bestaetigung" | "reflexion" | "abschluss";
 
 // Handoff 2a, "Nicht gestaltete Screens": nur die drei Button-Varianten,
 // Container-Karten, Segment-Schrittanzeige, Fokus-Ring in Eco Green.
-const FOKUS = "outline-none focus-visible:ring-2 focus-visible:ring-eco-green focus-visible:ring-offset-2";
+const FOKUS = "outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2";
 const PRIMAER = cn(
-  "inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-eco-deep-green px-4 text-[15px] font-medium text-white hover:bg-eco-deep-green/90 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-eco-deep-green sm:w-auto [&_svg]:size-[18px]",
+  "inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-brand px-4 text-[15px] font-medium text-white hover:bg-brand/90 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-brand sm:w-auto [&_svg]:size-[18px]",
   FOKUS
 );
 const SEKUNDAER = cn(
-  "inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg border border-border bg-white px-4 text-[15px] font-medium text-eco-deep-green hover:bg-eco-green/10 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto [&_svg]:size-[18px]",
+  "inline-flex h-11 w-full items-center justify-center gap-2 rounded-full border border-border bg-white px-4 text-[15px] font-medium text-ink hover:bg-subtle disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto [&_svg]:size-[18px]",
   FOKUS
 );
 const KARTE = "flex flex-col gap-5 rounded-xl border border-border p-4";
@@ -42,8 +42,8 @@ const SCHRITT: Record<Step, number> = { vorbereitung: 1, bestaetigung: 2, reflex
 function KartenKopf({ icon: Icon, titel }: { icon: typeof Wrench; titel: string }) {
   return (
     <div className="flex items-center gap-2">
-      <Icon className="size-[18px] shrink-0 text-eco-deep-green" aria-hidden="true" />
-      <h2 className="text-[15px] font-semibold text-eco-deep-green">{titel}</h2>
+      <Icon className="size-[18px] shrink-0 text-ink" aria-hidden="true" />
+      <h2 className="text-[15px] font-semibold text-ink">{titel}</h2>
     </div>
   );
 }
@@ -122,7 +122,7 @@ export function PraxistagFlow({
         <Link
           href={zurueck.href}
           className={cn(
-            "-ml-2 inline-flex min-h-11 w-fit items-center gap-1 rounded-lg px-2 text-sm font-medium text-muted-foreground hover:bg-eco-green/10 hover:text-eco-deep-green",
+            "-ml-2 inline-flex min-h-11 w-fit items-center gap-1 rounded-lg px-2 text-sm font-medium text-muted-foreground hover:bg-subtle hover:text-ink",
             FOKUS
           )}
         >
@@ -138,8 +138,8 @@ export function PraxistagFlow({
       />
 
       {error && (
-        <p className="flex items-start gap-2 rounded-lg border-2 border-coral p-3 text-sm text-eco-deep-green" role="alert">
-          <CircleAlert className="mt-0.5 size-4 shrink-0 text-coral" aria-hidden="true" />
+        <p className="flex items-start gap-2 rounded-lg border-2 border-praxis p-3 text-sm text-ink" role="alert">
+          <CircleAlert className="mt-0.5 size-4 shrink-0 text-praxis-text" aria-hidden="true" />
           {error}
         </p>
       )}
@@ -147,9 +147,9 @@ export function PraxistagFlow({
       {step === "vorbereitung" && (
         <section className={KARTE}>
           <KartenKopf icon={ClipboardList} titel="Vorbereitung" />
-          {detail.beschreibung && <p className="text-[15px] leading-relaxed text-eco-deep-green">{detail.beschreibung}</p>}
+          {detail.beschreibung && <p className="text-[15px] leading-relaxed text-ink">{detail.beschreibung}</p>}
           {detail.vorbereitungText ? (
-            <p className="text-[15px] leading-relaxed whitespace-pre-line text-eco-deep-green">{detail.vorbereitungText}</p>
+            <p className="text-[15px] leading-relaxed whitespace-pre-line text-ink">{detail.vorbereitungText}</p>
           ) : (
             <p className="text-sm text-muted-foreground">Keine Vorbereitungs-Instruktion hinterlegt.</p>
           )}
@@ -162,7 +162,7 @@ export function PraxistagFlow({
       {step === "bestaetigung" && (
         <section className={KARTE}>
           <KartenKopf icon={Wrench} titel="Durchführung" />
-          <p className="text-[15px] leading-relaxed text-eco-deep-green">
+          <p className="text-[15px] leading-relaxed text-ink">
             Führe die Aufgabe jetzt vor Ort durch. Bestätige hier, sobald du fertig bist.
           </p>
 
@@ -180,7 +180,7 @@ export function PraxistagFlow({
           ) : (
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-medium text-eco-deep-green" htmlFor="problem-beschreibung">
+                <label className="text-sm font-medium text-ink" htmlFor="problem-beschreibung">
                   Was ist passiert?
                 </label>
                 <textarea
@@ -190,7 +190,7 @@ export function PraxistagFlow({
                   rows={4}
                   placeholder="Kurz beschreiben, worum es geht …"
                   className={cn(
-                    "rounded-lg border border-border bg-white px-3 py-2.5 text-[15px] text-eco-deep-green placeholder:text-muted-foreground",
+                    "rounded-lg border border-border bg-white px-3 py-2.5 text-[15px] text-ink placeholder:text-muted-foreground",
                     FOKUS
                   )}
                 />
@@ -226,12 +226,12 @@ export function PraxistagFlow({
           )}
           {detail.reflexionsFragen.map((f) => (
             <fieldset key={f.id} className="flex flex-col gap-2">
-              <legend className="mb-2 text-sm font-medium text-eco-deep-green">{f.frageText}</legend>
+              <legend className="mb-2 text-sm font-medium text-ink">{f.frageText}</legend>
               {f.antwortoptionen.map((option) => (
                 // Ganze Zeile klickbar; gewählt: Rand Deep Green, Fläche hellgrün.
                 <label
                   key={option}
-                  className="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border border-border px-3 py-2.5 text-sm text-eco-deep-green hover:bg-eco-green/10 has-[:checked]:border-eco-deep-green has-[:checked]:bg-eco-green/10 has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-eco-green has-[:focus-visible]:ring-offset-2"
+                  className="flex min-h-11 cursor-pointer items-center gap-3 rounded-lg border border-border px-3 py-2.5 text-sm text-ink hover:bg-subtle has-[:checked]:border-brand has-[:checked]:bg-subtle has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand has-[:focus-visible]:ring-offset-2"
                 >
                   <input
                     type="radio"
@@ -239,7 +239,7 @@ export function PraxistagFlow({
                     value={option}
                     checked={antworten[f.id] === option}
                     onChange={() => setAntworten((prev) => ({ ...prev, [f.id]: option }))}
-                    className="size-4 shrink-0 accent-eco-deep-green outline-none"
+                    className="size-4 shrink-0 accent-brand outline-none"
                   />
                   {option}
                 </label>
@@ -260,11 +260,11 @@ export function PraxistagFlow({
 
       {step === "abschluss" && (
         <section className={cn(KARTE, "gap-4")} role="status">
-          <span className="flex size-10 items-center justify-center rounded-[10px] bg-eco-green/10">
-            <CircleCheck className="size-5 text-eco-green" aria-hidden="true" />
+          <span className="flex size-10 items-center justify-center rounded-[10px] bg-subtle">
+            <CircleCheck className="size-5 text-progress" aria-hidden="true" />
           </span>
           <div className="flex flex-col gap-1">
-            <p className="text-[15px] font-semibold text-eco-deep-green">Praxisaufgabe abgeschlossen</p>
+            <p className="text-[15px] font-semibold text-ink">Praxisaufgabe abgeschlossen</p>
             <p className="text-sm text-muted-foreground">Deine Reflexion ist abgesendet und wird verifiziert.</p>
           </div>
           <CaptureStatusBadge status={detail.capture?.status ?? "pending"} />

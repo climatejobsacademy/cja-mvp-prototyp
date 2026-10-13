@@ -29,7 +29,7 @@ export function Footer() {
             <Link
               key={href}
               href={href}
-              className="inline-flex min-h-11 items-center rounded-lg px-2.5 text-[13px] text-muted-foreground outline-none hover:bg-eco-green/10 hover:text-eco-deep-green focus-visible:ring-2 focus-visible:ring-eco-green focus-visible:ring-offset-2"
+              className="inline-flex min-h-11 items-center rounded-lg px-2.5 text-[13px] text-muted-foreground outline-none hover:bg-subtle hover:text-ink focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2"
             >
               {label}
             </Link>
