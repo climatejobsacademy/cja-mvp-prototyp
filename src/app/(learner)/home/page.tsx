@@ -36,6 +36,8 @@ type HeuteZeile = {
   sortierung: string;
   typ: Typ;
   titel: string;
+  /** Thema der Lektion (lesson.thema, SR-13), sonst null */
+  thema: string | null;
   href: string | null;
 };
 
@@ -64,6 +66,7 @@ export default async function HomePage() {
         sortierung: e.liveSession ? e.liveSession.start : "99",
         typ: typFuerContentType(e.contentType),
         titel: e.titel,
+        thema: e.thema,
         href: e.lessonId ? `/content/${e.lessonId}?von=home` : null,
       };
     }),
@@ -74,11 +77,13 @@ export default async function HomePage() {
       sortierung: "98",
       typ: "praxis" as const,
       titel: e.titel,
+      thema: null,
       href: `/praxistag/${e.fieldJobId}`,
     })),
   ].sort((a, b) => a.sortierung.localeCompare(b.sortierung));
 
-  const vorname = learner.name.trim().split(" ")[0];
+  // Rufname aus person.rufname (0029, Datenlücke Nr. 10) statt erstem Wort von name.
+  const vorname = learner.rufname.trim();
 
   return (
     <div className="flex flex-col gap-6">
@@ -103,7 +108,10 @@ export default async function HomePage() {
                       {z.zeit}
                     </span>
                     <TypIcon typ={z.typ} />
-                    <span className="min-w-0 flex-1 text-sm font-medium text-eco-deep-green">{z.titel}</span>
+                    <span className="min-w-0 flex-1 text-sm font-medium text-eco-deep-green">
+                      {z.titel}
+                      {z.thema && <span className="block text-[13px] font-normal text-muted-foreground">{z.thema}</span>}
+                    </span>
                     {z.href && (
                       <ChevronRight className="size-5 shrink-0 text-muted-foreground" aria-hidden="true" />
                     )}

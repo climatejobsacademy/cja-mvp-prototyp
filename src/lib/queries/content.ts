@@ -1,11 +1,14 @@
 import { heuteInBerlin } from "@/lib/date";
+import { lektionTitel } from "@/lib/lektion-titel";
 import { eigenerLiveTermin, type Plan } from "@/lib/live-termin";
 import { createClient } from "@/lib/supabase/server";
 import type { ContentType, UnitProgressStatus } from "@/lib/database.types";
 
 export type LessonListItem = {
   id: string;
+  /** Titel ohne Klammer, wenn thema gesetzt ist (SR-13, 0029) */
   name: string;
+  thema: string | null;
   contentType: ContentType;
   status: UnitProgressStatus;
 };
@@ -97,10 +100,19 @@ export async function getContentLibrary(
   const { data: lessons } = courseIds.length
     ? await supabase
         .from("lesson")
-        .select("id, course_id, name, content_type, reihenfolge")
+        .select("id, course_id, name, thema, content_type, reihenfolge")
         .in("course_id", courseIds)
         .order("reihenfolge", { ascending: true })
-    : { data: [] as { id: string; course_id: string; name: string; content_type: ContentType; reihenfolge: number }[] };
+    : {
+        data: [] as {
+          id: string;
+          course_id: string;
+          name: string;
+          thema: string | null;
+          content_type: ContentType;
+          reihenfolge: number;
+        }[],
+      };
 
   const lessonIds = (lessons ?? []).map((l) => l.id);
   const { data: progress } = lessonIds.length
@@ -118,7 +130,8 @@ export async function getContentLibrary(
       .filter((l) => l.course_id === course.id)
       .map((l) => ({
         id: l.id,
-        name: l.name,
+        name: lektionTitel(l.name, l.thema).titel,
+        thema: lektionTitel(l.name, l.thema).thema,
         contentType: l.content_type,
         status: statusByLesson.get(l.id) ?? "offen",
       }));
@@ -184,14 +197,23 @@ export async function getContentLibrary(
   return groups;
 }
 
+/** Verknüpfte Lektion (0029, live_lektion_id), nur wenn für Learner lesbar. */
+export type VerknuepfteLektion = { id: string; titel: string };
+
 export type LessonDetail = {
   id: string;
+  /** Titel ohne Klammer, wenn thema gesetzt ist (SR-13, 0029) */
   name: string;
+  thema: string | null;
   contentType: ContentType;
   chatAktiv: boolean;
   status: UnitProgressStatus;
   liveSession: { datum: string; start: string; ende: string; joinLink: string | null } | null;
   scorm: { entryPointPfad: string; zipSignedUrl: string } | null;
+  /** Live-Lektion: die zugehörige Selbstlern-Lektion ("Wissen festigen") */
+  festigen: VerknuepfteLektion | null;
+  /** Selbstlern-Lektion: die zugehörige Live-Lektion */
+  liveLektion: VerknuepfteLektion | null;
 };
 
 export async function getLessonDetail(
@@ -203,10 +225,23 @@ export async function getLessonDetail(
 
   const { data: lesson } = await supabase
     .from("lesson")
-    .select("id, name, content_type, chat_aktiv")
+    .select("id, name, thema, content_type, chat_aktiv, live_lektion_id")
     .eq("id", lessonId)
     .single();
   if (!lesson) return null;
+
+  // Selbstlernen <-> Live (SR-15, Datenlücke Nr. 8): über live_lektion_id an
+  // der Selbstlern-Lektion, 1:1 -- nicht mehr über gleichen Titel am selben
+  // Tag. Unveröffentlichte Lektionen filtert RLS heraus.
+  const { data: verknuepft } =
+    lesson.content_type === "live"
+      ? await supabase.from("lesson").select("id, name, thema").eq("live_lektion_id", lesson.id).maybeSingle()
+      : lesson.live_lektion_id
+        ? await supabase.from("lesson").select("id, name, thema").eq("id", lesson.live_lektion_id).maybeSingle()
+        : { data: null };
+  const verknuepfteLektion: VerknuepfteLektion | null = verknuepft
+    ? { id: verknuepft.id, titel: lektionTitel(verknuepft.name, verknuepft.thema).titel }
+    : null;
 
   const { data: progress } = await supabase
     .from("unit_progress")
@@ -277,13 +312,17 @@ export async function getLessonDetail(
     }
   }
 
+  const titel = lektionTitel(lesson.name, lesson.thema);
   return {
     id: lesson.id,
-    name: lesson.name,
+    name: titel.titel,
+    thema: titel.thema,
     contentType: lesson.content_type,
     chatAktiv: lesson.chat_aktiv,
     status: progress?.status ?? "offen",
     liveSession,
     scorm,
+    festigen: lesson.content_type === "live" ? verknuepfteLektion : null,
+    liveLektion: lesson.content_type === "live" ? null : verknuepfteLektion,
   };
 }

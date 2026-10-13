@@ -11,6 +11,8 @@ export type Block = {
   id: string;
   art: "live" | "praxis";
   titel: string;
+  /** Live: Thema der Lektion (lesson.thema, SR-13), sonst null */
+  thema: string | null;
   datum: string;
   /** "HH:MM:SS" */
   start: string;
@@ -33,6 +35,8 @@ export type Block = {
 export type Chip = {
   id: string;
   titel: string;
+  /** Thema der Lektion (lesson.thema, SR-13), sonst null */
+  thema: string | null;
   href: string;
   erledigt: boolean;
 };
@@ -88,6 +92,7 @@ export function planModell(tage: Plantag[], heute: string, jetzt: string): TagMo
           id: e.scheduleEntryId,
           art: "live",
           titel: e.titel,
+          thema: e.thema,
           datum: tag.datum,
           start: s.start,
           ende: s.ende,
@@ -115,6 +120,7 @@ export function planModell(tage: Plantag[], heute: string, jetzt: string): TagMo
               id: e.scheduleEntryId,
               art: "praxis" as const,
               titel: e.titel,
+              thema: null,
               datum: tag.datum,
               start: e.start,
               ende: e.ende,
@@ -149,6 +155,7 @@ export function planModell(tage: Plantag[], heute: string, jetzt: string): TagMo
         {
           id: e.scheduleEntryId,
           titel: e.titel,
+          thema: e.thema,
           href: e.lessonId ? lektionHref(e.lessonId) : "/content",
           erledigt: e.unitProgressStatus === "abgeschlossen",
         },

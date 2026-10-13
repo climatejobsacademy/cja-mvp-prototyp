@@ -22,6 +22,7 @@ erDiagram
         uuid id PK "= auth.users.id"
         text email
         text name
+        text rufname "seit 0029"
         text username
         date geburtsdatum
         text geschlecht
@@ -91,6 +92,8 @@ erDiagram
         jsonb inhalt "nur noch scorm, repository siehe lesson_resource"
         int reihenfolge
         text status "published/unpublished, seit 2026-09-11"
+        text thema "seit 0029"
+        uuid live_lektion_id FK "Selbstlernen -> Live, 1:1, seit 0029"
     }
     lesson_resource {
         uuid id PK
@@ -311,6 +314,7 @@ erDiagram
 
     person ||--o{ unit_progress : ""
     lesson ||--o{ unit_progress : ""
+    lesson |o--o| lesson : "live_lektion_id (Selbstlernen -> Live)"
     person ||--o{ attendance : ""
     live_session ||--o{ attendance : ""
 

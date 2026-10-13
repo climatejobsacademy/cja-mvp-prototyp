@@ -1,4 +1,5 @@
 import { plusTage } from "@/lib/date";
+import { lektionTitel } from "@/lib/lektion-titel";
 import { createClient } from "@/lib/supabase/server";
 import type { ContentType, UnitProgressStatus } from "@/lib/database.types";
 
@@ -22,7 +23,10 @@ export type TheorieEintrag = {
   scheduleEntryId: string;
   lessonId: string | null;
   art: "live" | "asynchron";
+  /** Lektionstitel ohne Klammer, wenn thema gesetzt ist (SR-13, 0029) */
   titel: string;
+  /** Thema der Lektion (lesson.thema), sonst null */
+  thema: string | null;
   contentType: ContentType | "kurs";
   unitProgressStatus: UnitProgressStatus | null;
   liveSession: {
@@ -132,8 +136,8 @@ export async function getAgendaZeitraum(
 
     const [{ data: lessons }, { data: courses }, { data: liveSessions }] = await Promise.all([
       lessonIds.length
-        ? supabase.from("lesson").select("id, name, content_type").in("id", lessonIds)
-        : Promise.resolve({ data: [] as { id: string; name: string; content_type: ContentType }[] }),
+        ? supabase.from("lesson").select("id, name, thema, content_type").in("id", lessonIds)
+        : Promise.resolve({ data: [] as { id: string; name: string; thema: string | null; content_type: ContentType }[] }),
       courseIds.length
         ? supabase.from("course").select("id, name").in("id", courseIds)
         : Promise.resolve({ data: [] as { id: string; name: string }[] }),
@@ -154,7 +158,7 @@ export async function getAgendaZeitraum(
     if (liveSessionLessonIds.length > 0) {
       const { data: extraLessons } = await supabase
         .from("lesson")
-        .select("id, name, content_type")
+        .select("id, name, thema, content_type")
         .in("id", liveSessionLessonIds);
       allLessons = [...allLessons, ...(extraLessons ?? [])];
     }
@@ -176,13 +180,15 @@ export async function getAgendaZeitraum(
         if (!session) continue;
         const lesson = session.lesson_id ? allLessons.find((l) => l.id === session.lesson_id) : null;
         const course = session.course_id ? courses?.find((c) => c.id === session.course_id) : null;
+        const titel = lesson ? lektionTitel(lesson.name, lesson.thema) : null;
         theorie.push({
           datum: entry.datum,
           kind: "theorie",
           scheduleEntryId: entry.id,
           lessonId: lesson?.id ?? null,
           art: "live",
-          titel: lesson?.name ?? course?.name ?? "Live-Termin",
+          titel: titel?.titel ?? course?.name ?? "Live-Termin",
+          thema: titel?.thema ?? null,
           contentType: "live",
           unitProgressStatus: lesson ? progressByLesson.get(lesson.id) ?? "offen" : null,
           liveSession: {
@@ -196,13 +202,15 @@ export async function getAgendaZeitraum(
       } else if (entry.lesson_id) {
         const lesson = allLessons.find((l) => l.id === entry.lesson_id);
         if (!lesson) continue;
+        const titel = lektionTitel(lesson.name, lesson.thema);
         theorie.push({
           datum: entry.datum,
           kind: "theorie",
           scheduleEntryId: entry.id,
           lessonId: lesson.id,
           art: "asynchron",
-          titel: lesson.name,
+          titel: titel.titel,
+          thema: titel.thema,
           contentType: lesson.content_type,
           unitProgressStatus: progressByLesson.get(lesson.id) ?? "offen",
           liveSession: null,
@@ -217,6 +225,7 @@ export async function getAgendaZeitraum(
           lessonId: null,
           art: "asynchron",
           titel: course.name,
+          thema: null,
           contentType: "kurs",
           unitProgressStatus: null,
           liveSession: null,
