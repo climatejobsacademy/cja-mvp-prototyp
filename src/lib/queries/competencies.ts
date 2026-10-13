@@ -5,8 +5,8 @@ export type StepStatus = "abgeschlossen" | "in Prüfung" | "abgelehnt" | "offen"
 
 /**
  * Fortschritt je Teilschritt: wie viele der zugeordneten Lektionen (theoretisch)
- * bzw. Praxisaufgaben (praktisch) schon abgeschlossen sind (SR-69). Bestimmt
- * seit SR-70 auch den Status: abgeschlossen erst bei allen (AND). null, wenn
+ * bzw. Praxisaufgaben (praktisch) schon abgeschlossen sind (SR-62). Bestimmt
+ * seit SR-63 auch den Status: abgeschlossen erst bei allen (AND). null, wenn
  * nichts zugeordnet ist.
  */
 export type StepFortschritt = {
@@ -52,7 +52,7 @@ export async function getKompetenzFortschritt(learnerId: string): Promise<Compet
   const { data: steps } = await supabase
     .from("competency_step")
     .select("id, name, typ");
-  // N:M seit SR-65 (0019): ein Teilschritt kann an mehreren Kompetenzen
+  // N:M seit SR-69 (0019): ein Teilschritt kann an mehreren Kompetenzen
   // hängen und zählt dann in jeder davon mit.
   const { data: competencySteps } = await supabase
     .from("competency_competency_step")
@@ -70,7 +70,7 @@ export async function getKompetenzFortschritt(learnerId: string): Promise<Compet
 
   const stepIds = steps.map((s) => s.id);
 
-  // SR-68 (0021): Erfüllungsstand je Kompetenz mit AND-Logik aus der DB. Die
+  // SR-72 (0021): Erfüllungsstand je Kompetenz mit AND-Logik aus der DB. Die
   // View liefert erst eine Zeile, wenn mindestens ein Teilschritt erfüllt ist.
   const { data: fulfilment } = await supabase
     .from("competency_fulfilment")
@@ -140,7 +140,7 @@ export async function getKompetenzFortschritt(learnerId: string): Promise<Compet
   }
 
   function stepStatus(stepId: string, fortschritt: StepFortschritt | null): StepStatus {
-    // SR-70: abgeschlossen erst, wenn ALLE zugeordneten Lektionen bzw.
+    // SR-63: abgeschlossen erst, wenn ALLE zugeordneten Lektionen bzw.
     // Field-Job-Typen erfüllt sind -- gleiche Regel wie competency_fulfilment
     // (0022). Teilschritte ohne Zuordnung bleiben offen.
     if (fortschritt && fortschritt.gesamt > 0 && fortschritt.abgeschlossen === fortschritt.gesamt) {
@@ -152,7 +152,7 @@ export async function getKompetenzFortschritt(learnerId: string): Promise<Compet
     return "offen";
   }
 
-  // Teilschritt-Fortschritt (SR-69, seit SR-70 auch Status): abgeschlossene Lektion =
+  // Teilschritt-Fortschritt (SR-62, seit SR-63 auch Status): abgeschlossene Lektion =
   // unit_progress.status 'abgeschlossen'; abgeschlossene Praxisaufgabe =
   // mindestens eine verifizierte Selbstauskunft (field_capture.status
   // 'verified') zu einem field_job dieses Typs -- nicht schon 'durchgeführt'.
@@ -181,7 +181,7 @@ export async function getKompetenzFortschritt(learnerId: string): Promise<Compet
   }
 
   function stepFortschritt(stepId: string, typ: CompetencyStepTyp): StepFortschritt | null {
-    // SR-67: theoretische Teilschritte hängen nur an Lektionen, praktische nur
+    // SR-71: theoretische Teilschritte hängen nur an Lektionen, praktische nur
     // an Field-Job-Typen.
     const ids = typ === "theoretisch" ? lessonIdsByStep.get(stepId) : jobTypeIdsByStep.get(stepId);
     if (!ids || ids.size === 0) return null;

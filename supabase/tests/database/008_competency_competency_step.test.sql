@@ -1,5 +1,5 @@
 -- 008_competency_competency_step.test.sql
--- SR-65 (0019): competency_competency_step (N:M competency <-> competency_step)
+-- SR-69 (0019): competency_competency_step (N:M competency <-> competency_step)
 -- ist Katalogdaten wie competency/competency_step -- read All für alle
 -- eingeloggten Rollen, write nur AfCJ admin. Zusätzlich: ein Teilschritt kann
 -- an mehreren Kompetenzen hängen (eigentlicher Zweck der Umstellung).
@@ -36,7 +36,7 @@ insert into competency (id, name, kompetenzbereich, quelle) values
   ('00000000-0000-0000-0000-000000000322', 'Testkompetenz B', 'Elektro', 'EFK-EE');
 
 -- competency_id ist bis zur Drop-Column-Folgemigration noch not null und
--- muss deshalb gesetzt werden, ist aber nicht mehr maßgeblich (SR-65).
+-- muss deshalb gesetzt werden, ist aber nicht mehr maßgeblich (SR-69).
 insert into competency_step (id, competency_id, name, typ) values
   ('00000000-0000-0000-0000-000000000331', '00000000-0000-0000-0000-000000000321', 'Geteilter Teilschritt', 'theoretisch');
 

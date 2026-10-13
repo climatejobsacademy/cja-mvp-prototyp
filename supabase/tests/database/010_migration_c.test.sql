@@ -1,9 +1,9 @@
 -- 010_migration_c.test.sql
 -- Migration C (0021):
--- SR-67: content_competency_mapping nimmt nur theoretische, field_job_type_
+-- SR-71: content_competency_mapping nimmt nur theoretische, field_job_type_
 -- competency_mapping nur praktische Teilschritte auf (Trigger
 -- check_competency_step_typ, auch bei UPDATE von competency_step_id).
--- SR-68: competency_fulfilment -- eine Kompetenz gilt erst als erfüllt, wenn
+-- SR-72: competency_fulfilment -- eine Kompetenz gilt erst als erfüllt, wenn
 -- ALLE ihr zugeordneten Teilschritte erfüllt sind (AND-Logik).
 --
 -- Ausführen mit: supabase test db
@@ -50,7 +50,7 @@ insert into competency (id, name, kompetenzbereich, quelle) values
   ('00000000-0000-0000-0000-000000000551', 'Kompetenz mit zwei Teilschritten', 'Elektro', 'EFK-EE');
 
 -- competency_id ist bis zur Drop-Column-Folgemigration noch not null
--- (SR-65, 0019) -- maßgeblich ist competency_competency_step.
+-- (SR-69, 0019) -- maßgeblich ist competency_competency_step.
 insert into competency_step (id, competency_id, name, typ) values
   ('00000000-0000-0000-0000-000000000561', '00000000-0000-0000-0000-000000000551', 'Theorie 1', 'theoretisch'),
   ('00000000-0000-0000-0000-000000000562', '00000000-0000-0000-0000-000000000551', 'Theorie 2', 'theoretisch'),
@@ -61,7 +61,7 @@ insert into competency_competency_step (competency_id, competency_step_id) value
   ('00000000-0000-0000-0000-000000000551', '00000000-0000-0000-0000-000000000562');
 
 -- ------------------------------------------------------------
--- SR-67: Typ-Regel der Trigger
+-- SR-71: Typ-Regel der Trigger
 -- ------------------------------------------------------------
 select lives_ok(
   $$ insert into content_competency_mapping (lesson_id, competency_step_id) values
@@ -99,7 +99,7 @@ select throws_ok(
 );
 
 -- ------------------------------------------------------------
--- SR-68: AND-Logik in competency_fulfilment
+-- SR-72: AND-Logik in competency_fulfilment
 -- ------------------------------------------------------------
 select is_empty(
   $$ select 1 from competency_fulfilment

@@ -176,6 +176,42 @@ type LessonRow = Flatten<
     content_type: ContentType;
     inhalt: Json | null;
     reihenfolge: number;
+    chat_aktiv: boolean;
+  }
+>;
+
+// Fragen-Thread pro Lektion (0024, SR-74). Learner dürfen
+// organisation_id und updated_at nicht lesen (Spalten-Grant); Row enthält nur
+// die lesbaren Spalten.
+type LektionBeitragRow = {
+  id: string;
+  created_at: string;
+  lesson_id: string;
+  cohort_id: string;
+  parent_id: string | null;
+  person_id: string | null;
+  autor_anzeigename: string | null;
+  text: string | null;
+  geloescht_am: string | null;
+};
+
+type KohorteModerationRow = Flatten<
+  Timestamps & {
+    id: string;
+    cohort_id: string;
+    person_id: string;
+    created_by: string | null;
+  }
+>;
+
+type ModerationsprotokollAktion = "geloescht_autor" | "geloescht_moderation";
+
+type ModerationsprotokollRow = Flatten<
+  Timestamps & {
+    id: string;
+    beitrag_id: string;
+    person_id: string | null;
+    aktion: ModerationsprotokollAktion;
   }
 >;
 
@@ -197,7 +233,7 @@ type CompetencyRow = Flatten<
     name: string;
     kompetenzbereich: string;
     /**
-     * @deprecated Seit 0020 (SR-66) nicht mehr als Programm-Zuordnung lesen --
+     * @deprecated Seit 0020 (SR-70) nicht mehr als Programm-Zuordnung lesen --
      * die läuft über `competency_programme` (N:M). Spalte entfällt mit der
      * Drop-Column-Folgemigration.
      */
@@ -209,7 +245,7 @@ type CompetencyStepRow = Flatten<
   Timestamps & {
     id: string;
     /**
-     * @deprecated Seit 0019 (SR-65) nicht mehr lesen -- Zuordnung zur
+     * @deprecated Seit 0019 (SR-69) nicht mehr lesen -- Zuordnung zur
      * Kompetenz läuft über `competency_competency_step` (N:M). Spalte
      * entfällt mit der Drop-Column-Folgemigration.
      */
@@ -300,7 +336,7 @@ type FieldJobTypeRow = Flatten<
     // Entschieden 2026-09-16 (SR-58/0014): XOR mit programme_id, analog course.
     module_id: string | null;
     programme_id: string | null;
-    // Entschieden 2026-09-16 (SR-59/0015): analog module.reihenfolge/course.reihenfolge.
+    // Entschieden 2026-09-16 (SR-58/0015): analog module.reihenfolge/course.reihenfolge.
     reihenfolge: number;
   }
 >;
@@ -553,10 +589,24 @@ export type Database = {
             content_type: ContentType;
             inhalt?: Json | null;
             reihenfolge: number;
+            chat_aktiv?: boolean;
           }
         >,
         Partial<LessonRow>
       >;
+      // Insert nur mit diesen vier Spalten (Spalten-Grant); person_id,
+      // organisation_id und autor_anzeigename setzt der Trigger. Kein Update.
+      lektion_beitrag: Table<
+        LektionBeitragRow,
+        { lesson_id: string; cohort_id: string; parent_id?: string | null; text: string },
+        Record<string, never>
+      >;
+      kohorte_moderation: Table<
+        KohorteModerationRow,
+        Flatten<Partial<Timestamps> & { id?: string; cohort_id: string; person_id: string; created_by?: string | null }>,
+        Partial<KohorteModerationRow>
+      >;
+      moderationsprotokoll: Table<ModerationsprotokollRow, Record<string, never>, Record<string, never>>;
       lesson_resource: Table<
         LessonResourceRow,
         Flatten<
@@ -836,9 +886,15 @@ export type Database = {
       // Berechnete View, kein Write (siehe 0006_progress_and_evidence.sql) —
       // absichtlich kein Insert/Update-Typ.
       competency_evidence: View<CompetencyEvidenceRow>;
-      // SR-68 (0021): AND-Logik je Learner und Kompetenz, ebenfalls kein Write.
+      // SR-72 (0021): AND-Logik je Learner und Kompetenz, ebenfalls kein Write.
       competency_fulfilment: View<CompetencyFulfilmentRow>;
     };
-    Functions: Record<string, never>;
+    Functions: {
+      // Soft-Delete eines Beitrags (0024): Autor:in eigene, Moderation alle der Kohorte.
+      fn_beitrag_loeschen: { Args: { p_beitrag_id: string }; Returns: undefined };
+      // Sichtbarkeit und Schreibrecht im Thread (0024), gleiche Regel wie die Policies.
+      fn_kann_beitraege_lesen: { Args: { p_lesson_id: string; p_cohort_id: string }; Returns: boolean };
+      fn_kann_beitrag_schreiben: { Args: { p_lesson_id: string; p_cohort_id: string }; Returns: boolean };
+    };
   };
 };

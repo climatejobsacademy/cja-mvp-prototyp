@@ -7,8 +7,10 @@ import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { requireCurrentLearner } from "@/lib/queries/session";
 import { getLessonDetail } from "@/lib/queries/content";
+import { getLektionThread } from "@/lib/queries/lektion-thread";
 import { getLessonMaterialien } from "@/lib/queries/materialien";
 
+import { LektionThread } from "./lektion-thread";
 import { MarkCompleteButton } from "./mark-complete-button";
 import { MaterialienListe } from "./materialien-liste";
 import { ScormPlayer } from "./scorm-player";
@@ -46,6 +48,10 @@ export default async function LessonPage({
 
   if (!lesson) notFound();
 
+  // Fragen-Thread (SR-74): null bei chat_aktiv aus oder
+  // ohne Leserecht, dann wird nichts angezeigt.
+  const thread = await getLektionThread(lesson.id, lesson.chatAktiv, learner);
+
   const done = lesson.status === "abgeschlossen";
 
   return (
@@ -68,7 +74,7 @@ export default async function LessonPage({
         </div>
       </div>
 
-      {/* Lernmaterialien (SR folgt): bei SCORM über dem Player, bei Live unter
+      {/* Lernmaterialien (SR-68): bei SCORM über dem Player, bei Live unter
           der Session, bei Repository als Hauptinhalt. Ohne Materialien kein
           Abschnitt (Repository: Hinweistext). */}
       {lesson.contentType === "scorm" && materialien.length > 0 && (
@@ -139,6 +145,8 @@ export default async function LessonPage({
           <MarkCompleteButton lessonId={lesson.id} done={done} />
         </div>
       )}
+
+      {thread && <LektionThread lessonId={lesson.id} thread={thread} />}
     </div>
   );
 }

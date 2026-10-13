@@ -1,5 +1,5 @@
 -- 012_lesson_resources_access.test.sql
--- Lernmaterialien (0023, SR folgt): Bucket lesson-resources und lesson_resource
+-- Lernmaterialien (0023, SR-68): Bucket lesson-resources und lesson_resource
 -- sind für Lernende nur bei veröffentlichter Lektion und Einschreibung
 -- (aktiv/abgeschlossen) in das Programm der Lektion lesbar. Anonyme sehen
 -- nichts, Lernende schreiben nichts, AfCJ admin liest alles.

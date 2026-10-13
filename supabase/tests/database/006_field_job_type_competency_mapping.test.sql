@@ -41,7 +41,7 @@ insert into competency (id, name, kompetenzbereich, quelle) values
   ('00000000-0000-0000-0000-000000000231', 'Testkompetenz Fjtcm', 'Elektro', 'EFK-EE');
 
 -- competency_id nur noch, weil die Spalte bis zur Drop-Column-Folgemigration
--- not null ist -- maßgeblich ist competency_competency_step (SR-65, 0019).
+-- not null ist -- maßgeblich ist competency_competency_step (SR-69, 0019).
 insert into competency_step (id, competency_id, name, typ) values
   ('00000000-0000-0000-0000-000000000232', '00000000-0000-0000-0000-000000000231', 'Praktischer Teilschritt', 'praktisch');
 

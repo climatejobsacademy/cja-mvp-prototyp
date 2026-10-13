@@ -1,5 +1,5 @@
 // Hilfsfunktionen für Lernmaterialien an Lektionen (lesson_resource, Bucket
-// lesson-resources, Migration 0023; SR folgt). Ohne Server-Import, damit sie
+// lesson-resources, Migration 0023; SR-68). Ohne Server-Import, damit sie
 // in Server- und Client-Komponenten sowie in node:test nutzbar sind.
 
 const FORMAT_JE_MIMETYPE: Record<string, string> = {
