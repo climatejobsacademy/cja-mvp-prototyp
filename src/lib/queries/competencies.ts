@@ -21,6 +21,8 @@ export type CompetencyStepView = {
   typ: CompetencyStepTyp;
   status: StepStatus;
   fortschritt: StepFortschritt | null;
+  /** Position innerhalb der Kompetenz (competency_competency_step.reihenfolge, 0027) */
+  reihenfolge: number;
 };
 
 export type CompetencyView = {
@@ -43,8 +45,15 @@ export type CompetencyView = {
  * theoretischer Teilschritt der Kompetenz hängt (content_competency_mapping);
  * Kompetenzen ganz ohne Mapping (nur praktische Teilschritte) fallen ans Ende.
  */
-export async function getKompetenzFortschritt(learnerId: string): Promise<CompetencyView[]> {
+export async function getKompetenzFortschritt(learnerId: string, programmeId?: string): Promise<CompetencyView[]> {
   const supabase = await createClient();
+
+  // SR-70: mit programmeId nur die Kompetenzen dieses Programms
+  // (competency_programme, 0020); ohne alle (bisheriges Verhalten).
+  const { data: programmZuordnung } = programmeId
+    ? await supabase.from("competency_programme").select("competency_id").eq("programme_id", programmeId)
+    : { data: null };
+  const imProgramm = programmZuordnung ? new Set(programmZuordnung.map((z) => z.competency_id)) : null;
 
   const { data: competencies } = await supabase
     .from("competency")
@@ -53,19 +62,25 @@ export async function getKompetenzFortschritt(learnerId: string): Promise<Compet
     .from("competency_step")
     .select("id, name, typ");
   // N:M seit SR-69 (0019): ein Teilschritt kann an mehreren Kompetenzen
-  // hängen und zählt dann in jeder davon mit.
+  // hängen und zählt dann in jeder davon mit. Reihenfolge je Kompetenz aus
+  // competency_competency_step.reihenfolge (0027).
   const { data: competencySteps } = await supabase
     .from("competency_competency_step")
-    .select("competency_id, competency_step_id");
+    .select("competency_id, competency_step_id, reihenfolge")
+    .order("reihenfolge", { ascending: true });
 
   if (!competencies || !steps || !competencySteps) return [];
+  const kompetenzListe = imProgramm ? competencies.filter((c) => imProgramm.has(c.id)) : competencies;
 
   const stepById = new Map(steps.map((s) => [s.id, s]));
+  // Eingefügt in reihenfolge-Sortierung, die Listen sind damit je Kompetenz sortiert.
   const stepIdsByCompetency = new Map<string, string[]>();
+  const positionJeZuordnung = new Map<string, number>();
   for (const cs of competencySteps) {
     const list = stepIdsByCompetency.get(cs.competency_id) ?? [];
     list.push(cs.competency_step_id);
     stepIdsByCompetency.set(cs.competency_id, list);
+    positionJeZuordnung.set(`${cs.competency_id}:${cs.competency_step_id}`, cs.reihenfolge);
   }
 
   const stepIds = steps.map((s) => s.id);
@@ -193,13 +208,20 @@ export async function getKompetenzFortschritt(learnerId: string): Promise<Compet
     };
   }
 
-  const result: CompetencyView[] = competencies.map((c) => {
+  const result: CompetencyView[] = kompetenzListe.map((c) => {
     const mySteps = (stepIdsByCompetency.get(c.id) ?? [])
       .map((id) => stepById.get(id))
       .filter((s) => s !== undefined);
     const stepViews: CompetencyStepView[] = mySteps.map((s) => {
       const fortschritt = stepFortschritt(s.id, s.typ);
-      return { id: s.id, name: s.name, typ: s.typ, status: stepStatus(s.id, fortschritt), fortschritt };
+      return {
+        id: s.id,
+        name: s.name,
+        typ: s.typ,
+        status: stepStatus(s.id, fortschritt),
+        fortschritt,
+        reihenfolge: positionJeZuordnung.get(`${c.id}:${s.id}`) ?? Number.MAX_SAFE_INTEGER,
+      };
     });
     // Keine Zeile in competency_fulfilment = noch kein Teilschritt erfüllt.
     const f = fulfilmentByCompetency.get(c.id);

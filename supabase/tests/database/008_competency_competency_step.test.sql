@@ -42,13 +42,13 @@ insert into competency_step (id, competency_id, name, typ) values
 
 -- Derselbe Teilschritt an zwei Kompetenzen -- mit dem alten 1:N-Schema
 -- (competency_step.competency_id) nicht abbildbar.
-insert into competency_competency_step (id, competency_id, competency_step_id) values
-  ('00000000-0000-0000-0000-000000000341', '00000000-0000-0000-0000-000000000321', '00000000-0000-0000-0000-000000000331'),
-  ('00000000-0000-0000-0000-000000000342', '00000000-0000-0000-0000-000000000322', '00000000-0000-0000-0000-000000000331');
+insert into competency_competency_step (id, competency_id, competency_step_id, reihenfolge) values
+  ('00000000-0000-0000-0000-000000000341', '00000000-0000-0000-0000-000000000321', '00000000-0000-0000-0000-000000000331', 1),
+  ('00000000-0000-0000-0000-000000000342', '00000000-0000-0000-0000-000000000322', '00000000-0000-0000-0000-000000000331', 1);
 
 select throws_ok(
-  $$ insert into competency_competency_step (competency_id, competency_step_id) values
-     ('00000000-0000-0000-0000-000000000321', '00000000-0000-0000-0000-000000000331') $$,
+  $$ insert into competency_competency_step (competency_id, competency_step_id, reihenfolge) values
+     ('00000000-0000-0000-0000-000000000321', '00000000-0000-0000-0000-000000000331', 2) $$,
   '23505', NULL,
   'Dieselbe Kombination Kompetenz/Teilschritt lässt sich nicht doppelt anlegen'
 );
@@ -71,8 +71,8 @@ select is(
 );
 
 select throws_ok(
-  $$ insert into competency_competency_step (competency_id, competency_step_id) values
-     ('00000000-0000-0000-0000-000000000321', '00000000-0000-0000-0000-000000000331') $$,
+  $$ insert into competency_competency_step (competency_id, competency_step_id, reihenfolge) values
+     ('00000000-0000-0000-0000-000000000321', '00000000-0000-0000-0000-000000000331', 2) $$,
   '42501', NULL,
   'Learner darf keine Zuordnung anlegen'
 );
@@ -99,8 +99,8 @@ select lives_ok(
 );
 
 select lives_ok(
-  $$ insert into competency_competency_step (competency_id, competency_step_id) values
-     ('00000000-0000-0000-0000-000000000322', '00000000-0000-0000-0000-000000000331') $$,
+  $$ insert into competency_competency_step (competency_id, competency_step_id, reihenfolge) values
+     ('00000000-0000-0000-0000-000000000322', '00000000-0000-0000-0000-000000000331', 1) $$,
   'AfCJ admin darf eine Zuordnung anlegen'
 );
 

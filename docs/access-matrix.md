@@ -26,7 +26,7 @@ Learner · Instructor / Team Lead · AfCJ trainer · Manager · AfCJ admin
 
 | Entity / group | Learner | Instructor / Team Lead | AfCJ trainer | Manager | AfCJ admin |
 |---|---|---|---|---|---|
-| Organisation, membership | read Own; write — | read Org; write — | read Own; write — | read Org; write — | read All; write All |
+| Organisation, membership (inkl. `organisation.logo_pfad`, SR-76) | read Own; write — | read Org; write — | read Own; write — | read Org; write — | read All; write All |
 | Qualification structure (Curriculum, Kompetenzen, Mappings) | read All (nur veröffentlicht); write — | read All (nur veröffentlicht); write — | read All (nur veröffentlicht); write — | read All (nur veröffentlicht); write — | read All; write All |
 | Cohort, schedule, live sessions | read Own; write — | read Cohort; write — | read Cohort; write Cohort | read Org; write — | read All; write All |
 | Enrolment | read Own; write — | read Cohort; write — | read Cohort; write — | read Org; write — | read All; write All |
@@ -45,6 +45,8 @@ Learner · Instructor / Team Lead · AfCJ trainer · Manager · AfCJ admin
 | Knowledge sources | —; — | —; — | —; — | —; — | read All; write All |
 | Guidance conversations | — (noch nicht Prototype) | — (noch nicht Prototype) | — (noch nicht Prototype) | — (noch nicht Prototype) | — (noch nicht Prototype) |
 
+Organisations-Logo (SR-76, 0025): Die Zuordnung `organisation.logo_pfad` folgt der Zeile „Organisation, membership“ (Lernende nur eigene Organisation). Die Bilddateien liegen im **öffentlichen** Bucket `org-logos`: Lesen für alle mit der URL, ohne Login (bewusst entschieden 2026-10-08, Dateinamen sind UUIDs). Schreiben nur AfCJ admin im Supabase-Dashboard; es gibt keine Storage-Policy und keine Schreibrechte der App.
+
 ## Anmerkungen
 
 Entschieden 2026-09-04: Zehn von zwölf Zeilen ausgefüllt bei Erstanlage. "Field job" war zunächst offen (hängt an der Praxistag-Journey), ist mit Ergänzung 2026-09-09 als KI-Entwurf befüllt, analog zu Enrolment/Attendance — zur Bestätigung durch Malte zusammen mit Group 3 in `data-model.md` (Group 3 gilt dort bereits als abgenommen, da Malte vor Prototyp-Start kein Review mehr leisten kann). "Guidance conversations" bleibt leer, weil die zugrunde liegende Entität noch nicht Prototype ist (Build next).
@@ -58,5 +60,7 @@ Zu "Cohort, schedule, live sessions" — Learner read Own: Die RLS-Policy `live_
 Entschieden 2026-10-07 (Learning Designer und Vera): Zeile "Lernmaterialien" neu. Lernende lesen Materialien und die Dateien im Bucket `lesson-resources` nur, wenn die Lektion veröffentlicht ist und sie in einer Kohorte des Programms der Lektion mit Status aktiv oder abgeschlossen eingeschrieben sind (`fn_kann_lektion_lesen`, Migration 0023). Das ist enger als die bisherige Regel für `lesson_resource` (nur veröffentlicht). Die Spalten für Instructor, AfCJ trainer und Manager sind bewusst offen, weil diese Rollen im Prototyp nicht existieren. `file_asset` bleibt für alle Eingeloggten lesbar (Name, Typ, Pfad), der Dateiinhalt nur über die Storage-Policy.
 
 Entschieden 2026-10-07 (Vera), SR-74 und SR-75, Migration 0024: Zeilen „Fragen-Thread“ und „Moderation Fragen-Thread“ neu. Lernende lesen Beiträge nur im Thread ihrer eigenen Kohorte an Lektionen mit `chat_aktiv` (Einschreibung aktiv oder abgeschlossen) und schreiben nur mit Einschreibung `aktiv`. Beiträge sind innerhalb der Kohorte über Arbeitgeber hinweg sichtbar (Ausnahme von SR-06, siehe `decisions.md`, Eintrag 2026-10-07 „Fragen-Thread gehört der Kohorte, Ausnahme von SR-06“). Moderierende sind keine eigene Rolle, sondern Einträge in `kohorte_moderation`; sie lesen die Threads ihrer Kohorte und löschen dort Beiträge. Die Spalten für Instructor, AfCJ trainer und Manager bleiben offen.
+
+Entschieden 2026-10-12 (Vera), SR-13, Migration 0026: Zeile „Field job“ unverändert. Die neuen Spalten `start` und `ende` liest der Learner mit der eigenen Zeile. Schreiben dürfen Lernende weiterhin nur die drei Felder aus dem Eintrag vom 2026-09-11; der Spalten-Grant gilt für die ganze Rolle `authenticated`, also auch für AfCJ admin in der App. Die Zeiten setzt AfCJ über Dashboard bzw. SQL wie die übrigen Praxistag-Daten.
 
 Entschieden 2026-10-13 (SR-05, Migration 0028): `modul` und `modul_competency` gehören zur Zeile „Qualification structure“, keine neue Zeile. Lernende lesen nur veröffentlichte Module (`modul.status`) und Kompetenz-Zuordnungen nur an veröffentlichten Modulen; Schreiben nur AfCJ admin. `fn_modul_zeitraum` läuft mit den Rechten der aufrufenden Person (security invoker) und erweitert keinen Zugriff: Lernende bekommen Zeiträume nur aus ihrem eigenen Stundenplan, AfCJ admin aus allen Einträgen der Kohorte.
