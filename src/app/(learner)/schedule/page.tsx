@@ -28,7 +28,7 @@ import { planModell } from "./plan-modell";
 // mobil) und Monat (nur Desktop). Entscheidungen Anna 2026-10-10:
 // Praxistage vorläufig 08:30-16:30 ("ca."), Häkchen bei Live nur mit
 // bestätigter Anwesenheit, kein Reiter "Programm", Breite wie alle Seiten
-// 1080 px. Änderungsliste 2026-10-10: ruhigere Darstellung, "Woche n" ab
+// 1120 px. Änderungsliste 2026-10-10: ruhigere Darstellung, "Woche n" ab
 // Kohortenstart statt Modul, Monatsansicht.
 
 const DATUM = /^\d{4}-\d{2}-\d{2}$/;
@@ -77,9 +77,9 @@ export default async function SchedulePage({
     chips: [
       ...t.chips.map((c) => ({ ...c, titel: themaTitel(c.titel) })),
       // Sprachtraining-Demo (SR-31, VORLÄUFIG, nur demo, nicht nach dev):
-      // an Tagen mit Live-Unterricht "Fachsprache · 5 Min".
+      // an Tagen mit Live-Unterricht "Fachsprache".
       ...(SPRACHTRAINING_DEMO && t.bloecke.some((b) => b.art === "live")
-        ? [{ id: `sprache-${t.datum}`, titel: "Fachsprache · 5 Min", href: "/sprachtraining-demo?von=stundenplan", erledigt: false, refresher: false, sprache: true }]
+        ? [{ id: `sprache-${t.datum}`, titel: "Fachsprache", href: "/sprachtraining-demo?von=stundenplan", erledigt: false, refresher: false, sprache: true }]
         : []),
     ],
   }));

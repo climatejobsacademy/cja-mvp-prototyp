@@ -60,17 +60,17 @@ export function tagErledigt(tag: TagModell): boolean {
 /**
  * Selbstlern-Eintrag in "Flexibel" der Wochenansicht -- nie mit Uhrzeit
  * (Brief 5.5). Punkt 7: voller Titel (umbrechen), kein Status-Text; offen
- * hellgrün, erledigt weiß mit grauem Text und Häkchen.
+ * weiß mit leichtem grauem Rahmen (Anna 2026-10-13), erledigt weiß mit grauem Text und Häkchen.
  */
 export function FlexChip({ chip }: { chip: Chip }) {
   return (
     <Link
       href={chip.href}
       title={chip.refresher ? chip.titel : undefined}
-      aria-label={chip.sprache ? `Fachsprache des Tages, 5 Minuten` : `Selbstlernen, flexibel, ${chip.refresher ? "Wissen festigen: " : ""}${chip.titel}, ${chip.erledigt ? "erledigt" : "offen"}`}
+      aria-label={chip.sprache ? `Fachsprache des Tages` : `Selbstlernen, flexibel, ${chip.refresher ? "Wissen festigen: " : ""}${chip.titel}, ${chip.erledigt ? "erledigt" : "offen"}`}
       className={cn(
         "flex min-w-0 items-start gap-2 rounded-xl px-3 py-2.5 text-[13px] leading-snug font-semibold outline-none transition-[box-shadow] duration-150 hover:shadow-card focus-visible:ring-2 focus-visible:ring-brand motion-reduce:transition-none",
-        chip.erledigt ? "text-ink-muted" : "bg-self-tint text-ink"
+        chip.erledigt ? "text-ink-muted" : "border border-line bg-card text-ink"
       )}
     >
       {chip.sprache ? (
@@ -90,7 +90,7 @@ export function FlexChip({ chip }: { chip: Chip }) {
 export const BLOCK_RAND = { gross: { links: 8, rechts: 16 }, klein: { links: 6, rechts: 8 } } as const;
 
 /**
- * Punkt 9: Flexibel in der Tagesansicht als schmale hellgrüne Leiste, genau
+ * Punkt 9: Flexibel in der Tagesansicht als schmale Leiste (weiß, leichter Rahmen), genau
  * so breit wie der Live-Block -- Buch-Icon, Titel, Aktion.
  */
 export function FlexLeiste({ chip, gross }: { chip: Chip; gross: boolean }) {
@@ -99,13 +99,13 @@ export function FlexLeiste({ chip, gross }: { chip: Chip; gross: boolean }) {
     <Link
       href={chip.href}
       title={chip.refresher ? chip.titel : undefined}
-      aria-label={chip.sprache ? `Fachsprache des Tages, 5 Minuten` : `Selbstlernen, flexibel, ${chip.refresher ? "Wissen festigen: " : ""}${chip.titel}, ${chip.erledigt ? "erledigt" : "weiterlernen"}`}
+      aria-label={chip.sprache ? `Fachsprache des Tages` : `Selbstlernen, flexibel, ${chip.refresher ? "Wissen festigen: " : ""}${chip.titel}, ${chip.erledigt ? "erledigt" : "weiterlernen"}`}
       style={{ marginLeft: rand.links, marginRight: rand.rechts }}
       className={cn(
         "flex min-w-0 items-center gap-2 rounded-xl px-3 py-2 text-[13px] font-semibold outline-none transition-[box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-brand motion-reduce:transition-none",
         chip.erledigt
           ? "border border-line bg-card text-ink-muted hover:shadow-card"
-          : "bg-self-tint text-ink hover:shadow-card"
+          : "border border-line bg-card text-ink hover:shadow-card"
       )}
     >
       {chip.sprache ? (

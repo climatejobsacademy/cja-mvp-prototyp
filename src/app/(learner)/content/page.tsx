@@ -34,7 +34,7 @@ import { TrackingKarte, type Kachel } from "./tracking-karte";
 // gewählten Moduls, Kohorte; die Wochen mit Kursen und Lektionen im
 // Seitenpanel "Inhalte des Moduls". Entscheidungen Anna 2026-10-11: ca. 6 Module à ca. 4 Wochen
 // (vorläufige Gliederung in src/lib/programm.ts), Zeitraum bei jedem Modul
-// sichtbar; Breite 1080 px wie alle Seiten; Adresse bleibt /content.
+// sichtbar; Breite 1120 px wie alle Seiten; Adresse bleibt /content.
 
 export default async function ProgrammPage({
   searchParams,
