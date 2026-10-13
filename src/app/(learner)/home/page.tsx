@@ -1,16 +1,19 @@
-import { heuteInBerlin, jetztInBerlin } from "@/lib/date";
+import { heuteInBerlin, jetztInBerlin, montagDerWoche, plusTage } from "@/lib/date";
+import { freiText, wochenrueckblick, zaehlText } from "@/lib/home-frei";
 import { getDayState } from "@/lib/home-tag";
 import { getKompetenzFortschritt } from "@/lib/queries/competencies";
 import { getHeutigeKompetenzen, getNachholLektion, getZuletztKompetenzIds } from "@/lib/queries/home";
 import { getAktuellesModul, getModulKompetenzen } from "@/lib/queries/modul";
 import { getNaechsterTermin, getTagesAgenda } from "@/lib/queries/schedule";
 import { requireCurrentLearner } from "@/lib/queries/session";
+import { getKohortenStart, getStundenplan } from "@/lib/queries/stundenplan";
 import { getMeineTrainer } from "@/lib/queries/trainer";
 import { parseNowParameter } from "@/lib/stundenplan";
 import { cn } from "@/lib/utils";
 
 import { Begruessung, TestzeitHinweis } from "./begruessung";
 import { DeinTag, type StaerktFn } from "./dein-tag";
+import { AlleKompetenzen, FreiKarte, FreiZeilen } from "./freier-tag";
 import { aktivitaeten, istOnline, tagestyp } from "./home-hilfen";
 import { HeuteSpalte, ModulFortschritt, type RingKompetenz } from "./kompetenz-bereich";
 import type { GestaerkteKompetenz } from "./tages-karten";
@@ -20,8 +23,8 @@ import type { GestaerkteKompetenz } from "./tages-karten";
 // Modul-Ebene (0028): aktuelles Modul aus fn_modul_zeitraum, seine
 // Kompetenzen ausdrücklich aus modul_competency (Entscheidung 2026-10-13);
 // Thema, "Wissen festigen", "begonnen" und Rufname aus den Feldern von 0029;
-// Trainer:innen aus fn_meine_trainer() (0030). Ersetzt die frühere
-// CurriculumCard.
+// Trainer:innen aus fn_meine_trainer() (0030); "Heute frei" mit
+// Wochenrückblick (SR-79). Ersetzt die frühere CurriculumCard.
 
 export default async function HomePage({ searchParams }: { searchParams: Promise<{ now?: string }> }) {
   const learner = await requireCurrentLearner();
@@ -102,10 +105,51 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       <HeuteSpalte modul={modul} programmName={learner.programmeName} kompetenzen={heuteRinge} zuletzt={zuletzt} />
     ) : null;
 
+  const vorname = learner.rufname.trim();
+  const begruessung = <Begruessung vorname={vorname} heute={heute} typ={tagestyp(tag)} online={istOnline(tag)} />;
+
+  // SR-79: heute nichts geplant (Zustand F) → Karte "Heute frei" mit
+  // Rückblick auf die laufende Woche (Montag bis gestern), zwei Zeilen
+  // darunter, rechts alle Kompetenzen des Moduls; kein Modul-Fortschritt.
+  if (zustand.zustand === "F") {
+    const montag = montagDerWoche(heute);
+    const [plan, kohortenStart, aeltesteOffene] = await Promise.all([
+      montag < heute
+        ? getStundenplan(
+            {
+              organisationId: learner.organisationId,
+              cohortId: learner.cohortId,
+              enrolmentId: learner.enrolmentId,
+              learnerId: learner.personId,
+            },
+            montag,
+            plusTage(heute, -1)
+          )
+        : Promise.resolve([]),
+      getKohortenStart(learner.cohortId),
+      getNachholLektion(learner.organisationId, learner.cohortId, learner.enrolmentId, learner.personId, heute, true),
+    ]);
+    const rueckblick = wochenrueckblick(plan, heute);
+    const text = freiText(rueckblick, vorname, heute, naechster?.datum ?? null, !!kohortenStart && kohortenStart < heute);
+    return (
+      <div data-breit className="flex flex-col gap-9">
+        {simuliert && <TestzeitHinweis heute={heute} jetzt={jetzt} />}
+        {begruessung}
+        <div className={cn("grid items-start gap-12", modul && ringe.length > 0 && "min-[960px]:grid-cols-[2fr_1fr]")}>
+          <section aria-label="Dein Tag" className="flex min-w-0 flex-col gap-4">
+            <FreiKarte text={text} zaehlung={zaehlText(rueckblick)} tage={rueckblick?.tage ?? []} />
+            <FreiZeilen naechster={naechster} offen={aeltesteOffene} heute={heute} />
+          </section>
+          {modul && ringe.length > 0 && <AlleKompetenzen modul={modul} kompetenzen={ringe} />}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div data-breit className="flex flex-col gap-10">
       {simuliert && <TestzeitHinweis heute={heute} jetzt={jetzt} />}
-      <Begruessung vorname={learner.rufname.trim()} heute={heute} typ={tagestyp(tag)} online={istOnline(tag)} />
+      {begruessung}
       {/* Rechte Spalte nur so hoch wie ihr Inhalt (Option 1, 2026-10-10). */}
       <div className={cn("grid gap-8", spalte && "min-[960px]:grid-cols-[2fr_1fr]")}>
         <DeinTag
