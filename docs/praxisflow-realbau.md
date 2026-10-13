@@ -61,13 +61,14 @@ Alles additiv, ein Praxistag-Typ schaltet den neuen Ablauf einzeln ein, bis dahi
 
 - **`field_job_type.ablauf`** `text not null default 'einfach' check (ablauf in ('einfach','gefuehrt'))`. Nur Typen mit `gefuehrt` zeigen den sechsphasigen Ablauf.
 - **`field_job_type.pruefprotokoll_papier`** `boolean not null default false` (demo: `ZEIGE_PRUEFPROTOKOLL_HINWEIS`, für Energiehelden an).
+- **`field_job_type.nummer`** `text unique` (z. B. `M02-A03`, Maltes Spalte „Nummer“) und **`field_job_type.unterlagen_nr`** `text` (z. B. `E-02`, Spalte „Unterlagen-Nr.“). Die Nummer ist der Schlüssel für den Import (wiederholbar ohne Dubletten).
 - **`field_job.phase`** `text not null default 'analyse' check (phase in ('analyse','planen','entscheiden','durchfuehren','kontrolle','bewerten','abgeschlossen'))` und **`field_job.phase_seit`** `timestamptz`. Lernende bekommen **kein** Schreibrecht auf diese Spalten (Spaltenrechte wie 0012). Übergänge laufen nur über RPCs.
 
 ### 4.2 Neue Tabellen (alle mit `organisation_id`, `id`, `created_at`, `updated_at`)
 
 | Tabelle | Zweck | Wichtige Spalten |
 |---|---|---|
-| `field_job_type_unterlage` | Dateien je Auftrag (Maltes Spalte „Unterlagen“) | `field_job_type_id`, `reihenfolge`, `art` (auftragsblatt, arbeitsunterlage, sonstiges), `titel`, `file_asset_id`; unique (`field_job_type_id`, `reihenfolge`) |
+| `field_job_type_unterlage` | Dateien je Auftrag (Maltes Spalte „Unterlagen“, ein Dateiname je Zeile der Zelle) | `field_job_type_id`, `reihenfolge`, `kuerzel` (Präfix des Dateinamens: AA, AU, BB, ML …), `titel`, `file_asset_id`; unique (`field_job_type_id`, `reihenfolge`) |
 | `field_job_unterlage_angesehen` | demo: weiter erst, wenn alle Dateien geöffnet sind | `field_job_id`, `unterlage_id`, `angesehen_am`; unique je Paar |
 | `field_job_plan_eintrag` | Plan | `field_job_id`, `liste` (werkzeug, material, schritt), `text` (≤ 300 Zeichen), `reihenfolge`, `erledigt_am` (nur `schritt`); unique (`field_job_id`, `liste`, `reihenfolge`) deferrable |
 | `field_job_freigabe` | Freigaben durch die Trainer:in | `field_job_id`, `gate` (plan, durchfuehrung, kontrolle, fremdbewertung), `freigegeben_von` → `person`, `freigegeben_am`; unique (`field_job_id`, `gate`) |
@@ -155,6 +156,24 @@ create table field_job_bewertung (
 -- RLS: siehe 5. Policies und pgTAP-Tests gehören in dieselbe Migration (Regel 2 und 5).
 ```
 
+## 4a. Import aus Maltes Excel (Tab „Aufträge“)
+
+Spalten laut Malte: **Nummer** (z. B. `M02-A03`), **Titel**, **Modul**, **Teilschritte** (Kennungen, kommagetrennt), **Unterlagen-Nr.** (`E-xx`), **Unterlagen** (Dateinamen, ein Dateiname je Zeile der Zelle, z. B. `AA-E-02_….pdf`, `AU-E-02_….pdf`, `BB-E-02_….pdf`, `ML-E-02_….pdf`), **In Plattform zeigen** (ja/nein), **Ordner Praxisinhalte** (Drive-Ordnername), **Offen**.
+
+| Spalte | Ziel | Bemerkung |
+|---|---|---|
+| Nummer | `field_job_type.nummer` (neu, eindeutig) | Schlüssel des Imports; Wiederholung aktualisiert statt zu verdoppeln |
+| Titel | `field_job_type.titel` | |
+| Modul | Zuordnung des Auftrags zum Modul | Heute hängt `field_job_type` über `module_id` an einer **Woche** (`module`), nicht am Modul (`modul`, 0028). Entweder Woche aus dem Stundenplan zuordnen oder neue Spalte `field_job_type.modul_id`. **Zu entscheiden**, siehe Frage 11. |
+| Teilschritte | `field_job_type_competency_mapping` | **Lücke:** `competency_step` hat nur `name`, keine Kennung. Für „Kennungen, kommagetrennt“ braucht es eine eindeutige Kennung am Teilschritt (neue Spalte `competency_step.kennung`) oder eine Zuordnung über den Namen. Die Zuordnung wird nur für praktische Teilschritte angenommen (SR-71, Trigger prüft das). |
+| Unterlagen-Nr. | `field_job_type.unterlagen_nr` | |
+| Unterlagen | `field_job_type_unterlage` + `file_asset` | je Dateiname eine Zeile, `reihenfolge` nach Position in der Zelle, `kuerzel` aus dem Präfix, `titel` aus Kürzel und Unterlagen-Nr.; Datei kommt aus dem Drive-Ordner |
+| In Plattform zeigen | `field_job_type.status` | ja = `published`, nein = `unpublished` |
+| Ordner Praxisinhalte | nur Import-Parameter | Quellordner der Dateien in Drive, wird nicht gespeichert |
+| Offen | nicht importiert | interne Notiz |
+
+Ablauf: Skript wie die Skripte in `scripts/sql/`, **zuerst Probelauf** mit Zählung (neue und geänderte Aufträge, fehlende Dateien, unbekannte Teilschritte, unbekannte Kürzel), danach erst Speichern. Dateien lädt AfCJ admin in den Bucket `auftrags-unterlagen`; der Import legt nur die Zeilen an und meldet Dateien, die im Ordner fehlen. Dateinamen mit Leerzeichen oder Umlauten werden beim Upload zu `<uuid>.<ext>` umbenannt, der Originalname bleibt in `file_asset.dateiname`.
+
 ## 5. Zugriffsregeln je Rolle
 
 Das ist eine **Erweiterung der Zugriffsmatrix** (Regel 3 in `CLAUDE.md`): `docs/access-matrix.md` wird im selben PR angepasst, die Rolle `trainer` bekommt erstmals einen Login. Das braucht deine Entscheidung (Frage 1 unten).
@@ -180,10 +199,12 @@ Zeilen von abgeschlossenen Praxistagen (Freigaben, Einschätzungen, Plan) werden
 4. **Fotos.** Pflicht oder freiwillig? Fotos von Arbeitsergebnissen können Personen oder Kundendaten zeigen: Hinweistext, Einwilligung, Aufbewahrungsdauer, Löschung klären (Datenschutzerklärung ergänzen wie bei den Profilfotos).
 5. **Wer verifiziert?** Heute nur AfCJ admin. Ist die Fremdeinschätzung der Trainer:in ein Ersatz oder eine Ergänzung zur Verifizierung durch AfCJ? Davon hängt ab, ob `verification` für `trainer` geöffnet wird (SR-03, „ab MVP“).
 6. **Kriterien und Stufentexte.** Die vier Kriterien und die Texte je Punktestufe in demo sind Platzhalter. Gelten sie für alle Aufträge oder je Auftrag aus Maltes Excel?
-7. **Maltes Excel** (Tab „Aufträge“, Spalte „Unterlagen“): liegt mir nicht vor, im Repo steht dazu nichts. Annahme: je Auftrag eine Zeile mit einer Liste von Dateinamen. Zu klären: Format der Spalte (Trennzeichen, Dateinamen oder Titel), ob Art (Auftragsblatt, Arbeitsunterlage) im Namen steckt (demo: `aa-…`, `au-…`), wo die Dateien liegen, welche weiteren Spalten (Titel, Beschreibung, Kategorie, Vorbereitung, Kriterien) dazugehören. Der Import läuft dann als Skript analog zu `scripts/sql/` (Probelauf zuerst).
+7. **Kürzel der Unterlagen.** In Maltes Dateinamen kommen die Präfixe AA, AU, BB und ML vor. AA (Auftragsblatt) und AU (Arbeitsunterlage) kennt demo; was BB und ML bedeuten und wie sie den Lernenden heißen sollen („Bauteilbeschreibung“, „Materialliste“ wäre geraten, nicht bestätigt), muss Malte sagen. Das Modell speichert deshalb das Kürzel und zeigt den Titel aus einer kleinen Tabelle im Code, bis die Bezeichnungen feststehen.
 8. **Prüfprotokoll auf Papier**: je Auftrag (`pruefprotokoll_papier`) oder je Kohorte?
 9. **Trainer:in je Praxistag**: `field_job.instructor_id` muss befüllt werden (bisher leer); wer pflegt das, der Import?
 10. **Abschluss-Anzeige**: demo zeigt Prozentwerte je Kompetenz. Nachweis zählt erst nach Verifizierung – Vorschlag: „Diese Kompetenzen stärkt der Auftrag“ mit Ringen des heutigen Stands und dem Hinweis „zählt nach der Prüfung“.
+11. **Modul des Auftrags.** Excel nennt das Modul, die Datenbank kennt nur die Woche (`module`). Soll der Auftrag am Modul hängen (neue Spalte `modul_id`) oder weiter an einer Woche?
+12. **Kennung der Teilschritte.** Welche Kennungen stehen in „Teilschritte“, und sollen sie dauerhaft als `competency_step.kennung` gespeichert werden? Ohne Kennung müsste der Import über Namen zuordnen, das ist fehleranfällig.
 
 ## 7. Aufwand (grobe Einschätzung in Stunden, keine Messung)
 
@@ -191,7 +212,8 @@ Zeilen von abgeschlossenen Praxistagen (Freigaben, Einschätzungen, Plan) werden
 |---|---|
 | Schema, RLS, Storage-Policies, pgTAP | 16–20 |
 | RPCs und Server-Aktionen (Übergänge, Abschluss in einer Transaktion) | 8–10 |
-| Analyse: Unterlagen (Bucket, Download/Vorschau, „angesehen“, Import-Skript) | 10–12 |
+| Analyse: Unterlagen (Bucket, Download/Vorschau, „angesehen“) | 8–10 |
+| Import aus Maltes Excel (Skript mit Probelauf, Zuordnung Modul und Teilschritte, Kennung am Teilschritt) | 8–12 |
 | Planen: drei Listen, Sortieren, Speichern (Komponenten aus demo übernehmen) | 10–12 |
 | Durchführen: Schritte der Reihe nach abhaken | 4–6 |
 | Kontrolle: Foto (Verkleinern, Upload, Policies, Hinweis) | 8–10 |
@@ -201,11 +223,11 @@ Zeilen von abgeschlossenen Praxistagen (Freigaben, Einschätzungen, Plan) werden
 | Abschluss, Kompetenzanzeige, Prüfansicht für AfCJ | 6–8 |
 | Doku, Zugriffsmatrix, Datenschutzerklärung, SR, Traceability | 6–8 |
 | Tests (Unit, RLS), Vorschau-Abnahme, Korrekturen | 10–14 |
-| **Summe mit Variante A** | **104–136** |
-| **Summe mit Variante B** | **96–122** |
+| **Summe mit Variante A** | **110–146** |
+| **Summe mit Variante B** | **102–132** |
 
 Vorschlag für die Reihenfolge, damit jede Stufe einzeln prüfbar und mergebar ist (je ein kleiner PR, je eine Migration nur wo nötig):
-1. Phasen, Unterlagen, Plan, Durchführen (ohne Freigaben, `ablauf = 'gefuehrt'` nur für einen Test-Auftrag) – ca. 45–55 h.
+1. Phasen, Unterlagen, Import, Plan, Durchführen (ohne Freigaben, `ablauf = 'gefuehrt'` nur für einen Test-Auftrag) – ca. 55–65 h.
 2. Freigaben (nach Entscheidung zu Frage 1 und 2) – 8–24 h.
 3. Kontrolle mit Foto (nach Frage 4) und Bewerten – ca. 20–25 h.
 4. Abschluss, Prüfansicht, Doku und Datenschutz – ca. 15–20 h.
@@ -214,4 +236,4 @@ Vorschlag für die Reihenfolge, damit jede Stufe einzeln prüfbar und mergebar i
 
 Vorhanden und betroffen: SR-02 (Selbstauskunft), SR-03 (Verifizierung), SR-08 (kleine, atomare Schreibvorgänge), SR-25 (Nachweistyp und nächster Schritt im Feld), SR-71 (praktische Teilschritte), SR-77 und SR-78 (Fotos, Trainer:innen).
 
-**SR folgt** für: geführter Praxisflow (Phasen, Plan), Freigabe durch die Trainer:in, Selbst- und Fremdeinschätzung, Unterlagen je Auftrag, Foto der Kontrolle. Bitte in der Notion-Datenbank „System Requirements“ anlegen; die Nummern trage ich im selben PR wie die Migration in `docs/sr-registry.json` ein.
+**SR folgt** für: geführter Praxisflow (Phasen, Plan), Freigabe durch die Trainer:in, Selbst- und Fremdeinschätzung, Unterlagen je Auftrag, Foto der Kontrolle, Import der Aufträge. Die SR-Nummern kommen erst nach der Umfangsentscheidung durch Anna aus der Notion-Datenbank „System Requirements“; ich trage sie im selben PR wie die Migration in `docs/sr-registry.json` ein.
