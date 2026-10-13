@@ -87,3 +87,10 @@ export async function getModulKompetenzen(modulIds: string[]): Promise<Map<strin
   }
   return ergebnis;
 }
+
+/** Start und Ende der eigenen Kohorte (cohort_learner_select) -- für den Kopf der Programmseite. */
+export async function getKohortenZeitraum(cohortId: string): Promise<{ start: string; ende: string | null } | null> {
+  const supabase = await createClient();
+  const { data } = await supabase.from("cohort").select("start_datum, end_datum").eq("id", cohortId).maybeSingle();
+  return data ? { start: data.start_datum, ende: data.end_datum } : null;
+}
