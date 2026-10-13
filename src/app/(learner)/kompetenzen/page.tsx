@@ -117,7 +117,11 @@ export default async function KompetenzenPage({
     <div data-breit className="flex flex-col gap-8">
       <KompetenzenKopf programmName={learner.programmeName} modulTabs={tabs} gewaehltId={gewaehlt?.id ?? null} zusatz={zusatz} />
       {gewaehlt && gewaehltTab && gewaehlt.kompetenzIds.size > 0 && (
-        <ModulFortschrittZeile ueberzeile={gewaehltTab.ueberzeile} erreicht={gewaehlt.stepsErreicht} gesamt={gewaehlt.stepsGesamt} />
+        <ModulFortschrittZeile
+          ueberzeile={gewaehltTab.ueberzeile}
+          prozent={Math.round(liste.reduce((summe, k) => summe + k.prozent, 0) / Math.max(liste.length, 1))}
+          anzahl={liste.length}
+        />
       )}
       <KompetenzListe
         kompetenzen={liste}
@@ -128,10 +132,21 @@ export default async function KompetenzenPage({
       {detail && (
         <KompetenzPanel
           key={detail.id}
-          ueberzeile="Kompetenz"
+          ueberzeile={gewaehltTab ? `Kompetenz · ${gewaehltTab.ueberzeile}` : "Kompetenz"}
           schliessenHref={`/kompetenzen${modulZusatz ? `?${modulZusatz.slice(1)}` : ""}`}
         >
-          <KompetenzDetail kompetenz={detail} aktivitaeten={aktivitaeten} heute={heute} heuteStepIds={heuteStepIds} />
+          <KompetenzDetail
+            kompetenz={detail}
+            aktivitaeten={aktivitaeten}
+            heute={heute}
+            heuteStepIds={heuteStepIds}
+            module={modulListe.map((m) => ({
+              ueberzeile: m.ueberzeile,
+              name: m.name,
+              von: m.von,
+              bis: m.bis,
+            }))}
+          />
         </KompetenzPanel>
       )}
     </div>
