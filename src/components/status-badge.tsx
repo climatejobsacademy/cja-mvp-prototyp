@@ -20,11 +20,11 @@ type BadgeVariant = NonNullable<
  * Status nie nur über Farbe zeigen (WCAG 1.4.1, docs/design-specifications.md
  * Abschnitt 1) — jede StatusBadge trägt deshalb immer Icon + Text zusammen.
  */
-// Flächen laut Handoff: Abgeschlossen bg-eco-green/10, Ausstehend/In Prüfung
-// bg-lylac/30, Offen nur Rand. Warnung (Abgelehnt) bleibt beim Token-Wert.
+// Flächen laut Handoff: Abgeschlossen bg-subtle, Ausstehend/In Prüfung
+// bg-brand-tint, Offen nur Rand. Warnung (Abgelehnt) bleibt beim Token-Wert.
 const HANDOFF_FLAECHE: Partial<Record<NonNullable<BadgeVariant>, string>> = {
-  success: "bg-eco-green/10 border-transparent",
-  info: "bg-lylac/30 border-transparent",
+  success: "bg-subtle border-transparent",
+  info: "bg-brand-tint border-transparent",
 };
 
 export function StatusBadge({

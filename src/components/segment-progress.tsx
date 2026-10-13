@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * Segment-Fortschritt (Handoff 2a, "Fortschritt"): ein Segment je Einheit,
- * gefüllt bg-eco-green, leer bg-border. Kein sichtbarer Zähltext -- der Wert
+ * gefüllt bg-progress, leer bg-border. Kein sichtbarer Zähltext -- der Wert
  * steht für Screenreader in `label` (z. B. "1 von 2 Lektionen"), die
  * Segmente selbst sind aria-hidden.
  *
@@ -42,7 +42,7 @@ export function SegmentProgress({
           className={cn(
             "flex-1 rounded-sm",
             size === "curriculum" ? "h-2" : "h-1.5",
-            i < filled ? "bg-eco-green" : "bg-border"
+            i < filled ? "bg-progress" : "bg-border"
           )}
         />
       ))}
