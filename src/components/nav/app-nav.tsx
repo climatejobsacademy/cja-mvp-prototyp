@@ -28,11 +28,11 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-/** Anton-Wortmarke, 4 Zeilen, 10 px -- Link auf Home (zusätzlich zum Nav-Punkt). */
-function Wortmarke() {
+/** Anton-Wortmarke, 4 Zeilen, 10 px -- Link auf die Startseite des Bereichs (Home bzw. /trainer). */
+export function Wortmarke({ href = "/home" }: { href?: string }) {
   return (
     <Link
-      href="/home"
+      href={href}
       aria-label="The Academy for Climate Jobs – zur Startseite"
       className={cn("flex min-h-11 shrink-0 items-center rounded-lg", FOKUS)}
     >

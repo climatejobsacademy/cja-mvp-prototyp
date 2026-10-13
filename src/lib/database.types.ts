@@ -48,7 +48,7 @@ export type FieldJobStatus = "geplant" | "durchgeführt";
 export type FieldJobErgebnis = "erledigt" | "problem";
 export type FieldCapturePhase = "start" | "abschluss";
 export type UnitProgressStatus = "offen" | "in Bearbeitung" | "abgeschlossen";
-export type AttendanceStatus = "anwesend" | "abwesend" | "entschuldigt";
+export type AttendanceStatus = "anwesend" | "nicht anwesend"; // seit 0011
 export type FieldCaptureStatus = "submitted" | "verified" | "rejected";
 export type VerificationEntscheidung = "verified" | "rejected";
 export type KnowledgeSourceStatus = "entwurf" | "freigegeben";
@@ -983,6 +983,11 @@ export type Database = {
       // Zeitraum je Modul aus dem Stundenplan der Kohorte (0028), RLS der aufrufenden Person.
       fn_modul_zeitraum: { Args: { p_cohort_id: string }; Returns: { modul_id: string; von: string; bis: string }[] };
       // Trainer:innen im eigenen Plan, nur Rolle trainer (0030, SR-78).
+      // 0032 (SR-81, SR-82): Lernende der Kohorten, in denen die Trainer:in einen Termin hat (E3).
+      fn_trainer_teilnehmende: {
+        Args: Record<string, never>;
+        Returns: { person_id: string; cohort_id: string; enrolment_id: string; name: string; rufname: string }[];
+      };
       fn_meine_trainer: {
         Args: Record<string, never>;
         Returns: { person_id: string; name: string; rufname: string; foto_pfad: string | null }[];
