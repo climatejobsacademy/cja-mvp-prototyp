@@ -22,9 +22,9 @@ const badgeVariants = cva(
         // helle Hintergrundfläche + Eco Deep Green als Text/Icon-Farbe. Status
         // nie nur über Farbe zeigen (WCAG 1.4.1) — Aufrufstellen setzen dazu
         // immer ein Icon + Text-Label, nicht nur diese Badge-Farbe.
-        success: "bg-success text-success-foreground",
-        warning: "bg-warning text-warning-foreground",
-        info: "bg-info text-info-foreground",
+        success: "bg-self-tint text-success-foreground",
+        warning: "bg-praxis-tint text-warning-foreground",
+        info: "bg-brand-tint text-info-foreground",
       },
     },
     defaultVariants: {
