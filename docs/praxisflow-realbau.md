@@ -165,12 +165,23 @@ Spalten laut Malte: **Nummer** (z. B. `M02-A03`), **Titel**, **Modul**, **Teilsc
 | Nummer | `field_job_type.nummer` (neu, eindeutig) | Schlüssel des Imports; Wiederholung aktualisiert statt zu verdoppeln |
 | Titel | `field_job_type.titel` | |
 | Modul | Zuordnung des Auftrags zum Modul | Heute hängt `field_job_type` über `module_id` an einer **Woche** (`module`), nicht am Modul (`modul`, 0028). Entweder Woche aus dem Stundenplan zuordnen oder neue Spalte `field_job_type.modul_id`. **Zu entscheiden**, siehe Frage 11. |
-| Teilschritte | `field_job_type_competency_mapping` | **Lücke:** `competency_step` hat nur `name`, keine Kennung. Für „Kennungen, kommagetrennt“ braucht es eine eindeutige Kennung am Teilschritt (neue Spalte `competency_step.kennung`) oder eine Zuordnung über den Namen. Die Zuordnung wird nur für praktische Teilschritte angenommen (SR-71, Trigger prüft das). |
+| Teilschritte | `field_job_type_competency_mapping` | `competency_step` hat nur `name`, keine Kennung. Der Import aus #102 ordnet über Kompetenz und Name zu; eine Kennung (`competency_step.kennung`) ist eine Option für später (siehe unten). Die Zuordnung wird nur für praktische Teilschritte angenommen (SR-71, Trigger prüft das). |
 | Unterlagen-Nr. | `field_job_type.unterlagen_nr` | |
 | Unterlagen | `field_job_type_unterlage` + `file_asset` | je Dateiname eine Zeile, `reihenfolge` nach Position in der Zelle, `kuerzel` aus dem Präfix, `titel` aus Kürzel und Unterlagen-Nr.; Datei kommt aus dem Drive-Ordner |
 | In Plattform zeigen | `field_job_type.status` | ja = `published`, nein = `unpublished` |
 | Ordner Praxisinhalte | nur Import-Parameter | Quellordner der Dateien in Drive, wird nicht gespeichert |
 | Offen | nicht importiert | interne Notiz |
+
+**Stand des Import-Skripts aus PR #102** (Paket C, offen, Probelauf, nicht gemergt; wird von diesem Dokument nicht verändert):
+- Die Auftragsnummer (`M02-A07`) wird heute in **`field_job_type.kategorie`** gespeichert. Eine eigene Spalte `nummer` gibt es dort nicht.
+- Teilschritte werden über **Kompetenz und Name** erkannt, nicht über eine Kennung.
+
+Beim Realbau gibt es zwei Wege für die Nummer:
+1. **`kategorie` weiterverwenden.** Keine Migration nötig, der Import aus #102 läuft unverändert weiter. Nachteil: `kategorie` ist ein Freitextfeld ohne Eindeutigkeit und mit anderem Namen als seine Bedeutung; die Wiederholbarkeit des Imports hängt dann an einer Konvention.
+2. **In einer Migration nach `nummer` umziehen** (Spalte `nummer` anlegen, `unique`, `kategorie` übernehmen, danach `kategorie` freigeben oder entfernen). Das ist sauberer, ändert aber den Import aus #102 und braucht einen Zwei-Schritt (additiv zuerst, Spalte später löschen).
+Empfehlung: Weg 1 bis zum Pilotstart, Weg 2 zusammen mit der Migration des Praxisflow-Realbaus, damit es nur eine Umstellung gibt. Die Tabelle oben beschreibt das Ziel mit `nummer`.
+
+**Teilschritt-Kennung:** `competency_step.kennung` bleibt eine **Option für einen späteren Import**. Solange Maltes Excel Teilschritte über Kennungen führt und der Import über Kompetenz und Name zuordnet, ist die Zuordnung eindeutig nur so lange, wie die Namen eindeutig bleiben; eine Kennung würde das absichern. Sie ist keine Voraussetzung für den Realbau.
 
 Ablauf: Skript wie die Skripte in `scripts/sql/`, **zuerst Probelauf** mit Zählung (neue und geänderte Aufträge, fehlende Dateien, unbekannte Teilschritte, unbekannte Kürzel), danach erst Speichern. Dateien lädt AfCJ admin in den Bucket `auftrags-unterlagen`; der Import legt nur die Zeilen an und meldet Dateien, die im Ordner fehlen. Dateinamen mit Leerzeichen oder Umlauten werden beim Upload zu `<uuid>.<ext>` umbenannt, der Originalname bleibt in `file_asset.dateiname`.
 
@@ -204,7 +215,7 @@ Zeilen von abgeschlossenen Praxistagen (Freigaben, Einschätzungen, Plan) werden
 9. **Trainer:in je Praxistag**: `field_job.instructor_id` muss befüllt werden (bisher leer); wer pflegt das, der Import?
 10. **Abschluss-Anzeige**: demo zeigt Prozentwerte je Kompetenz. Nachweis zählt erst nach Verifizierung – Vorschlag: „Diese Kompetenzen stärkt der Auftrag“ mit Ringen des heutigen Stands und dem Hinweis „zählt nach der Prüfung“.
 11. **Modul des Auftrags.** Excel nennt das Modul, die Datenbank kennt nur die Woche (`module`). Soll der Auftrag am Modul hängen (neue Spalte `modul_id`) oder weiter an einer Woche?
-12. **Kennung der Teilschritte.** Welche Kennungen stehen in „Teilschritte“, und sollen sie dauerhaft als `competency_step.kennung` gespeichert werden? Ohne Kennung müsste der Import über Namen zuordnen, das ist fehleranfällig.
+12. **Kennung der Teilschritte.** Welche Kennungen stehen in „Teilschritte“, und soll `competency_step.kennung` später als Option dazukommen? Bis dahin ordnet der Import aus #102 über Kompetenz und Name zu.
 
 ## 7. Aufwand (grobe Einschätzung in Stunden, keine Messung)
 
