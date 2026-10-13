@@ -56,8 +56,8 @@ insert into competency (id, name, kompetenzbereich, quelle) values
 insert into competency_step (id, competency_id, name, typ) values
   ('00000000-0000-0000-0000-000000000042', '00000000-0000-0000-0000-000000000041', 'Teilschritt', 'theoretisch');
 
-insert into competency_competency_step (id, competency_id, competency_step_id) values
-  ('00000000-0000-0000-0000-000000000043', '00000000-0000-0000-0000-000000000041', '00000000-0000-0000-0000-000000000042');
+insert into competency_competency_step (id, competency_id, competency_step_id, reihenfolge) values
+  ('00000000-0000-0000-0000-000000000043', '00000000-0000-0000-0000-000000000041', '00000000-0000-0000-0000-000000000042', 1);
 
 insert into content_competency_mapping (lesson_id, competency_step_id) values
   ('00000000-0000-0000-0000-000000000031', '00000000-0000-0000-0000-000000000042'),

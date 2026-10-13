@@ -286,6 +286,9 @@ type CompetencyCompetencyStepRow = Flatten<
     id: string;
     competency_id: string;
     competency_step_id: string;
+    // 0027_competency_step_reihenfolge.sql: Position je Kompetenz, > 0,
+    // eindeutig je Kompetenz (deferrable).
+    reihenfolge: number;
   }
 >;
 
@@ -646,7 +649,7 @@ export type Database = {
       >;
       competency_competency_step: Table<
         CompetencyCompetencyStepRow,
-        Flatten<Partial<Timestamps> & { id?: string; competency_id: string; competency_step_id: string }>,
+        Flatten<Partial<Timestamps> & { id?: string; competency_id: string; competency_step_id: string; reihenfolge: number }>,
         Partial<CompetencyCompetencyStepRow>
       >;
       field_job_type_competency_mapping: Table<
