@@ -125,3 +125,26 @@ test("Kann-Satz wird übernommen", () => {
   v.Kompetenzen[0]["Titel (Kann …)"] = "Kann etwas.";
   assert.equal(erstellePlan(v, { module: ["II"] }).kompetenzen[0].kannSatz, "Kann etwas.");
 });
+
+test("Team-Termine werden gelistet, 'prüfen' in Offen als offen gemeldet, Liste nicht importiert", () => {
+  const v = vorlage();
+  v.Trainer[1].Anzeigename = "Zweite & Dritte";
+  v.Stundenplan[3]["Trainer:in"] = "Zweite & Dritte";
+  v.Stundenplan[1].Offen = "Fehlt: SCORM. Zuordnung prüfen.";
+  v.Module[0].Modulabschluss = "Test";
+  const plan = erstellePlan(v, { module: ["II"] });
+  assert.ok(plan.meldungen.some((m) => m.art === "trainer-team" && m.text.includes("M02-S004")));
+  assert.ok(plan.meldungen.some((m) => m.art === "offen" && m.text.startsWith("M02-S002")));
+  assert.ok(plan.analyse.nichtImportiert.some((z) => z.startsWith("Modulabschluss Modul II")));
+  assert.equal(plan.termine.find((t) => t.kennung === "M02-S004").trainer, "TR-02");
+});
+
+test("Theorietage M1: Daten je Foliensatz an der Modul-I-Zuordnung", () => {
+  const v = vorlage();
+  v.Module.push({ Modul: "I", Titel: "Modul I", Reihenfolge: "1.0" });
+  v.Kompetenzen.push({ "Kürzel": "M01-K01", Kurztitel: "K", Modul: "I", "Reihenfolge im Modul": "1.0" });
+  v.Teilschritte.push({ Kennung: "M01-K01-T01", "Kompetenz-Kürzel": "M01-K01", Modul: "I", "Reihenfolge in Kompetenz": "1.0", Titel: "T", Typ: "theoretisch", Theorietag: "M01-T11" });
+  v["Theorietage M1"] = [{ Kennung: "M01-T11", "Datum Lektion": "08.10.2026, 09.10.2026" }];
+  const z = erstellePlan(v, { module: ["I", "II"] }).lektionZuordnungen.find((x) => x.teilschritt === "M01-K01-T01");
+  assert.deepEqual(z.daten, ["2026-10-08", "2026-10-09"]);
+});

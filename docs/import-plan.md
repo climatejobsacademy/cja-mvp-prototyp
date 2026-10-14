@@ -48,11 +48,11 @@ node scripts/import-plan.mjs --datei "$DATEI" --ziel production --production-fre
 Das Skript legt **keine Auth-Konten** an und schreibt nie in `auth.users`.
 
 1. Konto im Supabase-Dashboard anlegen (Authentication → Users → Add user, echte E-Mail, ohne Einladung).
-2. Zuordnungsdatei als reine CSV (nicht RTF, in TextEdit „Format → In reinen Text umwandeln“) mit Kopf `Kennung,E-Mail`, z. B. `TR-02,name@example.org`. Für Staging `trainer-staging.csv` **nur mit Test-Adressen**, weil Staging echte Mails über Brevo verschickt. Für Production `trainer-production.csv`.
+2. Zuordnungsdatei als reine CSV (nicht RTF, in TextEdit „Format → In reinen Text umwandeln“) mit Kopf `Kennung,E-Mail`, optional `,Anzeigename`, z. B. `TR-02,name@example.org,Simon`. Jede Kennung nur einmal, sonst bricht das Skript ab. Die Kennung zählt so, wie sie im Tab Trainer steht (seit 14.10.: TR-03 = Anne). Für Staging `trainer-staging.csv` **nur mit Test-Adressen**, weil Staging echte Mails über Brevo verschickt. Für Production `trainer-production.csv`.
 3. Das Skript bricht ab, wenn bei `--ziel staging` eine Datei ohne „staging“ im Namen übergeben wird, oder bei `--ziel production` eine mit „staging“.
 4. **Nur die Konten verknüpfen** (ohne Import, z. B. direkt nach dem Anlegen im Dashboard): `--nur-trainer` verknüpft alle Trainer:innen aus dem Tab Trainer (auch die zweite bei „Simon, Tom“), sonst nichts. Probelauf als Standard, speichern mit `--ausfuehren`:
    `node scripts/import-plan.mjs --datei "$DATEI" --ziel staging --trainer-datei "$DIR/trainer-staging.csv" --nur-trainer`
-5. Gefundenes Konto: Das Skript legt die `person` (Name = Anzeigename aus der Excel, Benutzername `trainer-tr-xx`) mit Rolle `trainer` (AfCJ) an. Name, Rufname und Foto lassen sich danach händisch ändern, das Skript überschreibt sie nicht. Fehlt ein Konto oder eine Zeile in der Datei, werden die Termine ohne Trainer:in angelegt und gemeldet. Ein späterer Lauf trägt die Trainer:in nach, solange am Termin keine steht. Gehört das Konto einer lernenden Person, verknüpft das Skript es nicht.
+5. Gefundenes Konto: Das Skript legt die `person` (Name = Anzeigename aus der Trainer-Datei, sonst aus der Excel; Benutzername `trainer-tr-xx`) mit Rolle `trainer` (AfCJ) an. Ein Team-Name wie „Simon & Tom“ wird nicht als Person angelegt: Es gilt eine Trainer:in je Termin, für TR-02 Simon (Entscheidung 14.10.); die betroffenen Termine stehen in der Ausgabe unter `trainer-team`. Ist der Benutzername schon vergeben, meldet das Skript es und verknüpft nicht. Name, Rufname und Foto lassen sich danach händisch ändern, das Skript überschreibt sie nicht. Fehlt ein Konto oder eine Zeile in der Datei, werden die Termine ohne Trainer:in angelegt und gemeldet. Ein späterer Lauf trägt die Trainer:in nach, solange am Termin keine steht. Gehört das Konto einer lernenden Person, verknüpft das Skript es nicht.
 
 ## Parameter
 
@@ -110,7 +110,15 @@ Folge: Ändert sich in der Excel der **Titel eines Teilschritts** oder **Kurstit
 
 ### Modul I: Theorietage M01-T01–T11
 
-Die Theorietage sind die Foliensätze der Wochen 1–2. Sie werden über `lesson.thema` den bestehenden Live-Lektionen zugeordnet (Tabelle `FOLIENSAETZE_MODUL_I` in `scripts/import-plan/plan.mjs`): T01 Grundeinheiten, T02 und T03 Schaltungen/Bauteile, T04 Widerstand, T05 Kondensator, T06 Spule, T07 und T08 Transistor/Dioden, T09 Baugruppen, T10 Löttechnik, T11 Multimeter Teil 1 und 2. Abgeleitet ist das aus den bestehenden Zuordnungen auf Staging.
+Die Theorietage sind die Foliensätze der Wochen 1–2. Sie werden über `lesson.thema` den bestehenden Live-Lektionen zugeordnet (Tabelle `FOLIENSAETZE_MODUL_I` in `scripts/import-plan/plan.mjs`): T01 Grundeinheiten, T02 und T03 Schaltungen/Bauteile, T04 Widerstand, T05 Kondensator, T06 Spule, T07 und T08 Transistor/Dioden, T09 Baugruppen, T10 Löttechnik, T11 Multimeter Teil 1 und 2. Seit 14.10. prüft das Skript die Zuordnung gegen den Tab „Theorietage M1“ (Datum je Foliensatz, T11 mit zwei Daten): Die Lektionen laut Thema müssen an diesen Tagen einen Live-Termin in einer Kohorte ohne Versatz haben, sonst Meldung `theorietag`. Ein Teilschritt mit zwei Lektionen und zwei Teilschritte an einer Lektion sind erlaubt.
+
+### Ort
+
+Praxistage bekommen den Ort aus der Spalte „Ort“ in `field_job.standort` (seit 14.10. für Modul I Woche 4–5 und Modul II: Plochingen). Live-Termine haben kein Ortsfeld; der Ort der Coaching-Termine steht deshalb in der Liste „nicht importiert“.
+
+### Ausgabe „nicht importiert“ und „offen“
+
+Die Ausgabe listet, was bewusst nicht in die Datenbank geht, mit Grund (u. a. Modulabschluss aus dem Tab Module, Coaching-Ort, Spalte „Offen“, SCORM/PDF/Zoom). Termine, deren Spalte „Offen“ ein „prüfen“ enthält (z. B. M02-S002 mit drei Theorietagen), werden wie in der Datei importiert und unter `offen` gemeldet.
 
 ### Praxisblock ohne Tagesbindung (Modul II, 16.–24.11.): vorläufig
 

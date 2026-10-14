@@ -71,6 +71,7 @@ declare
   r jsonb;
   v_id uuid;
   v_n integer;
+  v_name text;
 begin
   if not exists (select 1 from pg_constraint where conname = 'role_assignment_rolle_check' and pg_get_constraintdef(oid) like '%trainer%') then
     raise exception 'Abbruch: Rolle trainer fehlt -- zuerst Migration 0030 anwenden.';
@@ -97,11 +98,26 @@ begin
       continue;
     end if;
     if exists (select 1 from person where id = v_id) then
-      -- Name und Rufname bleiben, wie sie sind (händisch änderbar).
+      -- Name und Rufname bleiben, wie sie sind (händisch änderbar). Angezeigt
+      -- wird der Name der Person, nicht der aus der Excel.
       perform pg_temp.zaehle(p_lauf, 'person (Trainer:in)', 'unverändert');
     else
+      -- Name: Spalte Anzeigename der Trainer-Datei, sonst Excel. Ein Team-Name
+      -- ("Simon & Tom") wird nicht als Person angelegt (ein Trainer je Termin).
+      select nullif(btrim(tk->>'anzeigename'), '') into v_name
+        from jsonb_array_elements(coalesce(p->'trainerKonten', '[]')) tk
+       where tk->>'kennung' = r->>'kennung';
+      v_name := coalesce(v_name, r->>'anzeigename');
+      if v_name ~ '[&,]' then
+        perform pg_temp.melde(p_lauf, 'trainer', format('%s: Anzeigename „%s“ ist kein Personenname, nicht angelegt (Anzeigename in der Trainer-Datei angeben).', r->>'kennung', v_name));
+        continue;
+      end if;
+      if exists (select 1 from person where username = 'trainer-' || lower(r->>'kennung')) then
+        perform pg_temp.melde(p_lauf, 'trainer', format('%s: Benutzername trainer-%s gehört schon einer anderen Person, nicht verknüpft.', r->>'kennung', lower(r->>'kennung')));
+        continue;
+      end if;
       insert into person (id, email, name, username, rufname)
-      select v_id, u.email, r->>'anzeigename', 'trainer-' || lower(r->>'kennung'), r->>'anzeigename'
+      select v_id, u.email, v_name, 'trainer-' || lower(r->>'kennung'), v_name
         from auth.users u where u.id = v_id;
       perform pg_temp.zaehle(p_lauf, 'person (Trainer:in)', 'neu');
     end if;
@@ -130,6 +146,7 @@ declare
   v_id uuid;
   v_id2 uuid;
   v_ids uuid[];
+  v_ids2 uuid[];
   v_n integer;
   v_text text;
   v_alt record;
@@ -465,6 +482,29 @@ begin
            and l.thema in (select jsonb_array_elements_text(r->'themen')));
       if coalesce(array_length(v_ids, 1), 0) = 0 then
         perform pg_temp.melde(p_lauf, 'theorietag', format('%s: Foliensatz %s hat keine Live-Lektion in Modul I, nicht zugeordnet.', r->>'teilschritt', r->>'foliensatz'));
+      end if;
+      -- Prüfung gegen den Tab "Theorietage M1": Live-Lektionen in Modul I mit
+      -- einem Live-Termin an einem der genannten Tage -- nur in Kohorten dieses
+      -- Laufs ohne Versatz (die Daten im Tab sind die Originaldaten).
+      if jsonb_array_length(coalesce(r->'daten', '[]')) > 0
+         and exists (select 1 from jsonb_array_elements(p_kohorten) kh where coalesce((kh->>'versatz')::int, 0) = 0)
+         and not exists (select 1 from import_meldung m where m.lauf = p_lauf and m.text like (r->>'foliensatz') || ':%') then
+        v_ids2 := array(
+          select distinct l.id from lesson l
+            join course c on c.id = l.course_id
+            join module w on w.id = c.module_id
+            join live_session ls on ls.lesson_id = l.id
+           where w.modul_id = (select id from _modul where modul = 'I')
+             and l.content_type = 'live'
+             and ls.datum in (select (jsonb_array_elements_text(r->'daten'))::date)
+             and exists (
+               select 1 from schedule_entry se join cohort co on co.id = se.cohort_id
+                where se.live_session_id = ls.id
+                  and co.name in (select kh->>'name' from jsonb_array_elements(p_kohorten) kh
+                                   where coalesce((kh->>'versatz')::int, 0) = 0)));
+        if not (v_ids <@ v_ids2 and v_ids2 <@ v_ids) then
+          perform pg_temp.melde(p_lauf, 'theorietag', format('%s: Lektion laut Thema passt nicht zum Datum im Tab „Theorietage M1“ (%s) -- zugeordnet nach Thema, bitte prüfen.', r->>'foliensatz', (select string_agg(x, ', ') from jsonb_array_elements_text(r->'daten') x)));
+        end if;
       end if;
     end if;
     for v_id2 in select unnest(v_ids) loop

@@ -129,6 +129,8 @@ function zeigeAnalyse() {
   for (const o of ohneZuordnung) {
     console.log(`  ${o.teilschritt} (${o.typ}) – Theorietag: ${o.theorietage.join(", ") || "–"}; Aufträge: ${o.auftraege.join(", ") || "–"}`);
   }
+  console.log(`\n== Nicht importiert (${plan.analyse.nichtImportiert.length}) ==`);
+  for (const z of plan.analyse.nichtImportiert) console.log(`  - ${z}`);
   console.log(`\n== Meldungen aus der Excel (${plan.meldungen.length}) ==`);
   for (const m of plan.meldungen) console.log(`  [${m.art}] ${m.text}`);
 }
@@ -163,7 +165,10 @@ if (!nurTrainer && arg.ziel === "production" && plan.analyse.ohneZuordnung.lengt
   );
 }
 
-// ---------- Trainer-Datei (Kennung, E-Mail) ----------
+// ---------- Trainer-Datei (Kennung, E-Mail[, Anzeigename]) ----------
+// Optionale dritte Spalte Anzeigename: ersetzt den Namen aus der Excel beim
+// ersten Anlegen der Person (z. B. TR-02 "Simon & Tom" in der Excel -> Simon,
+// Entscheidung 2026-10-14: ein Trainer je Termin).
 plan.trainerKonten = [];
 if (arg["trainer-datei"]) {
   const pfad = arg["trainer-datei"];
@@ -176,13 +181,18 @@ if (arg["trainer-datei"]) {
   if (!existsSync(pfad)) abbruch(`Trainer-Datei nicht gefunden: ${pfad}`);
   const zeilen = readFileSync(pfad, "utf8").replace(/^\uFEFF/, "").split(/\r?\n/).map((z) => z.trim()).filter(Boolean);
   const kopf = zeilen.shift()?.split(/[,;]/).map((k) => k.trim());
-  if (kopf?.[0] !== "Kennung" || kopf?.[1] !== "E-Mail") abbruch("Abbruch: Trainer-Datei braucht den Kopf „Kennung,E-Mail“.");
+  if (kopf?.[0] !== "Kennung" || kopf?.[1] !== "E-Mail" || (kopf.length > 2 && kopf[2] !== "Anzeigename")) {
+    abbruch("Abbruch: Trainer-Datei braucht den Kopf „Kennung,E-Mail“ (optional „,Anzeigename“).");
+  }
+  const gesehen = new Set();
   for (const zeile of zeilen) {
-    const [kennung, email] = zeile.split(/[,;]/).map((w) => w.trim());
+    const [kennung, email, anzeigename] = zeile.split(/[,;]/).map((w) => w.trim());
+    if (gesehen.has(kennung)) abbruch(`Abbruch: Kennung ${kennung} steht mehrfach in der Trainer-Datei.`);
+    gesehen.add(kennung);
     if (!/^TR-\d+$/.test(kennung ?? "") || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email ?? "")) {
       abbruch(`Abbruch: Trainer-Datei, ungültige Zeile für ${kennung || "(ohne Kennung)"}.`);
     }
-    if (plan.trainer.some((t) => t.kennung === kennung)) plan.trainerKonten.push({ kennung, email });
+    if (plan.trainer.some((t) => t.kennung === kennung)) plan.trainerKonten.push({ kennung, email, anzeigename: anzeigename || null });
   }
 }
 const ohneAdresse = plan.trainer.filter((t) => !plan.trainerKonten.some((k) => k.kennung === t.kennung)).map((t) => t.kennung);

@@ -134,6 +134,7 @@ export function erstellePlan(tabs, optionen = {}) {
 
   // ---------- Stundenplan ----------
   const termineRoh = [];
+  const teamTermine = [];
   const ausserhalb = new Map();
   for (const z of pflicht(tabs, "Stundenplan")) {
     if (!umfang.has(z["Modul"])) {
@@ -146,6 +147,10 @@ export function erstellePlan(tabs, optionen = {}) {
       continue;
     }
     const trainerName = liste(z["Trainer:in"])[0] ?? null;
+    if (trainerName && trainerName.includes("&")) teamTermine.push(`${z["Kennung"]} (${datum.slice(8)}.${datum.slice(5, 7)}.)`);
+    if (/prüfen/i.test(z["Offen"] ?? "")) {
+      melde("offen", `${z["Kennung"]}: importiert wie in der Datei, offen (${z["Offen"].replace(/^Fehlt:[^.]*\.\s*/, "")})`);
+    }
     let trainer = null;
     if (trainerName) {
       trainer = trainerNachName.get(trainerName) ?? null;
@@ -172,6 +177,19 @@ export function erstellePlan(tabs, optionen = {}) {
   for (const [modul, anzahl] of ausserhalb) {
     melde("ausser-umfang", `Modul ${modul}: ${anzahl} Termine nicht im Umfang dieses Laufs.`);
   }
+  if (teamTermine.length) {
+    melde(
+      "trainer-team",
+      `${teamTermine.length} Termine mit zwei Trainer:innen, eingetragen wird nur die erste Person der Kennung (Aufteilung legt Malte fest): ${teamTermine.join(", ")}`
+    );
+  }
+
+  // ---------- Theorietage Modul I (Tab "Theorietage M1", optional) ----------
+  // Ein Datum je Foliensatz (T11: zwei). import.sql prüft, dass die über das
+  // Thema gefundenen Live-Lektionen an diesen Tagen stattfanden.
+  const theorietageM1 = new Map(
+    (tabs["Theorietage M1"] ?? []).map((z) => [z["Kennung"], liste(z["Datum Lektion"]).map(datumIso).filter(Boolean)])
+  );
 
   // ---------- Wochen ----------
   const wochenMap = new Map();
@@ -280,7 +298,7 @@ export function erstellePlan(tabs, optionen = {}) {
             melde("theorietag", `${s.kennung}: Theorietag ${t} unbekannt, nicht zugeordnet.`);
             continue;
           }
-          lektionZuordnungen.push({ teilschritt: s.kennung, foliensatz: t, themen });
+          lektionZuordnungen.push({ teilschritt: s.kennung, foliensatz: t, themen, daten: theorietageM1.get(t) ?? [] });
           anzahl++;
         } else {
           const kurseZuT = kurseJeTheorietag.get(t) ?? [];
@@ -390,7 +408,30 @@ export function erstellePlan(tabs, optionen = {}) {
     lektionZuordnungen,
     auftragZuordnungen,
     termine,
-    analyse: { typregel, ohneZuordnung },
+    analyse: { typregel, ohneZuordnung, nichtImportiert: nichtImportiert(tabs, umfang, termineRoh) },
     meldungen,
   };
+}
+
+/** Was der Lauf bewusst nicht in die Datenbank schreibt, mit Grund. */
+function nichtImportiert(tabs, umfang, termine) {
+  const liste = [];
+  for (const z of tabs["Module"] ?? []) {
+    if (umfang.has(z["Modul"]) && z["Modulabschluss"]) {
+      liste.push(`Modulabschluss Modul ${z["Modul"]} („${z["Modulabschluss"]}“): keine Tabelle für Modulabschlüsse`);
+    }
+  }
+  const coaching = termine.filter((t) => t.art === "Coaching" && t.ort);
+  if (coaching.length) {
+    liste.push(
+      `Ort der Coaching-Termine (${coaching.map((t) => t.kennung).join(", ")}: ${[...new Set(coaching.map((t) => t.ort))].join(", ")}): live_session hat kein Ortsfeld`
+    );
+  }
+  liste.push("Spalte „Offen“ aller Tabs: interne Notizen");
+  liste.push("SCORM-Lektion, PDF-Materialien, Zoom-Link (Stundenplan): folgen gesondert, Felder bleiben leer");
+  liste.push("Unterlagen-Nr., Dateinamen, Ordner Praxisinhalte (Aufträge): Unterlagen je Auftrag gibt es erst mit dem Praxisflow-Realbau");
+  liste.push("Raster-ID, Lernort (Teilschritte), EGT-Bezug, bisheriges Kürzel (Kompetenzen, nur zum Umstellen gelesen)");
+  liste.push("Foto und Einverständnis (Trainer): Fotos lädt AfCJ admin mit Einwilligung hoch");
+  liste.push("Zuordnungen gegen die Typ-Regel SR-71 (siehe Liste oben)");
+  return liste;
 }
