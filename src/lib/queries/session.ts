@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 
 import { type HeaderLogo, headerLogo } from "@/lib/org-logo";
 import { createClient } from "@/lib/supabase/server";
+import { zielOhneEinschreibung } from "@/lib/trainer-tag";
 
 import { signierteFotoLinks } from "./trainer";
 
@@ -73,7 +74,14 @@ export const requireCurrentLearner = cache(async (): Promise<CurrentLearner> => 
     .maybeSingle();
 
   if (enrolmentError || !enrolment) {
-    redirect("/login?error=keine-einschreibung");
+    // Trainer:innen ohne Einschreibung haben ihren eigenen Bereich (SR-81, Paket G2).
+    const { data: rollen } = await supabase
+      .from("role_assignment")
+      .select("rolle")
+      .eq("person_id", person.id)
+      .eq("rolle", "trainer")
+      .limit(1);
+    redirect(zielOhneEinschreibung((rollen ?? []).length > 0));
   }
 
   // Organisation parallel zur Kohorte: kein zusätzlicher Roundtrip. Lesbar nur
