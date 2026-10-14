@@ -235,9 +235,23 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Status:** gültig (Entscheidung Vera)
 - **Belegt:** `0030_trainer_profilfotos.sql`; `019_trainer_profilfotos.test.sql`; `access-matrix.md`, Zeilen „Profilfoto“ und „Trainer:in je Termin“; Datenschutzerklärung, Abschnitt „Profilfotos“; SR-77, SR-78, SR-60
 
+### 2026-10-13 – Kann-Satz als eigenes Feld an der Kompetenz
+- **Entscheidung:** `competency.kann_satz` (Text, optional) nimmt den ausformulierten Kann-Satz aus der Importvorlage auf; `name` bleibt der Kurztitel. Das Import-Skript (`scripts/import-plan.mjs`) füllt das Feld, sobald die Spalte existiert (Migration 0031).
+- **Begründung:** Die Kann-Sätze von Content & Learning hatten kein Feld; im Namen wären sie für Listen und Ringe zu lang.
+- **Folgen:** Anzeige in der Kompetenz-Detailansicht folgt in einem eigenen PR. Keine neuen Policies (bestehende Lese- und Schreibregeln für `competency` gelten).
+- **Status:** gültig (Entscheidung Vera)
+- **Belegt:** `0031_kompetenz_kann_satz.sql`; `020_kompetenz_kann_satz.test.sql`; `data-model.md`, Zeile „competency“; SR-80
+
 ### 2026-10-13 – Trainer:innen bestätigen Anwesenheit und prüfen Praxisberichte; Storno statt Änderung
 - **Entscheidung:** (E1) Trainer:innen melden sich an (Magic Link wie Lernende). (E2) Sie prüfen Praxisberichte (`verification`). (E3) Eine Trainer:in handelt für alle Termine und Praxisberichte einer Kohorte, in der sie mindestens einen Termin hat (`live_session.trainer_id` oder `field_job.instructor_id`). (E4) `attendance` und `verification` sind für alle Rollen unveränderlich; Korrektur per Storno-Eintrag (`korrigiert_id`). Löschen bleibt AfCJ admin vorbehalten, bis der Löschweg (DSGVO-Löschrecht) entschieden ist.
 - **Begründung:** Ohne Bestätigung zählen Stundenplan-Häkchen und „Heute frei“ (SR-79) keinen Live-Termin. Je Termin ist nur eine Person gespeichert, Vertretungen kommen vor (E3). SR-07 verlangt unveränderliche Nachweise; Storno hält den Verlauf für AZAV-Prüfungen fest.
 - **Folgen:** Überholt den Teil von 0030 „Trainer:innen ohne Login-Nutzung“. Trainer:innen lesen Kohorte, Plan, Einschreibungen, Praxistage und -berichte ihrer Kohorten; Namen der Lernenden nur über `fn_trainer_teilnehmende()`. Datenschutzerklärung ergänzen (Paket G, Übergabe). Oberfläche für Trainer:innen folgt (G2).
 - **Status:** gültig (Entscheidung Vera)
 - **Belegt:** `0032_trainer_anwesenheit_pruefung.sql`; `021_trainer_anwesenheit_pruefung.test.sql`; `access-matrix.md`; SR-07, SR-81, SR-82
+
+### 2026-10-13 – Eigene Personendaten: nur Rufname und Foto selbst änderbar
+- **Entscheidung:** Spalten-Grant auf `person`: Angemeldete ändern nur `rufname` und `foto_pfad` (eigene Zeile über `person_self_update`). Alle anderen Felder pflegt AfCJ admin im Dashboard.
+- **Begründung:** `person_self_update` gab die ganze eigene Zeile frei; über die API ließen sich E-Mail, Name und Geburtsdatum ändern, `person.email` konnte von `auth.users.email` abweichen (Paket-G-Analyse).
+- **Folgen:** Auch AfCJ admin ändert in der App nur diese beiden Spalten (heute ohne Bedeutung, Pflege im Dashboard). Ob Lernende Vorerfahrung oder Sprache selbst ändern, entscheidet die Profilseite (Übergabe).
+- **Status:** gültig (Entscheidung Vera)
+- **Belegt:** `0033_person_spaltenrechte.sql`; `022_person_spaltenrechte.test.sql`; `access-matrix.md`; SR-77
