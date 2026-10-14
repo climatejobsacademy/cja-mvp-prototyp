@@ -3,6 +3,8 @@ import { ChevronLeft, ChevronRight, Video, Wrench } from "lucide-react";
 
 import { PageHeader } from "@/components/page-header";
 import { datumLang, heuteInBerlin, jetztInBerlin, plusTage, tagRelativ } from "@/lib/date";
+import { STAND_TEXT, type BerichtStand } from "@/lib/praxisbericht";
+import { berichteZuPraxistagen } from "@/lib/queries/trainer-berichte";
 import { getTrainerTag, requireCurrentTrainer, type LiveTermin, type PraxisTermin } from "@/lib/queries/trainer-bereich";
 import { parseNowParameter } from "@/lib/stundenplan";
 import { bestaetigtZaehlen, datumAusParameter, terminZustand, type TerminZustand } from "@/lib/trainer-tag";
@@ -12,7 +14,7 @@ import { AnwesenheitListe } from "./anwesenheit-liste";
 
 // Trainer:innen "Heute" (SR-81, Paket G2): Live-Termine und Praxistage der
 // eigenen Kohorten an einem Tag, blätterbar. Bei Live-Terminen Anwesenheit
-// bestätigen; Praxisberichte prüfen (SR-82) folgt in G3.
+// bestätigen; bei Praxistagen führt "Bericht …" zum Prüfen (SR-82, G3).
 
 const FOKUS = "outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2";
 const zeit = (t: string | null) => (t ? t.slice(0, 5) : null);
@@ -54,7 +56,15 @@ function LiveKarte({ termin, zustand }: { termin: LiveTermin; zustand: TerminZus
   );
 }
 
-function PraxisKarte({ termin, zustand }: { termin: PraxisTermin; zustand: TerminZustand }) {
+function PraxisKarte({
+  termin,
+  zustand,
+  berichte,
+}: {
+  termin: PraxisTermin;
+  zustand: TerminZustand;
+  berichte: Map<string, { id: string; stand: BerichtStand }>;
+}) {
   return (
     <section
       aria-label={`Praxisaufgabe ${termin.titel}`}
@@ -77,9 +87,19 @@ function PraxisKarte({ termin, zustand }: { termin: PraxisTermin; zustand: Termi
         {termin.lernende.map((l) => (
           <li key={l.personId} className="flex min-h-11 items-center justify-between gap-3 px-3 py-2 text-sm text-ink">
             <span className="min-w-0 truncate">{l.name}</span>
-            <span className={cn("shrink-0 text-xs", l.durchgefuehrt ? "font-semibold text-progress" : "text-ink-muted")}>
-              {l.durchgefuehrt ? "durchgeführt" : "geplant"}
-            </span>
+            {berichte.get(l.fieldJobId) ? (
+              <Link
+                href={`/trainer/berichte/${berichte.get(l.fieldJobId)!.id}`}
+                className={cn("flex min-h-11 shrink-0 items-center gap-1 rounded-lg px-1 text-xs font-semibold text-brand underline-offset-4 hover:underline", FOKUS)}
+              >
+                Bericht {STAND_TEXT[berichte.get(l.fieldJobId)!.stand]}
+                <ChevronRight className="size-3.5" aria-hidden="true" />
+              </Link>
+            ) : (
+              <span className={cn("shrink-0 text-xs", l.durchgefuehrt ? "font-semibold text-progress" : "text-ink-muted")}>
+                {l.durchgefuehrt ? "durchgeführt" : "geplant"}
+              </span>
+            )}
           </li>
         ))}
       </ul>
@@ -96,6 +116,7 @@ export default async function TrainerHeute({ searchParams }: { searchParams: Pro
   const heute = jetzt.slice(0, 10) || heuteInBerlin();
   const datum = datumAusParameter(datumParam, heute);
   const tag = await getTrainerTag(trainer.personId, datum);
+  const berichte = await berichteZuPraxistagen(tag.praxis.flatMap((p) => p.lernende.map((l) => l.fieldJobId)));
   const leer = tag.live.length === 0 && tag.praxis.length === 0;
   const link = (d: string) => `/trainer?datum=${d}${simuliert && now ? `&now=${encodeURIComponent(now)}` : ""}`;
 
@@ -132,7 +153,7 @@ export default async function TrainerHeute({ searchParams }: { searchParams: Pro
             <LiveKarte key={t.id} termin={t} zustand={terminZustand(jetzt, datum, t.start, t.ende)} />
           ))}
           {tag.praxis.map((t) => (
-            <PraxisKarte key={t.id} termin={t} zustand={terminZustand(jetzt, datum, t.start, t.ende)} />
+            <PraxisKarte key={t.id} termin={t} zustand={terminZustand(jetzt, datum, t.start, t.ende)} berichte={berichte} />
           ))}
         </>
       )}

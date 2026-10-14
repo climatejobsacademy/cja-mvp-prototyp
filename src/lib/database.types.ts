@@ -945,6 +945,8 @@ export type Database = {
             entscheidung: VerificationEntscheidung;
             verifiziert_am?: string;
             kommentar?: string | null;
+            /** Storno (0032, E4) */
+            korrigiert_id?: string | null;
           }
         >,
         Partial<VerificationRow>

@@ -63,9 +63,10 @@ const CAPTURE_STATUS: Record<
   CaptureUiStatus,
   { label: string; icon: LucideIcon; variant: BadgeVariant }
 > = {
-  pending: { label: "Wird verifiziert", icon: Clock, variant: "info" },
-  verified: { label: "Verifiziert", icon: CheckCircle2, variant: "success" },
-  rejected: { label: "Abgelehnt", icon: ThumbsDown, variant: "warning" },
+  pending: { label: "Wird geprüft", icon: Clock, variant: "info" },
+  verified: { label: "Freigegeben", icon: CheckCircle2, variant: "success" },
+  // "Zurückgegeben" statt "Abgelehnt" (SR-82): die Trainer:in gibt mit Kommentar zurück.
+  rejected: { label: "Zurückgegeben", icon: ThumbsDown, variant: "warning" },
 };
 
 export function CaptureStatusBadge({ status }: { status: CaptureUiStatus }) {

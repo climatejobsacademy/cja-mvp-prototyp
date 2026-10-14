@@ -31,7 +31,7 @@ Danach „Aufgabe geschafft“ mit den gestärkten Kompetenzen. Skala der Einsch
 | Reflexionsfragen | `field_job_type_frage` (0011): `phase` start/abschluss, Single-Choice mit 3–5 Optionen | wie `field_job_type` |
 | Praxistag einer Person | `field_job` (0005, 0011, 0026): Datum, Uhrzeit, `instructor_id` (bisher leer), Status geplant/durchgeführt, `ergebnis`, `problem_beschreibung` | Learner lesen die eigene Zeile und schreiben nur `durchgefuehrt_bestaetigt_am`, `ergebnis`, `problem_beschreibung` (0012) |
 | Selbstauskunft | `field_capture` (0006, 0011, 0013) mit `text`, `media` (inaktiv), Status submitted/verified/rejected; `field_capture_antwort` | Learner schreiben die eigenen Zeilen, Status nur per Trigger; AfCJ admin liest |
-| Verifizierung | `verification` (0006, 0009), Trigger setzt den Status der Selbstauskunft | nur AfCJ admin schreibt (SR-03: ab MVP auch die zuständige Instructor-Rolle) |
+| Verifizierung | `verification` (0006, 0009, 0032), Trigger setzt den Status der Selbstauskunft | AfCJ admin und seit 0032 Trainer:innen in Kohorten mit eigenem Termin (E2/E3, SR-82); unveränderlich, Korrektur per Storno |
 | Kompetenzen | `field_job_type_competency_mapping` (0018, nur praktische Teilschritte, SR-71), `competency_evidence` zählt nur `verified` | lesen wie `competency_*` |
 | Dateien | `file_asset`, `lesson_resource`, privater Bucket `lesson-resources` (0023) | an Lektionen gebunden, nicht an Aufträge |
 | Trainer:in | Rolle `trainer` seit 0030 (Konto **ohne Login-Nutzung**), `fn_meine_trainer()`, Fotos in `profilfotos` | nur Anzeige |
@@ -198,7 +198,7 @@ Das ist eine **Erweiterung der Zugriffsmatrix** (Regel 3 in `CLAUDE.md`): `docs/
 | Selbsteinschätzung | schreiben eigene bis zum Abschluss | lesen | lesen | — |
 | Fremdeinschätzung | lesen **erst nach Abschluss** | schreiben für zugewiesene, nur nach Freigabe `fremdbewertung` | lesen | — |
 | Foto (`field_job_foto`, Bucket) | eigene anlegen und lesen (höchstens 5) | lesen der zugewiesenen | lesen | — (Medien bleiben zu, wie `field_capture` Rohinhalt) |
-| Verifizierung | lesen eigene | lesen (Schreiben ab MVP laut SR-03, nicht jetzt) | alles | lesen Ergebnis |
+| Verifizierung | lesen eigene | lesen und anlegen in Kohorten mit eigenem Termin (seit 0032, Oberfläche G3, SR-82); Korrektur per Storno | alles (kein Ändern, SR-07) | lesen Ergebnis |
 
 Zeilen von abgeschlossenen Praxistagen (Freigaben, Einschätzungen, Plan) werden nicht mehr geändert und nicht gelöscht; kein Code darf das tun (wie bestätigte Anwesenheit, Regel 7).
 
@@ -208,7 +208,7 @@ Zeilen von abgeschlossenen Praxistagen (Freigaben, Einschätzungen, Plan) werden
 2. **Vier oder zwei Freigaben?** Vier (Plan, Durchführung, Kontrolle, Fremdeinschätzung) wie in demo, oder zwei (Plan abnehmen, Ergebnis abnehmen). Das Modell trägt beides (`gate` ist ein Check-Wert); bei zwei entfallen `durchfuehrung` und `kontrolle`. Empfehlung: Daten für vier vorsehen, zum Start zwei aktivieren.
 3. **Diktat und Datenschutz.** Das Diktat nutzt die Spracherkennung des Browsers; das Audio geht an den Browser-Anbieter. Vor einem Einsatz mit Teilnehmenden braucht es eine Datenschutzprüfung und einen Absatz in der Datenschutzerklärung. Vorschlag: Funktion hinter einem Schalter, aus bis zur Freigabe; die Texteingabe funktioniert ohne.
 4. **Fotos.** Pflicht oder freiwillig? Fotos von Arbeitsergebnissen können Personen oder Kundendaten zeigen: Hinweistext, Einwilligung, Aufbewahrungsdauer, Löschung klären (Datenschutzerklärung ergänzen wie bei den Profilfotos).
-5. **Wer verifiziert?** Heute nur AfCJ admin. Ist die Fremdeinschätzung der Trainer:in ein Ersatz oder eine Ergänzung zur Verifizierung durch AfCJ? Davon hängt ab, ob `verification` für `trainer` geöffnet wird (SR-03, „ab MVP“).
+5. **Wer verifiziert?** *Entschieden 13.10. (E2, SR-82): Trainer:innen verifizieren in ihren Kohorten (0032, G3); offen bleibt nur das Verhältnis zur Fremdeinschätzung.* Bisher nur AfCJ admin. Ist die Fremdeinschätzung der Trainer:in ein Ersatz oder eine Ergänzung zur Verifizierung durch AfCJ? Davon hängt ab, ob `verification` für `trainer` geöffnet wird (SR-03, „ab MVP“).
 6. **Kriterien und Stufentexte.** Die vier Kriterien und die Texte je Punktestufe in demo sind Platzhalter. Gelten sie für alle Aufträge oder je Auftrag aus Maltes Excel?
 7. **Kürzel der Unterlagen.** In Maltes Dateinamen kommen die Präfixe AA, AU, BB und ML vor. AA (Auftragsblatt) und AU (Arbeitsunterlage) kennt demo; was BB und ML bedeuten und wie sie den Lernenden heißen sollen („Bauteilbeschreibung“, „Materialliste“ wäre geraten, nicht bestätigt), muss Malte sagen. Das Modell speichert deshalb das Kürzel und zeigt den Titel aus einer kleinen Tabelle im Code, bis die Bezeichnungen feststehen.
 8. **Prüfprotokoll auf Papier**: je Auftrag (`pruefprotokoll_papier`) oder je Kohorte?
