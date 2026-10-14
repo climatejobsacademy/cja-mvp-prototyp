@@ -265,9 +265,21 @@ export function PraxistagFlow({
           </span>
           <div className="flex flex-col gap-1">
             <p className="text-[15px] font-semibold text-ink">Praxisaufgabe abgeschlossen</p>
-            <p className="text-sm text-muted-foreground">Deine Reflexion ist abgesendet und wird verifiziert.</p>
+            <p className="text-sm text-muted-foreground">
+              {detail.capture?.status === "verified"
+                ? "Deine Trainer:in hat deinen Bericht freigegeben. Er zählt jetzt für deine Kompetenzen."
+                : detail.capture?.status === "rejected"
+                  ? "Deine Trainer:in hat deinen Bericht zurückgegeben. Sprich sie an, was noch fehlt."
+                  : "Deine Reflexion ist abgesendet und wird von deiner Trainer:in geprüft."}
+            </p>
           </div>
           <CaptureStatusBadge status={detail.capture?.status ?? "pending"} />
+          {detail.capture?.kommentar && (
+            <blockquote className="rounded-zeile border-l-[3px] border-l-praxis bg-praxis-tint px-3 py-2 text-sm whitespace-pre-line text-ink">
+              <span className="block text-xs font-semibold text-praxis-text">Kommentar deiner Trainer:in</span>
+              {detail.capture.kommentar}
+            </blockquote>
+          )}
           <Link href="/schedule" className={cn(SEKUNDAER, "sm:self-start")}>
             Zum Stundenplan
             <ArrowRight aria-hidden="true" />

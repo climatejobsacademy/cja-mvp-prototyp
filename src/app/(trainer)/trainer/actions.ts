@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { requireCurrentTrainer } from "@/lib/queries/trainer-bereich";
 import { createClient } from "@/lib/supabase/server";
+import { pruefAktion, type Entscheidung } from "@/lib/praxisbericht";
 import { anwesenheitAktion, type AnwesenheitStatus } from "@/lib/trainer-tag";
 
 export type SpeichernErgebnis = { ok: true } | { ok: false; meldung: string };
@@ -63,5 +64,52 @@ export async function anwesenheitSpeichern(
   }
 
   revalidatePath("/trainer");
+  return { ok: true };
+}
+
+/**
+ * Praxisbericht prüfen (SR-82): legt immer eine neue verification an --
+ * erste Entscheidung oder Storno-Eintrag auf die aktuelle (E4, kein Update).
+ * Kommentar ist bei Rückgabe Pflicht (nur hier und in der App, keine
+ * Migration). Welche Berichte erlaubt sind, prüft die Policy
+ * verification_trainer_insert (0032: Kohorte mit eigenem Termin, E3).
+ */
+export async function berichtPruefen(
+  captureId: string,
+  entscheidung: Entscheidung,
+  kommentar: string | null
+): Promise<SpeichernErgebnis> {
+  const trainer = await requireCurrentTrainer();
+  const supabase = await createClient();
+
+  const [{ data: capture }, { data: aktuell }] = await Promise.all([
+    supabase.from("field_capture").select("id, organisation_id, phase").eq("id", captureId).maybeSingle(),
+    supabase.from("verification_aktuell").select("id, entscheidung").eq("field_capture_id", captureId).maybeSingle(),
+  ]);
+  if (!capture || capture.phase !== "abschluss") return { ok: false, meldung: "Diesen Bericht gibt es für dich nicht." };
+
+  const aktion = pruefAktion(aktuell ? { id: aktuell.id, entscheidung: aktuell.entscheidung as Entscheidung } : null, entscheidung, kommentar);
+  if (aktion.art === "fehler") return { ok: false, meldung: aktion.meldung };
+  if (aktion.art === "unveraendert") return { ok: true };
+
+  const { error } = await supabase.from("verification").insert({
+    organisation_id: capture.organisation_id,
+    field_capture_id: captureId,
+    verifiziert_von: trainer.personId,
+    entscheidung,
+    kommentar: kommentar?.trim() || null,
+    korrigiert_id: aktion.art === "storno" ? aktion.korrigiertId : null,
+  });
+  if (error) {
+    return {
+      ok: false,
+      meldung:
+        error.code === "23505"
+          ? "Wurde gerade schon geprüft. Bitte Seite neu laden."
+          : "Speichern hat nicht geklappt. Bitte noch einmal versuchen.",
+    };
+  }
+
+  revalidatePath("/trainer", "layout");
   return { ok: true };
 }

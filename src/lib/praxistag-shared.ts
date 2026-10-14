@@ -17,5 +17,6 @@ export type FieldJobDetail = {
   nachbereitungText: string | null;
   nachbereitungContentId: string | null;
   reflexionsFragen: { id: string; frageText: string; antwortoptionen: string[] }[];
-  capture: { id: string; status: CaptureUiStatus } | null;
+  /** Bericht (Abschluss) mit aktueller Prüfung (verification_aktuell, SR-82); Kommentar v. a. bei Rückgabe. */
+  capture: { id: string; status: CaptureUiStatus; kommentar: string | null; geprueftAm: string | null } | null;
 };

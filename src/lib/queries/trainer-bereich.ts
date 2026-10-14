@@ -58,7 +58,7 @@ export type PraxisTermin = {
   ende: string | null;
   kohorten: string[];
   eigener: boolean;
-  lernende: { personId: string; name: string; durchgefuehrt: boolean }[];
+  lernende: { personId: string; fieldJobId: string; name: string; durchgefuehrt: boolean }[];
 };
 
 export type TrainerTag = { live: LiveTermin[]; praxis: PraxisTermin[] };
@@ -171,7 +171,7 @@ export async function getTrainerTag(personId: string, datum: string): Promise<Tr
     };
     if (kohorte && !termin.kohorten.includes(kohortenName.get(kohorte) ?? "")) termin.kohorten.push(kohortenName.get(kohorte) ?? "");
     termin.eigener ||= j.instructor_id === personId;
-    termin.lernende.push({ personId: j.learner_id, name: person?.name ?? "Lernende:r", durchgefuehrt: j.status === "durchgeführt" });
+    termin.lernende.push({ personId: j.learner_id, fieldJobId: j.id, name: person?.name ?? "Lernende:r", durchgefuehrt: j.status === "durchgeführt" });
     praxisMap.set(schluessel, termin);
   }
   const praxis = [...praxisMap.values()].map((p) => ({

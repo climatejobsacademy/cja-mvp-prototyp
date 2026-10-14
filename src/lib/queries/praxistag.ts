@@ -48,8 +48,22 @@ export async function getFieldJobDetail(
     .order("eingereicht_am", { ascending: false })
     .limit(1);
 
+  // Aktuelle Prüfung (ohne Storno, 0032): Kommentar der Trainer:in, v. a. bei Rückgabe (SR-82).
+  const { data: pruefung } = captures?.[0]
+    ? await supabase
+        .from("verification_aktuell")
+        .select("kommentar, verifiziert_am")
+        .eq("field_capture_id", captures[0].id)
+        .maybeSingle()
+    : { data: null };
+
   const capture = captures?.[0]
-    ? { id: captures[0].id, status: toUiStatus(captures[0].status) }
+    ? {
+        id: captures[0].id,
+        status: toUiStatus(captures[0].status),
+        kommentar: pruefung?.kommentar ?? null,
+        geprueftAm: pruefung?.verifiziert_am ?? null,
+      }
     : null;
 
   return {
