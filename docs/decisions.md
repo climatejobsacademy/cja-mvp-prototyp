@@ -235,6 +235,13 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Status:** gültig (Entscheidung Vera)
 - **Belegt:** `0030_trainer_profilfotos.sql`; `019_trainer_profilfotos.test.sql`; `access-matrix.md`, Zeilen „Profilfoto“ und „Trainer:in je Termin“; Datenschutzerklärung, Abschnitt „Profilfotos“; SR-77, SR-78, SR-60
 
+### 2026-10-13 – Kann-Satz als eigenes Feld an der Kompetenz
+- **Entscheidung:** `competency.kann_satz` (Text, optional) nimmt den ausformulierten Kann-Satz aus der Importvorlage auf; `name` bleibt der Kurztitel. Das Import-Skript (`scripts/import-plan.mjs`) füllt das Feld, sobald die Spalte existiert (Migration 0031).
+- **Begründung:** Die Kann-Sätze von Content & Learning hatten kein Feld; im Namen wären sie für Listen und Ringe zu lang.
+- **Folgen:** Anzeige in der Kompetenz-Detailansicht folgt in einem eigenen PR. Keine neuen Policies (bestehende Lese- und Schreibregeln für `competency` gelten).
+- **Status:** gültig (Entscheidung Vera)
+- **Belegt:** `0031_kompetenz_kann_satz.sql`; `020_kompetenz_kann_satz.test.sql`; `data-model.md`, Zeile „competency“; SR-80
+
 ### 2026-10-13 – Trainer:innen bestätigen Anwesenheit und prüfen Praxisberichte; Storno statt Änderung
 - **Entscheidung:** (E1) Trainer:innen melden sich an (Magic Link wie Lernende). (E2) Sie prüfen Praxisberichte (`verification`). (E3) Eine Trainer:in handelt für alle Termine und Praxisberichte einer Kohorte, in der sie mindestens einen Termin hat (`live_session.trainer_id` oder `field_job.instructor_id`). (E4) `attendance` und `verification` sind für alle Rollen unveränderlich; Korrektur per Storno-Eintrag (`korrigiert_id`). Löschen bleibt AfCJ admin vorbehalten, bis der Löschweg (DSGVO-Löschrecht) entschieden ist.
 - **Begründung:** Ohne Bestätigung zählen Stundenplan-Häkchen und „Heute frei“ (SR-79) keinen Live-Termin. Je Termin ist nur eine Person gespeichert, Vertretungen kommen vor (E3). SR-07 verlangt unveränderliche Nachweise; Storno hält den Verlauf für AZAV-Prüfungen fest.

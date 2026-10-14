@@ -2,7 +2,7 @@ import { heuteInBerlin, jetztInBerlin, montagDerWoche, plusTage } from "@/lib/da
 import { freiText, wochenrueckblick, zaehlText } from "@/lib/home-frei";
 import { getDayState } from "@/lib/home-tag";
 import { getKompetenzFortschritt } from "@/lib/queries/competencies";
-import { getHeutigeKompetenzen, getNachholLektion, getZuletztKompetenzIds } from "@/lib/queries/home";
+import { getHeutigeKompetenzen, getNachholLektion } from "@/lib/queries/home";
 import { getAktuellesModul, getModulKompetenzen } from "@/lib/queries/modul";
 import { getNaechsterTermin, getTagesAgenda } from "@/lib/queries/schedule";
 import { requireCurrentLearner } from "@/lib/queries/session";
@@ -14,8 +14,8 @@ import { cn } from "@/lib/utils";
 import { Begruessung, TestzeitHinweis } from "./begruessung";
 import { DeinTag, type StaerktFn } from "./dein-tag";
 import { AlleKompetenzen, FreiKarte, FreiZeilen } from "./freier-tag";
-import { aktivitaeten, istOnline, tagestyp } from "./home-hilfen";
-import { HeuteSpalte, ModulFortschritt, type RingKompetenz } from "./kompetenz-bereich";
+import { aktivitaeten } from "./home-hilfen";
+import { ModulFortschritt, type RingKompetenz } from "./kompetenz-bereich";
 import type { GestaerkteKompetenz } from "./tages-karten";
 
 // Home (docs/design_handoff_home_v6; SR-73): lädt die Daten und setzt
@@ -37,13 +37,12 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   const jetzt = simuliert ?? jetztInBerlin();
   const heute = simuliert ? simuliert.slice(0, 10) : heuteInBerlin();
 
-  const [tag, naechster, modul, alleKompetenzen, nachholen, zuletztIds, trainer] = await Promise.all([
+  const [tag, naechster, modul, alleKompetenzen, nachholen, trainer] = await Promise.all([
     getTagesAgenda(learner.organisationId, learner.cohortId, learner.enrolmentId, learner.personId, heute),
     getNaechsterTermin(learner.organisationId, learner.cohortId, learner.enrolmentId, heute),
     getAktuellesModul(learner.programmeId, learner.cohortId, heute),
     getKompetenzFortschritt(learner.personId, learner.programmeId),
     getNachholLektion(learner.organisationId, learner.cohortId, learner.enrolmentId, learner.personId, heute),
-    getZuletztKompetenzIds(learner.personId),
     getMeineTrainer(),
   ]);
   const heuteAktiv = { ...aktivitaeten(tag), nachholen };
@@ -90,23 +89,15 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     .filter((k) => heuteIds.has(k.id))
     .map((k) => ({ id: k.id, name: k.name, prozent: k.fortschrittProzent }));
 
-  // Variante C (Entscheidung Anna 2026-10-10): rechts neben "Dein Tag" die
-  // heute gestärkten Kompetenzen des Moduls (ersatzweise die zuletzt
-  // geübte), darunter über die volle Breite das ganze Modul. Ohne aktuelles
-  // Modul entfällt beides; ohne zugeordnete Kompetenzen (bis zum Import) nur
-  // ein ruhiger Hinweis im Modulbereich.
+  // Stand demo (Anna 2026-10-12): keine rechte Spalte; unter "Dein Tag" über
+  // die volle Breite das ganze Modul, heute gestärkte zuerst. Ohne
+  // aktuelles Modul entfällt der Bereich; ohne zugeordnete Kompetenzen (bis
+  // zum Import) steht dort ein ruhiger Hinweis.
   const heuteRinge = ringe.filter((k) => k.heute);
-  const zuletzt =
-    heuteRinge.length === 0
-      ? (zuletztIds.map((id) => ringe.find((k) => k.id === id)).find((k) => k !== undefined) ?? null)
-      : null;
-  const spalte =
-    modul && (heuteRinge.length > 0 || zuletzt) ? (
-      <HeuteSpalte modul={modul} programmName={learner.programmeName} kompetenzen={heuteRinge} zuletzt={zuletzt} />
-    ) : null;
+  const stil = { modul: modul ? { ueberzeile: modul.ueberzeile, name: modul.name } : null };
 
   const vorname = learner.rufname.trim();
-  const begruessung = <Begruessung vorname={vorname} heute={heute} typ={tagestyp(tag)} online={istOnline(tag)} />;
+  const begruessung = <Begruessung vorname={vorname} programmName={learner.programmeName} heute={heute} />;
 
   // SR-79: heute nichts geplant (Zustand F) → Karte "Heute frei" mit
   // Rückblick auf die laufende Woche (Montag bis gestern), zwei Zeilen
@@ -150,20 +141,17 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     <div data-breit className="flex flex-col gap-10">
       {simuliert && <TestzeitHinweis heute={heute} jetzt={jetzt} />}
       {begruessung}
-      {/* Rechte Spalte nur so hoch wie ihr Inhalt (Option 1, 2026-10-10). */}
-      <div className={cn("grid gap-8", spalte && "min-[960px]:grid-cols-[2fr_1fr]")}>
-        <DeinTag
-          zustand={zustand}
-          heute={heute}
-          naechster={naechster}
-          staerkt={staerkt}
-          // In D stehen die heute gestärkten Ringe in der dunklen Karte, außer
-          // die rechte Spalte zeigt sie schon.
-          gestaerkt={heuteRinge.length > 0 ? [] : gestaerkt}
-          trainer={trainer}
-        />
-        {spalte}
-      </div>
+      <DeinTag
+        zustand={zustand}
+        heute={heute}
+        naechster={naechster}
+        staerkt={staerkt}
+        // In D stehen die heute gestärkten Ringe in der dunklen Karte, außer
+        // der Modulbereich zeigt sie schon.
+        gestaerkt={heuteRinge.length > 0 ? [] : gestaerkt}
+        trainer={trainer}
+        stil={stil}
+      />
       {modul && <ModulFortschritt modul={modul} kompetenzen={ringe} />}
     </div>
   );
