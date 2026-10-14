@@ -4,7 +4,10 @@ export default function DatenschutzPage() {
   // SR-60 (Pflichtseite). Abschnitte „Fragen und Antworten zu Lektionen“
   // (SR-74, SR-75) und „Lernmaterialien und externe Links“ (SR-68) ergänzt
   // 2026-10-08; Abschnitt „Profilfotos“ (SR-77, SR-78) und Rufname ergänzt
-  // 2026-10-13. Eigene Formulierung, nicht rechtlich geprüft.
+  // 2026-10-13; Abschnitt „Kohortenansicht“ (SR-30), Sichtbarkeit der Fotos
+  // und Beiträge, Löschweg 2026-10-14 (Entwurf, Datum „Stand“ setzt Vera beim
+  // Merge). Eigene Formulierung, nicht rechtlich geprüft; offene Punkte in
+  // docs/datenschutz-offene-punkte.md.
   // Optional, nach Veröffentlichung:
   // (1) DPF-Zertifizierung von Vercel optional prüfen und ergänzen.
   return (
@@ -53,7 +56,9 @@ export default function DatenschutzPage() {
         Ihre Freitextangaben), die zugehörige Dokumentation, Prüfentscheidungen
         mit Kommentar sowie daraus abgeleitete Kompetenznachweise. Einsehbar
         sind diese Daten für Sie selbst und für berechtigtes Personal der
-        Akademie für Klimajobs. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.
+        Akademie für Klimajobs. Trainerinnen und Trainer sehen die Anwesenheit
+        der Teilnehmenden der Kohorten, in denen sie mindestens einen Termin
+        leiten. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.
       </p>
 
       <h2>Fragen und Antworten zu Lektionen</h2>
@@ -65,8 +70,9 @@ export default function DatenschutzPage() {
         werden der Text Ihres Beitrags, der Zeitpunkt, die Lektion, Ihre
         Kohorte sowie Ihr Vorname mit dem Anfangsbuchstaben Ihres Nachnamens.
         Sichtbar sind Ihre Beiträge für die Teilnehmenden Ihrer Kohorte, für
-        das zuständige Personal der Akademie für Klimajobs und für Personen,
-        die die Fragen Ihrer Kohorte moderieren. Eigene Beiträge können Sie
+        Ihre Trainerinnen und Trainer, für das zuständige Personal der Akademie
+        für Klimajobs und für Personen, die die Fragen Ihrer Kohorte
+        moderieren. Eigene Beiträge können Sie
         jederzeit löschen; der Text und Ihr Name werden dann entfernt.
         Moderierende und das Personal der Akademie für Klimajobs können
         Beiträge ebenfalls entfernen. Beiträge, die Sie melden möchten, senden
@@ -98,8 +104,11 @@ export default function DatenschutzPage() {
         Gespeichert wird es in einem nicht öffentlichen Speicher unseres
         Datenbankdienstes Supabase in der EU (Frankfurt). Abgerufen wird es nur
         über zeitlich begrenzte Links (eine Stunde). Sichtbar ist Ihr Foto für
-        Sie selbst, für Ihre Trainerinnen und Trainer und für das zuständige
-        Personal der Akademie für Klimajobs, nicht für andere Teilnehmende.
+        Sie selbst, für die Teilnehmenden Ihrer Kohorte, für Ihre Trainerinnen
+        und Trainer und für das zuständige Personal der Akademie für Klimajobs.
+        Mit dem Hochladen entscheiden Sie also, dass Ihre Kohorte Ihr Foto
+        sieht; darauf weisen wir Sie beim Hochladen hin. Sie können das Foto
+        jederzeit selbst entfernen.
         Wenn Sie das Foto entfernen oder ein neues hochladen, löschen wir die
         bisherige Datei; sie kann noch bis zu sieben Tage in den täglichen
         Sicherungskopien (Backups) enthalten sein. Rechtsgrundlage: Ihre
@@ -112,6 +121,21 @@ export default function DatenschutzPage() {
         nur die Teilnehmenden, für die der Termin geplant ist. Fotos von
         Trainerinnen und Trainern stellen wir nur mit deren Einwilligung ein;
         sie liegen im selben nicht öffentlichen Speicher.
+      </p>
+
+      <h2>Kohortenansicht</h2>
+      <p>
+        Im Bereich „Programm“ zeigen wir die Teilnehmenden Ihrer Kohorte. Alle
+        Teilnehmenden einer Kohorte sehen dort den Namen der anderen
+        Teilnehmenden, und zwar den Rufnamen, den Sie in Ihrem Profil
+        hinterlegt haben, mit dem Anfangsbuchstaben Ihres Nachnamens (zum
+        Beispiel „Lea M.“). Den Rufnamen können Sie selbst ändern; der
+        Nachname stammt aus Ihrem Nutzerkonto. Das dient dazu, dass die Gruppe
+        sich kennt und gemeinsam lernt; eine Abwahl der Namensanzeige ist nicht
+        vorgesehen. Haben Sie ein Profilfoto hochgeladen, sehen die
+        Teilnehmenden Ihrer Kohorte auch dieses Foto (siehe „Profilfotos“).
+        Rechtsgrundlage für die Anzeige des Namens: Art. 6 Abs. 1 lit. b
+        DSGVO.
       </p>
 
       <h2>Uploads</h2>
@@ -197,13 +221,17 @@ export default function DatenschutzPage() {
         der Qualifizierung und ihres Nachweises es erfordert. Darüber hinaus
         speichern wir Daten nur, soweit gesetzliche oder förderrechtliche
         Aufbewahrungspflichten es verlangen. Löschanfragen richten Sie bitte
-        per E-Mail an info@climatejobsacademy.com. Wir prüfen sie und
-        beantworten sie innerhalb der gesetzlichen Frist von einem Monat (Art.
-        12 Abs. 3 DSGVO).
+        per E-Mail an info@climatejobsacademy.com. Wir löschen Ihr Nutzerkonto
+        und die damit verbundenen Daten innerhalb eines Monats nach Eingang
+        Ihrer Anfrage (Art. 12 Abs. 3 DSGVO), soweit keine
+        Aufbewahrungspflichten entgegenstehen. Die Löschung erfolgt derzeit
+        manuell.
       </p>
       <p>
         Beiträge zu Fragen und Antworten speichern wir, solange die jeweilige
-        Kohorte besteht, und löschen sie danach. Gelöschte Beiträge können bis
+        Kohorte besteht. Eine automatische Löschung nach dem Ende der Kohorte
+        ist derzeit nicht eingerichtet; auf Anfrage löschen wir sie wie oben
+        beschrieben. Gelöschte Daten und Beiträge können bis
         zu sieben Tage in den täglichen Sicherungskopien (Backups) unseres
         Datenbankdienstes enthalten sein.
       </p>
