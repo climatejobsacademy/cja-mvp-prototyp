@@ -57,8 +57,8 @@ export default function DatenschutzPage() {
         mit Kommentar sowie daraus abgeleitete Kompetenznachweise. Einsehbar
         sind diese Daten für Sie selbst und für berechtigtes Personal der
         Akademie für Klimajobs. Trainerinnen und Trainer sehen die Anwesenheit
-        der Teilnehmenden der Kohorten, in denen sie mindestens einen Termin
-        leiten. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.
+        und die Praxisberichte der Teilnehmenden der Kohorten, in denen sie
+        mindestens einen Termin leiten. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.
       </p>
 
       <h2>Fragen und Antworten zu Lektionen</h2>
@@ -70,9 +70,10 @@ export default function DatenschutzPage() {
         werden der Text Ihres Beitrags, der Zeitpunkt, die Lektion, Ihre
         Kohorte sowie Ihr Vorname mit dem Anfangsbuchstaben Ihres Nachnamens.
         Sichtbar sind Ihre Beiträge für die Teilnehmenden Ihrer Kohorte, für
-        Ihre Trainerinnen und Trainer, für das zuständige Personal der Akademie
-        für Klimajobs und für Personen, die die Fragen Ihrer Kohorte
-        moderieren. Eigene Beiträge können Sie
+        Personen, die die Fragen Ihrer Kohorte moderieren, und für das
+        zuständige Personal der Akademie für Klimajobs. Trainerinnen und
+        Trainer sehen die Beiträge nur, wenn sie als Moderierende Ihrer Kohorte
+        eingetragen sind. Eigene Beiträge können Sie
         jederzeit löschen; der Text und Ihr Name werden dann entfernt.
         Moderierende und das Personal der Akademie für Klimajobs können
         Beiträge ebenfalls entfernen. Beiträge, die Sie melden möchten, senden
@@ -104,12 +105,10 @@ export default function DatenschutzPage() {
         Gespeichert wird es in einem nicht öffentlichen Speicher unseres
         Datenbankdienstes Supabase in der EU (Frankfurt). Abgerufen wird es nur
         über zeitlich begrenzte Links (eine Stunde). Sichtbar ist Ihr Foto für
-        Sie selbst, für die Teilnehmenden Ihrer Kohorte, für Ihre Trainerinnen
-        und Trainer und für das zuständige Personal der Akademie für Klimajobs.
-        Mit dem Hochladen entscheiden Sie also, dass Ihre Kohorte Ihr Foto
-        sieht; darauf weisen wir Sie beim Hochladen hin. Sie können das Foto
-        jederzeit selbst entfernen.
-        Wenn Sie das Foto entfernen oder ein neues hochladen, löschen wir die
+        Sie selbst, für die Teilnehmenden Ihrer Kohorte und für das zuständige
+        Personal der Akademie für Klimajobs. Mit dem Hochladen entscheiden Sie
+        also, dass Ihre Kohorte Ihr Foto sieht; darauf weisen wir Sie beim
+        Hochladen hin. Sie können das Foto jederzeit selbst entfernen. Wenn Sie das Foto entfernen oder ein neues hochladen, löschen wir die
         bisherige Datei; sie kann noch bis zu sieben Tage in den täglichen
         Sicherungskopien (Backups) enthalten sein. Rechtsgrundlage: Ihre
         Einwilligung, Art. 6 Abs. 1 lit. a DSGVO; Sie können sie jederzeit
