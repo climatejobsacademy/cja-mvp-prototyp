@@ -992,6 +992,11 @@ export type Database = {
         Args: Record<string, never>;
         Returns: { person_id: string; name: string; rufname: string; foto_pfad: string | null }[];
       };
+      // Andere Lernende der eigenen Kohorte, gleiche Organisation, aktiv (0034, SR-30).
+      fn_meine_kohorte: {
+        Args: Record<string, never>;
+        Returns: { person_id: string; anzeigename: string; foto_pfad: string | null }[];
+      };
       // Darf die eingeloggte Person die Fotos im Ordner sehen? (0030, SR-77)
       fn_darf_foto_sehen: { Args: { p_ordner: string }; Returns: boolean };
     };
