@@ -248,3 +248,10 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Folgen:** Überholt den Teil von 0030 „Trainer:innen ohne Login-Nutzung“. Trainer:innen lesen Kohorte, Plan, Einschreibungen, Praxistage und -berichte ihrer Kohorten; Namen der Lernenden nur über `fn_trainer_teilnehmende()`. Datenschutzerklärung ergänzen (Paket G, Übergabe). Oberfläche für Trainer:innen folgt (G2).
 - **Status:** gültig (Entscheidung Vera)
 - **Belegt:** `0032_trainer_anwesenheit_pruefung.sql`; `021_trainer_anwesenheit_pruefung.test.sql`; `access-matrix.md`; SR-07, SR-81, SR-82
+
+### 2026-10-13 – Eigene Personendaten: nur Rufname und Foto selbst änderbar
+- **Entscheidung:** Spalten-Grant auf `person`: Angemeldete ändern nur `rufname` und `foto_pfad` (eigene Zeile über `person_self_update`). Alle anderen Felder pflegt AfCJ admin im Dashboard.
+- **Begründung:** `person_self_update` gab die ganze eigene Zeile frei; über die API ließen sich E-Mail, Name und Geburtsdatum ändern, `person.email` konnte von `auth.users.email` abweichen (Paket-G-Analyse).
+- **Folgen:** Auch AfCJ admin ändert in der App nur diese beiden Spalten (heute ohne Bedeutung, Pflege im Dashboard). Ob Lernende Vorerfahrung oder Sprache selbst ändern, entscheidet die Profilseite (Übergabe).
+- **Status:** gültig (Entscheidung Vera)
+- **Belegt:** `0033_person_spaltenrechte.sql`; `022_person_spaltenrechte.test.sql`; `access-matrix.md`; SR-77
