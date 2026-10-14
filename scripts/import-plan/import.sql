@@ -59,6 +59,63 @@ returns text language sql immutable as $$
   select btrim(regexp_replace(regexp_replace(lower(regexp_replace(p, '\([^()]*\)', '', 'g')), '[^[:alnum:] ]', '', 'g'), '\s+', ' ', 'g'));
 $$;
 
+-- Trainer:innen verknüpfen: person + Mitgliedschaft AfCJ + Rolle trainer an
+-- einem vorhandenen Auth-Konto. Eigene Funktion, damit
+-- `import-plan.mjs --nur-trainer` nur diesen Teil ausführen kann.
+create function pg_temp.trainer_verknuepfen(p jsonb, p_lauf integer)
+returns void
+language plpgsql
+as $fn$
+declare
+  v_afcj uuid;
+  r jsonb;
+  v_id uuid;
+  v_n integer;
+begin
+  if not exists (select 1 from pg_constraint where conname = 'role_assignment_rolle_check' and pg_get_constraintdef(oid) like '%trainer%') then
+    raise exception 'Abbruch: Rolle trainer fehlt -- zuerst Migration 0030 anwenden.';
+  end if;
+  select id into strict v_afcj from organisation where typ = 'afcj';
+  create temp table if not exists _trainer (kennung text, id uuid) on commit drop;
+  truncate _trainer;
+
+  -- ========== Trainer:innen (person + Rolle trainer an vorhandenem Auth-Konto) ==========
+  -- Die Konten legt AfCJ im Supabase-Dashboard an (echte E-Mail). Zuordnung
+  -- Kennung -> E-Mail aus --trainer-datei. Ohne Konto: Termine ohne Trainer:in.
+  for r in select * from jsonb_array_elements(p->'trainer') loop
+    v_id := null;
+    select u.id into v_id
+      from jsonb_array_elements(coalesce(p->'trainerKonten', '[]')) tk
+      join auth.users u on lower(u.email) = lower(tk->>'email')
+     where tk->>'kennung' = r->>'kennung';
+    if v_id is null then
+      perform pg_temp.melde(p_lauf, 'trainer', format('%s: kein Auth-Konto (Zuordnungsdatei oder Dashboard), Termine ohne Trainer:in.', r->>'kennung'));
+      continue;
+    end if;
+    if exists (select 1 from role_assignment where person_id = v_id and rolle = 'learner') then
+      perform pg_temp.melde(p_lauf, 'trainer', format('%s: Konto gehört einer lernenden Person, nicht verknüpft (eigenes Konto anlegen).', r->>'kennung'));
+      continue;
+    end if;
+    if exists (select 1 from person where id = v_id) then
+      -- Name und Rufname bleiben, wie sie sind (händisch änderbar).
+      perform pg_temp.zaehle(p_lauf, 'person (Trainer:in)', 'unverändert');
+    else
+      insert into person (id, email, name, username, rufname)
+      select v_id, u.email, r->>'anzeigename', 'trainer-' || lower(r->>'kennung'), r->>'anzeigename'
+        from auth.users u where u.id = v_id;
+      perform pg_temp.zaehle(p_lauf, 'person (Trainer:in)', 'neu');
+    end if;
+    insert into org_membership (person_id, organisation_id) values (v_id, v_afcj) on conflict do nothing;
+    get diagnostics v_n = row_count;
+    perform pg_temp.zaehle(p_lauf, 'org_membership', case when v_n > 0 then 'neu' else 'unverändert' end);
+    insert into role_assignment (person_id, organisation_id, rolle) values (v_id, v_afcj, 'trainer') on conflict do nothing;
+    get diagnostics v_n = row_count;
+    perform pg_temp.zaehle(p_lauf, 'role_assignment (trainer)', case when v_n > 0 then 'neu' else 'unverändert' end);
+    insert into _trainer values (r->>'kennung', v_id);
+  end loop;
+end;
+$fn$;
+
 create function pg_temp.import_plan(p jsonb, p_kohorten jsonb, p_lauf integer)
 returns void
 language plpgsql
@@ -146,40 +203,7 @@ begin
     insert into _woche values (r->>'modul', (r->>'nummer')::int, v_id);
   end loop;
 
-  -- ========== Trainer:innen (person + Rolle trainer an vorhandenem Auth-Konto) ==========
-  -- Die Konten legt AfCJ im Supabase-Dashboard an (echte E-Mail). Zuordnung
-  -- Kennung -> E-Mail aus --trainer-datei. Ohne Konto: Termine ohne Trainer:in.
-  for r in select * from jsonb_array_elements(p->'trainer') loop
-    v_id := null;
-    select u.id into v_id
-      from jsonb_array_elements(coalesce(p->'trainerKonten', '[]')) tk
-      join auth.users u on lower(u.email) = lower(tk->>'email')
-     where tk->>'kennung' = r->>'kennung';
-    if v_id is null then
-      perform pg_temp.melde(p_lauf, 'trainer', format('%s: kein Auth-Konto (Zuordnungsdatei oder Dashboard), Termine ohne Trainer:in.', r->>'kennung'));
-      continue;
-    end if;
-    if exists (select 1 from role_assignment where person_id = v_id and rolle = 'learner') then
-      perform pg_temp.melde(p_lauf, 'trainer', format('%s: Konto gehört einer lernenden Person, nicht verknüpft (eigenes Konto anlegen).', r->>'kennung'));
-      continue;
-    end if;
-    if exists (select 1 from person where id = v_id) then
-      -- Name und Rufname bleiben, wie sie sind (händisch änderbar).
-      perform pg_temp.zaehle(p_lauf, 'person (Trainer:in)', 'unverändert');
-    else
-      insert into person (id, email, name, username, rufname)
-      select v_id, u.email, r->>'anzeigename', 'trainer-' || lower(r->>'kennung'), r->>'anzeigename'
-        from auth.users u where u.id = v_id;
-      perform pg_temp.zaehle(p_lauf, 'person (Trainer:in)', 'neu');
-    end if;
-    insert into org_membership (person_id, organisation_id) values (v_id, v_afcj) on conflict do nothing;
-    get diagnostics v_n = row_count;
-    perform pg_temp.zaehle(p_lauf, 'org_membership', case when v_n > 0 then 'neu' else 'unverändert' end);
-    insert into role_assignment (person_id, organisation_id, rolle) values (v_id, v_afcj, 'trainer') on conflict do nothing;
-    get diagnostics v_n = row_count;
-    perform pg_temp.zaehle(p_lauf, 'role_assignment (trainer)', case when v_n > 0 then 'neu' else 'unverändert' end);
-    insert into _trainer values (r->>'kennung', v_id);
-  end loop;
+  perform pg_temp.trainer_verknuepfen(p, p_lauf);
 
   -- ========== competency, competency_programme, modul_competency ==========
   for r in select * from jsonb_array_elements(p->'kompetenzen') loop

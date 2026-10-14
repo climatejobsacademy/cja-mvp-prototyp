@@ -10,6 +10,8 @@
 //   node scripts/import-plan.mjs --datei <pfad.xlsx> --ziel staging \
 //        --trainer-datei <trainer-staging.csv> --kohorte "Energiehelden 28.09.26"
 //   node scripts/import-plan.mjs ... --ausfuehren                       (speichert)
+//   node scripts/import-plan.mjs --datei <pfad.xlsx> --ziel staging --trainer-datei <…staging.csv> --nur-trainer
+//        (nur Trainer-Konten verknüpfen: alle aus dem Tab Trainer, sonst nichts)
 //   node scripts/import-plan.mjs ... --ziel production --production-freigabe [--ausfuehren]
 //
 // Standard ist der Probelauf: alles läuft in einer Transaktion, die am Ende
@@ -57,7 +59,7 @@ const NUTZUNG = `Nutzung:
   node scripts/import-plan.mjs --datei <pfad.xlsx> --ziel staging|production
        [--trainer-datei <pfad.csv>] [--kohorte "Name" | --kohorte "Name@+7"]...
        [--module I,II] [--ohne-praxis II] [--production-freigabe]
-       [--ohne-zuordnung-erlauben] [--ausfuehren]`;
+       [--ohne-zuordnung-erlauben] [--nur-trainer] [--ausfuehren]`;
 
 function abbruch(text) {
   console.error(text);
@@ -73,6 +75,7 @@ const { values: arg } = parseArgs({
     "trainer-datei": { type: "string" },
     "ohne-praxis": { type: "string", default: "" },
     "ohne-zuordnung-erlauben": { type: "boolean", default: false },
+    "nur-trainer": { type: "boolean", default: false },
     "nur-analyse": { type: "boolean", default: false },
     ausfuehren: { type: "boolean", default: false },
     "production-freigabe": { type: "boolean", default: false },
@@ -148,7 +151,12 @@ if (!ziel) abbruch(`--ziel staging oder --ziel production angeben.\n${NUTZUNG}`)
 if (arg.ziel === "production" && !arg["production-freigabe"]) {
   abbruch("Abbruch: Production nur mit --production-freigabe (auch für den Probelauf).");
 }
-if (arg.ziel === "production" && plan.analyse.ohneZuordnung.length && !arg["ohne-zuordnung-erlauben"]) {
+const nurTrainer = arg["nur-trainer"];
+if (nurTrainer) {
+  if (!arg["trainer-datei"]) abbruch("Abbruch: --nur-trainer braucht --trainer-datei.");
+  plan.trainer = plan.trainerAlle;
+}
+if (!nurTrainer && arg.ziel === "production" && plan.analyse.ohneZuordnung.length && !arg["ohne-zuordnung-erlauben"]) {
   abbruch(
     `Abbruch: ${plan.analyse.ohneZuordnung.length} Teilschritte ohne jede Zuordnung (Liste oben). ` +
       "Production erst nach Korrektur in der Excel, oder bewusst mit --ohne-zuordnung-erlauben."
@@ -180,7 +188,7 @@ if (arg["trainer-datei"]) {
 const ohneAdresse = plan.trainer.filter((t) => !plan.trainerKonten.some((k) => k.kennung === t.kennung)).map((t) => t.kennung);
 if (ohneAdresse.length) console.log(`\nHinweis: keine E-Mail für ${ohneAdresse.join(", ")} – deren Termine ohne Trainer:in.`);
 
-if (!kohorten.length) {
+if (!kohorten.length && !nurTrainer) {
   console.log("\nHinweis: keine --kohorte angegeben, es werden nur Inhalte und Kompetenzen importiert, keine Termine.");
 }
 
@@ -220,8 +228,11 @@ set client_min_messages = warning;
 begin;
 ${readFileSync(join(HIER, "import-plan", "import.sql"), "utf8")}
 
-select pg_temp.import_plan(${literal(plan)}, ${literal(kohorten)}, 1) \\g /dev/null
-select pg_temp.import_plan(${literal(plan)}, ${literal(kohorten)}, 2) \\g /dev/null
+${nurTrainer
+  ? `select pg_temp.trainer_verknuepfen(${literal(plan)}, 1) \\g /dev/null
+select pg_temp.trainer_verknuepfen(${literal(plan)}, 2) \\g /dev/null`
+  : `select pg_temp.import_plan(${literal(plan)}, ${literal(kohorten)}, 1) \\g /dev/null
+select pg_temp.import_plan(${literal(plan)}, ${literal(kohorten)}, 2) \\g /dev/null`}
 set constraints all immediate;
 
 \\echo
@@ -249,7 +260,7 @@ end $$;
 ${arg.ausfuehren ? "commit;\n\\echo '== GESPEICHERT (COMMIT) =='" : "rollback;\n\\echo '== PROBELAUF: nichts gespeichert (ROLLBACK) =='"}
 `;
 
-console.log(`\n== Datenbank: ${ziel.label}, ${arg.ausfuehren ? "ECHTER LAUF" : "Probelauf"} ==`);
+console.log(`\n== Datenbank: ${ziel.label}, ${arg.ausfuehren ? "ECHTER LAUF" : "Probelauf"}${nurTrainer ? ", nur Trainer-Konten" : ""} ==`);
 console.log(`Kohorten: ${kohorten.map((k) => `${k.name}${k.versatz ? ` (Versatz ${k.versatz > 0 ? "+" : ""}${k.versatz} Tage)` : ""}`).join(", ") || "–"}`);
 
 const ergebnis = spawnSync(

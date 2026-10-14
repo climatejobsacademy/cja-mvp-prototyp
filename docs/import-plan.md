@@ -50,7 +50,9 @@ Das Skript legt **keine Auth-Konten** an und schreibt nie in `auth.users`.
 1. Konto im Supabase-Dashboard anlegen (Authentication → Users → Add user, echte E-Mail, ohne Einladung).
 2. Zuordnungsdatei als reine CSV (nicht RTF, in TextEdit „Format → In reinen Text umwandeln“) mit Kopf `Kennung,E-Mail`, z. B. `TR-02,name@example.org`. Für Staging `trainer-staging.csv` **nur mit Test-Adressen**, weil Staging echte Mails über Brevo verschickt. Für Production `trainer-production.csv`.
 3. Das Skript bricht ab, wenn bei `--ziel staging` eine Datei ohne „staging“ im Namen übergeben wird, oder bei `--ziel production` eine mit „staging“.
-4. Gefundenes Konto: Das Skript legt die `person` (Name = Anzeigename aus der Excel, Benutzername `trainer-tr-xx`) mit Rolle `trainer` (AfCJ) an. Name, Rufname und Foto lassen sich danach händisch ändern, das Skript überschreibt sie nicht. Fehlt ein Konto oder eine Zeile in der Datei, werden die Termine ohne Trainer:in angelegt und gemeldet. Ein späterer Lauf trägt die Trainer:in nach, solange am Termin keine steht. Gehört das Konto einer lernenden Person, verknüpft das Skript es nicht.
+4. **Nur die Konten verknüpfen** (ohne Import, z. B. direkt nach dem Anlegen im Dashboard): `--nur-trainer` verknüpft alle Trainer:innen aus dem Tab Trainer (auch die zweite bei „Simon, Tom“), sonst nichts. Probelauf als Standard, speichern mit `--ausfuehren`:
+   `node scripts/import-plan.mjs --datei "$DATEI" --ziel staging --trainer-datei "$DIR/trainer-staging.csv" --nur-trainer`
+5. Gefundenes Konto: Das Skript legt die `person` (Name = Anzeigename aus der Excel, Benutzername `trainer-tr-xx`) mit Rolle `trainer` (AfCJ) an. Name, Rufname und Foto lassen sich danach händisch ändern, das Skript überschreibt sie nicht. Fehlt ein Konto oder eine Zeile in der Datei, werden die Termine ohne Trainer:in angelegt und gemeldet. Ein späterer Lauf trägt die Trainer:in nach, solange am Termin keine steht. Gehört das Konto einer lernenden Person, verknüpft das Skript es nicht.
 
 ## Parameter
 
@@ -66,6 +68,7 @@ Das Skript legt **keine Auth-Konten** an und schreibt nie in `auth.users`.
 | `--ausfuehren` | speichert (COMMIT); ohne läuft nur der Probelauf (ROLLBACK) |
 | `--production-freigabe` | Pflicht für jedes `--ziel production`, auch für den Probelauf |
 | `--nur-analyse` | nur die Excel prüfen und die Listen ausgeben |
+| `--nur-trainer` | nur Trainer-Konten verknüpfen (braucht `--trainer-datei`), kein Import |
 
 ## Was der Lauf ausgibt
 

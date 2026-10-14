@@ -374,11 +374,14 @@ export function erstellePlan(tabs, optionen = {}) {
   const trainer = trainerTab
     .filter((z) => trainerBenutzt.has(z["Kennung"]))
     .map((z) => ({ kennung: z["Kennung"], anzeigename: z["Anzeigename"] }));
+  // Alle Trainer:innen aus dem Tab (auch ohne eigenen Termin, z. B. die zweite bei "Simon, Tom") für --nur-trainer
+  const trainerAlle = trainerTab.map((z) => ({ kennung: z["Kennung"], anzeigename: z["Anzeigename"] }));
 
   return {
     module: moduleImUmfang,
     wochen,
     trainer,
+    trainerAlle,
     kompetenzen,
     teilschritte: teilschritte.map(({ kennung, kompetenz, modul, reihenfolge, name, typ }) => ({ kennung, kompetenz, modul, reihenfolge, name, typ })),
     auftraege: auftraege.map(({ kennung, titel, modul, woche, reihenfolge, sichtbar }) => ({ kennung, titel, modul, woche, reihenfolge, sichtbar })),
