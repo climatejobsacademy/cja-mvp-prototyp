@@ -337,5 +337,7 @@ Aufwand je nach Option 2–12 h. Übergabe.
 - Trainer-Konten auf Production mit echten Adressen (siehe Paket C, `trainer-production.csv`).
 - Fotos der Lernenden für Trainer:innen und „Unit progress read Cohort“ sind in 0032 bewusst nicht umgesetzt.
 - Löschweg (DSGVO): Delete auf `attendance`/`verification` bleibt bis dahin AfCJ admin vorbehalten.
+- **Praxisblock als Ganzes (Termin 13.11.2026, 4–6 h):** Migration `field_job.bis_datum` (Praxistag über einen Zeitraum), Block-Anzeige in Stundenplan, Home und `/trainer` („Praxisblock 16.–24.11.“ mit den offenen Aufträgen an jedem Tag des Zeitraums). Entscheidung Vera 14.10.: jetzt keine Migration; auf Staging bleibt die vorläufige Verteilung (2 Aufträge je Tag, als VORLÄUFIG gekennzeichnet), Production läuft mit `--ohne-praxis II`, bis Maltes Tagesplanung oder die Block-Anzeige da ist.
+- **Trainer:innen im Team (Entscheidung 14.10.):** kein Team-Eintrag „Simon & Tom“, eine Trainer:in je Termin; die 22 Termine mit „Simon & Tom“ (Modul I Woche 4–5, Modul II Praxis und Coaching) bekommen Simon. Aufteilung legt Malte fest. Tom hat damit keinen eigenen Termin und sieht in `/trainer` keine Kohorte (Rechte nach E3).
 
 Risiken: Ohne E1/E2 kein G1. Trainer-Login auf Production braucht echte Konten (Paket C) und Prüfung der Datenschutzerklärung vor Fr. Lokale pgTAP-Tests laufen nicht (kein Docker); Tests nur über Probelauf auf Staging.
