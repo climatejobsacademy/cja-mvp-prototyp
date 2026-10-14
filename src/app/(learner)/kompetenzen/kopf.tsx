@@ -62,8 +62,14 @@ export function KompetenzenKopf({
                         <span className="sr-only">abgeschlossen: </span>
                       </>
                     )}
+                    {/* Aktuelles Modul: Lime-Punkt wie demo (Anna 2026-10-12). */}
+                    {m.aktuell && (
+                      <>
+                        <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-lime shadow-glow-charge-sm" />
+                        <span className="sr-only">aktuell: </span>
+                      </>
+                    )}
                     {m.ueberzeile}
-                    {m.aktuell && " · aktuell"}
                     {m.zukuenftig && !gewaehlt && <span className="sr-only"> (Vorschau)</span>}
                   </Link>
                 </li>
@@ -76,41 +82,38 @@ export function KompetenzenKopf({
   );
 }
 
-/** Brief 2.3: ruhige Zeile mit Balken + "{erreicht} von {gesamt} Kompetenzschritten in Modul II erreicht". */
+/**
+ * Brief 2.3, Stand demo (Anna 2026-10-12): ruhige Zeile mit Balken und
+ * "Im Schnitt {p} % über alle {n} Kompetenzen in Modul II" -- Mittelwert der
+ * Kompetenz-Ringe des Moduls (competency_fulfilment), wie auf Home.
+ */
 export function ModulFortschrittZeile({
   ueberzeile,
-  erreicht,
-  gesamt,
+  prozent,
+  anzahl,
 }: {
   ueberzeile: string;
-  erreicht: number;
-  gesamt: number;
+  /** Mittelwert der Kompetenz-Fortschritte, 0-100 */
+  prozent: number;
+  /** Zahl der Kompetenzen im Modul (modul_competency) */
+  anzahl: number;
 }) {
-  if (gesamt === 0) {
-    return (
-      <p className="rounded-karte bg-card px-5 py-4 text-[15px] text-ink-muted shadow-card">
-        Für {ueberzeile} sind noch keine Kompetenzschritte hinterlegt.
-      </p>
-    );
-  }
-  const prozent = Math.round((erreicht / gesamt) * 100);
+  if (anzahl === 0) return null;
   return (
     <div className="flex flex-wrap items-center gap-3.5 rounded-karte bg-anchor-brand px-6 py-5 text-[15px] text-white/85 shadow-anchor-brand">
       <span
         role="progressbar"
         aria-valuemin={0}
-        aria-valuemax={gesamt}
-        aria-valuenow={erreicht}
-        aria-label={`Fortschritt in ${ueberzeile}`}
+        aria-valuemax={100}
+        aria-valuenow={prozent}
+        aria-label={`Fortschritt deiner Kompetenzen in ${ueberzeile}`}
         className="h-1.5 max-w-80 flex-[1_1_260px] rounded-full bg-white/25"
       >
         <span className="block h-1.5 rounded-full bg-lime" style={{ width: `${prozent}%` }} />
       </span>
       <span>
-        <span className="font-semibold text-white">
-          {erreicht} von {gesamt} Kompetenzschritten
-        </span>{" "}
-        in {ueberzeile} erreicht
+        Im Schnitt <span className="font-semibold text-white">{prozent} %</span> über{" "}
+        {anzahl === 1 ? "deine Kompetenz" : `alle ${anzahl} Kompetenzen`} in {ueberzeile}
       </span>
     </div>
   );

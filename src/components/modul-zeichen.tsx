@@ -9,6 +9,7 @@ export function ModulZeichen({
   ueberzeile,
   name,
   hell,
+  aufCoral,
   klein,
 }: {
   /** modul.ueberzeile, z. B. "Modul I" oder "Abschluss" */
@@ -16,11 +17,13 @@ export function ModulZeichen({
   name: string;
   /** Auf einer Anker-Fläche (Lila): weiß statt grau */
   hell?: boolean;
+  /** Auf Coral (Praxis): dunkle Schrift */
+  aufCoral?: boolean;
   /** Kleinere Schrift, z. B. in Meta-Zeilen */
   klein?: boolean;
 }) {
   return (
-    <span className={cn("inline-flex min-w-0 items-center gap-1.5", klein ? "text-[13px]" : "text-sm", hell ? "text-white/85" : "text-ink-muted")}>
+    <span className={cn("inline-flex min-w-0 items-center gap-1.5", klein ? "text-[13px]" : "text-sm", aufCoral ? "text-ink" : hell ? "text-white/85" : "text-ink-muted")}>
       <span className="min-w-0">
         {ueberzeile} · {name}
       </span>

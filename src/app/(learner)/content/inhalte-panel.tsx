@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Dialog } from "@base-ui/react/dialog";
-import { ArrowRight, Check, ChevronDown, ChevronRight, X } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, X } from "lucide-react";
 
 import { SegmentProgress } from "@/components/segment-progress";
 import { TypIcon, type Typ } from "@/components/typ-icon";
@@ -110,10 +110,8 @@ export function InhaltePanel({
         adresseMerken(neu);
       }}
     >
-      <Dialog.Trigger className="inline-flex items-center gap-1.5 rounded-full bg-brand px-5 py-[11px] text-sm font-bold text-white outline-none hover:bg-brand/90 focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2">
-        Inhalte des Moduls
-        <ArrowRight className="size-4" aria-hidden="true" />
-      </Dialog.Trigger>
+      {/* Kein eigener Knopf mehr (Entscheidung Anna 2026-10-12): das Panel
+          öffnet nur der Klick auf eine Modulkarte im Pfad. */}
       <Dialog.Portal>
         <Dialog.Backdrop className="fixed inset-0 z-50 bg-ink/30 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 motion-reduce:animate-none" />
         <Dialog.Popup className="fixed inset-y-0 right-0 z-50 flex w-full max-w-[680px] flex-col gap-6 overflow-y-auto bg-page px-4 pt-5 pb-12 text-ink shadow-card outline-none data-open:animate-in data-open:slide-in-from-right data-closed:animate-out data-closed:slide-out-to-right motion-reduce:animate-none md:px-8 md:pt-8">

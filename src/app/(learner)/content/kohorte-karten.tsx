@@ -30,7 +30,7 @@ export function KohorteKarten({ kohortenName, trainer }: { kohortenName: string;
         {trainer.length > 0 ? (
           <ul className="grid gap-4 sm:grid-cols-2">
             {trainer.map((p) => (
-              <li key={p.personId} className="flex items-center gap-3">
+              <li key={p.personId} className="flex items-start gap-3">
                 <PersonAvatar name={p.name} fotoUrl={p.fotoUrl} className="size-10" fallbackClassName="bg-subtle text-sm" />
                 <span className="flex min-w-0 flex-col gap-0.5">
                   <span className="text-[15px] font-semibold">{p.name}</span>
