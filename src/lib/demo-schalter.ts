@@ -13,3 +13,10 @@
 export const SPRACHTRAINING_DEMO =
   process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_REF === "demo" ||
   (process.env.NODE_ENV === "development" && !process.env.NEXT_PUBLIC_VERCEL_ENV);
+
+// Native Selbstlern-Lektion aus Elephant-SCORM (VORLÄUFIG, nur Demo, Anna
+// 2026-10-15; SR folgt): Selbstlern-Lektionen mit Elephant-Paket erscheinen
+// Schritt für Schritt im Plattform-Design statt im SCORM-Fenster. Gleiche
+// Bedingung wie oben; auf allen anderen Deployments bleibt der SCORM-Player.
+// Mit ?ansicht=scorm lässt sich das Original zum Vergleich öffnen.
+export const NATIVE_SELBSTLERNEN_DEMO = SPRACHTRAINING_DEMO;

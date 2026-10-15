@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { preload } from "react-dom";
+import { after } from "next/server";
+import { ArrowLeft, Repeat } from "lucide-react";
 
 import { ModulZeichen } from "@/components/modul-zeichen";
 import { FachText } from "@/components/sprachtraining/fach-text";
@@ -8,6 +10,10 @@ import { UnitProgressBadge } from "@/components/status-badge";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { heuteInBerlin, jetztInBerlin } from "@/lib/date";
+import { NATIVE_SELBSTLERNEN_DEMO } from "@/lib/demo-schalter";
+import { bausteinBilder } from "@/lib/elephant-kurs";
+import { medienVorwaermen, zugriffMerken } from "@/lib/elephant-paket";
+import { nativePaketFuer } from "@/lib/demo-selbstlernen";
 import { themaTitel } from "@/lib/home-tag";
 import { gliederungFuer, modulZumDatum } from "@/lib/programm";
 import { getKohortenStart } from "@/lib/queries/stundenplan";
@@ -20,6 +26,7 @@ import { getLessonMaterialien } from "@/lib/queries/materialien";
 import { LektionThread } from "./lektion-thread";
 import { MarkCompleteButton } from "./mark-complete-button";
 import { MaterialienListe } from "./materialien-liste";
+import { NativeLektion } from "./native-lektion";
 import { ScormPlayer } from "./scorm-player";
 import { TerminKarte } from "./termin-karte";
 
@@ -45,10 +52,10 @@ export default async function LessonPage({
   searchParams,
 }: {
   params: Promise<{ lessonId: string }>;
-  searchParams: Promise<{ von?: string; datum?: string }>;
+  searchParams: Promise<{ von?: string; datum?: string; ansicht?: string }>;
 }) {
   const { lessonId } = await params;
-  const { von, datum } = await searchParams;
+  const { von, datum, ansicht } = await searchParams;
   const zurueck = zurueckZiel(von, datum);
   const learner = await requireCurrentLearner();
   const [lesson, materialien] = await Promise.all([
@@ -69,6 +76,29 @@ export default async function LessonPage({
   const herkunft = new URLSearchParams({ ...(von ? { von } : {}), ...(datum ? { datum } : {}) }).toString();
 
   const done = lesson.status === "abgeschlossen";
+  // Native Selbstlern-Lektion (VORLÄUFIG, nur Demo): jede Selbstlern-Lektion
+  // zeigt einen Elephant-Kurs nativ -- den eigenen, sonst einen Ersatz aus dem
+  // Speicher (src/lib/demo-selbstlernen.ts). Nichts lesbar -> wie bisher.
+  const nativ = NATIVE_SELBSTLERNEN_DEMO && lesson.contentType === "scorm" && ansicht !== "scorm" ? await nativePaketFuer(lesson.id) : null;
+  const nativKurs = nativ?.kurs ?? null;
+  if (nativ && nativKurs) {
+    // Schneller Start: Zugriff für die Medien-Route merken (signierte URL gilt
+    // 1 h, 50 Min. merken) und die Bilder der ersten Schritte vorladen.
+    const url = nativ.url;
+    zugriffMerken(learner.personId, lesson.id, url, 50 * 60 * 1000);
+    const ersteBilder = nativKurs.kapitel.flatMap((k) => k.bausteine).slice(0, 4).flatMap(bausteinBilder);
+    // Sofort starten (der Browser fragt die Bilder gleich an), after() hält es am Leben.
+    const vorwaermen = medienVorwaermen(url, ersteBilder);
+    // Der Browser fragt die ersten Bilder schon aus dem Seitenkopf an.
+    for (const pfad of ersteBilder.slice(0, 4)) preload(`/content/${lesson.id}/medium?pfad=${encodeURIComponent(pfad)}`, { as: "image" });
+    after(() => vorwaermen);
+  }
+  const ansichtHref = (wert: string | null) => {
+    const q = new URLSearchParams(herkunft);
+    if (wert) q.set("ansicht", wert);
+    const s = q.toString();
+    return `/content/${lesson.id}${s ? `?${s}` : ""}`;
+  };
   const festigenHref = liveKontext?.festigenLessonId
     ? `/content/${liveKontext.festigenLessonId}${herkunft ? `?${herkunft}` : ""}`
     : null;
@@ -114,7 +144,19 @@ export default async function LessonPage({
         <MaterialienListe lessonId={lesson.id} materialien={materialien} />
       )}
 
-      {lesson.contentType === "scorm" && (
+      {lesson.contentType === "scorm" && nativKurs && (
+        <>
+          <NativeLektion lessonId={lesson.id} kurs={nativKurs} done={done} />
+          {/* Beim Ersatz-Kurs gibt es kein eigenes Original zum Vergleichen. */}
+          {lesson.scorm && !nativ?.ersatz && (
+            <Link href={ansichtHref("scorm")} className="flex w-fit items-center gap-1.5 self-center text-sm text-ink-muted hover:text-ink">
+              <Repeat className="size-4" aria-hidden="true" /> Original-Kurs (SCORM) öffnen
+            </Link>
+          )}
+        </>
+      )}
+
+      {lesson.contentType === "scorm" && !nativKurs && (
         <Card>
           <CardContent className="flex flex-col gap-3">
             {lesson.scorm ? (
@@ -128,6 +170,11 @@ export default async function LessonPage({
               <p className="text-sm text-muted-foreground">
                 Für diese Lektion ist noch kein SCORM-Paket hinterlegt.
               </p>
+            )}
+            {NATIVE_SELBSTLERNEN_DEMO && ansicht === "scorm" && (
+              <Link href={ansichtHref(null)} className="flex w-fit items-center gap-1.5 text-sm text-ink-muted hover:text-ink">
+                <Repeat className="size-4" aria-hidden="true" /> Zur neuen Ansicht
+              </Link>
             )}
           </CardContent>
         </Card>
