@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { FlaskConical } from "lucide-react";
 
+import { ProgrammZeile } from "@/components/programm-zeile";
 import { datumKurz, heuteInBerlin, jetztInBerlin } from "@/lib/date";
 import { datumPunkt, zeitraumPunkt } from "@/lib/programm";
 import { panelWochen } from "@/lib/programm-inhalte";
@@ -10,6 +11,7 @@ import { getContentLibrary } from "@/lib/queries/content";
 import { getKohortenZeitraum, getModulKompetenzen, getModuleDerKohorte } from "@/lib/queries/modul";
 import { requireCurrentLearner } from "@/lib/queries/session";
 import { getStundenplan } from "@/lib/queries/stundenplan";
+import { getMeineKohorte } from "@/lib/queries/kohorte";
 import { getMeineTrainer } from "@/lib/queries/trainer";
 import { parseNowParameter } from "@/lib/stundenplan";
 
@@ -45,12 +47,13 @@ export default async function ProgrammPage({
   const jetzt = simuliert ?? jetztInBerlin();
   const nowZusatz = simuliert && now ? `&now=${encodeURIComponent(now)}` : "";
 
-  const [modulListe, kohorte, groups, kompetenzen, trainer] = await Promise.all([
+  const [modulListe, kohorte, groups, kompetenzen, trainer, mitglieder] = await Promise.all([
     getModuleDerKohorte(learner.programmeId, learner.cohortId, heute),
     getKohortenZeitraum(learner.cohortId),
     getContentLibrary(learner.programmeId, learner.personId),
     getKompetenzFortschritt(learner.personId, learner.programmeId),
     getMeineTrainer(),
+    getMeineKohorte(),
   ]);
 
   const pfad: PfadModul[] = modulListe.map((m, i) => ({
@@ -131,7 +134,7 @@ export default async function ProgrammPage({
       )}
 
       <section className="flex flex-col gap-2.5">
-        <span className="text-[13px] text-ink-subtle">Dein Programm</span>
+        <ProgrammZeile name="Dein Programm" />
         <h1 className="font-heading text-[34px] leading-[1.05] md:text-[52px]">{learner.programmeName}</h1>
         {kopfZeile.length > 0 && <span className="text-[15px] text-ink-muted">{kopfZeile.join(" · ")}</span>}
       </section>
@@ -166,7 +169,7 @@ export default async function ProgrammPage({
             kompetenzenHref={imModul.length > 0 ? `/kompetenzen?modul=${gewaehlt.id}${nowZusatz}` : null}
           />
         )}
-        <KohorteKarten kohortenName={learner.cohortName} trainer={[...trainer.values()]} />
+        <KohorteKarten kohortenName={learner.cohortName} mitglieder={mitglieder} trainer={[...trainer.values()]} />
       </div>
     </div>
   );

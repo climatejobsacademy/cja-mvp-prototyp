@@ -111,7 +111,7 @@ export function ProfilDialog({
         <DialogHeader>
           <DialogTitle className="text-ink">Profil bearbeiten</DialogTitle>
           <DialogDescription>
-            Dein Foto sehen nur du, deine Trainer:innen und das Team der Academy.
+            Dein Foto sehen du, die anderen Lernenden deiner Kohorte und das Team der Akademie.
           </DialogDescription>
         </DialogHeader>
 
@@ -156,6 +156,11 @@ export function ProfilDialog({
             <span className="text-xs text-muted-foreground">JPEG, PNG, WebP oder HEIC, quadratisch zugeschnitten</span>
           </div>
         </div>
+        {/* Der Upload ist die Freigabe (SR-30, Entscheidung 2026-10-14): klar sagen, wer das Foto sieht. */}
+        <p className="rounded-lg bg-subtle px-3 py-2.5 text-sm text-ink">
+          Mit dem Hochladen bist du einverstanden, dass dein Foto für Mitglieder deiner Kohorte sichtbar ist. Du kannst
+          es jederzeit entfernen.
+        </p>
 
         <form
           className="flex flex-col gap-1.5"

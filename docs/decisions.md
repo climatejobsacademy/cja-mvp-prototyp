@@ -234,3 +234,33 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Folgen:** Ersetzt die fest eingetragenen Trainer:innen auf demo (`demo-personen.ts`, `public/demo-bilder`); `public/demo-bilder` bleibt nur auf demo. Fotos von Trainer:innen lädt AfCJ admin mit deren Einwilligung hoch. Beim Löschen eines Kontos bleibt eine Fotodatei im Speicher, weil Storage nicht kaskadiert; das gehört in den Löschpfad (Lücke aus dem Audit vom 30.09.2026). Home und Programm zeigen die Trainer:innen später.
 - **Status:** gültig (Entscheidung Vera)
 - **Belegt:** `0030_trainer_profilfotos.sql`; `019_trainer_profilfotos.test.sql`; `access-matrix.md`, Zeilen „Profilfoto“ und „Trainer:in je Termin“; Datenschutzerklärung, Abschnitt „Profilfotos“; SR-77, SR-78, SR-60
+
+### 2026-10-13 – Kann-Satz als eigenes Feld an der Kompetenz
+- **Entscheidung:** `competency.kann_satz` (Text, optional) nimmt den ausformulierten Kann-Satz aus der Importvorlage auf; `name` bleibt der Kurztitel. Das Import-Skript (`scripts/import-plan.mjs`) füllt das Feld, sobald die Spalte existiert (Migration 0031).
+- **Begründung:** Die Kann-Sätze von Content & Learning hatten kein Feld; im Namen wären sie für Listen und Ringe zu lang.
+- **Folgen:** Anzeige in der Kompetenz-Detailansicht folgt in einem eigenen PR. Keine neuen Policies (bestehende Lese- und Schreibregeln für `competency` gelten).
+- **Status:** gültig (Entscheidung Vera)
+- **Belegt:** `0031_kompetenz_kann_satz.sql`; `020_kompetenz_kann_satz.test.sql`; `data-model.md`, Zeile „competency“; SR-80
+
+### 2026-10-13 – Trainer:innen bestätigen Anwesenheit und prüfen Praxisberichte; Storno statt Änderung
+- **Entscheidung:** (E1) Trainer:innen melden sich an (Magic Link wie Lernende). (E2) Sie prüfen Praxisberichte (`verification`). (E3) Eine Trainer:in handelt für alle Termine und Praxisberichte einer Kohorte, in der sie mindestens einen Termin hat (`live_session.trainer_id` oder `field_job.instructor_id`). (E4) `attendance` und `verification` sind für alle Rollen unveränderlich; Korrektur per Storno-Eintrag (`korrigiert_id`). Löschen bleibt AfCJ admin vorbehalten, bis der Löschweg (DSGVO-Löschrecht) entschieden ist.
+- **Begründung:** Ohne Bestätigung zählen Stundenplan-Häkchen und „Heute frei“ (SR-79) keinen Live-Termin. Je Termin ist nur eine Person gespeichert, Vertretungen kommen vor (E3). SR-07 verlangt unveränderliche Nachweise; Storno hält den Verlauf für AZAV-Prüfungen fest.
+- **Folgen:** Überholt den Teil von 0030 „Trainer:innen ohne Login-Nutzung“. Trainer:innen lesen Kohorte, Plan, Einschreibungen, Praxistage und -berichte ihrer Kohorten; Namen der Lernenden nur über `fn_trainer_teilnehmende()`. Datenschutzerklärung ergänzen (Paket G, Übergabe). Oberfläche für Trainer:innen folgt (G2).
+- **Status:** gültig (Entscheidung Vera)
+- **Belegt:** `0032_trainer_anwesenheit_pruefung.sql`; `021_trainer_anwesenheit_pruefung.test.sql`; `access-matrix.md`; SR-07, SR-81, SR-82
+
+### 2026-10-13 – Eigene Personendaten: nur Rufname und Foto selbst änderbar
+- **Entscheidung:** Spalten-Grant auf `person`: Angemeldete ändern nur `rufname` und `foto_pfad` (eigene Zeile über `person_self_update`). Alle anderen Felder pflegt AfCJ admin im Dashboard.
+- **Begründung:** `person_self_update` gab die ganze eigene Zeile frei; über die API ließen sich E-Mail, Name und Geburtsdatum ändern, `person.email` konnte von `auth.users.email` abweichen (Paket-G-Analyse).
+- **Folgen:** Auch AfCJ admin ändert in der App nur diese beiden Spalten (heute ohne Bedeutung, Pflege im Dashboard). Ob Lernende Vorerfahrung oder Sprache selbst ändern, entscheidet die Profilseite (Übergabe).
+- **Status:** gültig (Entscheidung Vera)
+- **Belegt:** `0033_person_spaltenrechte.sql`; `022_person_spaltenrechte.test.sql`; `access-matrix.md`; SR-77
+
+### 2026-10-14 – Kohortensicht: Anzeigename und Foto der Kohortenmitglieder
+
+- **Entscheidung:** Lernende sehen die anderen Lernenden ihrer Kohorte mit Anzeigename (Rufname plus Initial des Nachnamens), der Anzahl und, wenn die Person ein Foto hochgeladen hat, mit dem Foto. Der Upload ist die Freigabe; der Upload-Dialog sagt das ausdrücklich („Mit dem Hochladen bist du einverstanden, dass dein Foto für Mitglieder deiner Kohorte sichtbar ist. Du kannst es jederzeit entfernen.“). Nur gleiche Kohorte und gleiche Organisation, nur aktive Einschreibungen. `fn_meine_kohorte()` liefert `person_id`, `anzeigename`, `foto_pfad`; `fn_darf_foto_sehen` bekommt die Kohortenregel. Keine neuen Spalten oder Schalter an `person`.
+- **Begründung:** SR-30 (Build next) verlangt Namen und Profilbild; die Abgrenzung auf Kohorte und Organisation schützt auch dann, wenn Kohorten später organisationsübergreifend gemischt werden. Ein zusätzlicher Schalter wäre ein zweiter Ort für dieselbe Entscheidung: wer kein Foto hochlädt oder es entfernt, zeigt keins.
+- **Folgen:** Die Datenschutzerklärung sagt heute, das Foto sei „nicht für andere Teilnehmende“ sichtbar. Vor der Veröffentlichung auf Production müssen Abschnitt „Profilfotos“ und ein neuer Abschnitt „Kohortenansicht“ geändert werden (Entwurf in `docs/datenschutz-kohortenansicht-entwurf.md`, Prüfinstanz offen). Wer ein Foto vor dieser Änderung hochgeladen hat, hat unter dem alten Text zugestimmt; der neue Dialogtext und die Datenschutzerklärung müssen vor dem Release dafür sorgen, dass diese Personen die neue Sichtbarkeit kennen (Entscheidung offen: Hinweis beim nächsten Öffnen oder Foto zurücksetzen). Der Name ist ohne Abwahl sichtbar; eine Abwahl gibt es nicht. Keine Trainer-Liste, keine Vorerfahrung, keine Profilseite.
+- **Status:** gültig (Entscheidung Vera)
+- **Belegt:** `0034_kohortensicht.sql`; `023_kohortensicht.test.sql`; `access-matrix.md`; SR-30
+

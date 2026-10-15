@@ -5,8 +5,9 @@ import { getMeineTrainer, type TrainerAnzeige } from "./trainer";
 
 // Stundenplan v2 (SR-13, SR-73): Daten für
 // Woche, Tag und Monat. Nutzt die Tagesagenda von Home (gebündelt über den
-// ganzen Zeitraum) und ergänzt die bestätigte Anwesenheit (attendance,
-// Lesen der eigenen Zeilen per RLS attendance_learner_select). Nur lesend.
+// ganzen Zeitraum) und ergänzt die bestätigte Anwesenheit (View
+// attendance_aktuell seit 0032: ohne stornierte Zeilen; Lesen der eigenen
+// Zeilen per RLS attendance_learner_select). Nur lesend.
 
 export type Plantag = TagesAgenda & {
   /** live_session.id → Anwesenheit bestätigt "anwesend" */
@@ -28,7 +29,7 @@ export async function getStundenplan(ctx: Ctx, von: string, bis: string): Promis
   const supabase = await createClient();
   const { data: anwesenheit } = liveIds.length
     ? await supabase
-        .from("attendance")
+        .from("attendance_aktuell")
         .select("live_session_id, status")
         .eq("learner_id", ctx.learnerId)
         .in("live_session_id", liveIds)

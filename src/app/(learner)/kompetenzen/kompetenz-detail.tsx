@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { BookOpen, Check, ChevronDown, ChevronRight, Clock, ThumbsDown, Video, Wrench } from "lucide-react";
 
+import { ModulZeichen } from "@/components/modul-zeichen";
 import { Ring } from "@/components/fortschritts-ring";
 import { TypIcon } from "@/components/typ-icon";
 import { AKTIVITAET_ART, aktivitaetMeta } from "@/lib/kompetenz-aktivitaet";
@@ -115,10 +116,27 @@ const TYP: Record<Lernaktivitaet["art"], { Icon: typeof Video; kachel: string }>
  * öffnen die Lektionsseite, Praxis den eigenen Praxistag dieses Typs
  * (/praxistag/[fieldJobId]); ohne eigenen Praxistag nur Text ohne Link.
  * Ohne Zuordnung: Bereich ausgeblendet. Wunsch Anna 2026-10-11: aufklappbar,
- * beim Öffnen einer Kompetenz zu. Titel immer vollständig, ohne Modul-Zeile
- * (die Modul-Ebene folgt mit Datenlücke Nr. 1).
+ * beim Öffnen einer Kompetenz zu. Groß das Thema (lesson.thema, sonst der
+ * Titel), klein das Modul aus der Modul-Ebene (Anna 2026-10-12, 0028).
  */
-function HierLernstDu({ aktivitaeten, heute }: { aktivitaeten: Lernaktivitaet[]; heute: string }) {
+/** Module mit Zeitraum im eigenen Stundenplan (fn_modul_zeitraum, 0028) -- für "Modul klein". */
+export type ModulZeitraum = { ueberzeile: string; name: string; von: string | null; bis: string | null };
+
+/** Modul, in dessen Zeitraum `datum` liegt; sonst null. */
+function modulZu(module: ModulZeitraum[], datum: string | null): ModulZeitraum | null {
+  if (!datum) return null;
+  return module.find((m) => m.von && m.bis && m.von <= datum && datum <= m.bis) ?? null;
+}
+
+function HierLernstDu({
+  aktivitaeten,
+  heute,
+  module,
+}: {
+  aktivitaeten: Lernaktivitaet[];
+  heute: string;
+  module: ModulZeitraum[];
+}) {
   if (aktivitaeten.length === 0) return null;
   return (
     // Beim Öffnen des Panels zu (Anna 2026-10-12, wie schon 2026-10-11).
@@ -135,7 +153,7 @@ function HierLernstDu({ aktivitaeten, heute }: { aktivitaeten: Lernaktivitaet[];
         {aktivitaeten.map((a) => {
           return (
             <li key={`${a.art}-${a.id}`}>
-              <AktivitaetZeile a={a} heute={heute} />
+              <AktivitaetZeile a={a} heute={heute} modul={modulZu(module, a.datum)} />
             </li>
           );
         })}
@@ -145,7 +163,15 @@ function HierLernstDu({ aktivitaeten, heute }: { aktivitaeten: Lernaktivitaet[];
 }
 
 /** Eine Lernaktivität: Link, wenn es ein Ziel gibt, sonst dieselbe Zeile ohne Link. */
-function AktivitaetZeile({ a, heute }: { a: Lernaktivitaet; heute: string }) {
+function AktivitaetZeile({
+  a,
+  heute,
+  modul,
+}: {
+  a: Lernaktivitaet;
+  heute: string;
+  modul: { ueberzeile: string; name: string } | null;
+}) {
   const { Icon, kachel } = TYP[a.art];
   const href = a.art === "praxis" ? (a.fieldJobId ? `/praxistag/${a.fieldJobId}` : null) : `/content/${a.id}`;
   const wann = aktivitaetMeta(a, heute);
@@ -155,10 +181,11 @@ function AktivitaetZeile({ a, heute }: { a: Lernaktivitaet; heute: string }) {
         <Icon className="size-[17px]" aria-hidden="true" />
       </span>
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="text-[15px] leading-snug font-semibold">{a.titel}</span>
-        {a.thema && <span className="text-[13px] leading-snug text-ink">{a.thema}</span>}
+        <span className="text-[15px] leading-snug font-semibold">{a.thema ?? a.titel}</span>
         <span className="flex flex-wrap items-center gap-x-1.5 text-[13px] text-ink-muted">
           <span className="sr-only">{AKTIVITAET_ART[a.art]}: </span>
+          {modul && <ModulZeichen klein ueberzeile={modul.ueberzeile} name={modul.name} />}
+          {modul && wann && <span aria-hidden="true">·</span>}
           {wann && <span>{wann}</span>}
         </span>
       </span>
@@ -185,12 +212,15 @@ export function KompetenzDetail({
   aktivitaeten,
   heute,
   heuteStepIds,
+  module = [],
 }: {
   kompetenz: CompetencyView;
   aktivitaeten: Lernaktivitaet[];
   heute: string;
   /** Teilschritte, auf die heute eine Aktivität einzahlt */
   heuteStepIds: Set<string>;
+  /** Module mit Zeitraum, für die Modul-Zeile je Aktivität */
+  module?: ModulZeitraum[];
 }) {
   const heuteDran = kompetenz.steps.some((s) => heuteStepIds.has(s.id));
   // Reihenfolge je Kompetenz aus competency_competency_step.reihenfolge (0027).
@@ -228,7 +258,7 @@ export function KompetenzDetail({
       </div>
 
       {/* key: beim Wechsel der Kompetenz wieder zugeklappt */}
-      <HierLernstDu key={kompetenz.id} aktivitaeten={aktivitaeten} heute={heute} />
+      <HierLernstDu key={kompetenz.id} aktivitaeten={aktivitaeten} heute={heute} module={module} />
     </section>
   );
 }

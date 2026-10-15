@@ -48,7 +48,7 @@ export type FieldJobStatus = "geplant" | "durchgeführt";
 export type FieldJobErgebnis = "erledigt" | "problem";
 export type FieldCapturePhase = "start" | "abschluss";
 export type UnitProgressStatus = "offen" | "in Bearbeitung" | "abgeschlossen";
-export type AttendanceStatus = "anwesend" | "abwesend" | "entschuldigt";
+export type AttendanceStatus = "anwesend" | "nicht anwesend"; // seit 0011
 export type FieldCaptureStatus = "submitted" | "verified" | "rejected";
 export type VerificationEntscheidung = "verified" | "rejected";
 export type KnowledgeSourceStatus = "entwurf" | "freigegeben";
@@ -445,6 +445,10 @@ type AttendanceRow = Flatten<
     live_session_id: string;
     status: AttendanceStatus;
     bestaetigt_von: string | null;
+    /** Zeitpunkt der Bestätigung (0032, SR-07) */
+    bestaetigt_am: string;
+    /** Storno: korrigiert diese Zeile (0032, E4); aktueller Wert über attendance_aktuell */
+    korrigiert_id: string | null;
   }
 >;
 
@@ -492,6 +496,8 @@ type VerificationRow = Flatten<
     entscheidung: VerificationEntscheidung;
     verifiziert_am: string;
     kommentar: string | null;
+    /** Storno: ersetzt diese Entscheidung (0032, E4); aktueller Wert über verification_aktuell */
+    korrigiert_id: string | null;
   }
 >;
 
@@ -880,6 +886,8 @@ export type Database = {
             live_session_id: string;
             status?: AttendanceStatus;
             bestaetigt_von?: string | null;
+            bestaetigt_am?: string;
+            korrigiert_id?: string | null;
           }
         >,
         Partial<AttendanceRow>
@@ -962,6 +970,9 @@ export type Database = {
       competency_evidence: View<CompetencyEvidenceRow>;
       // SR-72 (0021): AND-Logik je Learner und Kompetenz, ebenfalls kein Write.
       competency_fulfilment: View<CompetencyFulfilmentRow>;
+      // 0032 (SR-07, E4): aktuelle Zeilen ohne Storno, RLS über die Basistabellen.
+      attendance_aktuell: View<AttendanceRow>;
+      verification_aktuell: View<VerificationRow>;
     };
     Functions: {
       // Soft-Delete eines Beitrags (0024): Autor:in eigene, Moderation alle der Kohorte.
@@ -972,9 +983,19 @@ export type Database = {
       // Zeitraum je Modul aus dem Stundenplan der Kohorte (0028), RLS der aufrufenden Person.
       fn_modul_zeitraum: { Args: { p_cohort_id: string }; Returns: { modul_id: string; von: string; bis: string }[] };
       // Trainer:innen im eigenen Plan, nur Rolle trainer (0030, SR-78).
+      // 0032 (SR-81, SR-82): Lernende der Kohorten, in denen die Trainer:in einen Termin hat (E3).
+      fn_trainer_teilnehmende: {
+        Args: Record<string, never>;
+        Returns: { person_id: string; cohort_id: string; enrolment_id: string; name: string; rufname: string }[];
+      };
       fn_meine_trainer: {
         Args: Record<string, never>;
         Returns: { person_id: string; name: string; rufname: string; foto_pfad: string | null }[];
+      };
+      // Andere Lernende der eigenen Kohorte, gleiche Organisation, aktiv (0034, SR-30).
+      fn_meine_kohorte: {
+        Args: Record<string, never>;
+        Returns: { person_id: string; anzeigename: string; foto_pfad: string | null }[];
       };
       // Darf die eingeloggte Person die Fotos im Ordner sehen? (0030, SR-77)
       fn_darf_foto_sehen: { Args: { p_ordner: string }; Returns: boolean };
