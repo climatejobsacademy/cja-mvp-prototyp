@@ -111,7 +111,7 @@ export function ProfilDialog({
         <DialogHeader>
           <DialogTitle className="text-ink">Profil bearbeiten</DialogTitle>
           <DialogDescription>
-            Dein Foto sehen du, deine Trainer:innen, das Team der Academy und die anderen Lernenden deiner Kohorte.
+            Dein Foto sehen du, die anderen Lernenden deiner Kohorte und das Team der Akademie.
           </DialogDescription>
         </DialogHeader>
 
