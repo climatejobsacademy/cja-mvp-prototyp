@@ -1,7 +1,9 @@
 import { FlaskConical } from "lucide-react";
 
+import { ModulZeichen } from "@/components/modul-zeichen";
 import { ProgrammZeile } from "@/components/programm-zeile";
 import { datumKurz, datumLang, heuteInBerlin, jetztInBerlin, montagDerWoche, plusTage } from "@/lib/date";
+import { getModuleDerKohorte } from "@/lib/queries/modul";
 import { requireCurrentLearner } from "@/lib/queries/session";
 import { getKohortenStart, getStundenplan } from "@/lib/queries/stundenplan";
 import {
@@ -24,7 +26,8 @@ import { planModell } from "./plan-modell";
 // dem Prinzip von Google -- Woche (Desktop-Standard), Tag (Desktop und
 // mobil) und Monat (nur Desktop). Entscheidungen Anna 2026-10-10: Häkchen
 // bei Live nur mit bestätigter Anwesenheit, kein Reiter "Programm", Breite
-// 1080 px (data-breit). Praxistage mit Uhrzeit aus field_job.start/ende
+// 1120 px (data-breit, seit 2026-10-13, siehe docs/design-specifications.md,
+// Abschnitt 1.1). Praxistage mit Uhrzeit aus field_job.start/ende
 // (0026), ohne Uhrzeit ganztägig -- keine Platzhalterzeit.
 
 const DATUM = /^\d{4}-\d{2}-\d{2}$/;
@@ -64,7 +67,15 @@ export default async function SchedulePage({
     enrolmentId: learner.enrolmentId,
     learnerId: learner.personId,
   };
-  const [plan, kohortenStart] = await Promise.all([getStundenplan(ctx, von, bis), getKohortenStart(learner.cohortId)]);
+  const [plan, kohortenStart, modulListe] = await Promise.all([
+    getStundenplan(ctx, von, bis),
+    getKohortenStart(learner.cohortId),
+    getModuleDerKohorte(learner.programmeId, learner.cohortId, heute),
+  ]);
+  // Module der gezeigten Woche (Anna 2026-10-12: eigene Zeile unter der
+  // Überschrift): Module, deren Zeitraum im Stundenplan der Kohorte
+  // (fn_modul_zeitraum, 0028) die Woche berührt -- keine feste Gliederung.
+  const wochenModule = modulListe.filter((m) => m.von && m.bis && m.von <= woche[woche.length - 1] && m.bis >= woche[0]);
   const modelle = planModell(plan, heute, jetzt);
   const wochenTage = modelle.filter((t) => woche.includes(t.datum));
   const tag = modelle.find((t) => t.datum === datum)!;
@@ -100,6 +111,13 @@ export default async function SchedulePage({
         <div className="flex flex-col gap-2 text-ink">
           <ProgrammZeile name={learner.programmeName} />
           <h1 className="font-heading text-[52px] leading-none">Stundenplan</h1>
+          {wochenModule.length > 0 && (
+            <div className="flex flex-wrap gap-x-4 gap-y-1">
+              {wochenModule.map((m) => (
+                <ModulZeichen key={m.id} ueberzeile={m.ueberzeile} name={m.name} />
+              ))}
+            </div>
+          )}
         </div>
 
         {desktopAnsicht === "woche" && (
