@@ -255,3 +255,12 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Folgen:** Auch AfCJ admin ändert in der App nur diese beiden Spalten (heute ohne Bedeutung, Pflege im Dashboard). Ob Lernende Vorerfahrung oder Sprache selbst ändern, entscheidet die Profilseite (Übergabe).
 - **Status:** gültig (Entscheidung Vera)
 - **Belegt:** `0033_person_spaltenrechte.sql`; `022_person_spaltenrechte.test.sql`; `access-matrix.md`; SR-77
+
+### 2026-10-14 – Kohortensicht: Anzeigename und Foto der Kohortenmitglieder
+
+- **Entscheidung:** Lernende sehen die anderen Lernenden ihrer Kohorte mit Anzeigename (Rufname plus Initial des Nachnamens), der Anzahl und, wenn die Person ein Foto hochgeladen hat, mit dem Foto. Der Upload ist die Freigabe; der Upload-Dialog sagt das ausdrücklich („Mit dem Hochladen bist du einverstanden, dass dein Foto für Mitglieder deiner Kohorte sichtbar ist. Du kannst es jederzeit entfernen.“). Nur gleiche Kohorte und gleiche Organisation, nur aktive Einschreibungen. `fn_meine_kohorte()` liefert `person_id`, `anzeigename`, `foto_pfad`; `fn_darf_foto_sehen` bekommt die Kohortenregel. Keine neuen Spalten oder Schalter an `person`.
+- **Begründung:** SR-30 (Build next) verlangt Namen und Profilbild; die Abgrenzung auf Kohorte und Organisation schützt auch dann, wenn Kohorten später organisationsübergreifend gemischt werden. Ein zusätzlicher Schalter wäre ein zweiter Ort für dieselbe Entscheidung: wer kein Foto hochlädt oder es entfernt, zeigt keins.
+- **Folgen:** Die Datenschutzerklärung sagt heute, das Foto sei „nicht für andere Teilnehmende“ sichtbar. Vor der Veröffentlichung auf Production müssen Abschnitt „Profilfotos“ und ein neuer Abschnitt „Kohortenansicht“ geändert werden (Entwurf in `docs/datenschutz-kohortenansicht-entwurf.md`, Prüfinstanz offen). Wer ein Foto vor dieser Änderung hochgeladen hat, hat unter dem alten Text zugestimmt; der neue Dialogtext und die Datenschutzerklärung müssen vor dem Release dafür sorgen, dass diese Personen die neue Sichtbarkeit kennen (Entscheidung offen: Hinweis beim nächsten Öffnen oder Foto zurücksetzen). Der Name ist ohne Abwahl sichtbar; eine Abwahl gibt es nicht. Keine Trainer-Liste, keine Vorerfahrung, keine Profilseite.
+- **Status:** gültig (Entscheidung Vera)
+- **Belegt:** `0034_kohortensicht.sql`; `023_kohortensicht.test.sql`; `access-matrix.md`; SR-30
+
