@@ -3,7 +3,8 @@
 -- trainer, person.foto_pfad nur im eigenen Ordner, privater Bucket
 -- profilfotos, fn_meine_trainer (nur Personen mit Rolle trainer aus dem
 -- eigenen Plan) und die Storage-Policies: Lernende sehen ihr eigenes Foto
--- und die Fotos ihrer Trainer:innen, keine Fotos anderer Lernender.
+-- und die Fotos ihrer Trainer:innen. Seit 0034 (Kohortensicht, SR-30) auch
+-- die Fotos der Lernenden aus derselben Kohorte und Organisation.
 --
 -- Ausführen mit: supabase test db
 begin;
@@ -150,14 +151,15 @@ select is_empty(
 select results_eq(
   $$select name from storage.objects where bucket_id = 'profilfotos' order by name$$,
   $$values ('00000000-0000-0000-0000-000000019001/00000000-0000-0000-0000-0000000190a1.jpg'::text),
+           ('00000000-0000-0000-0000-000000019002/00000000-0000-0000-0000-0000000190a2.jpg'::text),
            ('00000000-0000-0000-0000-000000019004/00000000-0000-0000-0000-0000000190a4.jpg'::text)$$,
-  'Learner sehen das eigene Foto und die Fotos ihrer Trainer:innen'
+  'Learner sehen das eigene Foto, die Fotos ihrer Trainer:innen und seit 0034 (SR-30) das Foto von B aus derselben Kohorte und Organisation'
 );
 select is(
   (select count(*)::int from storage.objects
    where bucket_id = 'profilfotos' and name like '00000000-0000-0000-0000-000000019002/%'),
-  0,
-  'Learner sehen keine Fotos anderer Lernender derselben Kohorte'
+  1,
+  'Seit 0034 (SR-30): Learner sehen Fotos anderer Lernender derselben Kohorte und Organisation'
 );
 select lives_ok(
   $$insert into storage.objects (bucket_id, name)
@@ -204,8 +206,8 @@ select results_eq(
 select is(
   (select count(*)::int from storage.objects
    where bucket_id = 'profilfotos' and name like '00000000-0000-0000-0000-000000019001/%'),
-  0,
-  'Auch umgekehrt: B sieht das Foto von A nicht'
+  1,
+  'Auch umgekehrt: B sieht das Foto von A (gleiche Kohorte und Organisation, 0034)'
 );
 
 -- ------------------------------------------------------------
