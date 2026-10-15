@@ -58,7 +58,9 @@ export default function DatenschutzPage() {
         sind diese Daten für Sie selbst und für berechtigtes Personal der
         Akademie für Klimajobs. Trainerinnen und Trainer sehen die Anwesenheit
         und die Praxisberichte der Teilnehmenden der Kohorten, in denen sie
-        mindestens einen Termin leiten. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.
+        mindestens einen Termin leiten. Sie tragen dort die Anwesenheit ein und
+        können Praxisberichte prüfen, also bestätigen oder mit Kommentar
+        zurückgeben. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.
       </p>
 
       <h2>Fragen und Antworten zu Lektionen</h2>
