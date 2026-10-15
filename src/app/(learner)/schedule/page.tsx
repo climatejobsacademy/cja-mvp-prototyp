@@ -26,7 +26,8 @@ import { planModell } from "./plan-modell";
 // dem Prinzip von Google -- Woche (Desktop-Standard), Tag (Desktop und
 // mobil) und Monat (nur Desktop). Entscheidungen Anna 2026-10-10: Häkchen
 // bei Live nur mit bestätigter Anwesenheit, kein Reiter "Programm", Breite
-// 1080 px (data-breit). Praxistage mit Uhrzeit aus field_job.start/ende
+// 1120 px (data-breit, seit 2026-10-13, siehe docs/design-specifications.md,
+// Abschnitt 1.1). Praxistage mit Uhrzeit aus field_job.start/ende
 // (0026), ohne Uhrzeit ganztägig -- keine Platzhalterzeit.
 
 const DATUM = /^\d{4}-\d{2}-\d{2}$/;

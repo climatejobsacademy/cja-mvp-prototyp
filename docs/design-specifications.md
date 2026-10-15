@@ -22,6 +22,40 @@
 | Icons | Interaktive UI-Icons (Buttons, Navigation, Status) über die Standard-Icon-Bibliothek von shadcn/ui (Lucide) statt eigener Icons — konsistent, mit denselben Fokus-/Kontrast-Garantien wie die übrigen shadcn-Komponenten. Das eigene Icon-Set wird gezielt für Marken-/Illustrations-Zwecke eingesetzt (z. B. Kategorie-Icons für Praxistag-Tätigkeiten, Onboarding), nicht für jedes UI-Element. Quelle: [Brand-Assets-Ordner (Drive)](https://drive.google.com/drive/folders/1rWvlIqeL9P1OOrJBaaspzbQny-QNKYhf) — Übernahme ins Repo erfolgt in Schritt 5 | Entschieden 2026-09-09 |
 | Semantische Farben (Erfolg / Warnung / Info / Fehler) | shadcn/ui bringt von Haus aus nur `destructive` (Fehler/kritische Aktionen) mit — `success`/`warning`/`info` fehlen und müssen ergänzt werden. Erfolg = Eco Green/Eco Deep Green, Warnung = Coral, Info = Lylac — jeweils als helle Hintergrundfläche mit Eco Deep Green als Text/Icon-Farbe (nicht als Textfarbe direkt, Kontrastgründe s. o.). Fehler/Destructive bleibt bewusst shadcn-Standard-Rot statt Markenfarbe (Rot = universelle Fehler-Konvention). **Prinzip: Status nie nur über Farbe zeigen (WCAG 1.4.1), immer zusätzlich Icon + Text-Label** — relevant vor allem für Verifizierungs-Status (pending/verified/rejected) im Praxistag-Flow und Kompetenz-Dashboard | Entschieden 2026-09-09 |
 
+## 1.1 Seitenbreite
+
+Ergänzt 2026-10-14 (Vera): Die maximale Breite des Seiteninhalts ist festgelegt und
+an einer Stelle gesetzt. Stand `dev` (fd3b279).
+
+| Bereich | Maximale Breite | Seitenrand | Wo gesetzt |
+|---|---|---|---|
+| Inhalt und Header der Lernenden-Seiten Home, Stundenplan, Kompetenzen, Programm | 1120 px | 40 px (`md:px-10`, mobil 16 px) | `src/app/(learner)/layout.tsx` (`has-[[data-breit]]:max-w-[1120px]`), Header in `src/components/nav/app-nav.tsx` (`max-w-[1120px]`, `px-10`) |
+| Lektion und Praxistag | 768 px (`max-w-3xl`, Standard des Layouts) | 16 px (`px-4`) | `src/app/(learner)/layout.tsx` (ohne `data-breit`) |
+| Footer | 1280 px (`max-w-7xl`) | 24 px (`px-6`) | `src/components/footer.tsx`, einmal global in `src/app/layout.tsx` eingebunden |
+| Trainer-Bereich | 768 px (`max-w-3xl`) | 16 px, ab 768 px 24 px (`md:px-6`) | `src/app/(trainer)/layout.tsx` |
+
+Die Breiten gelten einschließlich des seitlichen Rands (Tailwind rechnet mit
+`border-box`); bei 1120 px bleiben für den Inhalt also höchstens 1040 px.
+
+Entscheidung Anna vom 13.10.2026 nach Vergleich von 1080, 1120, 1200 und 1280 px;
+umgesetzt in PR #97 (zuvor 1080 px aus PR #85).
+
+Umsetzung: Die Breite ist zentral im Layout der Lernenden-Seiten
+(`(learner)/layout.tsx`) und im Header (`components/nav/app-nav.tsx`) gesetzt.
+Seiten wählen die breite Variante nur über das Attribut `data-breit` am
+Wurzelelement (Home, Stundenplan, Kompetenzen, Programm) und setzen keinen
+eigenen Wert. Änderungen an der Breite gehören ausschließlich dorthin und in
+diese Tabelle; Footer und Trainer-Bereich setzen ihre Werte in den oben
+genannten Dateien.
+
+Hinweis: Die Design-Briefs im Branch `demo` (`docs/design_handoff_*`) nennen
+abweichende Werte (Kompetenzen v1: 1200 px, Programm v8 und Stundenplan v2:
+1240 px; Home v6 nennt 1120 px). Für die Breite maßgeblich ist dieser Abschnitt.
+
+Nicht Teil dieser Festlegung: Login (Formular `max-w-[380px]`) und die
+statischen Seiten Datenschutz, Impressum und Barrierefreiheit (`prose`,
+Lesebreite).
+
 ## 2. Kritische Flows
 
 Priorisierung entschieden am 2026-09-09: 1. Praxistag-Flow — 2. Learner Day
