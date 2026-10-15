@@ -1,4 +1,4 @@
-import type { NachholLektion } from "@/lib/home-tag";
+import { mitThema, type NachholLektion } from "@/lib/home-tag";
 import { createClient } from "@/lib/supabase/server";
 
 // Home v6 (docs/design_handoff_home_v6, Brief 2.4 + 6, SR folgt):
@@ -253,12 +253,12 @@ export async function getNachholLektion(
       .eq("learner_id", learnerId)
       .eq("status", "abgeschlossen")
       .in("lesson_id", lessonIds),
-    supabase.from("lesson").select("id, name").in("id", lessonIds),
+    supabase.from("lesson").select("id, name, thema").in("id", lessonIds),
   ]);
   const erledigtIds = new Set((erledigt ?? []).map((u) => u.lesson_id));
   const offen = eintraege.find((e) => !erledigtIds.has(e.lesson_id));
   const lesson = offen && (lessons ?? []).find((l) => l.id === offen.lesson_id);
-  return offen && lesson ? { lessonId: lesson.id, titel: lesson.name, datum: offen.datum } : null;
+  return offen && lesson ? { lessonId: lesson.id, titel: mitThema(lesson.name, lesson.thema), datum: offen.datum } : null;
 }
 
 /**

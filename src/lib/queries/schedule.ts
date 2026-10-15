@@ -1,3 +1,4 @@
+import { mitThema } from "@/lib/home-tag";
 import { plusTage } from "@/lib/date";
 import { createClient } from "@/lib/supabase/server";
 import type { ContentType, UnitProgressStatus } from "@/lib/database.types";
@@ -127,8 +128,8 @@ export async function getAgendaZeitraum(
 
     const [{ data: lessons }, { data: courses }, { data: liveSessions }] = await Promise.all([
       lessonIds.length
-        ? supabase.from("lesson").select("id, name, content_type").in("id", lessonIds)
-        : Promise.resolve({ data: [] as { id: string; name: string; content_type: ContentType }[] }),
+        ? supabase.from("lesson").select("id, name, thema, content_type").in("id", lessonIds)
+        : Promise.resolve({ data: [] as { id: string; name: string; thema: string | null; content_type: ContentType }[] }),
       courseIds.length
         ? supabase.from("course").select("id, name").in("id", courseIds)
         : Promise.resolve({ data: [] as { id: string; name: string }[] }),
@@ -149,7 +150,7 @@ export async function getAgendaZeitraum(
     if (liveSessionLessonIds.length > 0) {
       const { data: extraLessons } = await supabase
         .from("lesson")
-        .select("id, name, content_type")
+        .select("id, name, thema, content_type")
         .in("id", liveSessionLessonIds);
       allLessons = [...allLessons, ...(extraLessons ?? [])];
     }
@@ -177,7 +178,7 @@ export async function getAgendaZeitraum(
           scheduleEntryId: entry.id,
           lessonId: lesson?.id ?? null,
           art: "live",
-          titel: lesson?.name ?? course?.name ?? "Live-Termin",
+          titel: (lesson && mitThema(lesson.name, lesson.thema)) ?? course?.name ?? "Live-Termin",
           contentType: "live",
           unitProgressStatus: lesson ? progressByLesson.get(lesson.id) ?? "offen" : null,
           liveSession: {
@@ -197,7 +198,7 @@ export async function getAgendaZeitraum(
           scheduleEntryId: entry.id,
           lessonId: lesson.id,
           art: "asynchron",
-          titel: lesson.name,
+          titel: mitThema(lesson.name, lesson.thema),
           contentType: lesson.content_type,
           unitProgressStatus: progressByLesson.get(lesson.id) ?? "offen",
           liveSession: null,

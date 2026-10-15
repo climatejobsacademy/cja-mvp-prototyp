@@ -3,6 +3,7 @@
 // der Lektion, dazu die Selbstlern-Lektion "Wissen festigen" desselben Tages.
 
 import { createClient } from "@/lib/supabase/server";
+import { mitThema } from "@/lib/home-tag";
 import { gleicherTitel } from "@/lib/stundenplan";
 import type { CurrentLearner } from "@/lib/queries/session";
 
@@ -57,8 +58,8 @@ export async function getLiveKontext(
 
   let festigenLessonId: string | null = null;
   if (ids.length > 0) {
-    const { data: lektionen } = await supabase.from("lesson").select("id, name").in("id", ids);
-    festigenLessonId = (lektionen ?? []).find((l) => gleicherTitel(l.name, lessonName))?.id ?? null;
+    const { data: lektionen } = await supabase.from("lesson").select("id, name, thema").in("id", ids);
+    festigenLessonId = (lektionen ?? []).find((l) => gleicherTitel(mitThema(l.name, l.thema), lessonName))?.id ?? null;
   }
 
   return {

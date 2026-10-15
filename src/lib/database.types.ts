@@ -177,6 +177,8 @@ type LessonRow = Flatten<
     inhalt: Json | null;
     reihenfolge: number;
     chat_aktiv: boolean;
+    // 0029 (aus dev, auf Staging angewendet): Thema statt Klammer im Namen
+    thema: string | null;
   }
 >;
 

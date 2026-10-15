@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 // @ts-expect-error TS5097: .ts-Endung für node:test nötig
-import { getDayState, parseNowParameter, titelTeile, type TagesAktivitaeten } from "./home-tag.ts";
+import { getDayState, mitThema, parseNowParameter, themaTitel, titelTeile, type TagesAktivitaeten } from "./home-tag.ts";
 
 const DATUM = "2026-10-09";
 const jetzt = (hhmm: string) => `${DATUM}T${hhmm}:00`;
@@ -104,4 +104,13 @@ test("titelTeile: Klammertext wird Untertitel", () => {
   );
   assert.deepEqual(titelTeile("Ohmsches Gesetz"), { titel: "Ohmsches Gesetz", untertitel: null });
   assert.deepEqual(titelTeile("(Nur Klammer)"), { titel: "(Nur Klammer)", untertitel: null });
+});
+
+test("mitThema: hängt das Thema an, wenn die Klammer im Namen fehlt", () => {
+  assert.equal(mitThema("Grundlagen der Elektrotechnik", "Der Transistor / Die Dioden"), "Grundlagen der Elektrotechnik (Der Transistor / Die Dioden)");
+  assert.equal(themaTitel(mitThema("Grundlagen der Elektrotechnik", "Der Transistor")), "Der Transistor");
+  // Klammer noch im Namen (vor dem Klammer-Skript): unverändert
+  assert.equal(mitThema("Grundlagen (Der Transistor)", "Der Transistor"), "Grundlagen (Der Transistor)");
+  assert.equal(mitThema("Grundlagen", null), "Grundlagen");
+  assert.equal(mitThema("Grundlagen", "  "), "Grundlagen");
 });

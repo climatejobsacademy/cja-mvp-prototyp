@@ -1,3 +1,4 @@
+import { mitThema } from "@/lib/home-tag";
 import { createClient } from "@/lib/supabase/server";
 
 // Kompetenzseite v1 (docs/design_handoff_kompetenzen_v1, SR folgt; baut auf
@@ -105,7 +106,7 @@ export async function getLernaktivitaeten(
   const leer = Promise.resolve({ data: [] as never[] });
   const [{ data: lessons }, { data: liveSessions }, { data: asyncPlan }, { data: progress }, { data: typen }, { data: jobs }] =
     await Promise.all([
-      lessonIds.length ? supabase.from("lesson").select("id, name, content_type").in("id", lessonIds) : leer,
+      lessonIds.length ? supabase.from("lesson").select("id, name, thema, content_type").in("id", lessonIds) : leer,
       lessonIds.length
         ? supabase.from("live_session").select("id, lesson_id, datum, start").in("lesson_id", lessonIds)
         : leer,
@@ -166,7 +167,7 @@ export async function getLernaktivitaeten(
     return {
       art: l.content_type === "live" || live ? "live" : "selbst",
       id: l.id,
-      titel: l.name,
+      titel: mitThema(l.name, l.thema),
       datum: live?.datum ?? datumJeLektion.get(l.id) ?? null,
       start: live?.start ?? null,
       erledigt: erledigteLektionen.has(l.id),

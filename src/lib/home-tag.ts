@@ -127,6 +127,17 @@ export function parseNowParameter(wert: string | undefined): string | null {
  * Multimeter". Ohne Klammer bleibt der Titel unverändert.
  */
 /** Thema einer Lektion: der Klammertext, sonst der ganze Titel (groß angezeigt, Anna 2026-10-12). */
+/**
+ * Lektionsname mit Thema in Klammern (Anna 2026-10-15): demo liest das Thema
+ * aus der Klammer im Namen (themaTitel). Seit 0029 steht es in lesson.thema,
+ * und die Klammer verschwindet aus dem Namen (scripts/sql/
+ * lektion_klammer_entfernen.sql in dev). Damit demo dann weiter das Thema
+ * zeigt, wird es hier wieder angehängt -- nur wenn der Name keine Klammer hat.
+ */
+export function mitThema(name: string, thema: string | null | undefined): string {
+  return thema && thema.trim() && !titelTeile(name).untertitel ? `${name} (${thema.trim()})` : name;
+}
+
 export function themaTitel(titel: string): string {
   const teile = titelTeile(titel);
   return teile.untertitel ?? teile.titel;

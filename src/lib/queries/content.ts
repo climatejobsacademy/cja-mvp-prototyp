@@ -1,3 +1,4 @@
+import { mitThema } from "@/lib/home-tag";
 import { heuteInBerlin } from "@/lib/date";
 import { createClient } from "@/lib/supabase/server";
 import type { ContentType, UnitProgressStatus } from "@/lib/database.types";
@@ -96,10 +97,10 @@ export async function getContentLibrary(
   const { data: lessons } = courseIds.length
     ? await supabase
         .from("lesson")
-        .select("id, course_id, name, content_type, reihenfolge")
+        .select("id, course_id, name, thema, content_type, reihenfolge")
         .in("course_id", courseIds)
         .order("reihenfolge", { ascending: true })
-    : { data: [] as { id: string; course_id: string; name: string; content_type: ContentType; reihenfolge: number }[] };
+    : { data: [] as { id: string; course_id: string; name: string; thema: string | null; content_type: ContentType; reihenfolge: number }[] };
 
   const lessonIds = (lessons ?? []).map((l) => l.id);
   const { data: progress } = lessonIds.length
@@ -117,7 +118,7 @@ export async function getContentLibrary(
       .filter((l) => l.course_id === course.id)
       .map((l) => ({
         id: l.id,
-        name: l.name,
+        name: mitThema(l.name, l.thema),
         contentType: l.content_type,
         status: statusByLesson.get(l.id) ?? "offen",
       }));
@@ -201,7 +202,7 @@ export async function getLessonDetail(
 
   const { data: lesson } = await supabase
     .from("lesson")
-    .select("id, name, content_type, chat_aktiv")
+    .select("id, name, thema, content_type, chat_aktiv")
     .eq("id", lessonId)
     .single();
   if (!lesson) return null;
@@ -268,7 +269,7 @@ export async function getLessonDetail(
 
   return {
     id: lesson.id,
-    name: lesson.name,
+    name: mitThema(lesson.name, lesson.thema),
     contentType: lesson.content_type,
     chatAktiv: lesson.chat_aktiv,
     status: progress?.status ?? "offen",
