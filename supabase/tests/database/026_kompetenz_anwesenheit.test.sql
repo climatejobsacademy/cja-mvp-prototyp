@@ -65,7 +65,7 @@ insert into schedule_entry (organisation_id, datum, art, reihenfolge, cohort_id,
   ('00000000-0000-0000-0000-000000025011', '2026-11-03', 'live', 1, '00000000-0000-0000-0000-000000025051', null, '00000000-0000-0000-0000-000000025071', null);
 
 insert into competency (id, name, kompetenzbereich, quelle) values
-  ('00000000-0000-0000-0000-000000025081', 'Kompetenz', 'Elektro', 'KA-P1');
+  ('00000000-0000-0000-0000-000000025081', 'Kompetenz', 'Elektro', 'TQ-ARP');
 insert into competency_step (id, competency_id, name, typ) values
   ('00000000-0000-0000-0000-000000025091', '00000000-0000-0000-0000-000000025081', 'Theorie Live + Selbstlernen', 'theoretisch');
 insert into competency_competency_step (competency_id, competency_step_id, reihenfolge) values
