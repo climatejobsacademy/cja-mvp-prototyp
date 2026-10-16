@@ -53,6 +53,7 @@ export type FieldCaptureStatus = "submitted" | "verified" | "rejected";
 export type VerificationEntscheidung = "verified" | "rejected";
 export type KnowledgeSourceStatus = "entwurf" | "freigegeben";
 export type CompetencyEvidenceQuelltyp = "lesson_completion" | "field_verification";
+export type FachspracheEinheitStatus = "entwurf" | "veroeffentlicht"; // seit 0051
 
 interface Timestamps {
   created_at: string;
@@ -86,6 +87,22 @@ type OrganisationRow = Flatten<
     typ: OrganisationTyp;
     status: OrganisationStatus;
     logo_pfad: string | null; // 0025, SR-76
+  }
+>;
+
+type FachspracheEinheitRow = Flatten<
+  Timestamps & {
+    id: string;
+    lesson_id: string;
+    titel: string;
+    dauer_minuten: number | null;
+    inhalt: Json; // Form: src/lib/fachsprache.ts (parseInhalt), Bilder im Bucket fachsprache-bilder
+    inhalt_version: number;
+    status: FachspracheEinheitStatus;
+    fachlich_geprueft_von: string | null;
+    fachlich_geprueft_am: string | null;
+    sprachlich_geprueft_von: string | null;
+    sprachlich_geprueft_am: string | null;
   }
 >;
 
@@ -563,6 +580,25 @@ export type Database = {
         OrganisationRow,
         Flatten<Partial<Timestamps> & { id?: string; name: string; typ: OrganisationTyp; status?: OrganisationStatus; logo_pfad?: string | null }>,
         Partial<OrganisationRow>
+      >;
+      fachsprache_einheit: Table<
+        FachspracheEinheitRow,
+        Flatten<
+          Partial<Timestamps> & {
+            id?: string;
+            lesson_id: string;
+            titel: string;
+            dauer_minuten?: number | null;
+            inhalt: Json;
+            inhalt_version?: number;
+            status?: FachspracheEinheitStatus;
+            fachlich_geprueft_von?: string | null;
+            fachlich_geprueft_am?: string | null;
+            sprachlich_geprueft_von?: string | null;
+            sprachlich_geprueft_am?: string | null;
+          }
+        >,
+        Partial<FachspracheEinheitRow>
       >;
       person: Table<
         PersonRow,
