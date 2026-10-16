@@ -271,3 +271,11 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Folgen:** Ausnahme von SR-06 wie beim Fragen-Thread. Vor dem Einschalten auf Production: Datenschutzerklärung (Abschnitt Kohorten-Chat), Nutzungsregeln und eine verantwortliche Person für die Moderation. Ankündigungen setzen voraus, dass Trainer:innen einen Termin in der Kohorte haben (Import).
 - **Status:** gültig (Entscheidung Anna)
 - **Belegt:** `0050_kohorten_chat.sql`; `024_kohorten_chat.test.sql`; `access-matrix.md`; SR-83
+
+### 2026-10-16 – Fachsprache-Einheit (Stufe 2): eigene Tabelle, Prüfpflicht, private Bilder
+
+- **Entscheidung:** (Entwurf, wartet auf Freigabe) Eine Einheit je Lektion in `fachsprache_einheit`. Inhalt als JSON mit Datenbankprüfung (genau eine richtige Antwort je Quizfrage über den Index `richtig`). Veröffentlichung nur mit fachlicher und sprachlicher Prüfung (Person + Datum); bei geändertem Inhalt oder Titel fällt der Status auf `entwurf` und beide Prüfungen werden geleert, bei unverändertem Inhalt nicht. Bilder im privaten Bucket `fachsprache-bilder` (2 MB, PNG/JPEG/WebP, kein SVG), nur Dateiname im JSON, Alternativtext Pflicht. Lesen wie Lernmaterialien über `fn_kann_lektion_lesen`, Schreiben nur AfCJ admin.
+- **Begründung:** Inhalte für Lernende müssen fachlich und sprachlich geprüft sein; SVG im Bucket wäre ausführbarer Inhalt; keine eigene Lernstand-Tabelle, damit kein Nachweis ohne Regel 6 entsteht.
+- **Folgen:** Einstiege (Stundenplan-Chip, Home-Kästchen), Import-Tab und Seite folgen in eigenen Schritten. Offen: ob Prüfende zwei verschiedene Personen sein müssen, Trainer:innen-Lesezugriff, echter Fortschritt. Datenschutz: Vorlesen über die Sprachausgabe des Browsers vor Livegang in der Erklärung nennen.
+- **Status:** Entwurf, nicht auf Staging angewendet
+- **Belegt:** `0051_fachsprache_einheit.sql`; `025_fachsprache_einheit.test.sql`
