@@ -278,6 +278,7 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Begründung:** Inhalte für Lernende müssen fachlich und sprachlich geprüft sein; SVG im Bucket wäre ausführbarer Inhalt; keine eigene Lernstand-Tabelle, damit kein Nachweis ohne Regel 6 entsteht.
 - **Folgen:** Einstiege (Stundenplan-Chip, Home-Kästchen), Import-Tab und Seite folgen in eigenen Schritten. Offen: ob Prüfende zwei verschiedene Personen sein müssen, Trainer:innen-Lesezugriff, echter Fortschritt. Datenschutz: Vorlesen über die Sprachausgabe des Browsers vor Livegang in der Erklärung nennen.
 - **Status:** Entwurf, nicht auf Staging angewendet
+- **Ergänzung 2026-10-16:** Prüfpflicht, Prüfspalten und Prüf-Constraints sind aufgehoben (Beschluss Vera, Migration 0053), siehe den Eintrag „Fachsprache-Einheit: keine Prüfungen in der Datenbank“ unten. Der Text oben gilt insoweit nicht mehr.
 - **Belegt:** `0051_fachsprache_einheit.sql`; `025_fachsprache_einheit.test.sql`
 
 ### 2026-10-16 – Bestätigte Anwesenheit zählt für Kompetenzschritte, Fortschritt anteilig
@@ -295,3 +296,11 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Folgen:** Vorlesen nutzt die Stimmen des Browsers; auf Staging dürfen alle Stimmen vorlesen, ob auf Production nur lokale Stimmen erlaubt sind, wird vor dem Einschalten entschieden (O4, Datenschutz Punkt 6). Keine Bibliothek für Komponententests (O6): Regeln als reine Funktionen mit `node --test`, die Oberfläche über den Klicktest. Abfragen (`src/lib/queries/fachsprache.ts`) und Oberfläche folgen, sobald 0051 auf Staging liegt.
 - **Status:** gültig (Entscheidung Vera)
 - **Belegt:** `src/lib/schalter.ts`, `src/lib/fachsprache.ts`, `src/lib/fachsprache-quiz.ts` mit Tests; SR-84
+
+### 2026-10-16 – Fachsprache-Einheit: keine Prüfungen in der Datenbank
+
+- **Entscheidung:** (Beschluss Vera) Eine Fachsprache-Einheit gilt als veröffentlicht, wenn `status = 'veroeffentlicht'` gilt, sonst nichts. Die Prüfpflicht und alle Prüfungen in der Datenbank entfallen: die Spalten `fachlich_geprueft_von/_am` und `sprachlich_geprueft_von/_am`, die Constraints `fachsprache_nur_geprueft_veroeffentlichen` und `fachsprache_pruefung_paarweise` sowie die Prüf-Logik in `fn_fachsprache_inhalt_geaendert` werden entfernt (Migration 0053). Der Trigger `fachsprache_inhalt_geaendert` bleibt: Ändern sich Inhalt oder Titel, fällt der Status auf `entwurf` (und `inhalt_version` zählt hoch). Prüfen bleibt ein Teamprozess außerhalb der Datenbank.
+- **Begründung:** Prüfen ist ein Vorgang im Team, nicht in der Datenbank; leere oder gepflegte Prüfspalten würden nur eine Prüfung vortäuschen, die niemand erzwingt oder nachvollziehen kann.
+- **Folgen:** **Die Datenbank verhindert das Veröffentlichen ohne Prüfung nicht mehr.** Wer `status` setzen darf (AfCJ admin), kann jede Einheit veröffentlichen; ob geprüft wurde, hält das Team außerhalb fest. Ein Nachweis, wer wann geprüft hat, steht nicht mehr in der Datenbank. Der Import meldet bei geändertem Inhalt einer veröffentlichten Einheit „Status fällt auf entwurf“ (statt „Prüfung wird zurückgesetzt“) und kennt die Meldung „bild nach prüfung“ nicht mehr; er veröffentlicht weiterhin nie. Stand 2026-10-16: 0051 ist nicht auf Production angewendet; auf Staging liegen 7 Einheiten (alle Entwurf), alle Prüfspalten leer, keine Policy, View oder Funktion außer der ersetzten Trigger-Funktion nennt sie. Rückweg: Folge-Migration mit den Spalten und Constraints (Constraint nur, solange keine Einheit ohne Prüfung veröffentlicht ist).
+- **Status:** gültig (Entscheidung Vera); Migration 0053 in Arbeit, nicht auf Staging angewendet
+- **Belegt:** `0053_fachsprache_ohne_pruefung.sql`; `025_fachsprache_einheit.test.sql`; `scripts/import-plan/fachsprache.sql`; SR-84

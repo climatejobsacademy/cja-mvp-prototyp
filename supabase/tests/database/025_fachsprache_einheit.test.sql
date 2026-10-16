@@ -1,9 +1,10 @@
 -- 025_fachsprache_einheit.test.sql
--- Fachsprache Stufe 2 (0051; SR-84): Tabelle fachsprache_einheit mit
+-- Fachsprache Stufe 2 (0051, 0053; SR-84): Tabelle fachsprache_einheit mit
 -- Inhaltsprüfung (Quiz: genau eine richtige Antwort; Bilder: nur Dateiname,
--- PNG/JPG/WebP, Alternativtext Pflicht), Veröffentlichung nur mit beiden
--- Prüfungen, Trigger (setzt bei geändertem Inhalt zurück, bei unverändertem
--- nicht), Zeilenrechte und Bucket fachsprache-bilder mit Storage-Policies.
+-- PNG/JPG/WebP, Alternativtext Pflicht), Veröffentlichen ohne Prüfung (0053:
+-- keine Prüfspalten und keine Prüf-Constraints mehr), Trigger (setzt bei
+-- geändertem Inhalt oder Titel auf Entwurf, sonst nicht), Zeilenrechte und
+-- Bucket fachsprache-bilder mit Storage-Policies.
 --
 -- Nicht per pgTAP prüfbar (manuell, siehe PR): tatsächlicher Upload über die
 -- Storage-API (Größenlimit 2 MB, MIME-Typ-Ablehnung, SVG-Ablehnung) und das
@@ -15,12 +16,12 @@ begin;
 
 create extension if not exists pgtap schema extensions;
 
-select plan(60);
+select plan(64);
 
 -- ------------------------------------------------------------
 -- Fixtures (als Superuser), Kennungen …0500xx
 -- L1 Programm P1 eingeschrieben, L2 Programm P2 eingeschrieben, L3 nicht eingeschrieben
--- ADM AfCJ admin, R2 zweite Prüf-Person (admin)
+-- ADM AfCJ admin
 -- Lektionen: LA (P1, veröffentlicht, Einheit veröffentlicht), LB (P1, Einheit Entwurf),
 -- LC (P1, Lektion unveröffentlicht, Einheit veröffentlicht), LD (P2, Einheit veröffentlicht),
 -- LE (P1, noch ohne Einheit)
@@ -29,8 +30,7 @@ insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-000000050001', 'fs-l1@example.test'),
   ('00000000-0000-0000-0000-000000050002', 'fs-l2@example.test'),
   ('00000000-0000-0000-0000-000000050003', 'fs-l3@example.test'),
-  ('00000000-0000-0000-0000-000000050004', 'fs-adm@example.test'),
-  ('00000000-0000-0000-0000-000000050005', 'fs-r2@example.test');
+  ('00000000-0000-0000-0000-000000050004', 'fs-adm@example.test');
 
 insert into organisation (id, name, typ, status) values
   ('00000000-0000-0000-0000-000000050011', 'Betrieb A', 'employer', 'aktiv'),
@@ -40,22 +40,19 @@ insert into person (id, email, name, username, sprache) values
   ('00000000-0000-0000-0000-000000050001', 'fs-l1@example.test', 'Lernende Eins', 'fs_l1', 'DE'),
   ('00000000-0000-0000-0000-000000050002', 'fs-l2@example.test', 'Lernende Zwei', 'fs_l2', 'DE'),
   ('00000000-0000-0000-0000-000000050003', 'fs-l3@example.test', 'Lernende Drei', 'fs_l3', 'DE'),
-  ('00000000-0000-0000-0000-000000050004', 'fs-adm@example.test', 'Admin', 'fs_adm', 'DE'),
-  ('00000000-0000-0000-0000-000000050005', 'fs-r2@example.test', 'Prüfer Zwei', 'fs_r2', 'DE');
+  ('00000000-0000-0000-0000-000000050004', 'fs-adm@example.test', 'Admin', 'fs_adm', 'DE');
 
 insert into org_membership (person_id, organisation_id) values
   ('00000000-0000-0000-0000-000000050001', '00000000-0000-0000-0000-000000050011'),
   ('00000000-0000-0000-0000-000000050002', '00000000-0000-0000-0000-000000050011'),
   ('00000000-0000-0000-0000-000000050003', '00000000-0000-0000-0000-000000050011'),
-  ('00000000-0000-0000-0000-000000050004', '00000000-0000-0000-0000-000000050013'),
-  ('00000000-0000-0000-0000-000000050005', '00000000-0000-0000-0000-000000050013');
+  ('00000000-0000-0000-0000-000000050004', '00000000-0000-0000-0000-000000050013');
 
 insert into role_assignment (person_id, organisation_id, rolle) values
   ('00000000-0000-0000-0000-000000050001', '00000000-0000-0000-0000-000000050011', 'learner'),
   ('00000000-0000-0000-0000-000000050002', '00000000-0000-0000-0000-000000050011', 'learner'),
   ('00000000-0000-0000-0000-000000050003', '00000000-0000-0000-0000-000000050011', 'learner'),
-  ('00000000-0000-0000-0000-000000050004', '00000000-0000-0000-0000-000000050013', 'afcj_admin'),
-  ('00000000-0000-0000-0000-000000050005', '00000000-0000-0000-0000-000000050013', 'afcj_admin');
+  ('00000000-0000-0000-0000-000000050004', '00000000-0000-0000-0000-000000050013', 'afcj_admin');
 
 insert into programme (id, name, kuerzel, status) values
   ('00000000-0000-0000-0000-000000050021', 'Programm 1', 'FS-P1', 'published'),
@@ -102,16 +99,16 @@ language sql as $$
   );
 $$;
 
-insert into fachsprache_einheit (id, lesson_id, titel, inhalt, status, fachlich_geprueft_von, fachlich_geprueft_am, sprachlich_geprueft_von, sprachlich_geprueft_am) values
+insert into fachsprache_einheit (id, lesson_id, titel, inhalt, status) values
   ('00000000-0000-0000-0000-0000000500b1', '00000000-0000-0000-0000-0000000500a1', 'Einheit A',
    pg_temp.inhalt(null, '[{"wort":"die Diode","erklaerung":"Ein Bauteil.","beispiel":"Ich prüfe die Diode.","bild":"bild1.png","bild_alt":"Schaltzeichen der Diode"}]'),
-   'veroeffentlicht', '00000000-0000-0000-0000-000000050004', now(), '00000000-0000-0000-0000-000000050005', now()),
+   'veroeffentlicht'),
   ('00000000-0000-0000-0000-0000000500b3', '00000000-0000-0000-0000-0000000500a3', 'Einheit C',
    pg_temp.inhalt(null, '[{"wort":"die Diode","erklaerung":"Ein Bauteil.","beispiel":"Ich prüfe die Diode.","bild":"c.png","bild_alt":"Bild C"}]'),
-   'veroeffentlicht', '00000000-0000-0000-0000-000000050004', now(), '00000000-0000-0000-0000-000000050005', now()),
+   'veroeffentlicht'),
   ('00000000-0000-0000-0000-0000000500b4', '00000000-0000-0000-0000-0000000500a4', 'Einheit D',
    pg_temp.inhalt(null, '[{"wort":"die Diode","erklaerung":"Ein Bauteil.","beispiel":"Ich prüfe die Diode.","bild":"d.png","bild_alt":"Bild D"}]'),
-   'veroeffentlicht', '00000000-0000-0000-0000-000000050004', now(), '00000000-0000-0000-0000-000000050005', now());
+   'veroeffentlicht');
 insert into fachsprache_einheit (id, lesson_id, titel, inhalt) values
   ('00000000-0000-0000-0000-0000000500b2', '00000000-0000-0000-0000-0000000500a2', 'Einheit B',
    pg_temp.inhalt(null, '[{"wort":"die Diode","erklaerung":"Ein Bauteil.","beispiel":"Ich prüfe die Diode.","bild":"b.png","bild_alt":"Bild B"}]'));
@@ -199,7 +196,7 @@ select is(fn_fachsprache_inhalt_gueltig(pg_temp.inhalt(null, '[{"wort":"w","erkl
   'Bild als Zahl wird abgelehnt');
 
 -- ------------------------------------------------------------
--- Tabelle: Prüfung greift, Veröffentlichung, Trigger (als Superuser)
+-- Tabelle: Inhaltsprüfung greift, Veröffentlichen ohne Prüfung, Trigger (als Superuser)
 -- ------------------------------------------------------------
 select throws_ok(
   $$insert into fachsprache_einheit (lesson_id, titel, inhalt)
@@ -214,60 +211,61 @@ select throws_ok(
 );
 insert into fachsprache_einheit (id, lesson_id, titel, inhalt) values
   ('00000000-0000-0000-0000-0000000500b5', '00000000-0000-0000-0000-0000000500a5', 'Einheit E', pg_temp.inhalt());
-select throws_ok(
-  $$update fachsprache_einheit set status = 'veroeffentlicht' where id = '00000000-0000-0000-0000-0000000500b5'$$,
-  '23514', null, 'Veröffentlichen ohne Prüfung wird abgelehnt'
+-- 0053: keine Prüfspalten und keine Prüf-Constraints mehr
+select hasnt_column('public', 'fachsprache_einheit', 'fachlich_geprueft_von', 'Spalte fachlich_geprueft_von existiert nicht mehr');
+select hasnt_column('public', 'fachsprache_einheit', 'fachlich_geprueft_am', 'Spalte fachlich_geprueft_am existiert nicht mehr');
+select hasnt_column('public', 'fachsprache_einheit', 'sprachlich_geprueft_von', 'Spalte sprachlich_geprueft_von existiert nicht mehr');
+select hasnt_column('public', 'fachsprache_einheit', 'sprachlich_geprueft_am', 'Spalte sprachlich_geprueft_am existiert nicht mehr');
+select is(
+  (select count(*) from pg_constraint
+    where conrelid = 'public.fachsprache_einheit'::regclass and conname = 'fachsprache_nur_geprueft_veroeffentlichen'),
+  0::bigint, 'Constraint fachsprache_nur_geprueft_veroeffentlichen existiert nicht mehr'
 );
-select throws_ok(
-  $$update fachsprache_einheit set status = 'veroeffentlicht',
-      fachlich_geprueft_von = '00000000-0000-0000-0000-000000050004', fachlich_geprueft_am = now()
-    where id = '00000000-0000-0000-0000-0000000500b5'$$,
-  '23514', null, 'Veröffentlichen nur mit fachlicher Prüfung wird abgelehnt'
-);
-select throws_ok(
-  $$update fachsprache_einheit set status = 'veroeffentlicht',
-      sprachlich_geprueft_von = '00000000-0000-0000-0000-000000050005', sprachlich_geprueft_am = now()
-    where id = '00000000-0000-0000-0000-0000000500b5'$$,
-  '23514', null, 'Veröffentlichen nur mit sprachlicher Prüfung wird abgelehnt'
-);
-select throws_ok(
-  $$update fachsprache_einheit set fachlich_geprueft_von = '00000000-0000-0000-0000-000000050004'
-    where id = '00000000-0000-0000-0000-0000000500b5'$$,
-  '23514', null, 'Prüfperson ohne Datum wird abgelehnt'
-);
-select lives_ok(
-  $$update fachsprache_einheit set status = 'veroeffentlicht',
-      fachlich_geprueft_von = '00000000-0000-0000-0000-000000050004', fachlich_geprueft_am = now(),
-      sprachlich_geprueft_von = '00000000-0000-0000-0000-000000050005', sprachlich_geprueft_am = now()
-    where id = '00000000-0000-0000-0000-0000000500b5'$$,
-  'Mit beiden Prüfungen lässt sich veröffentlichen'
+select is(
+  (select count(*) from pg_constraint
+    where conrelid = 'public.fachsprache_einheit'::regclass and conname = 'fachsprache_pruefung_paarweise'),
+  0::bigint, 'Constraint fachsprache_pruefung_paarweise existiert nicht mehr'
 );
 
--- Trigger: unveränderter Inhalt -> nichts zurückgesetzt
+-- Veröffentlichen ohne Prüfung ist möglich; die Datenbank verlangt keine Prüfung
+select lives_ok(
+  $$update fachsprache_einheit set status = 'veroeffentlicht' where id = '00000000-0000-0000-0000-0000000500b5'$$,
+  'Veröffentlichen ohne Prüfung ist möglich (0053)'
+);
+
+-- Trigger: unveränderter Inhalt und Titel -> Status bleibt
 update fachsprache_einheit set dauer_minuten = 5 where id = '00000000-0000-0000-0000-0000000500b5';
 select results_eq(
-  $$select status, fachlich_geprueft_von is not null and sprachlich_geprueft_von is not null, inhalt_version
-    from fachsprache_einheit where id = '00000000-0000-0000-0000-0000000500b5'$$,
-  $$values ('veroeffentlicht'::text, true, 1)$$,
-  'Trigger: andere Spalte geändert -> Status, Prüfungen und Version bleiben'
+  $$select status, inhalt_version from fachsprache_einheit where id = '00000000-0000-0000-0000-0000000500b5'$$,
+  $$values ('veroeffentlicht'::text, 1)$$,
+  'Trigger: andere Spalte geändert -> Status und Version bleiben'
 );
 update fachsprache_einheit set inhalt = pg_temp.inhalt(), titel = 'Einheit E'
   where id = '00000000-0000-0000-0000-0000000500b5';
 select results_eq(
   $$select status, inhalt_version from fachsprache_einheit where id = '00000000-0000-0000-0000-0000000500b5'$$,
   $$values ('veroeffentlicht'::text, 1)$$,
-  'Trigger: Inhalt und Titel mit gleichem Wert neu geschrieben -> kein Zurücksetzen'
+  'Trigger: Inhalt und Titel mit gleichem Wert neu geschrieben -> Status und Version bleiben'
 );
--- Trigger: geänderter Inhalt -> zurück auf Entwurf, Prüfungen leer
+-- Trigger: geänderter Titel -> zurück auf Entwurf
+update fachsprache_einheit set titel = 'Einheit E neu' where id = '00000000-0000-0000-0000-0000000500b5';
+select results_eq(
+  $$select status, inhalt_version from fachsprache_einheit where id = '00000000-0000-0000-0000-0000000500b5'$$,
+  $$values ('entwurf'::text, 2)$$,
+  'Trigger: geänderter Titel -> Entwurf, Version +1'
+);
+-- Trigger: geänderter Inhalt -> zurück auf Entwurf
+select lives_ok(
+  $$update fachsprache_einheit set status = 'veroeffentlicht' where id = '00000000-0000-0000-0000-0000000500b5'$$,
+  'Erneut veröffentlichen ohne Prüfung'
+);
 update fachsprache_einheit
    set inhalt = pg_temp.inhalt('[{"frage":"Neu?","antworten":["A","B"],"richtig":0,"erklaerung":"E"}]')
  where id = '00000000-0000-0000-0000-0000000500b5';
 select results_eq(
-  $$select status, fachlich_geprueft_von is null and fachlich_geprueft_am is null
-            and sprachlich_geprueft_von is null and sprachlich_geprueft_am is null, inhalt_version
-    from fachsprache_einheit where id = '00000000-0000-0000-0000-0000000500b5'$$,
-  $$values ('entwurf'::text, true, 2)$$,
-  'Trigger: geänderter Inhalt -> Entwurf, beide Prüfungen leer, Version +1'
+  $$select status, inhalt_version from fachsprache_einheit where id = '00000000-0000-0000-0000-0000000500b5'$$,
+  $$values ('entwurf'::text, 3)$$,
+  'Trigger: geänderter Inhalt -> Entwurf, Version +1'
 );
 
 -- ------------------------------------------------------------

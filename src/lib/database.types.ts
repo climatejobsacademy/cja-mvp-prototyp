@@ -53,7 +53,7 @@ export type FieldCaptureStatus = "submitted" | "verified" | "rejected";
 export type VerificationEntscheidung = "verified" | "rejected";
 export type KnowledgeSourceStatus = "entwurf" | "freigegeben";
 export type CompetencyEvidenceQuelltyp = "lesson_completion" | "field_verification";
-export type FachspracheEinheitStatus = "entwurf" | "veroeffentlicht"; // seit 0051
+export type FachspracheEinheitStatus = "entwurf" | "veroeffentlicht"; // seit 0051; Prüfspalten seit 0053 entfernt
 
 interface Timestamps {
   created_at: string;
@@ -99,10 +99,6 @@ type FachspracheEinheitRow = Flatten<
     inhalt: Json; // Form: src/lib/fachsprache.ts (parseInhalt), Bilder im Bucket fachsprache-bilder
     inhalt_version: number;
     status: FachspracheEinheitStatus;
-    fachlich_geprueft_von: string | null;
-    fachlich_geprueft_am: string | null;
-    sprachlich_geprueft_von: string | null;
-    sprachlich_geprueft_am: string | null;
   }
 >;
 
@@ -592,10 +588,6 @@ export type Database = {
             inhalt: Json;
             inhalt_version?: number;
             status?: FachspracheEinheitStatus;
-            fachlich_geprueft_von?: string | null;
-            fachlich_geprueft_am?: string | null;
-            sprachlich_geprueft_von?: string | null;
-            sprachlich_geprueft_am?: string | null;
           }
         >,
         Partial<FachspracheEinheitRow>

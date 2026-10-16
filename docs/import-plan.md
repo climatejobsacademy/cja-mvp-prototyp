@@ -147,7 +147,7 @@ node scripts/import-plan.mjs --datei "$DIR/Modul_II___Kompetenzen_Import.xlsx" \
 1. **Eine Einheit je Kurs.** Jede Kennung steht für den Kurs ihres Termins; die Einheit hängt an dessen erster Live-Lektion. Zwei Kennungen desselben Kurses sind nur erlaubt, wenn sie genau denselben Inhalt haben (sonst Fehler mit beiden Kennungen).
 2. **Kennung = Kennung des Termins im Tab Stundenplan** der Plan-Excel (z. B. `M02-S002`), nicht die Kennung eines Theorietags oder Foliensatzes. Sie muss in allen vier Tabs gleich geschrieben sein. Nur Theorie-Termine mit Kurs sind möglich (nicht Begleitkurse, nicht Praxis).
 3. **Bilder zuerst hochladen, dann importieren.** Bilder liegen im privaten Bucket `fachsprache-bilder` unter `<lesson_id>/<dateiname>`. Der Probelauf nennt den Ordner je Einheit (Meldung `bilder`). Erlaubt: PNG, JPG, WebP, höchstens 2 MB, kein SVG; in der Excel nur der Dateiname, mit Bildbeschreibung (Pflicht). **Ein neues Bild bekommt einen neuen Dateinamen.**
-4. **Status und Prüfungen stehen nicht in der Excel.** Der Import legt Einheiten immer als Entwurf an und trägt nie eine Prüfung ein. Veröffentlicht wird nach der fachlichen und der sprachlichen Prüfung (Person und Datum) durch einen Admin.
+4. **Der Status steht nicht in der Excel.** Der Import legt Einheiten immer als Entwurf an. Veröffentlicht wird später durch einen Admin (`status = 'veroeffentlicht'`); Prüfungen gibt es in der Datenbank nicht, Prüfen ist ein Teamprozess (Migration 0053).
 5. **Mindestens 1 Wort und 1 Frage** je Einheit; Richtmaß 6 Wörter, 3 Fragen, 3 Sätze. Fragen haben 2 bis 4 verschiedene Antworten (A, B, dann C, dann D) und genau eine richtige (Buchstabe in „Richtig“).
 
 ### Tabs und Spalten
@@ -167,9 +167,9 @@ Pflicht ist **P**; unbekannte Spalten (z. B. Quellen, Hinweise) und unbekannte T
 
 - **Auflösung:** Kennung → Termin → Kurs → erste Live-Lektion (Woche und Kursname wie beim Plan-Import). Fehlt der Kurs in der Datenbank, bricht der Lauf ab: erst den Plan importieren (nicht nur `--nur-fachsprache`).
 - **Upsert über `lesson_id`:** neu, geändert oder unverändert; der zweite Durchgang muss leer sein.
-- **Nie veröffentlicht, nie Prüffelder:** der Import schreibt `status` und die Prüffelder nicht. Ändert sich Inhalt oder Titel einer Einheit, die veröffentlicht oder geprüft ist, meldet er vorher `prüfung`: „Prüfung wird zurückgesetzt“; der Trigger aus 0051 setzt dann Status `entwurf` und beide Prüfungen zurück, und der Import prüft nach dem Update, dass das geschehen ist. Ändert sich nur die Dauer, bleibt die Prüfung (Meldung `fachsprache`).
+- **Nie veröffentlicht:** der Import schreibt `status` nicht. Ändert sich Inhalt oder Titel einer veröffentlichten Einheit, meldet er vorher `status`: „Status fällt auf entwurf“; der Trigger aus 0051 setzt dann den Status auf `entwurf`, und der Import prüft nach dem Update, dass das geschehen ist. Ändert sich nur die Dauer, bleibt der Status (Meldung `fachsprache`).
 - **Bilder im Bucket:** der Import lädt nichts hoch, er prüft nur. Fehlt eine Datei, gibt der Probelauf die Meldung `bild fehlt`; der echte Lauf bricht ab, außer mit `--bilder-spaeter`. Dateien im Ordner, die in keiner Zeile stehen, meldet er als `bild ungenutzt`.
-- **Gleicher Name, anderes Bild:** Ist ein Bild jünger als die letzte Prüfung (`storage.objects.updated_at`), meldet er `bild nach prüfung`; die Prüfung bleibt stehen, die Einheit muss neu geprüft werden. Ein genauerer Vergleich (Inhalt der Datei) folgt im Admin-Skript, das beim Hochladen auf einen vorhandenen Namen die Prüfung zurücksetzt.
+- **Gleicher Name, anderes Bild:** der Import vergleicht den Inhalt einer Datei nicht. Wer ein Bild unter gleichem Namen ersetzt und die Einheit neu ansehen lassen will, setzt sie selbst auf `entwurf`.
 - **Schreibt nie in `auth.users`, lädt nichts hoch, kein Zugriff auf Production ohne `--production-freigabe`** (der echte Lauf fragt wie sonst die Projekt-Ref ab).
 
 ### Offene Punkte
