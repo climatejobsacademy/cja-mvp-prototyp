@@ -102,7 +102,7 @@ export function tagestypAus(tag: { live: number; praxis: number; flex: number })
  * Brief 2.4/5: der Anker-Termin der angezeigten Woche ab `jetzt`. Der
  * laufende bzw. nächste Termin von heute; ist heute alles vorbei, bleibt der
  * letzte Termin von heute der Anker, bis der Tag wechselt (Anna 2026-10-12,
- * wie demo). Ohne Termin heute der nächste kommende. Die Anker-Fläche ist
+ * wie demo). Ohne Termin heute kein Anker (Anna 2026-10-16). Die Anker-Fläche ist
  * die einzige Hervorhebung -- vergangene Termine sind abgesetzt (Anna
  * 2026-10-13), der Anker davon ausgenommen.
  */
@@ -116,8 +116,9 @@ export function naechsterTerminId(
   const offen = termine.filter((t) => `${t.datum}T${t.ende}` > jetzt).sort(nachStart);
   if (offen[0]?.datum === heute) return offen[0].id;
   const heuteVorbei = termine.filter((t) => t.datum === heute).sort(nachStart);
-  if (heuteVorbei.length > 0) return heuteVorbei[heuteVorbei.length - 1].id;
-  return offen[0]?.id ?? null;
+  // Ohne Termin heute kein Anker (Anna 2026-10-16, SR-13): sonst war in jeder
+  // kommenden Woche der Montag dunkel hervorgehoben -- dunkel nur heute.
+  return heuteVorbei.length > 0 ? heuteVorbei[heuteVorbei.length - 1].id : null;
 }
 
 /** Montag bis Freitag der Woche von `datum`. */

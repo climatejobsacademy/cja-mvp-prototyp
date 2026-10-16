@@ -264,6 +264,13 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Status:** gültig (Entscheidung Vera)
 - **Belegt:** `0034_kohortensicht.sql`; `023_kohortensicht.test.sql`; `access-matrix.md`; SR-30
 
+### 2026-10-16 – Kohorten-Chat gehört der Kohorte, Ausnahme von SR-06
+
+- **Entscheidung:** Kohorten-Chat (Variante B1 der Bauanleitung „Fachsprache und Haupt-Chat vor dem 02.11.“) mit zwei Kanälen je Kohorte: „Ankündigungen“ schreiben nur Trainer:innen der Kohorte und das Team, „Treffpunkt“ alle mit aktiver Einschreibung, dazu Trainer:innen und Team. Lesen alle der Kohorte, über Arbeitgeber hinweg. Moderation durch Trainer:innen der Kohorte, `kohorte_moderation` und AfCJ admin, Melden durch Lernende. Neue Nachrichten holt die App alle 30 Sekunden, ein Zähler zeigt Ungelesenes. Die Rolle der Autor:in wird nicht angezeigt. Schalter `cohort.chat_aktiv`, auf Production aus.
+- **Begründung:** Der Chat dient dem Austausch der ganzen Kohorte (z. B. Verabredungen), wie der Fragen-Thread (2026-10-07). Eine Trennung nach Betrieb wie bei der Kohortensicht (2026-10-14) würde gemischte Kohorten teilen. Echtzeit wäre aufwendiger und teurer als regelmäßiges Abfragen.
+- **Folgen:** Ausnahme von SR-06 wie beim Fragen-Thread. Vor dem Einschalten auf Production: Datenschutzerklärung (Abschnitt Kohorten-Chat), Nutzungsregeln und eine verantwortliche Person für die Moderation. Ankündigungen setzen voraus, dass Trainer:innen einen Termin in der Kohorte haben (Import).
+- **Status:** gültig (Entscheidung Anna)
+- **Belegt:** `0050_kohorten_chat.sql`; `024_kohorten_chat.test.sql`; `access-matrix.md`; SR-83
 
 ### 2026-10-16 – Fachsprache-Einheit (Stufe 2): eigene Tabelle, Prüfpflicht, private Bilder
 

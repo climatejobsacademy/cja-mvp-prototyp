@@ -118,14 +118,14 @@ export function Steuerleiste({
   );
 }
 
-/** Kreis mit Datumszahl: heute lila hinterlegt. */
-function DatumsKreis({ datum, heute, gewaehlt = false, klein = false }: { datum: string; heute: boolean; gewaehlt?: boolean; klein?: boolean }) {
+/** Kreis mit Datumszahl: nur heute lila hinterlegt (der gewählte Tag nicht, Anna 2026-10-16). */
+function DatumsKreis({ datum, heute, klein = false }: { datum: string; heute: boolean; klein?: boolean }) {
   return (
     <span
       className={cn(
         "flex shrink-0 items-center justify-center rounded-full font-heading",
         klein ? "size-7 text-[15px]" : "size-8 text-lg",
-        heute ? "bg-brand text-white" : gewaehlt ? "bg-brand-tint ring-2 ring-brand" : ""
+        heute && "bg-brand text-white"
       )}
     >
       {tagZahl(datum)}
@@ -219,8 +219,9 @@ export function WochenAnsicht({
 }
 
 /**
- * Punkt 8: Tagesliste ohne Kästchen -- Datum im Kreis + Wochentag, heute
- * hinterlegt, erledigte Tage mit Häkchen. `quer` = mobiler Streifen.
+ * Punkt 8: Tagesliste ohne Kästchen -- Datum im Kreis + Wochentag, nur heute
+ * hinterlegt; der gewählte Tag nur fett (Anna 2026-10-16). Erledigte Tage mit
+ * Häkchen. `quer` = mobiler Streifen.
  */
 export function TagesListe({
   tage,
@@ -248,8 +249,7 @@ export function TagesListe({
               aria-label={`${datumLang(t.datum)}${t.heute ? ", heute" : ""}${erledigt ? ", alles erledigt" : ""}`}
               className={cn(
                 "flex rounded-xl text-ink outline-none hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand",
-                quer ? "flex-col items-center gap-1 py-1.5" : "items-center gap-3 px-2 py-1.5",
-                aktiv && !quer && "bg-subtle"
+                quer ? "flex-col items-center gap-1 py-1.5" : "items-center gap-3 px-2 py-1.5"
               )}
             >
               {quer && (
@@ -257,7 +257,7 @@ export function TagesListe({
                   {kurzname(t.datum)}
                 </span>
               )}
-              <DatumsKreis datum={t.datum} heute={t.heute} gewaehlt={aktiv} klein={quer} />
+              <DatumsKreis datum={t.datum} heute={t.heute} klein={quer} />
               {quer ? (
                 <span className="flex h-3 items-center">
                   {erledigt && <Check className="size-3 text-progress" strokeWidth={3} aria-hidden="true" />}

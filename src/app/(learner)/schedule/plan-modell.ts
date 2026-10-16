@@ -6,14 +6,20 @@ import type { Plantag } from "@/lib/queries/stundenplan";
 import type { TrainerAnzeige } from "@/lib/queries/trainer";
 import { hatUhrzeit, naechsterTerminId, tagestypAus, type Tagestyp } from "@/lib/stundenplan";
 
+/** "Grundlagen der Elektrotechnik: Der Transistor" bzw. nur der Titel ohne Thema. */
+function volltitel(titel: string, thema: string | null): string {
+  return thema ? `${titel}: ${thema}` : titel;
+}
+
 export type BlockStatus = "erledigt" | "vorbei" | "offen";
 
 export type Block = {
   id: string;
   art: "live" | "praxis";
+  /** Angezeigter Titel: bei Live das Thema der Lektion (lesson.thema), sonst der Titel (Anna 2026-10-16, wie demo) */
   titel: string;
-  /** Live: Thema der Lektion (lesson.thema, SR-13), sonst null */
-  thema: string | null;
+  /** Voller Titel für Bildschirmleser und Tooltip: "Lektion: Thema" */
+  volltitel: string;
   datum: string;
   /** "HH:MM:SS" */
   start: string;
@@ -37,9 +43,12 @@ export type Block = {
 
 export type Chip = {
   id: string;
+  /** Angezeigter Titel: "Wissen festigen", wenn die Lektion zum Live-Unterricht des Tages gehört, sonst das Thema bzw. der Titel */
   titel: string;
-  /** Thema der Lektion (lesson.thema, SR-13), sonst null */
-  thema: string | null;
+  /** Voller Titel für Bildschirmleser und Tooltip: "Lektion: Thema" */
+  volltitel: string;
+  /** Gehört zum Live-Unterricht desselben Tages (lesson.live_lektion_id, 0029) */
+  festigen: boolean;
   href: string;
   erledigt: boolean;
 };
@@ -97,8 +106,8 @@ export function planModell(tage: Plantag[], heute: string, jetzt: string): TagMo
         {
           id: e.scheduleEntryId,
           art: "live",
-          titel: e.titel,
-          thema: e.thema,
+          titel: e.thema ?? e.titel,
+          volltitel: volltitel(e.titel, e.thema),
           datum: tag.datum,
           start: s.start,
           ende: s.ende,
@@ -127,7 +136,7 @@ export function planModell(tage: Plantag[], heute: string, jetzt: string): TagMo
               id: e.scheduleEntryId,
               art: "praxis" as const,
               titel: e.titel,
-              thema: null,
+              volltitel: e.titel,
               datum: tag.datum,
               start: e.start,
               ende: e.ende,
@@ -158,13 +167,18 @@ export function planModell(tage: Plantag[], heute: string, jetzt: string): TagMo
       }));
 
     // Brief 2.4/5: Selbstlernen nur in "Flexibel", nie mit Uhrzeit.
+    // Gehört die Selbstlern-Lektion zum Live-Unterricht desselben Tages, heißt
+    // sie nur "Wissen festigen" (Anna 2026-10-11/16, wie demo); sonst das Thema.
+    const liveLektionen = new Set(tag.theorie.filter((e) => e.art === "live" && e.lessonId).map((e) => e.lessonId));
     const chips: Chip[] = tag.theorie.flatMap((e) => {
       if (e.art !== "asynchron") return [];
+      const festigen = !!e.liveLektionId && liveLektionen.has(e.liveLektionId);
       return [
         {
           id: e.scheduleEntryId,
-          titel: e.titel,
-          thema: e.thema,
+          titel: festigen ? "Wissen festigen" : (e.thema ?? e.titel),
+          volltitel: volltitel(e.titel, e.thema),
+          festigen,
           href: e.lessonId ? lektionHref(e.lessonId) : "/content",
           erledigt: e.unitProgressStatus === "abgeschlossen",
         },
@@ -182,7 +196,7 @@ export function planModell(tage: Plantag[], heute: string, jetzt: string): TagMo
     };
   });
 
-  // Brief 2.4: nächster bzw. laufender Termin der angezeigten Woche hervorheben
+  // Brief 2.4: laufender bzw. nächster Termin von heute hervorheben (nur heute)
   // -- nach Datum und Uhrzeit, auch wenn er schon erledigt ist (Entscheidung
   // Anna 2026-10-11: ein vorab durchgeklickter Praxistag bleibt der nächste).
   const naechster = naechsterTerminId(
