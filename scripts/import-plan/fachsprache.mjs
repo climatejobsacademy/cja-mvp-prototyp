@@ -12,8 +12,8 @@
 //   Datenbank prüft zusätzlich.
 // - Unbekannte Spalten (Quellen, Hinweise, …), unbekannte Tabs (Anleitung) und
 //   leere Zeilen sind kein Fehler.
-// - Status und Prüffelder kommen hier nie vor: der Import setzt nie
-//   "veröffentlicht" und trägt nie eine Prüfung ein.
+// - Der Status kommt hier nie vor: der Import setzt nie "veröffentlicht".
+//   Prüfungen gibt es in der Datenbank nicht (Migration 0053).
 
 import { ZEILE } from "./xlsx.mjs";
 

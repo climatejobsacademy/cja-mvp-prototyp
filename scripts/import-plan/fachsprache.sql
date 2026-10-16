@@ -10,11 +10,12 @@
 -- Kurs des Termins gefunden (Woche + Kursname, erste Live-Lektion), wie in
 -- import.sql.
 --
--- Schreibt nie status und nie die Prüffelder (fachlich_/sprachlich_geprueft_*):
--- neue Einheiten starten als 'entwurf' über den Spaltenstandard, bei
--- geänderten Inhalten setzt der Trigger aus 0051 die Prüfung zurück. Der
--- Import meldet das vorher ("Prüfung wird zurückgesetzt") und prüft danach,
--- dass der Trigger es getan hat.
+-- Schreibt nie status: neue Einheiten starten als 'entwurf' über den
+-- Spaltenstandard, bei geändertem Inhalt oder Titel setzt der Trigger aus 0051
+-- (ab 0053 nur noch der Status) die Einheit auf 'entwurf'. Der Import meldet
+-- das vorher ("Status fällt auf entwurf") und prüft danach, dass der Trigger es
+-- getan hat. Prüfungen gibt es in der Datenbank nicht (0053), der Import liest
+-- und schreibt keine Prüfangaben.
 -- Bilder werden nie hochgeladen; geprüft wird nur, ob die Datei im Bucket
 -- fachsprache-bilder unter "<lesson_id>/<dateiname>" liegt.
 
@@ -35,7 +36,6 @@ declare
   v_inhalt_neu boolean;
   v_bilder text[];
   v_fehlend text[];
-  v_geprueft timestamptz;
   v_text text;
 begin
   if to_regclass('public.fachsprache_einheit') is null
@@ -106,39 +106,23 @@ begin
     else
       v_inhalt_neu := v_alt.inhalt is distinct from r->'inhalt' or v_alt.titel is distinct from r->>'titel';
       if v_inhalt_neu or v_alt.dauer_minuten is distinct from (r->>'dauer')::int then
-        if v_inhalt_neu and (v_alt.status = 'veroeffentlicht' or v_alt.fachlich_geprueft_von is not null or v_alt.sprachlich_geprueft_von is not null) then
-          perform pg_temp.melde(p_lauf, 'prüfung', format('%s: Inhalt geändert -- Prüfung wird zurückgesetzt (Status war %s; fachlich %s, sprachlich %s). Danach ist die Einheit ein Entwurf und muss neu geprüft werden.',
-            v_kenn, v_alt.status,
-            case when v_alt.fachlich_geprueft_am is null then 'nicht geprüft' else 'geprüft am ' || to_char(v_alt.fachlich_geprueft_am at time zone 'Europe/Berlin', 'DD.MM.YYYY') end,
-            case when v_alt.sprachlich_geprueft_am is null then 'nicht geprüft' else 'geprüft am ' || to_char(v_alt.sprachlich_geprueft_am at time zone 'Europe/Berlin', 'DD.MM.YYYY') end));
+        if v_inhalt_neu and v_alt.status = 'veroeffentlicht' then
+          perform pg_temp.melde(p_lauf, 'status', format('%s: Status fällt auf entwurf.', v_kenn));
         end if;
         update fachsprache_einheit
            set titel = r->>'titel', dauer_minuten = (r->>'dauer')::int, inhalt = r->'inhalt'
          where id = v_alt.id;
         if v_inhalt_neu then
           select * into v_neu from fachsprache_einheit where id = v_alt.id;
-          if v_neu.status <> 'entwurf' or v_neu.fachlich_geprueft_von is not null or v_neu.sprachlich_geprueft_von is not null then
-            raise exception 'Abbruch: Fachsprache %: Der Trigger aus 0051 hat die Prüfung nach der Inhaltsänderung nicht zurückgesetzt.', v_kenn;
+          if v_neu.status <> 'entwurf' then
+            raise exception 'Abbruch: Fachsprache %: Der Trigger aus 0051 hat den Status nach der Inhaltsänderung nicht auf entwurf gesetzt.', v_kenn;
           end if;
         else
-          perform pg_temp.melde(p_lauf, 'fachsprache', format('%s: nur die Dauer geändert, Prüfung und Status bleiben.', v_kenn));
+          perform pg_temp.melde(p_lauf, 'fachsprache', format('%s: nur die Dauer geändert, der Status bleibt.', v_kenn));
         end if;
         perform pg_temp.zaehle(p_lauf, 'fachsprache_einheit', 'geändert');
       else
         perform pg_temp.zaehle(p_lauf, 'fachsprache_einheit', 'unverändert');
-        -- Inhalt gleich, aber ein Bild kann nach der Prüfung unter gleichem Namen ersetzt worden sein
-        v_geprueft := greatest(v_alt.fachlich_geprueft_am, v_alt.sprachlich_geprueft_am);
-        if v_geprueft is not null then
-          for v_text in
-            select storage.filename(o.name) from storage.objects o
-             where o.bucket_id = 'fachsprache-bilder' and starts_with(o.name, v_lesson::text || '/')
-               and storage.filename(o.name) = any (v_bilder) and o.updated_at > v_geprueft
-             order by o.name
-          loop
-            perform pg_temp.melde(p_lauf, 'bild nach prüfung', format('%s: Bild %s wurde nach der Prüfung (%s) hochgeladen oder ersetzt; Name gleich, Inhalt evtl. anders. Die Prüfung bleibt stehen, bitte neu prüfen lassen.',
-              v_kenn, v_text, to_char(v_geprueft at time zone 'Europe/Berlin', 'DD.MM.YYYY')));
-          end loop;
-        end if;
       end if;
     end if;
   end loop;

@@ -69,10 +69,10 @@ test("gültige Einheit: Inhalt, Index von Richtig, Dauer, Kurs aus dem Termin", 
   assert.deepEqual(e.inhalt.saetze, ["Ich prüfe die Diode."]);
 });
 
-test("Status und Prüffelder kommen im Ergebnis nie vor", () => {
+test("Der Status kommt im Ergebnis nie vor", () => {
   const { einheiten } = erstelleFachsprache(tabs(), plan());
   const alles = JSON.stringify(einheiten);
-  for (const wort of ["status", "veroeffentlicht", "geprueft", "geprüft"]) assert.ok(!alles.includes(wort), wort);
+  for (const wort of ["status", "veroeffentlicht"]) assert.ok(!alles.includes(wort), wort);
 });
 
 test("Richtig als Buchstabe wird zum Index; Kleinbuchstabe geht, D zeigt auf die vierte Antwort", () => {
