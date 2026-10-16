@@ -1,5 +1,5 @@
--- 024_fachsprache_einheit.test.sql
--- Fachsprache Stufe 2 (0050; SR folgt): Tabelle fachsprache_einheit mit
+-- 025_fachsprache_einheit.test.sql
+-- Fachsprache Stufe 2 (0051; SR folgt): Tabelle fachsprache_einheit mit
 -- Inhaltsprüfung (Quiz: genau eine richtige Antwort; Bilder: nur Dateiname,
 -- PNG/JPG/WebP, Alternativtext Pflicht), Veröffentlichung nur mit beiden
 -- Prüfungen, Trigger (setzt bei geändertem Inhalt zurück, bei unverändertem

@@ -278,4 +278,4 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Begründung:** Inhalte für Lernende müssen fachlich und sprachlich geprüft sein; SVG im Bucket wäre ausführbarer Inhalt; keine eigene Lernstand-Tabelle, damit kein Nachweis ohne Regel 6 entsteht.
 - **Folgen:** Einstiege (Stundenplan-Chip, Home-Kästchen), Import-Tab und Seite folgen in eigenen Schritten. Offen: ob Prüfende zwei verschiedene Personen sein müssen, Trainer:innen-Lesezugriff, echter Fortschritt. Datenschutz: Vorlesen über die Sprachausgabe des Browsers vor Livegang in der Erklärung nennen.
 - **Status:** Entwurf, nicht auf Staging angewendet
-- **Belegt:** `0050_fachsprache_einheit.sql`; `024_fachsprache_einheit.test.sql`
+- **Belegt:** `0051_fachsprache_einheit.sql`; `025_fachsprache_einheit.test.sql`

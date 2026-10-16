@@ -1,7 +1,7 @@
--- 0050_fachsprache_einheit.sql
+-- 0051_fachsprache_einheit.sql
 -- Fachsprache Stufe 2: eine Einheit (Wörter, Quiz, Sätze) je Lektion, mit
 -- optionalen Bildern. SR folgt (Notion). Ohne klickbare Fachbegriffe (Stufe 1).
--- Nummer 0050: Praxisflow reserviert 0035-0049.
+-- Nummer 0051: Praxisflow reserviert 0035-0049, 0050 ist der Kohorten-Chat.
 --
 -- Entwurfsentscheidungen (offen zur Korrektur, siehe PR-Beschreibung):
 --   - genau eine Einheit je Lektion (lesson_id unique)
