@@ -9,6 +9,9 @@
 import { readFileSync } from "node:fs";
 import { strFromU8, unzipSync } from "fflate";
 
+/** Schlüssel für die Excel-Zeilennummer an jeder Zeile (nicht aufzählbar in Meldungen, nur für Fehlertexte). */
+export const ZEILE = "__zeile";
+
 const ENTITAETEN = { lt: "<", gt: ">", quot: '"', apos: "'", amp: "&" };
 
 function entschluesseln(text) {
@@ -29,7 +32,7 @@ function spaltenNummer(buchstaben) {
   return n;
 }
 
-/** Liest die Datei und gibt { [Tabname]: Array<Record<Kopf, string>> } zurück. */
+/** Liest die Datei und gibt { [Tabname]: Array<Record<Kopf, string>> } zurück; jede Zeile trägt ihre Excel-Zeilennummer unter ZEILE. Leere Zeilen (auch die vorformatierten der Vorlage) entfallen. */
 export function leseXlsx(pfad) {
   const zip = unzipSync(readFileSync(pfad));
   const datei = (name) => (zip[name] ? strFromU8(zip[name]) : "");
@@ -51,9 +54,10 @@ export function leseXlsx(pfad) {
     const xml = datei(beziehungen.get(rid));
 
     const zeilen = [];
-    for (const z of xml.matchAll(/<row\b[^>]*>([\s\S]*?)<\/row>/g)) {
+    for (const z of xml.matchAll(/<row\b([^>]*?)(?:\/>|>([\s\S]*?)<\/row>)/g)) {
       const zeile = [];
-      for (const c of z[1].matchAll(/<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g)) {
+      zeile.nr = Number(/\br="(\d+)"/.exec(z[1])?.[1]) || zeilen.length + 1;
+      for (const c of (z[2] ?? "").matchAll(/<c\b([^>]*?)(?:\/>|>([\s\S]*?)<\/c>)/g)) {
         const attr = c[1];
         const inhalt = c[2] ?? "";
         const ref = /\br="([A-Z]+)\d+"/.exec(attr);
@@ -72,7 +76,7 @@ export function leseXlsx(pfad) {
     const kopf = (zeilen[0] ?? []).map((k) => (k ?? "").trim());
     ergebnis[name] = zeilen.slice(1)
       .filter((z) => z.some((w) => w))
-      .map((z) => Object.fromEntries(kopf.map((k, i) => [k, z[i] ?? ""]).filter(([k]) => k)));
+      .map((z) => ({ ...Object.fromEntries(kopf.map((k, i) => [k, z[i] ?? ""]).filter(([k]) => k)), [ZEILE]: z.nr }));
   }
   return ergebnis;
 }

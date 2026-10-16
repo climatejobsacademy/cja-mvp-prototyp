@@ -13,6 +13,9 @@
 //   node scripts/import-plan.mjs --datei <pfad.xlsx> --ziel staging --trainer-datei <…staging.csv> --nur-trainer
 //        (nur Trainer-Konten verknüpfen: alle aus dem Tab Trainer, sonst nichts)
 //   node scripts/import-plan.mjs ... --ziel production --production-freigabe [--ausfuehren]
+//   node scripts/import-plan.mjs --datei <plan.xlsx> --fachsprache-datei <fachsprache.xlsx> --ziel staging --nur-fachsprache
+//        (nur Fachsprache-Einheiten: Termin-Kennungen aus dem Stundenplan der Plan-Excel,
+//         Tabs Einheit/Wörter/Fragen/Sätze aus der zweiten Datei; --fachsprache = zusätzlich zum Plan)
 //
 // Standard ist der Probelauf: alles läuft in einer Transaktion, die am Ende
 // zurückgerollt wird (ROLLBACK). Im selben Lauf wird der Import ein zweites
@@ -34,6 +37,7 @@ import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 import { randomBytes } from "node:crypto";
 
+import { erstelleFachsprache, waehleFachspracheTabs } from "./import-plan/fachsprache.mjs";
 import { erstellePlan } from "./import-plan/plan.mjs";
 import { leseXlsx } from "./import-plan/xlsx.mjs";
 
@@ -59,7 +63,9 @@ const NUTZUNG = `Nutzung:
   node scripts/import-plan.mjs --datei <pfad.xlsx> --ziel staging|production
        [--trainer-datei <pfad.csv>] [--kohorte "Name" | --kohorte "Name@+7"]...
        [--module I,II] [--ohne-praxis II] [--production-freigabe]
-       [--ohne-zuordnung-erlauben] [--nur-trainer] [--ausfuehren]`;
+       [--ohne-zuordnung-erlauben] [--nur-trainer] [--ausfuehren]
+  Fachsprache (Migration 0050): --fachsprache | --nur-fachsprache
+       [--fachsprache-datei <pfad.xlsx>] [--bilder-spaeter] [--migration-vorab <0050.sql>]`;
 
 function abbruch(text) {
   console.error(text);
@@ -76,6 +82,11 @@ const { values: arg } = parseArgs({
     "ohne-praxis": { type: "string", default: "" },
     "ohne-zuordnung-erlauben": { type: "boolean", default: false },
     "nur-trainer": { type: "boolean", default: false },
+    fachsprache: { type: "boolean", default: false },
+    "nur-fachsprache": { type: "boolean", default: false },
+    "fachsprache-datei": { type: "string" },
+    "bilder-spaeter": { type: "boolean", default: false },
+    "migration-vorab": { type: "string" },
     "nur-analyse": { type: "boolean", default: false },
     ausfuehren: { type: "boolean", default: false },
     "production-freigabe": { type: "boolean", default: false },
@@ -92,11 +103,34 @@ if (!existsSync(arg.datei)) abbruch(`Datei nicht gefunden: ${arg.datei}`);
 
 // ---------- Excel lesen und Plan bauen ----------
 let plan;
+let tabsPlan;
 try {
   const kommaListe = (wert) => wert.split(",").map((m) => m.trim()).filter(Boolean);
-  plan = erstellePlan(leseXlsx(arg.datei), { module: kommaListe(arg.module), ohnePraxis: kommaListe(arg["ohne-praxis"]) });
+  tabsPlan = leseXlsx(arg.datei);
+  plan = erstellePlan(tabsPlan, { module: kommaListe(arg.module), ohnePraxis: kommaListe(arg["ohne-praxis"]) });
 } catch (fehler) {
   abbruch(`Abbruch beim Lesen der Excel: ${fehler.message}`);
+}
+
+// ---------- Fachsprache-Einheiten (optional) ----------
+const nurFachsprache = arg["nur-fachsprache"];
+const mitFachsprache = arg.fachsprache || nurFachsprache;
+if (nurFachsprache && arg["nur-trainer"]) abbruch("Abbruch: --nur-fachsprache und --nur-trainer schließen sich aus.");
+let fachsprache = null;
+let fachspracheQuelle = null;
+if (mitFachsprache) {
+  try {
+    if (arg["fachsprache-datei"] && !existsSync(arg["fachsprache-datei"])) throw new Error(`Fachsprache-Datei nicht gefunden: ${arg["fachsprache-datei"]}`);
+    const dateiTabs = arg["fachsprache-datei"] ? leseXlsx(arg["fachsprache-datei"]) : null;
+    const { tabs, quelle } = waehleFachspracheTabs(tabsPlan, dateiTabs);
+    fachspracheQuelle = quelle;
+    fachsprache = erstelleFachsprache(tabs, plan);
+  } catch (fehler) {
+    abbruch(`Abbruch bei den Fachsprache-Tabs: ${fehler.message}`);
+  }
+}
+if (arg["migration-vorab"] && (arg.ausfuehren || arg.ziel === "production")) {
+  abbruch("Abbruch: --migration-vorab nur im Probelauf auf Staging (die Migration wird in der Probe-Transaktion mit zurückgerollt).");
 }
 
 const kohorten = arg.kohorte.map((eintrag) => {
@@ -144,7 +178,24 @@ function gruppiere(liste, feld) {
   return karte;
 }
 
-zeigeAnalyse();
+function zeigeFachsprache() {
+  const quelle = fachspracheQuelle === "plan" ? "Plan-Excel" : `Fachsprache-Datei (${basename(arg["fachsprache-datei"])})`;
+  const bilder = fachsprache.einheiten.reduce((n, e) => n + [...JSON.stringify(e.inhalt).matchAll(/"bild":/g)].length, 0);
+  console.log(`\n== Fachsprache-Einheiten (${quelle}) ==`);
+  console.log(
+    `Einheiten ${fachsprache.einheiten.length}` +
+      (fachsprache.einheiten.length ? `, Wörter ${fachsprache.einheiten.reduce((n, e) => n + e.inhalt.wortkarten.length, 0)}, Fragen ${fachsprache.einheiten.reduce((n, e) => n + e.inhalt.quiz.length, 0)}, Sätze ${fachsprache.einheiten.reduce((n, e) => n + e.inhalt.saetze.length, 0)}, Bildverweise ${bilder}` : " (keine ausgefüllten Zeilen)")
+  );
+  for (const e of fachsprache.einheiten) console.log(`  ${e.kennungen.join(" + ")} -> Kurs „${e.kursName}“ (Modul ${e.modul}, Woche ${e.woche}): „${e.titel}“`);
+  for (const m of fachsprache.meldungen) console.log(`  [${m.art}] ${m.text}`);
+}
+
+if (nurFachsprache) {
+  console.log(`\n== Plan-Excel: nur der Stundenplan wird für die Termin-Kennungen gelesen (${plan.termine.length} Termine im Umfang) ==`);
+} else {
+  zeigeAnalyse();
+}
+if (mitFachsprache) zeigeFachsprache();
 if (arg["nur-analyse"]) process.exit(0);
 
 // ---------- Ziel und Freigaben ----------
@@ -158,7 +209,7 @@ if (nurTrainer) {
   if (!arg["trainer-datei"]) abbruch("Abbruch: --nur-trainer braucht --trainer-datei.");
   plan.trainer = plan.trainerAlle;
 }
-if (!nurTrainer && arg.ziel === "production" && plan.analyse.ohneZuordnung.length && !arg["ohne-zuordnung-erlauben"]) {
+if (!nurTrainer && !nurFachsprache && arg.ziel === "production" && plan.analyse.ohneZuordnung.length && !arg["ohne-zuordnung-erlauben"]) {
   abbruch(
     `Abbruch: ${plan.analyse.ohneZuordnung.length} Teilschritte ohne jede Zuordnung (Liste oben). ` +
       "Production erst nach Korrektur in der Excel, oder bewusst mit --ohne-zuordnung-erlauben."
@@ -196,9 +247,9 @@ if (arg["trainer-datei"]) {
   }
 }
 const ohneAdresse = plan.trainer.filter((t) => !plan.trainerKonten.some((k) => k.kennung === t.kennung)).map((t) => t.kennung);
-if (ohneAdresse.length) console.log(`\nHinweis: keine E-Mail für ${ohneAdresse.join(", ")} – deren Termine ohne Trainer:in.`);
+if (ohneAdresse.length && !nurFachsprache) console.log(`\nHinweis: keine E-Mail für ${ohneAdresse.join(", ")} – deren Termine ohne Trainer:in.`);
 
-if (!kohorten.length && !nurTrainer) {
+if (!kohorten.length && !nurTrainer && !nurFachsprache) {
   console.log("\nHinweis: keine --kohorte angegeben, es werden nur Inhalte und Kompetenzen importiert, keine Termine.");
 }
 
@@ -237,12 +288,20 @@ const sql = `
 set client_min_messages = warning;
 begin;
 ${readFileSync(join(HIER, "import-plan", "import.sql"), "utf8")}
+${mitFachsprache ? readFileSync(join(HIER, "import-plan", "fachsprache.sql"), "utf8") : ""}
+${arg["migration-vorab"] ? `-- Probelauf: Migration vorab in dieser Transaktion (wird mit zurückgerollt)\n${readFileSync(arg["migration-vorab"], "utf8")}` : ""}
 
 ${nurTrainer
   ? `select pg_temp.trainer_verknuepfen(${literal(plan)}, 1) \\g /dev/null
 select pg_temp.trainer_verknuepfen(${literal(plan)}, 2) \\g /dev/null`
-  : `select pg_temp.import_plan(${literal(plan)}, ${literal(kohorten)}, 1) \\g /dev/null
+  : nurFachsprache
+    ? ""
+    : `select pg_temp.import_plan(${literal(plan)}, ${literal(kohorten)}, 1) \\g /dev/null
 select pg_temp.import_plan(${literal(plan)}, ${literal(kohorten)}, 2) \\g /dev/null`}
+${mitFachsprache
+  ? `select pg_temp.fachsprache_import(${literal(fachsprache)}, 1, ${arg.ausfuehren}, ${arg["bilder-spaeter"]}) \\g /dev/null
+select pg_temp.fachsprache_import(${literal(fachsprache)}, 2, ${arg.ausfuehren}, ${arg["bilder-spaeter"]}) \\g /dev/null`
+  : ""}
 set constraints all immediate;
 
 \\echo
@@ -270,7 +329,7 @@ end $$;
 ${arg.ausfuehren ? "commit;\n\\echo '== GESPEICHERT (COMMIT) =='" : "rollback;\n\\echo '== PROBELAUF: nichts gespeichert (ROLLBACK) =='"}
 `;
 
-console.log(`\n== Datenbank: ${ziel.label}, ${arg.ausfuehren ? "ECHTER LAUF" : "Probelauf"}${nurTrainer ? ", nur Trainer-Konten" : ""} ==`);
+console.log(`\n== Datenbank: ${ziel.label}, ${arg.ausfuehren ? "ECHTER LAUF" : "Probelauf"}${nurTrainer ? ", nur Trainer-Konten" : ""}${nurFachsprache ? ", nur Fachsprache-Einheiten" : ""}${arg["migration-vorab"] ? ", mit Migration 0050 vorab (Probe)" : ""} ==`);
 console.log(`Kohorten: ${kohorten.map((k) => `${k.name}${k.versatz ? ` (Versatz ${k.versatz > 0 ? "+" : ""}${k.versatz} Tage)` : ""}`).join(", ") || "–"}`);
 
 const ergebnis = spawnSync(

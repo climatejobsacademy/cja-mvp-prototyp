@@ -69,6 +69,11 @@ Das Skript legt **keine Auth-Konten** an und schreibt nie in `auth.users`.
 | `--production-freigabe` | Pflicht für jedes `--ziel production`, auch für den Probelauf |
 | `--nur-analyse` | nur die Excel prüfen und die Listen ausgeben |
 | `--nur-trainer` | nur Trainer-Konten verknüpfen (braucht `--trainer-datei`), kein Import |
+| `--fachsprache` | zusätzlich Fachsprache-Einheiten importieren (siehe unten; braucht Migration 0050 im Ziel) |
+| `--nur-fachsprache` | nur Fachsprache-Einheiten; liest aus der Plan-Excel nur den Stundenplan (Termin-Kennungen), importiert sonst nichts |
+| `--fachsprache-datei <pfad.xlsx>` | zweite Excel mit den Tabs Einheit, Wörter, Fragen, Sätze; stehen die Tabs in der Plan-Excel, gelten sie von dort |
+| `--bilder-spaeter` | fehlende Bilder im Bucket beim echten Lauf nur melden statt abzubrechen |
+| `--migration-vorab <datei.sql>` | nur Probelauf auf Staging: spielt die Migration (z. B. 0050) vorab in die Probe-Transaktion ein und rollt sie mit zurück. Nicht mit `--ausfuehren`, nicht auf Production. |
 
 ## Was der Lauf ausgibt
 
@@ -123,3 +128,51 @@ Die Ausgabe listet, was bewusst nicht in die Datenbank geht, mit Grund (u. a. Mo
 ### Praxisblock ohne Tagesbindung (Modul II, 16.–24.11.): vorläufig
 
 **Vorläufig, die Tagesplanung von Malte fehlt.** `field_job` hat genau ein Datum, und Home zeigt die offene Praxisaufgabe von heute („Zur Praxisaufgabe“). Als Platzhalter verteilt das Skript die Aufträge der Reihe nach auf die Blocktage: zwei pro Tag, am letzten Tag einer, ganztägig ohne Uhrzeit. Die Ausgabe kennzeichnet das als „VORLÄUFIG“. Für Production mit `--ohne-praxis II` laufen lassen, bis die Planung da ist. Danach die Verteilung im Skript bzw. in der Excel nachziehen. Achtung: Wurden Platzhalter-Praxistage schon gespeichert (Staging), legt ein Lauf mit neuer Verteilung die neuen Tage zusätzlich an (Schlüssel ist das Datum). Die alten Platzhalter dann vorher entfernen oder verschieben.
+
+## Fachsprache-Einheiten
+
+Importiert Einheiten (Wörter, Quiz, Sätze) in `fachsprache_einheit` (Migration 0050, Stufe 2, SR folgt). Die Vorlage heißt `fachsprache-import-vorlage.xlsx` und liegt wie die anderen Dateien unter `~/Projects/import-daten/`, nicht im Repo.
+
+```sh
+DIR="$HOME/Projects/import-daten"
+# Probelauf (Standard, ROLLBACK) -- solange 0050 nicht auf Staging liegt, mit --migration-vorab
+node scripts/import-plan.mjs --datei "$DIR/Modul_II___Kompetenzen_Import.xlsx" \
+  --fachsprache-datei "$DIR/fachsprache-import-vorlage.xlsx" --ziel staging --nur-fachsprache \
+  --migration-vorab supabase/migrations/0050_fachsprache_einheit.sql
+# Echter Lauf (erst nach Freigabe und nach db push 0050): ohne --migration-vorab, mit --ausfuehren
+```
+
+### Hinweise für Designer
+
+1. **Eine Einheit je Kurs.** Jede Kennung steht für den Kurs ihres Termins; die Einheit hängt an dessen erster Live-Lektion. Zwei Kennungen desselben Kurses sind nur erlaubt, wenn sie genau denselben Inhalt haben (sonst Fehler mit beiden Kennungen).
+2. **Kennung = Kennung des Termins im Tab Stundenplan** der Plan-Excel (z. B. `M02-S002`), nicht die Kennung eines Theorietags oder Foliensatzes. Sie muss in allen vier Tabs gleich geschrieben sein. Nur Theorie-Termine mit Kurs sind möglich (nicht Begleitkurse, nicht Praxis).
+3. **Bilder zuerst hochladen, dann importieren.** Bilder liegen im privaten Bucket `fachsprache-bilder` unter `<lesson_id>/<dateiname>`. Der Probelauf nennt den Ordner je Einheit (Meldung `bilder`). Erlaubt: PNG, JPG, WebP, höchstens 2 MB, kein SVG; in der Excel nur der Dateiname, mit Bildbeschreibung (Pflicht). **Ein neues Bild bekommt einen neuen Dateinamen.**
+4. **Status und Prüfungen stehen nicht in der Excel.** Der Import legt Einheiten immer als Entwurf an und trägt nie eine Prüfung ein. Veröffentlicht wird nach der fachlichen und der sprachlichen Prüfung (Person und Datum) durch einen Admin.
+5. **Mindestens 1 Wort und 1 Frage** je Einheit; Richtmaß 6 Wörter, 3 Fragen, 3 Sätze. Fragen haben 2 bis 4 verschiedene Antworten (A, B, dann C, dann D) und genau eine richtige (Buchstabe in „Richtig“).
+
+### Tabs und Spalten
+
+Pflicht ist **P**; unbekannte Spalten (z. B. Quellen, Hinweise) und unbekannte Tabs (z. B. Anleitung) werden ignoriert, leere Zeilen übersprungen (die Vorlage ist für 300 Zeilen formatiert). Fehler nennen Tab und Excel-Zeile.
+
+| Tab | Spalten |
+|---|---|
+| Einheit | `Kennung` P (eindeutig), `Titel` P, `Dauer` (ganze Minuten 1–60) |
+| Wörter | `Kennung` P, `Nr` P, `Wort` P, `Erklärung` P, `Beispiel` P, `Bild`, `Bildbeschreibung` (Pflicht, wenn `Bild`) |
+| Fragen | `Kennung` P, `Nr` P, `Frage` P, `Antwort A` P, `Antwort B` P, `Antwort C`, `Antwort D`, `Richtig` P (A–D), `Erklärung` P, `Bild`, `Bildbeschreibung` |
+| Sätze | `Kennung` P, `Nr` P, `Satz` P |
+
+`Nr` zählt je Kennung und Tab lückenlos ab 1; sie bestimmt die Reihenfolge, nicht die Zeile in der Excel. Dieselben Regeln prüft die Datenbank (`fn_fachsprache_inhalt_gueltig`) noch einmal.
+
+### Was der Import tut
+
+- **Auflösung:** Kennung → Termin → Kurs → erste Live-Lektion (Woche und Kursname wie beim Plan-Import). Fehlt der Kurs in der Datenbank, bricht der Lauf ab: erst den Plan importieren (nicht nur `--nur-fachsprache`).
+- **Upsert über `lesson_id`:** neu, geändert oder unverändert; der zweite Durchgang muss leer sein.
+- **Nie veröffentlicht, nie Prüffelder:** der Import schreibt `status` und die Prüffelder nicht. Ändert sich Inhalt oder Titel einer Einheit, die veröffentlicht oder geprüft ist, meldet er vorher `prüfung`: „Prüfung wird zurückgesetzt“; der Trigger aus 0050 setzt dann Status `entwurf` und beide Prüfungen zurück, und der Import prüft nach dem Update, dass das geschehen ist. Ändert sich nur die Dauer, bleibt die Prüfung (Meldung `fachsprache`).
+- **Bilder im Bucket:** der Import lädt nichts hoch, er prüft nur. Fehlt eine Datei, gibt der Probelauf die Meldung `bild fehlt`; der echte Lauf bricht ab, außer mit `--bilder-spaeter`. Dateien im Ordner, die in keiner Zeile stehen, meldet er als `bild ungenutzt`.
+- **Gleicher Name, anderes Bild:** Ist ein Bild jünger als die letzte Prüfung (`storage.objects.updated_at`), meldet er `bild nach prüfung`; die Prüfung bleibt stehen, die Einheit muss neu geprüft werden. Ein genauerer Vergleich (Inhalt der Datei) folgt im Admin-Skript, das beim Hochladen auf einen vorhandenen Namen die Prüfung zurücksetzt.
+- **Schreibt nie in `auth.users`, lädt nichts hoch, kein Zugriff auf Production ohne `--production-freigabe`** (der echte Lauf fragt wie sonst die Projekt-Ref ab).
+
+### Offene Punkte
+
+- Die Tests für `scripts/import-plan/` laufen nicht in `npm test` (nur `src/lib/*.test.ts`), sondern mit `node --test scripts/import-plan/*.test.mjs`.
+- Der Admin-Weg zum Hochladen der Bilder (Skript) und zum Eintragen der Prüfungen fehlt noch; bis dahin Upload im Dashboard unter dem Pfad `<lesson_id>/<dateiname>`.
