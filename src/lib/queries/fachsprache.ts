@@ -1,3 +1,4 @@
+import { einstiegeJeTag, lektionIdsFuerEinstiege, type EinstiegEintrag, type TagMitTerminen } from "@/lib/fachsprache-einstiege";
 import {
   einheitFuerLektion as einheitFuerLektionRegel,
   einheitenFuerLektionen as einheitenFuerLektionenRegel,
@@ -94,4 +95,22 @@ export async function getEinheitFuerLektion(lessonId: string, von?: "stundenplan
   if (!schalterAn) return null;
   const supabase = await createClient();
   return einheitFuerLektionRegel({ schalterAn, lessonId, von }, listeQuelle(supabase));
+}
+
+/**
+ * Einstiege für Home und Stundenplan: je Tag die veröffentlichten Einheiten zu
+ * den Live-Lektionen des Tages (Regeln in src/lib/fachsprache-einstiege.ts).
+ * Leer bei ausgeschaltetem Schalter, nicht lesbaren Einheiten oder Entwürfen,
+ * ohne Fehlermeldung; ohne Live-Lektion wird nicht gefragt. Eine Abfrage für
+ * alle Tage, mit dem Client der angemeldeten Person (RLS).
+ */
+export async function getEinstiegeJeTag(
+  tage: TagMitTerminen[],
+  von: "stundenplan" | "home"
+): Promise<Map<string, EinstiegEintrag[]>> {
+  if (!fachspracheEinheitAn()) return new Map();
+  const lessonIds = lektionIdsFuerEinstiege(tage);
+  if (lessonIds.length === 0) return new Map();
+  const links = await getEinheitenFuerLektionen(lessonIds);
+  return einstiegeJeTag(tage, links, von);
 }

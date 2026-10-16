@@ -3,6 +3,7 @@ import { FlaskConical } from "lucide-react";
 import { ModulZeichen } from "@/components/modul-zeichen";
 import { ProgrammZeile } from "@/components/programm-zeile";
 import { datumKurz, datumLang, heuteInBerlin, jetztInBerlin, montagDerWoche, plusTage } from "@/lib/date";
+import { getEinstiegeJeTag } from "@/lib/queries/fachsprache";
 import { getModuleDerKohorte } from "@/lib/queries/modul";
 import { requireCurrentLearner } from "@/lib/queries/session";
 import { getKohortenStart, getStundenplan } from "@/lib/queries/stundenplan";
@@ -76,7 +77,9 @@ export default async function SchedulePage({
   // Überschrift): Module, deren Zeitraum im Stundenplan der Kohorte
   // (fn_modul_zeitraum, 0028) die Woche berührt -- keine feste Gliederung.
   const wochenModule = modulListe.filter((m) => m.von && m.bis && m.von <= woche[woche.length - 1] && m.bis >= woche[0]);
-  const modelle = planModell(plan, heute, jetzt);
+  // Fachsprache-Einstiege (SR-84): nur bei Schalter an, veröffentlichter Einheit zu einer Live-Lektion; sonst leer.
+  const einstiege = await getEinstiegeJeTag(plan, "stundenplan");
+  const modelle = planModell(plan, heute, jetzt, einstiege);
   const wochenTage = modelle.filter((t) => woche.includes(t.datum));
   const tag = modelle.find((t) => t.datum === datum)!;
 

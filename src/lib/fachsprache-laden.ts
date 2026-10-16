@@ -154,9 +154,14 @@ export function zurueckZiel(von?: string, datum?: string): { href: string; label
 
 // ---------- Einstiege (Etappe 2): veröffentlichte Einheit zu einer Lektion ----------
 
-/** Wohin der Link der Einstiege führt; `von` bestimmt das Ziel von "Zurück" auf der Seite. */
-export function einheitHref(einheitId: string, von?: "stundenplan" | "home"): string {
-  return von === "stundenplan" ? `/fachsprache/${einheitId}?von=stundenplan` : `/fachsprache/${einheitId}`;
+/**
+ * Wohin der Link der Einstiege führt; `von` bestimmt das Ziel von "Zurück" auf
+ * der Seite, `datum` (nur beim Stundenplan) führt zurück zum selben Tag.
+ */
+export function einheitHref(einheitId: string, von?: "stundenplan" | "home", datum?: string): string {
+  if (von !== "stundenplan") return `/fachsprache/${einheitId}`;
+  const tag = datum && /^\d{4}-\d{2}-\d{2}$/.test(datum) ? `&datum=${datum}` : "";
+  return `/fachsprache/${einheitId}?von=stundenplan${tag}`;
 }
 
 export type EinheitLink = { einheitId: string; lessonId: string; titel: string; href: string };

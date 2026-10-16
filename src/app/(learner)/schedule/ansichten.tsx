@@ -7,6 +7,7 @@ import { stundenBereich, stunden, type Tagestyp } from "@/lib/stundenplan";
 import { cn } from "@/lib/utils";
 
 import { AbweichungsLabel, FlexChip, FlexLeiste, GanztagsLeiste, MonatsTags, StundenSpalte, TagSpalte, tagErledigt } from "./plan-bausteine";
+import { FachspracheChip, FachspracheLeiste } from "./fachsprache-chip";
 import type { TagModell } from "./plan-modell";
 
 // Stundenplan v2 (SR-13, SR-73):
@@ -209,6 +210,19 @@ export function WochenAnsicht({
         ))}
       </div>
       {/* Anna 2026-10-11: Selbstlernen unter dem Kalender -- der Unterricht steht im Vordergrund. */}
+      {/* Fachsprache (SR-84): Chip je Tag mit veröffentlichter Einheit zu einer Live-Lektion */}
+      {tage.some((t) => t.fachsprache.length > 0) && (
+        <div className={raster}>
+          <div />
+          {tage.map((t) => (
+            <div key={t.datum} className={cn("flex min-w-0 flex-col gap-1.5 px-1.5 pt-2 pb-1.5", heute(t))}>
+              {t.fachsprache.map((e) => (
+                <FachspracheChip key={e.einheitId} eintrag={e} mitTitel={t.fachsprache.length > 1} />
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
       <div className={raster}>
         <div className="pt-4 pr-2.5 text-right text-[11px] font-semibold tracking-[0.06em] text-ink-muted uppercase">
           Flexibel
@@ -309,6 +323,16 @@ export function TagesKarte({ tag, jetzt, simuliert, mobil }: { tag: TagModell; j
         <StundenSpalte von={von} bis={bis} hoehe={hoehe} />
         <TagSpalte tag={tag} von={von} bis={bis} hoehe={hoehe} gross={!mobil} jetzt={jetzt} simuliert={simuliert} />
       </div>
+      {tag.fachsprache.length > 0 && (
+        <div className={raster}>
+          <div />
+          <div className="flex min-w-0 flex-col gap-1.5">
+            {tag.fachsprache.map((e) => (
+              <FachspracheLeiste key={e.einheitId} eintrag={e} gross={!mobil} mitTitel={tag.fachsprache.length > 1} />
+            ))}
+          </div>
+        </div>
+      )}
       {tag.chips.length > 0 && (
         <div className={raster}>
           <div className="pt-2.5 pr-2.5 text-right text-[11px] font-semibold tracking-[0.06em] text-ink-muted uppercase">
