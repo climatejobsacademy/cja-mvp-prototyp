@@ -1,4 +1,4 @@
--- 025_kompetenz_anwesenheit.test.sql
+-- 026_kompetenz_anwesenheit.test.sql
 -- SR-63 ergänzt (0052): Live-Lektionen zählen für einen theoretischen
 -- Teilschritt als erledigt, sobald die Anwesenheit bestätigt ist (aktueller
 -- Wert über attendance_aktuell). AND-Logik bleibt: erst Live UND Selbstlernen
