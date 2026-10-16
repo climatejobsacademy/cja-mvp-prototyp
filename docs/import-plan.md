@@ -174,5 +174,5 @@ Pflicht ist **P**; unbekannte Spalten (z. B. Quellen, Hinweise) und unbekannte T
 
 ### Offene Punkte
 
-- Die Tests für `scripts/import-plan/` laufen nicht in `npm test` (nur `src/lib/*.test.ts`), sondern mit `node --test scripts/import-plan/*.test.mjs`.
+- Die Tests für `scripts/import-plan/` laufen in `npm test` und damit in der CI (auch einzeln: `node --test scripts/import-plan/*.test.mjs`).
 - Der Admin-Weg zum Hochladen der Bilder (Skript) und zum Eintragen der Prüfungen fehlt noch; bis dahin Upload im Dashboard unter dem Pfad `<lesson_id>/<dateiname>`.
