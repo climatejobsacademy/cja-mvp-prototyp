@@ -2,6 +2,7 @@
 // Ansichten zeigen -- Blöcke im Zeitraster, ganztägige Praxistage, Chips in
 // "Flexibel", Tagestyp. Reine Funktionen, keine Datenbank.
 
+import type { EinstiegEintrag } from "@/lib/fachsprache-einstiege";
 import type { Plantag } from "@/lib/queries/stundenplan";
 import type { TrainerAnzeige } from "@/lib/queries/trainer";
 import { hatUhrzeit, naechsterTerminId, tagestypAus, type Tagestyp } from "@/lib/stundenplan";
@@ -73,6 +74,8 @@ export type TagModell = {
   bloecke: Block[];
   ganztags: Ganztag[];
   chips: Chip[];
+  /** Fachsprache-Einheiten zu den Live-Lektionen des Tages (veröffentlicht, Schalter an), sonst leer */
+  fachsprache: EinstiegEintrag[];
 };
 
 const hhmm = (zeit: string) => zeit.slice(0, 5);
@@ -89,7 +92,12 @@ export function zeitText(b: Pick<Block, "start" | "ende">): string {
   return `${hhmm(b.start)} – ${hhmm(b.ende)}`;
 }
 
-export function planModell(tage: Plantag[], heute: string, jetzt: string): TagModell[] {
+export function planModell(
+  tage: Plantag[],
+  heute: string,
+  jetzt: string,
+  einstiege?: Map<string, EinstiegEintrag[]>
+): TagModell[] {
   const modelle = tage.map((tag): TagModell => {
     const lektionHref = (lessonId: string) => `/content/${lessonId}?von=stundenplan&datum=${tag.datum}`;
     const trainerVon = (id: string | null) => (id ? (tag.trainer.get(id) ?? null) : null);
@@ -193,6 +201,7 @@ export function planModell(tage: Plantag[], heute: string, jetzt: string): TagMo
       bloecke,
       ganztags,
       chips,
+      fachsprache: einstiege?.get(tag.datum) ?? [],
     };
   });
 

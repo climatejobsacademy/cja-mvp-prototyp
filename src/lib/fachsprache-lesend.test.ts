@@ -12,12 +12,14 @@ import { test } from "node:test";
 const WURZEL = process.cwd();
 const ORTE = [
   "src/lib/fachsprache-laden.ts",
+  "src/lib/fachsprache-einstiege.ts",
   "src/lib/fachsprache.ts",
   "src/lib/fachsprache-quiz.ts",
   "src/lib/schalter.ts",
   "src/lib/queries/fachsprache.ts",
   "src/components/fachsprache",
   "src/app/(learner)/fachsprache",
+  "src/app/(learner)/schedule/fachsprache-chip.tsx",
 ];
 
 function dateien(pfad: string): string[] {
@@ -44,7 +46,7 @@ const VERBOTEN: [string, RegExp][] = [
 
 test("Fachsprache-Code: nur Lesen, kein Lernstand, kein Tracking", () => {
   const alle = ORTE.flatMap(dateien).filter((d) => /\.(ts|tsx)$/.test(d) && !/\.test\.ts$/.test(d));
-  assert.ok(alle.length >= 8, `zu wenige Dateien geprüft: ${alle.length}`);
+  assert.ok(alle.length >= 11, `zu wenige Dateien geprüft: ${alle.length}`);
   const funde: string[] = [];
   for (const datei of alle) {
     const quelltext = ohneKommentare(readFileSync(join(WURZEL, datei), "utf8"));

@@ -1,7 +1,9 @@
 import { heuteInBerlin, jetztInBerlin, montagDerWoche, plusTage } from "@/lib/date";
+import { FachspracheKaestchen } from "@/components/fachsprache/einstieg-kaestchen";
 import { freiText, wochenrueckblick, zaehlText } from "@/lib/home-frei";
 import { getDayState } from "@/lib/home-tag";
 import { getKompetenzFortschritt } from "@/lib/queries/competencies";
+import { getEinstiegeJeTag } from "@/lib/queries/fachsprache";
 import { getHeutigeKompetenzen, getNachholLektion } from "@/lib/queries/home";
 import { getAktuellesModul, getModulKompetenzen } from "@/lib/queries/modul";
 import { getNaechsterTermin, getTagesAgenda } from "@/lib/queries/schedule";
@@ -47,12 +49,14 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   ]);
   const heuteAktiv = { ...aktivitaeten(tag), nachholen };
   const zustand = getDayState(jetzt, heuteAktiv);
-  const [modulKompetenzen, heutige] = await Promise.all([
+  const [modulKompetenzen, heutige, fachsprache] = await Promise.all([
     getModulKompetenzen(modul ? [modul.id] : []),
     getHeutigeKompetenzen(
       [...heuteAktiv.live.flatMap((l) => (l.lessonId ? [l.lessonId] : [])), ...heuteAktiv.flex.map((f) => f.lessonId)],
       heuteAktiv.praxis.map((p) => p.fieldJobId)
     ),
+    // Fachsprache (SR-84): Einheiten zu den Live-Lektionen des Tages, nur Veröffentlichtes bei Schalter an.
+    getEinstiegeJeTag([tag], "home"),
   ]);
   // Alle Kompetenzen, die eine heutige Aktivität stärkt (Glow, Brief 2.4).
   const heuteIds = new Set([...heutige.proLektion.values(), ...heutige.proFieldJob.values()].flat());
@@ -152,6 +156,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         trainer={trainer}
         stil={stil}
       />
+      <FachspracheKaestchen einheiten={fachsprache.get(tag.datum) ?? []} />
       {modul && <ModulFortschritt modul={modul} kompetenzen={ringe} />}
     </div>
   );
