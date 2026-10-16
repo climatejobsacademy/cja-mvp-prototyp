@@ -5,7 +5,7 @@ import { Maximize2, X } from "lucide-react";
 
 import type { SeitenBild } from "@/lib/fachsprache-laden";
 
-// Fachsprache-Einheit (Stufe 2, SR folgt): Bild steht direkt auf der Karte und
+// Fachsprache-Einheit (Stufe 2, SR-84): Bild steht direkt auf der Karte und
 // lässt sich per Knopf in einem Fenster vergrößern (Entscheidung O5). Der
 // Alternativtext ist Pflicht im Inhalt (0051) und steht am Bild und im Fenster.
 // Das Bild kommt über einen kurzlebigen signierten Link vom Server; bewusst ein

@@ -83,7 +83,8 @@
     80,
     81,
     82,
-    83
+    83,
+    84
   ],
   "legacyFiles": [
     "supabase/migrations/**"

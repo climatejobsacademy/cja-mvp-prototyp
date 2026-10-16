@@ -11,7 +11,7 @@ import type { SeitenEinheit } from "@/lib/fachsprache-laden";
 import { erklaerungSichtbar, quizSchritt, quizStart, weiterMoeglich, weiterText, type QuizAktion, type QuizZustand } from "@/lib/fachsprache-quiz";
 import { cn } from "@/lib/utils";
 
-// Fachsprache-Einheit (Stufe 2, Migration 0051, SR folgt), Oberfläche nach dem
+// Fachsprache-Einheit (Stufe 2, Migration 0051, SR-84), Oberfläche nach dem
 // Muster der Sprachtraining-Demo: Wörter, Quiz, Sätze, schlichter Abschluss.
 // Der Zustand lebt nur im Browser-State dieser Seite: nichts wird gespeichert
 // oder gezählt, kein Ergebnis, kein Ring, keine competency_evidence (Regel 6,
