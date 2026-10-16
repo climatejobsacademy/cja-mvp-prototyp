@@ -227,6 +227,31 @@ type LektionBeitragRow = {
   geloescht_am: string | null;
 };
 
+// Kohorten-Chat (0050, SR-83). Learner dürfen organisation_id und updated_at
+// nicht lesen (Spalten-Grant); Row enthält nur die lesbaren Spalten.
+export type ChatKanal = "ankuendigungen" | "treffpunkt";
+type ChatNachrichtRow = {
+  id: string;
+  created_at: string;
+  cohort_id: string;
+  kanal: ChatKanal;
+  person_id: string | null;
+  autor_anzeigename: string | null;
+  text: string | null;
+  geloescht_am: string | null;
+};
+
+// Meldungen (0050): lesen nur Moderierende der Kohorte, schreiben nur über Funktionen.
+type ChatMeldungRow = Flatten<
+  Timestamps & {
+    id: string;
+    nachricht_id: string;
+    person_id: string | null;
+    erledigt_am: string | null;
+    erledigt_von: string | null;
+  }
+>;
+
 type KohorteModerationRow = Flatten<
   Timestamps & {
     id: string;
@@ -330,6 +355,8 @@ type CohortRow = Flatten<
     name: string;
     start_datum: string;
     end_datum: string | null;
+    // Kohorten-Chat freigeschaltet (0050, SR-83), Standard false
+    chat_aktiv: boolean;
   }
 >;
 
@@ -672,6 +699,14 @@ export type Database = {
         Partial<KohorteModerationRow>
       >;
       moderationsprotokoll: Table<ModerationsprotokollRow, Record<string, never>, Record<string, never>>;
+      // Insert nur Kennung, Kohorte, Kanal, Text (Spalten-Grant, 0050); person_id,
+      // organisation_id und autor_anzeigename setzt der Trigger. Kein Update.
+      chat_meldung: Table<ChatMeldungRow, Record<string, never>, Record<string, never>>;
+      chat_nachricht: Table<
+        ChatNachrichtRow,
+        { id?: string; cohort_id: string; kanal: ChatKanal; text: string },
+        Record<string, never>
+      >;
       lesson_resource: Table<
         LessonResourceRow,
         Flatten<
@@ -997,6 +1032,15 @@ export type Database = {
         Args: Record<string, never>;
         Returns: { person_id: string; anzeigename: string; foto_pfad: string | null }[];
       };
+      // Kohorten-Chat (0050, SR-83): gleiche Regeln wie die Policies.
+      fn_chat_darf_lesen: { Args: { p_cohort_id: string }; Returns: boolean };
+      fn_chat_darf_schreiben: { Args: { p_cohort_id: string; p_kanal: ChatKanal }; Returns: boolean };
+      fn_chat_moderiert: { Args: { p_cohort_id: string }; Returns: boolean };
+      fn_chat_nachricht_loeschen: { Args: { p_nachricht_id: string }; Returns: undefined };
+      fn_chat_nachricht_melden: { Args: { p_nachricht_id: string }; Returns: undefined };
+      fn_chat_meldung_erledigt: { Args: { p_meldung_id: string }; Returns: undefined };
+      fn_chat_gelesen_setzen: { Args: { p_cohort_id: string; p_kanal: ChatKanal }; Returns: undefined };
+      fn_chat_ungelesen: { Args: { p_cohort_id: string }; Returns: { kanal: ChatKanal; anzahl: number }[] };
       // Darf die eingeloggte Person die Fotos im Ordner sehen? (0030, SR-77)
       fn_darf_foto_sehen: { Args: { p_ordner: string }; Returns: boolean };
     };
