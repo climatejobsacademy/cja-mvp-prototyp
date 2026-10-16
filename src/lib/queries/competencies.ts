@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { erledigteLektionIds } from "./lektionen-erledigt";
 import type { CompetencyStepTyp } from "@/lib/database.types";
 
 export type StepStatus = "abgeschlossen" | "in Prüfung" | "abgelehnt" | "offen";
@@ -93,7 +94,7 @@ export async function getKompetenzFortschritt(learnerId: string, programmeId?: s
     .eq("learner_id", learnerId);
   const fulfilmentByCompetency = new Map((fulfilment ?? []).map((f) => [f.competency_id, f]));
 
-  const [{ data: mappings }, { data: praxisMappings }, { data: completedLessons }] =
+  const [{ data: mappings }, { data: praxisMappings }, completedLessonIds] =
     await Promise.all([
       stepIds.length
         ? supabase
@@ -107,11 +108,8 @@ export async function getKompetenzFortschritt(learnerId: string, programmeId?: s
             .select("competency_step_id, field_job_type_id")
             .in("competency_step_id", stepIds)
         : Promise.resolve({ data: [] as { competency_step_id: string; field_job_type_id: string }[] }),
-      supabase
-        .from("unit_progress")
-        .select("lesson_id")
-        .eq("learner_id", learnerId)
-        .eq("status", "abgeschlossen"),
+      // abgeschlossen oder (Live) bestätigte Anwesenheit -- wie competency_fulfilment (0052)
+      erledigteLektionIds(supabase, learnerId),
     ]);
 
   // Verifizierungs-Zwischenstände (pending/abgelehnt) — nur relevant, wenn
@@ -167,11 +165,11 @@ export async function getKompetenzFortschritt(learnerId: string, programmeId?: s
     return "offen";
   }
 
-  // Teilschritt-Fortschritt (SR-62, seit SR-63 auch Status): abgeschlossene Lektion =
-  // unit_progress.status 'abgeschlossen'; abgeschlossene Praxisaufgabe =
+  // Teilschritt-Fortschritt (SR-62, seit SR-63 auch Status): erledigte Lektion =
+  // unit_progress.status 'abgeschlossen' oder, bei Live, bestätigte
+  // Anwesenheit (0052); abgeschlossene Praxisaufgabe =
   // mindestens eine verifizierte Selbstauskunft (field_capture.status
   // 'verified') zu einem field_job dieses Typs -- nicht schon 'durchgeführt'.
-  const completedLessonIds = new Set((completedLessons ?? []).map((u) => u.lesson_id));
   const verifiedJobIds = new Set(
     (myCaptures ?? []).filter((c) => c.status === "verified").map((c) => c.field_job_id)
   );
@@ -227,6 +225,13 @@ export async function getKompetenzFortschritt(learnerId: string, programmeId?: s
     const f = fulfilmentByCompetency.get(c.id);
     const gesamt = f?.teilschritte_gesamt ?? stepViews.length;
     const erfuelltAnzahl = f?.teilschritte_erfuellt ?? 0;
+    // Anteiliger Fortschritt (Anna 2026-10-16): jeder Teilschritt zählt mit
+    // seinem Anteil erledigter Lektionen bzw. Praxisaufgaben, nicht erst ganz.
+    // "erfüllt" bleibt die AND-Regel aus der Datenbank.
+    const anteile = stepViews.map((s) =>
+      s.status === "abgeschlossen" ? 1 : s.fortschritt && s.fortschritt.gesamt > 0 ? s.fortschritt.abgeschlossen / s.fortschritt.gesamt : 0
+    );
+    const anteilig = anteile.length > 0 ? anteile.reduce((a, b) => a + b, 0) / anteile.length : 0;
     const order = Math.min(
       ...mySteps.map((s) => minOrderByStep.get(s.id) ?? Number.MAX_SAFE_INTEGER),
       Number.MAX_SAFE_INTEGER
@@ -238,7 +243,7 @@ export async function getKompetenzFortschritt(learnerId: string, programmeId?: s
       teilschritteErfuellt: erfuelltAnzahl,
       teilschritteGesamt: gesamt,
       erfuellt: f?.erfuellt ?? false,
-      fortschrittProzent: gesamt > 0 ? Math.round((erfuelltAnzahl / gesamt) * 100) : 0,
+      fortschrittProzent: Math.round(anteilig * 100),
       curriculumReihenfolge: order,
       steps: stepViews,
     };
