@@ -241,6 +241,17 @@ type ChatNachrichtRow = {
   geloescht_am: string | null;
 };
 
+// Meldungen (0050): lesen nur Moderierende der Kohorte, schreiben nur über Funktionen.
+type ChatMeldungRow = Flatten<
+  Timestamps & {
+    id: string;
+    nachricht_id: string;
+    person_id: string | null;
+    erledigt_am: string | null;
+    erledigt_von: string | null;
+  }
+>;
+
 type KohorteModerationRow = Flatten<
   Timestamps & {
     id: string;
@@ -690,6 +701,7 @@ export type Database = {
       moderationsprotokoll: Table<ModerationsprotokollRow, Record<string, never>, Record<string, never>>;
       // Insert nur Kennung, Kohorte, Kanal, Text (Spalten-Grant, 0050); person_id,
       // organisation_id und autor_anzeigename setzt der Trigger. Kein Update.
+      chat_meldung: Table<ChatMeldungRow, Record<string, never>, Record<string, never>>;
       chat_nachricht: Table<
         ChatNachrichtRow,
         { id?: string; cohort_id: string; kanal: ChatKanal; text: string },
