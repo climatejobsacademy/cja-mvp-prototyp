@@ -64,7 +64,7 @@ test("tagestypAus: Praxis vor Live vor Lernen", () => {
   assert.equal(tagestypAus({ live: 0, praxis: 0, flex: 0 }), null);
 });
 
-test("naechsterTerminId: laufender oder nächster; heute bleibt Anker bis Tageswechsel", () => {
+test("naechsterTerminId: nur heute -- laufender oder nächster, danach der letzte bis Tageswechsel", () => {
   const t = [
     { id: "mo", datum: "2026-10-05", start: "09:00:00", ende: "12:00:00" },
     { id: "fr", datum: "2026-10-09", start: "13:00:00", ende: "16:00:00" },
@@ -75,7 +75,7 @@ test("naechsterTerminId: laufender oder nächster; heute bleibt Anker bis Tagesw
   assert.equal(naechsterTerminId(t, "2026-10-09T23:59:00"), "fr"); // bis Tagesende
   assert.equal(naechsterTerminId(t, "2026-10-10T08:00:00"), null); // nächster Tag, nichts mehr
   assert.equal(naechsterTerminId(t, "2026-10-05T13:00:00"), "mo"); // heute vorbei, vor dem nächsten Termin
-  assert.equal(naechsterTerminId(t, "2026-10-06T08:00:00"), "fr"); // heute nichts, nächster kommt
+  assert.equal(naechsterTerminId(t, "2026-10-06T08:00:00"), null); // heute nichts: kein Anker, auch nicht der nächste
   const zwei = [
     { id: "vormittag", datum: "2026-10-09", start: "09:00:00", ende: "10:00:00" },
     { id: "nachmittag", datum: "2026-10-09", start: "13:00:00", ende: "14:00:00" },

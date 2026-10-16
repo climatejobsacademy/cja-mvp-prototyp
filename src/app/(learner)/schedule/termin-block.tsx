@@ -10,8 +10,9 @@ import { zeitText, type Block } from "./plan-modell";
 // kein Klick-Fenster -- "Zur Lektion →" steht direkt im Block, der ganze
 // Block öffnet die Lektion (bzw. Praxisaufgabe). Ab 15 Min. vor Beginn bis
 // zum Ende eines Live-Termins stattdessen der Live-Raum. Titel immer
-// vollständig. Das Thema steht seit 0029 in lesson.thema (Datenlücke Nr. 4)
-// und erscheint als zweite Zeile unter dem Titel, nicht mehr in der Klammer.
+// vollständig. Bei Live ist der Titel das Thema der Lektion (lesson.thema,
+// 0029), ohne den Lektionsnamen darüber (Anna 2026-10-16, wie demo); der volle
+// Name steht im Tooltip und für Bildschirmleser.
 
 // Visuelles Update (docs/ux/visual-update, 2026-10-11): helle Typ-Fläche mit
 // 3-px-Streifen; nur der nächste Termin ist der Anker (volle Fläche,
@@ -31,8 +32,7 @@ export function TerminBlock({ block, gross, style }: { block: Block; gross: bool
   const label = [
     art.text,
     `${zeitText(block)} Uhr`,
-    block.titel,
-    block.thema,
+    block.volltitel,
     block.trainer ? `${block.art === "live" ? "Live" : "Praxis"} mit ${block.trainer.rufname}` : null,
     block.ort,
     // Der Anker bleibt nach dem letzten Termin des Tages stehen (Anna 2026-10-12): dann "vorbei", nicht "als Nächstes".
@@ -43,14 +43,8 @@ export function TerminBlock({ block, gross, style }: { block: Block; gross: bool
   const klickflaeche =
     "outline-none after:absolute after:inset-0 after:rounded-block after:content-[''] focus-visible:after:ring-2 focus-visible:after:ring-brand";
   const titel = (
-    <span className={cn("leading-snug font-semibold", gross ? "text-base" : "line-clamp-3 text-[13px]")}>
+    <span title={block.volltitel} className={cn("leading-snug font-semibold", gross ? "text-base" : "line-clamp-3 text-[13px]")}>
       {block.titel}
-      {block.thema && (
-        <>
-          <br />
-          <span className={cn("font-normal", gross ? "text-sm" : "text-xs")}>{block.thema}</span>
-        </>
-      )}
     </span>
   );
 
