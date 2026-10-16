@@ -182,7 +182,7 @@ export function planModell(tage: Plantag[], heute: string, jetzt: string): TagMo
     };
   });
 
-  // Brief 2.4: nächster bzw. laufender Termin der angezeigten Woche hervorheben
+  // Brief 2.4: laufender bzw. nächster Termin von heute hervorheben (nur heute)
   // -- nach Datum und Uhrzeit, auch wenn er schon erledigt ist (Entscheidung
   // Anna 2026-10-11: ein vorab durchgeklickter Praxistag bleibt der nächste).
   const naechster = naechsterTerminId(
