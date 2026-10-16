@@ -271,3 +271,11 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Folgen:** Ausnahme von SR-06 wie beim Fragen-Thread. Vor dem Einschalten auf Production: Datenschutzerklärung (Abschnitt Kohorten-Chat), Nutzungsregeln und eine verantwortliche Person für die Moderation. Ankündigungen setzen voraus, dass Trainer:innen einen Termin in der Kohorte haben (Import).
 - **Status:** gültig (Entscheidung Anna)
 - **Belegt:** `0050_kohorten_chat.sql`; `024_kohorten_chat.test.sql`; `access-matrix.md`; SR-83
+
+### 2026-10-16 – Bestätigte Anwesenheit zählt für Kompetenzschritte, Fortschritt anteilig
+
+- **Entscheidung:** Eine Live-Lektion gilt für den theoretischen Teilschritt als erledigt, sobald die Trainer:in die Anwesenheit bestätigt hat (aktueller Wert, eine Korrektur auf „nicht anwesend“ nimmt es zurück). Die AND-Logik von SR-63 bleibt. Der Kompetenz-Ring zeigt den Fortschritt anteilig (z. B. halber Teilschritt nach einer von zwei Lektionen).
+- **Begründung:** Für Live-Lektionen gab es keinen Weg zu „abgeschlossen“; Teilschritte mit Live- und Selbstlern-Lektion waren nie erfüllbar, bestätigte Anwesenheit kam im Fortschritt nicht an. CLAUDE.md Regel 6 nennt bestätigte Anwesenheit ausdrücklich als Quelle für Nachweise.
+- **Folgen:** Die Anwesenheit muss von Trainer:innen im Bereich `/trainer` bestätigt werden, sonst bleibt der Teilschritt offen. `competency_evidence` bleibt unverändert.
+- **Status:** gültig (Entscheidung Anna)
+- **Belegt:** `0051_kompetenz_anwesenheit.sql`; `025_kompetenz_anwesenheit.test.sql`; `src/lib/queries/lektionen-erledigt.ts`; SR-63

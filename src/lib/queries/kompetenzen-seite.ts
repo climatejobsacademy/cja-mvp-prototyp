@@ -1,6 +1,8 @@
 import { lektionTitel } from "@/lib/lektion-titel";
 import { createClient } from "@/lib/supabase/server";
 
+import { erledigteLektionIds } from "./lektionen-erledigt";
+
 // Kompetenzseite v1 (SR-61, SR-62, SR-63, SR-73): "Hier lernst du das" und
 // "heute dran". Nur lesend. Ohne die Modul-Ebene von demo (Modul-Reiter folgen
 // mit Datenlücke Nr. 1).
@@ -45,7 +47,7 @@ export async function getLernaktivitaeten(
   const typIds = [...new Set((praxis ?? []).map((m) => m.field_job_type_id))];
 
   const leer = Promise.resolve({ data: [] as never[] });
-  const [{ data: lessons }, { data: liveSessions }, { data: asyncPlan }, { data: progress }, { data: typen }, { data: jobs }] =
+  const [{ data: lessons }, { data: liveSessions }, { data: asyncPlan }, erledigteLektionen, { data: typen }, { data: jobs }] =
     await Promise.all([
       lessonIds.length ? supabase.from("lesson").select("id, name, thema, content_type").in("id", lessonIds) : leer,
       lessonIds.length
@@ -59,13 +61,8 @@ export async function getLernaktivitaeten(
             .in("lesson_id", lessonIds)
             .or(meinPlan)
         : leer,
-      lessonIds.length
-        ? supabase
-            .from("unit_progress")
-            .select("lesson_id, status")
-            .eq("learner_id", ctx.learnerId)
-            .in("lesson_id", lessonIds)
-        : leer,
+      // abgeschlossen oder (Live) bestätigte Anwesenheit -- wie competency_fulfilment (0051)
+      erledigteLektionIds(supabase, ctx.learnerId, lessonIds),
       typIds.length ? supabase.from("field_job_type").select("id, titel").in("id", typIds) : leer,
       typIds.length
         ? supabase
@@ -99,9 +96,6 @@ export async function getLernaktivitaeten(
     const bisher = datumJeLektion.get(e.lesson_id);
     if (!bisher || e.datum < bisher) datumJeLektion.set(e.lesson_id, e.datum);
   }
-  const erledigteLektionen = new Set(
-    (progress ?? []).filter((p) => p.status === "abgeschlossen").map((p) => p.lesson_id)
-  );
 
   const ergebnis: Lernaktivitaet[] = (lessons ?? []).map((l) => {
     const live = liveJeLektion.get(l.id);
