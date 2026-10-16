@@ -65,7 +65,7 @@ export function TerminBlock({ block, gross, style }: { block: Block; gross: bool
       <span className="flex items-center gap-1.5 text-xs font-semibold">
         {/* Symbol immer in der Typfarbe wie auf Home und Kompetenzen (Anna 2026-10-11). */}
         <art.Icon className={cn("size-[13px] shrink-0", block.naechster ? art.ankerIcon : art.icon)} aria-hidden="true" />
-        {zeitText(block)}
+        <span className="whitespace-nowrap">{zeitText(block)}</span>
         {gross && ` · ${art.text}`}
         {block.ort && <span className="min-w-0 truncate font-normal">· {block.ort}</span>}
         {block.status === "erledigt" && <Check className={cn("ml-auto size-3", block.naechster ? art.ankerIcon : "text-progress")} strokeWidth={3} aria-hidden="true" />}
