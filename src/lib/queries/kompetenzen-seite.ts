@@ -61,7 +61,7 @@ export async function getLernaktivitaeten(
             .in("lesson_id", lessonIds)
             .or(meinPlan)
         : leer,
-      // abgeschlossen oder (Live) bestätigte Anwesenheit -- wie competency_fulfilment (0051)
+      // abgeschlossen oder (Live) bestätigte Anwesenheit -- wie competency_fulfilment (0052)
       erledigteLektionIds(supabase, ctx.learnerId, lessonIds),
       typIds.length ? supabase.from("field_job_type").select("id, titel").in("id", typIds) : leer,
       typIds.length

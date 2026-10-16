@@ -108,7 +108,7 @@ export async function getKompetenzFortschritt(learnerId: string, programmeId?: s
             .select("competency_step_id, field_job_type_id")
             .in("competency_step_id", stepIds)
         : Promise.resolve({ data: [] as { competency_step_id: string; field_job_type_id: string }[] }),
-      // abgeschlossen oder (Live) bestätigte Anwesenheit -- wie competency_fulfilment (0051)
+      // abgeschlossen oder (Live) bestätigte Anwesenheit -- wie competency_fulfilment (0052)
       erledigteLektionIds(supabase, learnerId),
     ]);
 
@@ -167,7 +167,7 @@ export async function getKompetenzFortschritt(learnerId: string, programmeId?: s
 
   // Teilschritt-Fortschritt (SR-62, seit SR-63 auch Status): erledigte Lektion =
   // unit_progress.status 'abgeschlossen' oder, bei Live, bestätigte
-  // Anwesenheit (0051); abgeschlossene Praxisaufgabe =
+  // Anwesenheit (0052); abgeschlossene Praxisaufgabe =
   // mindestens eine verifizierte Selbstauskunft (field_capture.status
   // 'verified') zu einem field_job dieses Typs -- nicht schon 'durchgeführt'.
   const verifiedJobIds = new Set(

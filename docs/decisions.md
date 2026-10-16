@@ -278,4 +278,4 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Begründung:** Für Live-Lektionen gab es keinen Weg zu „abgeschlossen“; Teilschritte mit Live- und Selbstlern-Lektion waren nie erfüllbar, bestätigte Anwesenheit kam im Fortschritt nicht an. CLAUDE.md Regel 6 nennt bestätigte Anwesenheit ausdrücklich als Quelle für Nachweise.
 - **Folgen:** Die Anwesenheit muss von Trainer:innen im Bereich `/trainer` bestätigt werden, sonst bleibt der Teilschritt offen. `competency_evidence` bleibt unverändert.
 - **Status:** gültig (Entscheidung Anna)
-- **Belegt:** `0051_kompetenz_anwesenheit.sql`; `025_kompetenz_anwesenheit.test.sql`; `src/lib/queries/lektionen-erledigt.ts`; SR-63
+- **Belegt:** `0052_kompetenz_anwesenheit.sql`; `025_kompetenz_anwesenheit.test.sql`; `src/lib/queries/lektionen-erledigt.ts`; SR-63

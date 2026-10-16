@@ -1,4 +1,4 @@
--- 0051_kompetenz_anwesenheit.sql
+-- 0052_kompetenz_anwesenheit.sql
 -- SR-63 ergänzt (Anna 2026-10-16): Live-Lektionen zählen für einen
 -- theoretischen Teilschritt als erledigt, sobald die Anwesenheit bestätigt ist
 -- (attendance, Status 'anwesend', aktueller Wert ohne spätere Korrektur über
@@ -101,6 +101,6 @@ as
 comment on view competency_fulfilment is
   'SR-63/SR-68: Erfüllungsstatus je Learner und Kompetenz mit AND-Logik auf beiden '
   'Ebenen -- Teilschritt erfüllt erst bei allen zugeordneten Lektionen (abgeschlossen '
-  'oder, bei Live-Lektionen, bestätigte Anwesenheit; 0051) bzw. Field-Job-Typen, '
+  'oder, bei Live-Lektionen, bestätigte Anwesenheit; 0052) bzw. Field-Job-Typen, '
   'Kompetenz erst bei allen Teilschritten. Kein Write für irgendeine Rolle. Zugriff '
   'wird durch security_invoker von den Basistabellen geerbt.';

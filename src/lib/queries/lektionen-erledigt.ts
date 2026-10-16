@@ -3,7 +3,7 @@ import type { createClient } from "@/lib/supabase/server";
 type Client = Awaited<ReturnType<typeof createClient>>;
 
 /**
- * Erledigte Lektionen einer Person (SR-63, ergänzt 2026-10-16, Migration 0051):
+ * Erledigte Lektionen einer Person (SR-63, ergänzt 2026-10-16, Migration 0052):
  * abgeschlossen (unit_progress) oder -- bei Live-Lektionen -- bestätigte
  * Anwesenheit an einem Termin der Lektion (aktueller Wert ohne spätere
  * Korrektur, attendance_aktuell). Gleiche Regel wie competency_fulfilment.
