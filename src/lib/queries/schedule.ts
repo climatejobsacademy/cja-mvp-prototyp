@@ -29,6 +29,8 @@ export type TheorieEintrag = {
   titel: string;
   /** Thema der Lektion (lesson.thema), sonst null */
   thema: string | null;
+  /** Kurstitel (course.name); der Stundenplan zeigt ihn bei Live-Terminen als Titel (Anna 2026-10-16) */
+  kurs: string | null;
   /** Selbstlern-Lektion: zugehörige Live-Lektion (lesson.live_lektion_id, 0029), sonst null */
   liveLektionId: string | null;
   contentType: ContentType | "kurs";
@@ -143,10 +145,11 @@ export async function getAgendaZeitraum(
 
     const [{ data: lessons }, { data: courses }, { data: liveSessions }] = await Promise.all([
       lessonIds.length
-        ? supabase.from("lesson").select("id, name, thema, content_type, live_lektion_id").in("id", lessonIds)
+        ? supabase.from("lesson").select("id, course_id, name, thema, content_type, live_lektion_id").in("id", lessonIds)
         : Promise.resolve({
             data: [] as {
               id: string;
+              course_id: string;
               name: string;
               thema: string | null;
               content_type: ContentType;
@@ -184,9 +187,23 @@ export async function getAgendaZeitraum(
     if (liveSessionLessonIds.length > 0) {
       const { data: extraLessons } = await supabase
         .from("lesson")
-        .select("id, name, thema, content_type, live_lektion_id")
+        .select("id, course_id, name, thema, content_type, live_lektion_id")
         .in("id", liveSessionLessonIds);
       allLessons = [...allLessons, ...(extraLessons ?? [])];
+    }
+
+    // Kurstitel für Live-Termine an einer Lektion: Kurs der Lektion nachladen.
+    const kurse = new Map((courses ?? []).map((c) => [c.id, c.name]));
+    const fehlendeKursIds = [
+      ...new Set(
+        (liveSessions ?? [])
+          .map((s) => allLessons.find((l) => l.id === s.lesson_id)?.course_id)
+          .filter((id): id is string => !!id && !kurse.has(id))
+      ),
+    ];
+    if (fehlendeKursIds.length > 0) {
+      const { data: extraKurse } = await supabase.from("course").select("id, name").in("id", fehlendeKursIds);
+      for (const c of extraKurse ?? []) kurse.set(c.id, c.name);
     }
 
     let progressByLesson = new Map<string, UnitProgressStatus>();
@@ -215,6 +232,7 @@ export async function getAgendaZeitraum(
           art: "live",
           titel: titel?.titel ?? course?.name ?? "Live-Termin",
           thema: titel?.thema ?? null,
+          kurs: (lesson ? kurse.get(lesson.course_id) : course?.name) ?? null,
           liveLektionId: null,
           contentType: "live",
           unitProgressStatus: lesson ? progressByLesson.get(lesson.id) ?? "offen" : null,
@@ -239,6 +257,7 @@ export async function getAgendaZeitraum(
           art: "asynchron",
           titel: titel.titel,
           thema: titel.thema,
+          kurs: kurse.get(lesson.course_id) ?? null,
           liveLektionId: lesson.live_lektion_id,
           contentType: lesson.content_type,
           unitProgressStatus: progressByLesson.get(lesson.id) ?? "offen",
@@ -255,6 +274,7 @@ export async function getAgendaZeitraum(
           art: "asynchron",
           titel: course.name,
           thema: null,
+          kurs: course.name,
           liveLektionId: null,
           contentType: "kurs",
           unitProgressStatus: null,
