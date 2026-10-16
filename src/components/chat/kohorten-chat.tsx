@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { ArrowLeft, Coffee, Flag, Megaphone, MessageCircle, Send, Trash2, X } from "lucide-react";
 
 import { nachrichtLoeschen, nachrichtMelden, nachrichtSenden } from "@/app/(learner)/chat-actions";
+import { meldungenErledigt, nachrichtLoeschenTrainer, nachrichtSendenTrainer } from "@/app/(trainer)/trainer/chat-actions";
 import type { ChatKanal } from "@/lib/database.types";
 import { zeitpunktKurzInBerlin } from "@/lib/date";
 import { ABFRAGE_OFFEN_MS, ABFRAGE_ZU_MS, kuerzel, NACHRICHT_MAX, vorschau } from "@/lib/kohorten-chat";
@@ -16,6 +17,9 @@ import { cn } from "@/lib/utils";
 // Migration 0050: Nachrichten und Lesestand aus der Datenbank, neue
 // Nachrichten alle 30 Sekunden bei offenem Chat, sonst alle 2 Minuten für den
 // Zähler. Keine Rolle an der Nachricht (Entscheidung Anna 2026-10-16).
+// Trainer:innen (PR 3, modus "trainer"): Auswahl der eigenen Kohorten,
+// Schreiben in beiden Kanälen, Löschen aller Nachrichten, Meldungen sehen und
+// erledigen -- was erlaubt ist, entscheidet die Datenbank (stand.moderation).
 
 const KANAL_ICON = { ankuendigungen: Megaphone, treffpunkt: Coffee } as const;
 const KANAL_FARBE = { ankuendigungen: "bg-brand-tint text-brand", treffpunkt: "bg-praxis-tint text-praxis-text" } as const;
@@ -34,7 +38,18 @@ function Kreis({ name, eigene }: { name: string | null; eigene: boolean }) {
   );
 }
 
-export function KohortenChat({ vorname }: { vorname: string }) {
+export function KohortenChat({
+  vorname,
+  modus = "lernende",
+  kohorten = [],
+}: {
+  vorname: string;
+  modus?: "lernende" | "trainer";
+  /** Nur Trainer:innen: Kohorten mit freigeschaltetem Chat, die sie moderieren */
+  kohorten?: { id: string; name: string }[];
+}) {
+  const trainer = modus === "trainer";
+  const [kohorteId, setKohorteId] = useState<string | null>(kohorten[0]?.id ?? null);
   const [offen, setOffen] = useState(false);
   const [kanal, setKanal] = useState<ChatKanal | null>(null);
   const [stand, setStand] = useState<ChatStand | null>(null);
@@ -59,7 +74,8 @@ export function KohortenChat({ vorname }: { vorname: string }) {
       controller = eigener;
       try {
         // Offener Kanal: der Server setzt dabei den Lesestand (gelesen=1).
-        const adresse = kanal && offen ? `/chat/stand?kanal=${kanal}&gelesen=1` : "/chat/stand";
+        const basis = trainer ? `/trainer/chat/stand?kohorte=${kohorteId}` : "/chat/stand?";
+        const adresse = kanal && offen ? `${basis}&kanal=${kanal}&gelesen=1` : basis;
         const antwort = await fetch(adresse, { signal: eigener.signal, cache: "no-store" });
         if (antwort.ok) setStand((await antwort.json()) as ChatStand);
       } catch {
@@ -83,7 +99,7 @@ export function KohortenChat({ vorname }: { vorname: string }) {
       controller.abort();
       document.removeEventListener("visibilitychange", sichtbar);
     };
-  }, [offen, kanal, neuLaden]);
+  }, [offen, kanal, neuLaden, trainer, kohorteId]);
 
   // Ans Ende scrollen, wenn Nachrichten dazukommen.
   const anzahl = stand?.nachrichten?.length ?? 0;
@@ -120,7 +136,7 @@ export function KohortenChat({ vorname }: { vorname: string }) {
     const text = entwurf.trim();
     if (!kanal || !text || senden) return;
     startSenden(async () => {
-      const ergebnis = await nachrichtSenden(kanal, text);
+      const ergebnis = trainer && kohorteId ? await nachrichtSendenTrainer(kohorteId, kanal, text) : await nachrichtSenden(kanal, text);
       if (ergebnis.ok) {
         setEntwurf("");
         setFehler(null);
@@ -132,10 +148,24 @@ export function KohortenChat({ vorname }: { vorname: string }) {
   function loeschen(id: string) {
     if (!window.confirm("Diese Nachricht löschen?")) return;
     startSenden(async () => {
-      const ergebnis = await nachrichtLoeschen(id);
+      const ergebnis = trainer ? await nachrichtLoeschenTrainer(id) : await nachrichtLoeschen(id);
       setFehler(ergebnis.ok ? null : ergebnis.fehler);
       aktualisieren();
     });
+  }
+
+  function erledigen(meldungIds: string[]) {
+    startSenden(async () => {
+      const ergebnis = await meldungenErledigt(meldungIds);
+      setFehler(ergebnis.ok ? null : ergebnis.fehler);
+      aktualisieren();
+    });
+  }
+
+  function kohorteWaehlen(id: string) {
+    setKohorteId(id);
+    setKanal(null);
+    setStand(null);
   }
 
   function melden(id: string) {
@@ -193,7 +223,15 @@ export function KohortenChat({ vorname }: { vorname: string }) {
             )}
             <span className="flex min-w-0 flex-1 flex-col">
               <span className="truncate text-[15px] font-bold">{aktiv ? aktiv.titel : "Chat deiner Kohorte"}</span>
-              <span className="truncate text-xs text-muted-foreground">{aktiv ? aktiv.zusatz : `Hallo ${vorname}`}</span>
+              <span className="truncate text-xs text-muted-foreground">
+                {aktiv
+                  ? trainer
+                    ? (kohorten.find((k) => k.id === kohorteId)?.name ?? aktiv.zusatz)
+                    : aktiv.zusatz
+                  : trainer && kohorten.length === 1
+                    ? kohorten[0].name
+                    : `Hallo ${vorname}`}
+              </span>
             </span>
             <button
               type="button"
@@ -212,6 +250,22 @@ export function KohortenChat({ vorname }: { vorname: string }) {
           {/* Kanalliste */}
           {!kanal && (
             <div className="flex-1 overflow-y-auto px-2 py-3">
+              {trainer && kohorten.length > 1 && (
+                <label className="mb-3 flex flex-col gap-1 px-3 text-xs font-semibold text-muted-foreground">
+                  Kohorte
+                  <select
+                    value={kohorteId ?? ""}
+                    onChange={(e) => kohorteWaehlen(e.target.value)}
+                    className="min-h-10 rounded-xl border border-border bg-white px-3 text-sm font-semibold text-ink outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                  >
+                    {kohorten.map((k) => (
+                      <option key={k.id} value={k.id}>
+                        {k.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
               {!stand ? (
                 <p className="mt-8 text-center text-sm text-muted-foreground">Chat wird geladen …</p>
               ) : (
@@ -281,7 +335,17 @@ export function KohortenChat({ vorname }: { vorname: string }) {
                           )}
                           {n.text !== null && (
                             <span className="flex gap-2 text-xs text-muted-foreground opacity-70 group-focus-within:opacity-100 group-hover:opacity-100">
-                              {n.eigene ? (
+                              {n.meldungIds.length > 0 && (
+                                <>
+                                  <span className="rounded-full bg-praxis-tint px-1.5 font-semibold text-praxis-text">
+                                    Gemeldet{n.meldungIds.length > 1 ? ` (${n.meldungIds.length})` : ""}
+                                  </span>
+                                  <button type="button" onClick={() => erledigen(n.meldungIds)} className="inline-flex items-center gap-1 rounded outline-none hover:text-ink focus-visible:ring-2 focus-visible:ring-brand">
+                                    Erledigt
+                                  </button>
+                                </>
+                              )}
+                              {n.eigene || stand?.moderation ? (
                                 <button type="button" onClick={() => loeschen(n.id)} className="inline-flex items-center gap-1 rounded outline-none hover:text-ink focus-visible:ring-2 focus-visible:ring-brand">
                                   <Trash2 className="size-3.5" aria-hidden="true" /> Löschen
                                 </button>

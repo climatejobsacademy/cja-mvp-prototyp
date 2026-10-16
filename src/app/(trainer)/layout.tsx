@@ -1,7 +1,9 @@
 import { LogOut } from "lucide-react";
 
 import { signOut } from "@/app/(learner)/actions";
+import { KohortenChat } from "@/components/chat/kohorten-chat";
 import { Wortmarke } from "@/components/nav/app-nav";
+import { chatKohortenFuerTrainer } from "@/lib/queries/kohorten-chat";
 import { requireCurrentTrainer } from "@/lib/queries/trainer-bereich";
 
 // Bereich für Trainer:innen (SR-81, Paket G2): eigener schmaler Kopf ohne
@@ -9,6 +11,8 @@ import { requireCurrentTrainer } from "@/lib/queries/trainer-bereich";
 // requireCurrentTrainer (src/lib/trainer-tag.ts).
 export default async function TrainerLayout({ children }: { children: React.ReactNode }) {
   const trainer = await requireCurrentTrainer();
+  // Kohorten-Chat (SR-83, PR 3): nur Kohorten mit freigeschaltetem Chat, die die Person moderiert.
+  const chatKohorten = await chatKohortenFuerTrainer();
 
   return (
     <div className="flex min-h-full flex-1 flex-col">
@@ -29,6 +33,7 @@ export default async function TrainerLayout({ children }: { children: React.Reac
         </div>
       </header>
       <div className="mx-auto w-full max-w-3xl flex-1 px-4 pt-5 pb-10 md:px-6 md:py-10">{children}</div>
+      {chatKohorten.length > 0 && <KohortenChat vorname={trainer.rufname} modus="trainer" kohorten={chatKohorten} />}
     </div>
   );
 }
