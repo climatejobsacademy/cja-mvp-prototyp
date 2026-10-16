@@ -15,6 +15,8 @@ export type ChatNachricht = {
   /** null = gelöscht */
   text: string | null;
   eigene: boolean;
+  /** Nur für Moderierende: offene Meldungen zu dieser Nachricht */
+  meldungIds: string[];
 };
 
 export type ChatKanalStand = {
@@ -27,6 +29,8 @@ export type ChatKanalStand = {
 };
 
 export type ChatStand = {
+  /** Darf die Person alle Nachrichten der Kohorte löschen und Meldungen sehen? (fn_chat_moderiert) */
+  moderation: boolean;
   kanaele: ChatKanalStand[];
   /** Nachrichten des angefragten Kanals, älteste zuerst; null ohne Kanal */
   nachrichten: ChatNachricht[] | null;
@@ -63,7 +67,8 @@ export async function getChatStand(
       .limit(1)
       .maybeSingle();
 
-  const [ungelesen, schreibrechte, letzte, liste] = await Promise.all([
+  const [moderiert, ungelesen, schreibrechte, letzte, liste] = await Promise.all([
+    supabase.rpc("fn_chat_moderiert", { p_cohort_id: cohortId }),
     supabase.rpc("fn_chat_ungelesen", { p_cohort_id: cohortId }),
     Promise.all(KANAELE.map((k) => supabase.rpc("fn_chat_darf_schreiben", { p_cohort_id: cohortId, p_kanal: k.kanal }))),
     Promise.all(KANAELE.map((k) => letzteVon(k.kanal))),
@@ -79,8 +84,22 @@ export async function getChatStand(
   ]);
 
   const ungelesenJeKanal = new Map((ungelesen.data ?? []).map((u) => [u.kanal, u.anzahl]));
+  const moderation = moderiert.data === true;
+
+  // Offene Meldungen nur für Moderierende (RLS lässt Lernende ohnehin keine lesen).
+  const meldungenJeNachricht = new Map<string, string[]>();
+  const nachrichtIds = (liste?.data ?? []).map((n) => n.id);
+  if (moderation && nachrichtIds.length > 0) {
+    const { data: meldungen } = await supabase
+      .from("chat_meldung")
+      .select("id, nachricht_id")
+      .is("erledigt_am", null)
+      .in("nachricht_id", nachrichtIds);
+    for (const m of meldungen ?? []) meldungenJeNachricht.set(m.nachricht_id, [...(meldungenJeNachricht.get(m.nachricht_id) ?? []), m.id]);
+  }
 
   return {
+    moderation,
     kanaele: KANAELE.map((k, i) => {
       const l = letzte[i].data;
       return {
@@ -99,7 +118,24 @@ export async function getChatStand(
           name: n.autor_anzeigename,
           text: n.geloescht_am ? null : n.text,
           eigene: n.person_id !== null && n.person_id === personId,
+          meldungIds: meldungenJeNachricht.get(n.id) ?? [],
         }))
       : null,
   };
+}
+
+/**
+ * Kohorten, deren Chat die angemeldete Trainer:in moderiert (Termin in der
+ * Kohorte, kohorte_moderation oder AfCJ admin) und die freigeschaltet sind.
+ */
+export async function chatKohortenFuerTrainer(): Promise<{ id: string; name: string }[]> {
+  const supabase = await createClient();
+  const { data: kohorten } = await supabase.from("cohort").select("id, name, chat_aktiv").eq("chat_aktiv", true).order("name");
+  const geprueft = await Promise.all(
+    (kohorten ?? []).map(async (k) => {
+      const { data } = await supabase.rpc("fn_chat_moderiert", { p_cohort_id: k.id });
+      return data === true ? { id: k.id, name: k.name } : null;
+    })
+  );
+  return geprueft.filter((k): k is { id: string; name: string } => k !== null);
 }
