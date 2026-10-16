@@ -10,7 +10,7 @@ import {
 import { fachspracheEinheitAn } from "@/lib/schalter";
 import { createClient } from "@/lib/supabase/server";
 
-// Fachsprache-Einheit (Stufe 2, Migration 0051, SR folgt): Abfragen mit dem
+// Fachsprache-Einheit (Stufe 2, Migration 0051, SR-84): Abfragen mit dem
 // Client der angemeldeten Person. Die RLS entscheidet, was lesbar ist
 // (fachsprache_einheit_lesen: veröffentlicht und Lektion lesbar; AfCJ admin
 // alles), kein Service-Role-Key. Nur Lesen und Links signieren; kein Lernstand,

@@ -131,7 +131,7 @@ Die Ausgabe listet, was bewusst nicht in die Datenbank geht, mit Grund (u. a. Mo
 
 ## Fachsprache-Einheiten
 
-Importiert Einheiten (Wörter, Quiz, Sätze) in `fachsprache_einheit` (Migration 0051, Stufe 2, SR folgt). Die Vorlage heißt `fachsprache-import-vorlage.xlsx` und liegt wie die anderen Dateien unter `~/Projects/import-daten/`, nicht im Repo.
+Importiert Einheiten (Wörter, Quiz, Sätze) in `fachsprache_einheit` (Migration 0051, Stufe 2, SR-84). Die Vorlage heißt `fachsprache-import-vorlage.xlsx` und liegt wie die anderen Dateien unter `~/Projects/import-daten/`, nicht im Repo.
 
 ```sh
 DIR="$HOME/Projects/import-daten"

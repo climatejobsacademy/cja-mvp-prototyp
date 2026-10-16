@@ -121,7 +121,7 @@
   /* Home v12 (docs/design_handoff_home_v6/design/home-v12-referenz.html), 2026-10-10: kleiner
      Glow für den 24-px-Mini-Ring in der "Stärkt"-Pill. */
   --glow-charge-sm: 0 0 0 3px rgb(162 229 0 / 0.25), 0 0 12px 2px rgb(162 229 0 / 0.55);
-  /* Stundenplan v2, Änderungsliste Anna 2026-10-10 (SR folgt): Tönung der
+  /* Stundenplan v2, Änderungsliste Anna 2026-10-10 (SR-13): Tönung der
      Heute-Spalte. Stundenlinien und "Flexibel" seit dem visuellen Update
      (2026-10-11) über --line bzw. --self-tint. */
   --heute-flaeche: #f7faf3;

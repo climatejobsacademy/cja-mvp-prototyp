@@ -1,4 +1,4 @@
-// Fachsprache-Einheit laden (Stufe 2, Migration 0051, SR folgt): die Regeln der
+// Fachsprache-Einheit laden (Stufe 2, Migration 0051, SR-84): die Regeln der
 // Seite /fachsprache/[einheitId] und die Vorbereitung der Einstiege als
 // Funktionen ohne Next und ohne Supabase-Import. Die Datenquelle kommt von
 // außen (src/lib/queries/fachsprache.ts mit dem Client der angemeldeten

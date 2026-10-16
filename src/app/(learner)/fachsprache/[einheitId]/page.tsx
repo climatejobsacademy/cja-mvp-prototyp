@@ -5,7 +5,7 @@ import { getEinheitSeite } from "@/lib/queries/fachsprache";
 
 import { FachspracheEinheit } from "./einheit";
 
-// Fachsprache-Einheit (Stufe 2, Migration 0051, SR folgt): Wörter, Quiz, Sätze
+// Fachsprache-Einheit (Stufe 2, Migration 0051, SR-84): Wörter, Quiz, Sätze
 // zu einer Lektion. Nur Lesen, kein Lernstand, keine competency_evidence
 // (Regel 6). 404, wenn der Schalter FACHSPRACHE_EINHEIT aus ist, die Einheit
 // nicht lesbar oder nicht veröffentlicht ist (AfCJ admin sieht Entwürfe mit

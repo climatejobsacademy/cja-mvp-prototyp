@@ -5,7 +5,7 @@ import { Volume2 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-// Fachsprache-Einheit (Stufe 2, SR folgt): Vorlesen mit der deutschen Stimme
+// Fachsprache-Einheit (Stufe 2, SR-84): Vorlesen mit der deutschen Stimme
 // des Browsers (Web Speech API, Sprachausgabe im Gerät, nichts geht an einen
 // Server von uns). Welche Stimmen auf Production erlaubt sind, ist noch nicht
 // entschieden (docs/decisions.md 2026-10-16, O4). Ohne Unterstützung im Browser

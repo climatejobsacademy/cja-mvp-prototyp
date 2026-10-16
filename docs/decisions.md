@@ -294,4 +294,4 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Begründung:** Production soll die Funktion erst nach Prüfung der Inhalte und des Datenschutzes zeigen; ein Schalter ohne `NEXT_PUBLIC_`-Präfix kommt nicht ins Browser-Bundle. Die Fachsprache-Einheit hängt laut Import an der ersten Live-Lektion des Kurses. Prüfende brauchen eine Vorschau, Lernende dürfen keine ungeprüften Inhalte sehen.
 - **Folgen:** Vorlesen nutzt die Stimmen des Browsers; auf Staging dürfen alle Stimmen vorlesen, ob auf Production nur lokale Stimmen erlaubt sind, wird vor dem Einschalten entschieden (O4, Datenschutz Punkt 6). Keine Bibliothek für Komponententests (O6): Regeln als reine Funktionen mit `node --test`, die Oberfläche über den Klicktest. Abfragen (`src/lib/queries/fachsprache.ts`) und Oberfläche folgen, sobald 0051 auf Staging liegt.
 - **Status:** gültig (Entscheidung Vera)
-- **Belegt:** `src/lib/schalter.ts`, `src/lib/fachsprache.ts`, `src/lib/fachsprache-quiz.ts` mit Tests; SR folgt
+- **Belegt:** `src/lib/schalter.ts`, `src/lib/fachsprache.ts`, `src/lib/fachsprache-quiz.ts` mit Tests; SR-84

@@ -1,4 +1,4 @@
-// Quiz der Fachsprache-Einheit (Stufe 2, SR folgt): Regeln als reine
+// Quiz der Fachsprache-Einheit (Stufe 2, SR-84): Regeln als reine
 // Funktion, ohne React, getestet in src/lib/fachsprache-quiz.test.ts.
 //
 // Ablauf je Frage: Antwort wählen → "Weiter" prüft → falsch: Hinweis, Auswahl

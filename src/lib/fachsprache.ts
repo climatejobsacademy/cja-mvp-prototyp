@@ -1,4 +1,4 @@
-// Fachsprache-Einheit (Stufe 2, Migration 0051, SR folgt): reine Hilfen ohne
+// Fachsprache-Einheit (Stufe 2, Migration 0051, SR-84): reine Hilfen ohne
 // Datenbank und ohne Uhr, getestet in src/lib/fachsprache.test.ts.
 //
 // - parseInhalt: prüft fachsprache_einheit.inhalt noch einmal im Code, mit
