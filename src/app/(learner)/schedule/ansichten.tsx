@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { Check, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { datumLang, plusTage, wochentagLang } from "@/lib/date";
-import { stundenBereich, type Tagestyp } from "@/lib/stundenplan";
+import { stundenBereich, stunden, type Tagestyp } from "@/lib/stundenplan";
 import { cn } from "@/lib/utils";
 
 import { AbweichungsLabel, FlexChip, FlexLeiste, GanztagsLeiste, MonatsTags, StundenSpalte, TagSpalte, tagErledigt } from "./plan-bausteine";
@@ -25,7 +25,13 @@ const HEUTE_LINK =
 // Rasterhöhe: Desktop passt sich dem Fenster an, damit Woche bzw. Tag ohne
 // Scrollen ganz sichtbar sind (Entscheidung Anna 2026-10-10); der Abzug ist
 // die Höhe von Kopf, Steuerleiste und Tageskopf. Mobil fest 48 px/Stunde.
-const HOEHE_WOCHE = "max(300px, calc(100dvh - 400px))";
+// Ergänzt Anna 2026-10-16: Damit jeder Block einheitlich alles zeigt (Zeit,
+// Titel, Trainer:in, Aktion), wird das Raster höher, sobald der kürzeste
+// Termin der Woche sonst weniger als BLOCK_MIN px hätte -- dann scrollt die
+// Seite statt die Blöcke zu quetschen.
+const BLOCK_MIN = 140;
+const wochenHoehe = (von: number, bis: number, kuerzesterTermin: number) =>
+  `max(300px, calc(100dvh - 400px), ${Math.ceil(((bis - von) * BLOCK_MIN) / kuerzesterTermin)}px)`;
 // Tagesansicht Desktop (Wunsch Anna 2026-10-10): schmal und lang -- immer
 // 07-19 Uhr (bei früheren/späteren Terminen mehr), feste 56 px pro Stunde.
 const tagesHoehe = (von: number, bis: number) => `${(bis - von) * 56}px`;
@@ -155,6 +161,8 @@ export function WochenAnsicht({
   const bis = bloecke.length > 0 ? bereich.bis - 0.5 : bereich.bis;
   const raster = "grid grid-cols-[64px_repeat(5,minmax(0,1fr))]";
   const heute = (t: TagModell) => t.heute && "bg-heute-flaeche";
+  const kuerzester = Math.min(bis - von, ...bloecke.map((b) => stunden(b.ende) - stunden(b.start)).filter((d) => d > 0));
+  const hoehe = wochenHoehe(von, bis, kuerzester);
   return (
     <div className="text-ink">
       <div className={raster}>
@@ -195,9 +203,9 @@ export function WochenAnsicht({
       )}
 
       <div className={raster}>
-        <StundenSpalte von={von} bis={bis} hoehe={HOEHE_WOCHE} />
+        <StundenSpalte von={von} bis={bis} hoehe={hoehe} />
         {tage.map((t) => (
-          <TagSpalte key={t.datum} tag={t} von={von} bis={bis} hoehe={HOEHE_WOCHE} gross={false} jetzt={jetzt} simuliert={simuliert} heuteToenen />
+          <TagSpalte key={t.datum} tag={t} von={von} bis={bis} hoehe={hoehe} gross={false} jetzt={jetzt} simuliert={simuliert} heuteToenen />
         ))}
       </div>
       {/* Anna 2026-10-11: Selbstlernen unter dem Kalender -- der Unterricht steht im Vordergrund. */}
