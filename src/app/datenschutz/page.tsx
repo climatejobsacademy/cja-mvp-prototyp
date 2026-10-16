@@ -6,8 +6,10 @@ export default function DatenschutzPage() {
   // 2026-10-08; Abschnitt „Profilfotos“ (SR-77, SR-78) und Rufname ergänzt
   // 2026-10-13; Abschnitt „Kohortenansicht“ (SR-30), Sichtbarkeit der Fotos
   // und Beiträge, Löschweg 2026-10-14 (Entwurf, Datum „Stand“ setzt Vera beim
-  // Merge). Eigene Formulierung, nicht rechtlich geprüft; offene Punkte in
-  // docs/datenschutz-offene-punkte.md.
+  // Merge). Abschnitt „Kohorten-Chat“ (SR-83) und Speicherdauer der
+  // Chat-Nachrichten 2026-10-16 (Entwurf, Prüfung Anna auf Staging; Datum
+  // „Stand“ beim Merge setzen). Eigene Formulierung, nicht rechtlich geprüft;
+  // offene Punkte in docs/datenschutz-offene-punkte.md.
   // Optional, nach Veröffentlichung:
   // (1) DPF-Zertifizierung von Vercel optional prüfen und ergänzen.
   return (
@@ -82,6 +84,31 @@ export default function DatenschutzPage() {
         Sie bitte an{" "}
         <a href="mailto:info@climatejobsacademy.com">info@climatejobsacademy.com</a>.
         Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.
+      </p>
+
+      <h2>Kohorten-Chat</h2>
+      <p>
+        Wenn der Chat für Ihre Kohorte freigeschaltet ist, können Sie sich mit
+        den Teilnehmenden Ihrer Kohorte austauschen. Es gibt zwei Kanäle: Im
+        Kanal „Ankündigungen“ schreiben nur Ihre Trainerinnen und Trainer und
+        das zuständige Personal der Akademie für Klimajobs, im Kanal
+        „Treffpunkt“ schreiben alle Teilnehmenden Ihrer Kohorte. Möglich sind
+        nur Text und Symbole, keine Anhänge. Bitte schreiben Sie keine
+        sensiblen Angaben und keine Daten anderer Personen. Verarbeitet werden
+        der Text Ihrer Nachricht, der Zeitpunkt, der Kanal, Ihre Kohorte, Ihr
+        Rufname mit dem Anfangsbuchstaben Ihres Nachnamens sowie, bis wann Sie
+        einen Kanal gelesen haben (für die Anzeige ungelesener Nachrichten).
+        Sichtbar sind Ihre Nachrichten für alle Teilnehmenden Ihrer Kohorte,
+        auch wenn sie bei einem anderen Arbeitgeber beschäftigt sind, für die
+        Trainerinnen und Trainer Ihrer Kohorte und für das zuständige Personal
+        der Akademie für Klimajobs. Eigene Nachrichten können Sie jederzeit
+        löschen; der Text und Ihr Name werden dann entfernt. Trainerinnen und
+        Trainer Ihrer Kohorte und das Personal der Akademie für Klimajobs
+        können Nachrichten ebenfalls entfernen. Nachrichten anderer können Sie
+        melden; gespeichert wird dabei nur, wer welche Nachricht gemeldet hat,
+        und die Meldung sehen nur die Moderierenden. Wer eine Nachricht
+        gelöscht hat, wird ohne den Text protokolliert. Rechtsgrundlage: Art. 6
+        Abs. 1 lit. b DSGVO.
       </p>
 
       <h2>Lernmaterialien und externe Links</h2>
@@ -229,8 +256,8 @@ export default function DatenschutzPage() {
         manuell.
       </p>
       <p>
-        Beiträge zu Fragen und Antworten speichern wir, solange die jeweilige
-        Kohorte besteht. Eine automatische Löschung nach dem Ende der Kohorte
+        Beiträge zu Fragen und Antworten sowie Nachrichten im Kohorten-Chat
+        speichern wir, solange die jeweilige Kohorte besteht. Eine automatische Löschung nach dem Ende der Kohorte
         ist derzeit nicht eingerichtet; auf Anfrage löschen wir sie wie oben
         beschrieben. Gelöschte Daten und Beiträge können bis
         zu sieben Tage in den täglichen Sicherungskopien (Backups) unseres
