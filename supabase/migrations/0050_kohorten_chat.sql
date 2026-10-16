@@ -488,14 +488,15 @@ grant execute on function fn_chat_ungelesen(uuid) to authenticated;
 
 -- ============================================================
 -- RLS chat_nachricht
--- Lesen: Spalten ohne organisation_id. Schreiben: nur Insert von Kohorte,
--- Kanal und Text; kein Update, kein Delete (Löschen über die Funktion).
+-- Lesen: Spalten ohne organisation_id. Schreiben: nur Insert von Kennung
+-- (optional, z. B. für die Anzeige vor dem Speichern), Kohorte, Kanal und
+-- Text; kein Update, kein Delete (Löschen über die Funktion).
 -- ============================================================
 alter table chat_nachricht enable row level security;
 revoke all on chat_nachricht from public, anon, authenticated;
 grant select (id, created_at, cohort_id, kanal, person_id, autor_anzeigename, text, geloescht_am)
   on chat_nachricht to authenticated;
-grant insert (cohort_id, kanal, text) on chat_nachricht to authenticated;
+grant insert (id, cohort_id, kanal, text) on chat_nachricht to authenticated;
 
 create policy chat_nachricht_lesen on chat_nachricht
   for select to authenticated
