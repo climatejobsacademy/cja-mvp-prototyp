@@ -16,7 +16,7 @@ export type BlockStatus = "erledigt" | "vorbei" | "offen";
 export type Block = {
   id: string;
   art: "live" | "praxis";
-  /** Angezeigter Titel: bei Live der Kurstitel (course.name), Selbstlernen wie bisher Thema bzw. „Wissen festigen“ (Anna 2026-10-16) */
+  /** Angezeigter Titel: bei Live der Kurstitel = Lektionsname ohne Thema-Klammer (lesson.name, Maltes Import 2026-10-16; course.name enthält das Thema in Klammern), Selbstlernen wie bisher Thema bzw. „Wissen festigen“ (Anna 2026-10-16) */
   titel: string;
   /** Voller Titel für Bildschirmleser und Tooltip: "Lektion: Thema" */
   volltitel: string;
@@ -106,7 +106,7 @@ export function planModell(tage: Plantag[], heute: string, jetzt: string): TagMo
         {
           id: e.scheduleEntryId,
           art: "live",
-          titel: e.kurs ?? e.thema ?? e.titel,
+          titel: e.titel,
           volltitel: volltitel(e.titel, e.thema),
           datum: tag.datum,
           start: s.start,
