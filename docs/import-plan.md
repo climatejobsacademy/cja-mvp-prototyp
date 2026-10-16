@@ -69,11 +69,11 @@ Das Skript legt **keine Auth-Konten** an und schreibt nie in `auth.users`.
 | `--production-freigabe` | Pflicht für jedes `--ziel production`, auch für den Probelauf |
 | `--nur-analyse` | nur die Excel prüfen und die Listen ausgeben |
 | `--nur-trainer` | nur Trainer-Konten verknüpfen (braucht `--trainer-datei`), kein Import |
-| `--fachsprache` | zusätzlich Fachsprache-Einheiten importieren (siehe unten; braucht Migration 0050 im Ziel) |
+| `--fachsprache` | zusätzlich Fachsprache-Einheiten importieren (siehe unten; braucht Migration 0051 im Ziel) |
 | `--nur-fachsprache` | nur Fachsprache-Einheiten; liest aus der Plan-Excel nur den Stundenplan (Termin-Kennungen), importiert sonst nichts |
 | `--fachsprache-datei <pfad.xlsx>` | zweite Excel mit den Tabs Einheit, Wörter, Fragen, Sätze; stehen die Tabs in der Plan-Excel, gelten sie von dort |
 | `--bilder-spaeter` | fehlende Bilder im Bucket beim echten Lauf nur melden statt abzubrechen |
-| `--migration-vorab <datei.sql>` | nur Probelauf auf Staging: spielt die Migration (z. B. 0050) vorab in die Probe-Transaktion ein und rollt sie mit zurück. Nicht mit `--ausfuehren`, nicht auf Production. |
+| `--migration-vorab <datei.sql>` | nur Probelauf auf Staging: spielt die Migration (z. B. 0051) vorab in die Probe-Transaktion ein und rollt sie mit zurück. Nicht mit `--ausfuehren`, nicht auf Production. |
 
 ## Was der Lauf ausgibt
 
@@ -131,15 +131,15 @@ Die Ausgabe listet, was bewusst nicht in die Datenbank geht, mit Grund (u. a. Mo
 
 ## Fachsprache-Einheiten
 
-Importiert Einheiten (Wörter, Quiz, Sätze) in `fachsprache_einheit` (Migration 0050, Stufe 2, SR folgt). Die Vorlage heißt `fachsprache-import-vorlage.xlsx` und liegt wie die anderen Dateien unter `~/Projects/import-daten/`, nicht im Repo.
+Importiert Einheiten (Wörter, Quiz, Sätze) in `fachsprache_einheit` (Migration 0051, Stufe 2, SR folgt). Die Vorlage heißt `fachsprache-import-vorlage.xlsx` und liegt wie die anderen Dateien unter `~/Projects/import-daten/`, nicht im Repo.
 
 ```sh
 DIR="$HOME/Projects/import-daten"
-# Probelauf (Standard, ROLLBACK) -- solange 0050 nicht auf Staging liegt, mit --migration-vorab
+# Probelauf (Standard, ROLLBACK) -- solange 0051 nicht auf Staging liegt, mit --migration-vorab
 node scripts/import-plan.mjs --datei "$DIR/Modul_II___Kompetenzen_Import.xlsx" \
   --fachsprache-datei "$DIR/fachsprache-import-vorlage.xlsx" --ziel staging --nur-fachsprache \
-  --migration-vorab supabase/migrations/0050_fachsprache_einheit.sql
-# Echter Lauf (erst nach Freigabe und nach db push 0050): ohne --migration-vorab, mit --ausfuehren
+  --migration-vorab supabase/migrations/0051_fachsprache_einheit.sql
+# Echter Lauf (erst nach Freigabe und nach db push 0051): ohne --migration-vorab, mit --ausfuehren
 ```
 
 ### Hinweise für Designer
@@ -167,7 +167,7 @@ Pflicht ist **P**; unbekannte Spalten (z. B. Quellen, Hinweise) und unbekannte T
 
 - **Auflösung:** Kennung → Termin → Kurs → erste Live-Lektion (Woche und Kursname wie beim Plan-Import). Fehlt der Kurs in der Datenbank, bricht der Lauf ab: erst den Plan importieren (nicht nur `--nur-fachsprache`).
 - **Upsert über `lesson_id`:** neu, geändert oder unverändert; der zweite Durchgang muss leer sein.
-- **Nie veröffentlicht, nie Prüffelder:** der Import schreibt `status` und die Prüffelder nicht. Ändert sich Inhalt oder Titel einer Einheit, die veröffentlicht oder geprüft ist, meldet er vorher `prüfung`: „Prüfung wird zurückgesetzt“; der Trigger aus 0050 setzt dann Status `entwurf` und beide Prüfungen zurück, und der Import prüft nach dem Update, dass das geschehen ist. Ändert sich nur die Dauer, bleibt die Prüfung (Meldung `fachsprache`).
+- **Nie veröffentlicht, nie Prüffelder:** der Import schreibt `status` und die Prüffelder nicht. Ändert sich Inhalt oder Titel einer Einheit, die veröffentlicht oder geprüft ist, meldet er vorher `prüfung`: „Prüfung wird zurückgesetzt“; der Trigger aus 0051 setzt dann Status `entwurf` und beide Prüfungen zurück, und der Import prüft nach dem Update, dass das geschehen ist. Ändert sich nur die Dauer, bleibt die Prüfung (Meldung `fachsprache`).
 - **Bilder im Bucket:** der Import lädt nichts hoch, er prüft nur. Fehlt eine Datei, gibt der Probelauf die Meldung `bild fehlt`; der echte Lauf bricht ab, außer mit `--bilder-spaeter`. Dateien im Ordner, die in keiner Zeile stehen, meldet er als `bild ungenutzt`.
 - **Gleicher Name, anderes Bild:** Ist ein Bild jünger als die letzte Prüfung (`storage.objects.updated_at`), meldet er `bild nach prüfung`; die Prüfung bleibt stehen, die Einheit muss neu geprüft werden. Ein genauerer Vergleich (Inhalt der Datei) folgt im Admin-Skript, das beim Hochladen auf einen vorhandenen Namen die Prüfung zurücksetzt.
 - **Schreibt nie in `auth.users`, lädt nichts hoch, kein Zugriff auf Production ohne `--production-freigabe`** (der echte Lauf fragt wie sonst die Projekt-Ref ab).

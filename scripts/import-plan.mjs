@@ -64,8 +64,8 @@ const NUTZUNG = `Nutzung:
        [--trainer-datei <pfad.csv>] [--kohorte "Name" | --kohorte "Name@+7"]...
        [--module I,II] [--ohne-praxis II] [--production-freigabe]
        [--ohne-zuordnung-erlauben] [--nur-trainer] [--ausfuehren]
-  Fachsprache (Migration 0050): --fachsprache | --nur-fachsprache
-       [--fachsprache-datei <pfad.xlsx>] [--bilder-spaeter] [--migration-vorab <0050.sql>]`;
+  Fachsprache (Migration 0051): --fachsprache | --nur-fachsprache
+       [--fachsprache-datei <pfad.xlsx>] [--bilder-spaeter] [--migration-vorab <0051.sql>]`;
 
 function abbruch(text) {
   console.error(text);
@@ -329,7 +329,7 @@ end $$;
 ${arg.ausfuehren ? "commit;\n\\echo '== GESPEICHERT (COMMIT) =='" : "rollback;\n\\echo '== PROBELAUF: nichts gespeichert (ROLLBACK) =='"}
 `;
 
-console.log(`\n== Datenbank: ${ziel.label}, ${arg.ausfuehren ? "ECHTER LAUF" : "Probelauf"}${nurTrainer ? ", nur Trainer-Konten" : ""}${nurFachsprache ? ", nur Fachsprache-Einheiten" : ""}${arg["migration-vorab"] ? ", mit Migration 0050 vorab (Probe)" : ""} ==`);
+console.log(`\n== Datenbank: ${ziel.label}, ${arg.ausfuehren ? "ECHTER LAUF" : "Probelauf"}${nurTrainer ? ", nur Trainer-Konten" : ""}${nurFachsprache ? ", nur Fachsprache-Einheiten" : ""}${arg["migration-vorab"] ? `, mit Migration ${basename(arg["migration-vorab"])} vorab (Probe)` : ""} ==`);
 console.log(`Kohorten: ${kohorten.map((k) => `${k.name}${k.versatz ? ` (Versatz ${k.versatz > 0 ? "+" : ""}${k.versatz} Tage)` : ""}`).join(", ") || "–"}`);
 
 const ergebnis = spawnSync(

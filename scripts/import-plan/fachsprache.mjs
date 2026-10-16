@@ -1,6 +1,6 @@
 // scripts/import-plan/fachsprache.mjs
 // Wandelt die Fachsprache-Tabs (Einheit, Wörter, Fragen, Sätze) in
-// Einheiten für fachsprache_einheit (Migration 0050) um. Reine Funktion ohne
+// Einheiten für fachsprache_einheit (Migration 0051) um. Reine Funktion ohne
 // Datenbank und ohne Uhr; getestet in fachsprache.test.mjs. Anleitung:
 // docs/import-plan.md, Abschnitt "Fachsprache-Einheiten".
 //
@@ -8,7 +8,7 @@
 // - Kennung = Kennung eines Termins im Tab Stundenplan der Plan-Excel; aufgelöst
 //   über den Kurs des Termins zu dessen erster Live-Lektion. Eine Einheit hängt an
 //   der Lektion. Zwei Kennungen derselben Lektion müssen denselben Inhalt haben.
-// - Dieselben Prüfregeln wie fn_fachsprache_inhalt_gueltig (0050); die
+// - Dieselben Prüfregeln wie fn_fachsprache_inhalt_gueltig (0051); die
 //   Datenbank prüft zusätzlich.
 // - Unbekannte Spalten (Quellen, Hinweise, …), unbekannte Tabs (Anleitung) und
 //   leere Zeilen sind kein Fehler.

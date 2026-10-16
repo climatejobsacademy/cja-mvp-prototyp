@@ -1,6 +1,6 @@
 -- scripts/import-plan/fachsprache.sql
 -- Schreibt Fachsprache-Einheiten (aus fachsprache.mjs) in fachsprache_einheit
--- (Migration 0050). Wird nur über scripts/import-plan.mjs --fachsprache bzw.
+-- (Migration 0051). Wird nur über scripts/import-plan.mjs --fachsprache bzw.
 -- --nur-fachsprache ausgeführt, hinter import.sql (benutzt import_bericht,
 -- import_meldung, pg_temp.zaehle und pg_temp.melde von dort), innerhalb
 -- BEGIN ... ROLLBACK (Probelauf) bzw. COMMIT. Anleitung: docs/import-plan.md.
@@ -12,7 +12,7 @@
 --
 -- Schreibt nie status und nie die Prüffelder (fachlich_/sprachlich_geprueft_*):
 -- neue Einheiten starten als 'entwurf' über den Spaltenstandard, bei
--- geänderten Inhalten setzt der Trigger aus 0050 die Prüfung zurück. Der
+-- geänderten Inhalten setzt der Trigger aus 0051 die Prüfung zurück. Der
 -- Import meldet das vorher ("Prüfung wird zurückgesetzt") und prüft danach,
 -- dass der Trigger es getan hat.
 -- Bilder werden nie hochgeladen; geprüft wird nur, ob die Datei im Bucket
@@ -40,7 +40,7 @@ declare
 begin
   if to_regclass('public.fachsprache_einheit') is null
      or not exists (select 1 from storage.buckets where id = 'fachsprache-bilder') then
-    raise exception 'Abbruch: Tabelle fachsprache_einheit oder Bucket fachsprache-bilder fehlt (Migration 0050 ist in dieser Datenbank nicht angewendet).';
+    raise exception 'Abbruch: Tabelle fachsprache_einheit oder Bucket fachsprache-bilder fehlt (Migration 0051 ist in dieser Datenbank nicht angewendet).';
   end if;
   select id into strict v_prog from programme where kuerzel = 'EFK-EE';
 
@@ -118,7 +118,7 @@ begin
         if v_inhalt_neu then
           select * into v_neu from fachsprache_einheit where id = v_alt.id;
           if v_neu.status <> 'entwurf' or v_neu.fachlich_geprueft_von is not null or v_neu.sprachlich_geprueft_von is not null then
-            raise exception 'Abbruch: Fachsprache %: Der Trigger aus 0050 hat die Prüfung nach der Inhaltsänderung nicht zurückgesetzt.', v_kenn;
+            raise exception 'Abbruch: Fachsprache %: Der Trigger aus 0051 hat die Prüfung nach der Inhaltsänderung nicht zurückgesetzt.', v_kenn;
           end if;
         else
           perform pg_temp.melde(p_lauf, 'fachsprache', format('%s: nur die Dauer geändert, Prüfung und Status bleiben.', v_kenn));
