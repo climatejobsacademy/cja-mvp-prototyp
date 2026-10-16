@@ -1,4 +1,6 @@
+import { KohortenChat } from "@/components/chat/kohorten-chat";
 import { AppNav } from "@/components/nav/app-nav";
+import { chatSichtbar } from "@/lib/queries/kohorten-chat";
 import { requireCurrentLearner } from "@/lib/queries/session";
 
 export default async function LearnerLayout({
@@ -9,6 +11,9 @@ export default async function LearnerLayout({
   // Stellt sicher, dass jede Route unter (learner) eine Person mit aktiver
   // Einschreibung voraussetzt, bevor irgendeine Seite rendert.
   const learner = await requireCurrentLearner();
+  // Kohorten-Chat (SR-83): nur, wenn er für die Kohorte freigeschaltet ist
+  // (cohort.chat_aktiv) und die Person ihn lesen darf -- gleiche Regel wie die Policy.
+  const chat = await chatSichtbar(learner.cohortId);
 
   return (
     <div className="flex min-h-full flex-1 flex-col">
@@ -28,6 +33,7 @@ export default async function LearnerLayout({
       <div className="mx-auto w-full max-w-3xl flex-1 px-4 pt-5 pb-8 has-[[data-breit]]:max-w-[1120px] md:py-10 md:pb-16 md:has-[[data-breit]]:px-10">
         {children}
       </div>
+      {chat && <KohortenChat vorname={learner.rufname} />}
     </div>
   );
 }

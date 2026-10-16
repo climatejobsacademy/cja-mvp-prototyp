@@ -1,6 +1,6 @@
 # Datenschutzerklärung: Entwurf für die Kohortenansicht (SR-30)
 
-Stand 14.10.2026. **Textvorschlag, nicht veröffentlicht.** Die Seite `/datenschutz` (`src/app/datenschutz/page.tsx`) ist mit diesem Entwurf **nicht** geändert. Die **Prüfinstanz** (Kanzlei bzw. verantwortliche Person für den Datenschutz) **ist noch offen**; der Text ist keine Rechtsberatung und muss vor der Veröffentlichung geprüft werden.
+Stand 14.10.2026. **Textvorschlag, nicht veröffentlicht.** Die Seite `/datenschutz` (`src/app/(rechtliches)/datenschutz/page.tsx`) ist mit diesem Entwurf **nicht** geändert. Die **Prüfinstanz** (Kanzlei bzw. verantwortliche Person für den Datenschutz) **ist noch offen**; der Text ist keine Rechtsberatung und muss vor der Veröffentlichung geprüft werden.
 
 **Wann:** spätestens vor dem Release von Migration 0034 und der Kohortenansicht auf Production. Bis dahin sagt die Erklärung „nicht für andere Teilnehmende“; das passt nur zum Stand ohne Kohortenansicht (dev/Staging sind Testumgebungen).
 
