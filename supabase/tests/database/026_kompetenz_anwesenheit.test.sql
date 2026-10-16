@@ -58,8 +58,9 @@ insert into enrolment (id, organisation_id, learner_id, cohort_id, status) value
   ('00000000-0000-0000-0000-000000025061', '00000000-0000-0000-0000-000000025011', '00000000-0000-0000-0000-000000025001', '00000000-0000-0000-0000-000000025051', 'aktiv'),
   ('00000000-0000-0000-0000-000000025062', '00000000-0000-0000-0000-000000025011', '00000000-0000-0000-0000-000000025002', '00000000-0000-0000-0000-000000025051', 'aktiv');
 
-insert into live_session (id, lesson_id, course_id, datum, start, ende) values
-  ('00000000-0000-0000-0000-000000025071', '00000000-0000-0000-0000-000000025041', '00000000-0000-0000-0000-000000025031', '2026-11-03', '09:00', '12:00');
+-- Termin hängt an der Lektion (lesson_id XOR course_id, Check live_session_hangs_off_lesson_xor_course)
+insert into live_session (id, lesson_id, datum, start, ende) values
+  ('00000000-0000-0000-0000-000000025071', '00000000-0000-0000-0000-000000025041', '2026-11-03', '09:00', '12:00');
 insert into schedule_entry (organisation_id, datum, art, reihenfolge, cohort_id, enrolment_id, live_session_id, field_job_id) values
   ('00000000-0000-0000-0000-000000025011', '2026-11-03', 'live', 1, '00000000-0000-0000-0000-000000025051', null, '00000000-0000-0000-0000-000000025071', null);
 
