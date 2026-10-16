@@ -280,6 +280,14 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Status:** Entwurf, nicht auf Staging angewendet
 - **Belegt:** `0051_fachsprache_einheit.sql`; `025_fachsprache_einheit.test.sql`
 
+### 2026-10-16 – Bestätigte Anwesenheit zählt für Kompetenzschritte, Fortschritt anteilig
+
+- **Entscheidung:** Eine Live-Lektion gilt für den theoretischen Teilschritt als erledigt, sobald die Trainer:in die Anwesenheit bestätigt hat (aktueller Wert, eine Korrektur auf „nicht anwesend“ nimmt es zurück). Die AND-Logik von SR-63 bleibt. Der Kompetenz-Ring zeigt den Fortschritt anteilig (z. B. halber Teilschritt nach einer von zwei Lektionen).
+- **Begründung:** Für Live-Lektionen gab es keinen Weg zu „abgeschlossen“; Teilschritte mit Live- und Selbstlern-Lektion waren nie erfüllbar, bestätigte Anwesenheit kam im Fortschritt nicht an. CLAUDE.md Regel 6 nennt bestätigte Anwesenheit ausdrücklich als Quelle für Nachweise.
+- **Folgen:** Die Anwesenheit muss von Trainer:innen im Bereich `/trainer` bestätigt werden, sonst bleibt der Teilschritt offen. `competency_evidence` bleibt unverändert.
+- **Status:** gültig (Entscheidung Anna)
+- **Belegt:** `0052_kompetenz_anwesenheit.sql`; `026_kompetenz_anwesenheit.test.sql`; `src/lib/queries/lektionen-erledigt.ts`; SR-63
+
 ### 2026-10-16 – Fachsprache-Seite: Schalter, Lektion des Tages, Entwürfe, kein Ergebnis
 
 - **Entscheidung:** Die Oberfläche der Fachsprache-Einheit (Seite `/fachsprache/[einheitId]`, Chip im Stundenplan, Kästchen auf Home) hängt am serverseitigen Schalter `FACHSPRACHE_EINHEIT` (`src/lib/schalter.ts`): an nur mit dem Wert `an`, ohne Variable aus; in Vercel für Preview und Development an, für Production aus. Lektion des Tages ist die Live-Lektion mit Termin an diesem Tag; Tage nur mit Selbstlernen bekommen keinen Einstieg (O2). Home und Stundenplan zeigen nur veröffentlichte Einheiten; AfCJ admin kann einen Entwurf über die direkte URL öffnen, mit dem Banner „Entwurf, für Lernende nicht sichtbar“ (O3). Bilder stehen direkt auf der Karte und lassen sich per Klick vergrößern (O5). Das Quiz ist freiwillig: wählen, „Weiter“ prüft, falsch neu wählen, richtig mit Erklärung, beliebig oft wiederholbar; es speichert nichts, zählt nichts und erzeugt keine competency_evidence (Regel 6), der Abschluss zeigt kein Ergebnis und keinen Ring.
