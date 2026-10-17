@@ -2,6 +2,7 @@ import { heuteInBerlin } from "@/lib/date";
 import { lektionTitel } from "@/lib/lektion-titel";
 import { eigenerLiveTermin, type Plan } from "@/lib/live-termin";
 import { createClient } from "@/lib/supabase/server";
+import { scormPaketSignieren, type ScormPaket } from "@/lib/queries/scorm-paket";
 import type { ContentType, UnitProgressStatus } from "@/lib/database.types";
 
 export type LessonListItem = {
@@ -232,7 +233,7 @@ export type LessonDetail = {
     /** live_session.trainer_id (SR-78), sonst null */
     trainerId: string | null;
   } | null;
-  scorm: { entryPointPfad: string; zipSignedUrl: string } | null;
+  scorm: ScormPaket | null;
   /** Live-Lektion: die zugehörige Selbstlern-Lektion ("Wissen festigen") */
   festigen: VerknuepfteLektion | null;
   /** Selbstlern-Lektion: die zugehörige Live-Lektion */
@@ -315,38 +316,10 @@ export async function getLessonDetail(
   }
 
   // SCORM (SR-50/51/52, Architektur-Entscheidung 2026-09-16): Entry-Point und
-  // eine kurzlebige signierte URL fuers Zip laden. RLS greift zweifach --
-  // scorm_package ueber die published-lesson-Policy, storage.objects ueber
-  // scorm_packages_read_published (0017) -- kein Service-Role-Key noetig.
-  let scorm: LessonDetail["scorm"] = null;
-  if (lesson.content_type === "scorm") {
-    const { data: scormPackage } = await supabase
-      .from("scorm_package")
-      .select("entry_point_pfad, file_asset_id")
-      .eq("lesson_id", lessonId)
-      .maybeSingle();
-
-    if (scormPackage) {
-      const { data: fileAsset } = await supabase
-        .from("file_asset")
-        .select("storage_pfad")
-        .eq("id", scormPackage.file_asset_id)
-        .maybeSingle();
-
-      if (fileAsset) {
-        const { data: signed } = await supabase.storage
-          .from("scorm-packages")
-          .createSignedUrl(fileAsset.storage_pfad, 3600);
-
-        if (signed?.signedUrl) {
-          scorm = {
-            entryPointPfad: scormPackage.entry_point_pfad,
-            zipSignedUrl: signed.signedUrl,
-          };
-        }
-      }
-    }
-  }
+  // eine kurzlebige signierte URL fuers Zip laden, mit der Session der
+  // Person (RLS 0016/0017, kein Service-Role-Key). Speicherpfad fuer die
+  // native Ansicht (SR-85).
+  const scorm: LessonDetail["scorm"] = lesson.content_type === "scorm" ? await scormPaketSignieren(lessonId) : null;
 
   const titel = lektionTitel(lesson.name, lesson.thema);
   return {

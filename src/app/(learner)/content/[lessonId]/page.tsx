@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Video } from "lucide-react";
+import { preload } from "react-dom";
+import { ArrowLeft, Repeat, Video } from "lucide-react";
 
 import { ModulZeichen } from "@/components/modul-zeichen";
 import { UnitProgressBadge } from "@/components/status-badge";
@@ -13,11 +14,15 @@ import { getLektionThread } from "@/lib/queries/lektion-thread";
 import { getLessonMaterialien } from "@/lib/queries/materialien";
 import { getMeineTrainer } from "@/lib/queries/trainer";
 import { begonnenSetzen } from "@/lib/lektion-begonnen";
+import { lernkursLaden } from "@/lib/elephant-paket";
+import { schrittBilder } from "@/lib/lernkurs";
+import { NATIVE_SELBSTLERNEN } from "@/lib/schalter";
 
 import { BegonnenMarker } from "./begonnen-marker";
 import { LektionThread } from "./lektion-thread";
 import { MarkCompleteButton } from "./mark-complete-button";
 import { MaterialienListe } from "./materialien-liste";
+import { NativeLektion } from "./native-lektion";
 import { ScormPlayer } from "./scorm-player";
 import { TerminKarte } from "./termin-karte";
 
@@ -26,7 +31,7 @@ import { TerminKarte } from "./termin-karte";
 // Thema, klein das Modul (aus der Modul-Ebene), bei Live der Termin der
 // eigenen Kohorte als Anker-Karte mit "Beitreten", "Wissen festigen" und
 // Trainer:in (SR-15, SR-78), darunter Materialien (SR-68) und Fragen-Thread
-// (SR-74).
+// (SR-74). Selbstlernen nativ statt im SCORM-Player (SR-85).
 const TYP_LABEL: Record<string, string> = { live: "Live-Termin", scorm: "Selbstlernmodul" };
 const TYP_PILL: Record<string, string> = { live: "bg-brand-tint text-brand", scorm: "bg-self-tint text-self" };
 
@@ -48,10 +53,10 @@ export default async function LessonPage({
   searchParams,
 }: {
   params: Promise<{ lessonId: string }>;
-  searchParams: Promise<{ von?: string; datum?: string }>;
+  searchParams: Promise<{ von?: string; datum?: string; ansicht?: string }>;
 }) {
   const { lessonId } = await params;
-  const { von, datum } = await searchParams;
+  const { von, datum, ansicht } = await searchParams;
   const zurueck = zurueckZiel(von, datum);
   const learner = await requireCurrentLearner();
   const [lesson, materialien] = await Promise.all([
@@ -73,6 +78,26 @@ export default async function LessonPage({
   // Herkunft (Stundenplan/Home) an die verknüpfte Lektion weitergeben.
   const herkunft = new URLSearchParams({ ...(von ? { von } : {}), ...(datum ? { datum } : {}) }).toString();
   const lektionHref = (id: string) => `/content/${id}${herkunft ? `?${herkunft}` : ""}`;
+
+  // Native Selbstlern-Ansicht (SR-85): nur das eigene Paket der Lektion,
+  // gelesen über die mit der Session signierte URL (RLS). Kein
+  // Elephant-Paket, Lesefehler, Schalter aus oder ?ansicht=scorm -> wie
+  // bisher der SCORM-Player.
+  const nativKurs =
+    NATIVE_SELBSTLERNEN && lesson.contentType === "scorm" && lesson.scorm && ansicht !== "scorm"
+      ? await lernkursLaden(lesson.scorm.speicherPfad, lesson.scorm.zipSignedUrl)
+      : null;
+  if (nativKurs) {
+    // Der Browser fragt die ersten Bilder schon aus dem Seitenkopf an.
+    const ersteBilder = nativKurs.kapitel.flatMap((k) => k.schritte).slice(0, 2).flatMap(schrittBilder).slice(0, 4);
+    for (const pfad of ersteBilder) preload(`/content/${lesson.id}/medium?pfad=${encodeURIComponent(pfad)}`, { as: "image" });
+  }
+  const ansichtHref = (wert: string | null) => {
+    const q = new URLSearchParams(herkunft);
+    if (wert) q.set("ansicht", wert);
+    const text = q.toString();
+    return `/content/${lesson.id}${text ? `?${text}` : ""}`;
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -120,7 +145,16 @@ export default async function LessonPage({
         <MaterialienListe lessonId={lesson.id} materialien={materialien} />
       )}
 
-      {lesson.contentType === "scorm" && (
+      {lesson.contentType === "scorm" && nativKurs && (
+        <>
+          <NativeLektion lessonId={lesson.id} kurs={nativKurs} done={done} />
+          <Link href={ansichtHref("scorm")} className="flex w-fit items-center gap-1.5 self-center text-sm text-ink-muted hover:text-ink">
+            <Repeat className="size-4" aria-hidden="true" /> Als SCORM ansehen
+          </Link>
+        </>
+      )}
+
+      {lesson.contentType === "scorm" && !nativKurs && (
         <Card>
           <CardContent className="flex flex-col gap-3">
             {lesson.scorm ? (
@@ -134,6 +168,11 @@ export default async function LessonPage({
               <p className="text-sm text-muted-foreground">
                 Für diese Lektion ist noch kein SCORM-Paket hinterlegt.
               </p>
+            )}
+            {NATIVE_SELBSTLERNEN && ansicht === "scorm" && lesson.scorm && (
+              <Link href={ansichtHref(null)} className="flex w-fit items-center gap-1.5 text-sm text-ink-muted hover:text-ink">
+                <Repeat className="size-4" aria-hidden="true" /> Zur neuen Ansicht
+              </Link>
             )}
           </CardContent>
         </Card>
