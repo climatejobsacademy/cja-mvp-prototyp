@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 // @ts-expect-error TS5097: .ts-Endung für node:test nötig
-import { fachspracheEinheitAn } from "./schalter.ts";
+import { fachspracheEinheitAn, praxisaufgabeHref, praxisaufgabeLinkAn } from "./schalter.ts";
 
 test("fachspracheEinheitAn: ohne Variable aus", () => {
   assert.equal(fachspracheEinheitAn({}), false);
@@ -23,4 +23,17 @@ test("fachspracheEinheitAn: andere Werte bleiben aus", () => {
 
 test("fachspracheEinheitAn: NEXT_PUBLIC_-Variante zählt nicht", () => {
   assert.equal(fachspracheEinheitAn({ NEXT_PUBLIC_FACHSPRACHE_EINHEIT: "an" }), false);
+});
+
+test("praxisaufgabeLinkAn: ohne Variable aus, nur 'an' schaltet ein", () => {
+  assert.equal(praxisaufgabeLinkAn({}), false);
+  assert.equal(praxisaufgabeLinkAn({ PRAXISAUFGABE_LINK: " An " }), true);
+  assert.equal(praxisaufgabeLinkAn({ PRAXISAUFGABE_LINK: "true" }), false);
+  assert.equal(praxisaufgabeLinkAn({ NEXT_PUBLIC_PRAXISAUFGABE_LINK: "an" }), false);
+});
+
+test("praxisaufgabeHref: aus = kein Link, an = Pfad mit optionalem von", () => {
+  assert.equal(praxisaufgabeHref("f1", "home", false), null);
+  assert.equal(praxisaufgabeHref("f1", undefined, true), "/praxistag/f1");
+  assert.equal(praxisaufgabeHref("f1", "home", true), "/praxistag/f1?von=home");
 });

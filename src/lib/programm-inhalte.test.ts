@@ -54,7 +54,7 @@ const plan = [
 ];
 
 test("Status: Live nur mit Anwesenheit erledigt, heute, Praxis durchgeführt", () => {
-  const [w1, w2] = panelWochen(gruppen as never, plan as never, "2026-10-09", "2026-10-09T10:00:00", true);
+  const [w1, w2] = panelWochen(gruppen as never, plan as never, "2026-10-09", "2026-10-09T10:00:00", true, true);
   assert.equal(w1.erledigt, 2);
   assert.equal(w1.lektionen, 2);
   const [teil1, teil2, praxis] = w2.themen;
@@ -95,4 +95,10 @@ test("Woche ohne Termine im Plan ist nicht \"Diese Woche\"; ohne Wochen leer", (
   const w = panelWochen(gruppen as never, [] as never, "2026-10-09", "2026-10-09T10:00:00", true);
   assert.deepEqual(w.map((x) => [x.aktuell, x.offen]), [[false, true], [false, false]]);
   assert.deepEqual(panelWochen([], [] as never, "2026-10-09", "2026-10-09T10:00:00", true), []);
+});
+
+test("Praxisaufgabe ohne Link, wenn der Schalter aus ist", () => {
+  const [, w2] = panelWochen(gruppen as never, plan as never, "2026-10-09", "2026-10-09T10:00:00", true, false);
+  const praxis = w2.themen.find((t) => t.titel === "Praxistag");
+  assert.equal(praxis?.lektionen[0].href, null);
 });

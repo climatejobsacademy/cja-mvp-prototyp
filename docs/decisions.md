@@ -312,3 +312,11 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Folgen:** Deutsch/Fachdeutsch und Softskills Coaching hängen als Termine am Kurs, nicht an einer Lektion, und bekommen keinen Thread. Auf Staging gilt das auch für die Demo-Lektionen im Oktober, bei denen der Thread bisher aus war.
 - **Status:** gültig (Entscheidung Anna); Migration 0054
 - **Belegt:** `0054_thread_live_standard.sql`; `027_thread_live_standard.test.sql`; `013_lektion_beitrag.test.sql`; SR-74
+
+### 2026-10-17 – Link zur Praxisaufgabe per Schalter
+
+- **Entscheidung:** (Anna) Der Link zur Praxisaufgabe (`/praxistag/[fieldJobId]`) hängt am serverseitigen Schalter `PRAXISAUFGABE_LINK` (`src/lib/schalter.ts`): an nur mit dem Wert `an`, ohne Variable aus. Aus heißt: Stundenplan, Home, Programm-Übersicht und Kompetenzen zeigen die Praxisaufgabe als Text ohne Link; „Zur Praxisaufgabe →“ und „Praxisaufgabe öffnen“ entfallen. Die Seite selbst bleibt über die Adresse erreichbar.
+- **Begründung:** Der Praxisflow wird erst gebaut (Realbau ab 02.11., `docs/praxisflow-realbau.md`); bis dahin soll niemand aus der Plattform hineingeführt werden.
+- **Folgen:** Ohne gesetzte Variable ist der Link in allen Umgebungen aus. Zum Einschalten in Vercel `PRAXISAUFGABE_LINK=an` je Umgebung setzen und neu deployen.
+- **Status:** gültig (Entscheidung Anna)
+- **Belegt:** `src/lib/schalter.ts`, `src/lib/schalter.test.ts`, `src/lib/programm-inhalte.test.ts`; SR-13

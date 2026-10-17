@@ -3,6 +3,7 @@
 // "Flexibel", Tagestyp. Reine Funktionen, keine Datenbank.
 
 import type { EinstiegEintrag } from "@/lib/fachsprache-einstiege";
+import { praxisaufgabeHref } from "@/lib/schalter";
 import type { Plantag } from "@/lib/queries/stundenplan";
 import type { TrainerAnzeige } from "@/lib/queries/trainer";
 import { hatUhrzeit, naechsterTerminId, tagestypAus, type Tagestyp } from "@/lib/stundenplan";
@@ -60,7 +61,8 @@ export type Ganztag = {
   titel: string;
   ort: string | null;
   status: BlockStatus;
-  href: string;
+  /** Praxisaufgabe; null, wenn der Link ausgeschaltet ist (PRAXISAUFGABE_LINK) */
+  href: string | null;
   fieldJobId: string;
   /** "Praxis mit …" (SR-78), null = niemand eingetragen */
   trainer: TrainerAnzeige | null;
@@ -151,10 +153,10 @@ export function planModell(
               ort: e.standort,
               status: praxisStatus(e.status),
               naechster: false,
-              href: `/praxistag/${e.fieldJobId}`,
+              href: praxisaufgabeHref(e.fieldJobId),
               extern: false,
               liveRaum: null,
-              inhalt: `/praxistag/${e.fieldJobId}`,
+              inhalt: praxisaufgabeHref(e.fieldJobId),
               lessonId: null,
               fieldJobId: e.fieldJobId,
               trainer: trainerVon(e.trainerId),
@@ -169,7 +171,7 @@ export function planModell(
         titel: e.titel,
         ort: e.standort,
         status: praxisStatus(e.status),
-        href: `/praxistag/${e.fieldJobId}`,
+        href: praxisaufgabeHref(e.fieldJobId),
         fieldJobId: e.fieldJobId,
         trainer: trainerVon(e.trainerId),
       }));

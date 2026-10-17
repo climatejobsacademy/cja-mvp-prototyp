@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { praxisaufgabeHref } from "@/lib/schalter";
 import { BookOpen, Check, ChevronDown, ChevronRight, Clock, ThumbsDown, Video, Wrench } from "lucide-react";
 
 import { ModulZeichen } from "@/components/modul-zeichen";
@@ -173,7 +174,7 @@ function AktivitaetZeile({
   modul: { ueberzeile: string; name: string } | null;
 }) {
   const { Icon, kachel } = TYP[a.art];
-  const href = a.art === "praxis" ? (a.fieldJobId ? `/praxistag/${a.fieldJobId}` : null) : `/content/${a.id}`;
+  const href = a.art === "praxis" ? (a.fieldJobId ? praxisaufgabeHref(a.fieldJobId) : null) : `/content/${a.id}`;
   const wann = aktivitaetMeta(a, heute);
   const inhalt = (
     <>
