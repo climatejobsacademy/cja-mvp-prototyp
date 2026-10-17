@@ -4,6 +4,7 @@ Stand 2026-10-07, SR-74 (Thread) und SR-75 (Moderation). Schema: `supabase/migra
 
 ## Was gilt
 
+- Seit 0054 (Anna, 2026-10-17) ist der Thread an **Live-Lektionen standardmäßig an**: Neue Live-Lektionen bekommen `chat_aktiv = true`, alle anderen Lektionen `false`, sofern beim Anlegen nichts anderes angegeben ist. Bestehende Live-Lektionen wurden einmal eingeschaltet. Termine, die an einem Kurs statt an einer Lektion hängen (z. B. Deutsch/Fachdeutsch), haben keinen Thread. Ausschalten je Lektion wie unten beschrieben.
 - Ein Thread gehört zu einer Lektion und einer Kohorte. Er erscheint unter der Lektion nur, wenn `lesson.chat_aktiv` gesetzt ist und die Person lesen darf (Lektion veröffentlicht, Einschreibung in dieser Kohorte aktiv oder abgeschlossen).
 - Schreiben nur mit Einschreibung `aktiv`. Nur Text und Smileys, 1 bis 1000 Zeichen, eine Antwortebene, kein Bearbeiten.
 - Löschen: eigene Beiträge durch die Autor:in, alle Beiträge der Kohorte durch Moderierende (`kohorte_moderation`) und AfCJ admin. Gelöschte Beiträge erscheinen als „Beitrag gelöscht“, Antworten bleiben.

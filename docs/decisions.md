@@ -304,3 +304,11 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Folgen:** **Die Datenbank verhindert das Veröffentlichen ohne Prüfung nicht mehr.** Wer `status` setzen darf (AfCJ admin), kann jede Einheit veröffentlichen; ob geprüft wurde, hält das Team außerhalb fest. Ein Nachweis, wer wann geprüft hat, steht nicht mehr in der Datenbank. Der Import meldet bei geändertem Inhalt einer veröffentlichten Einheit „Status fällt auf entwurf“ (statt „Prüfung wird zurückgesetzt“) und kennt die Meldung „bild nach prüfung“ nicht mehr; er veröffentlicht weiterhin nie. Stand 2026-10-16: 0051 ist nicht auf Production angewendet; auf Staging liegen 7 Einheiten (alle Entwurf), alle Prüfspalten leer, keine Policy, View oder Funktion außer der ersetzten Trigger-Funktion nennt sie. Rückweg: Folge-Migration mit den Spalten und Constraints (Constraint nur, solange keine Einheit ohne Prüfung veröffentlicht ist).
 - **Status:** gültig (Entscheidung Vera); Migration 0053 in Arbeit, nicht auf Staging angewendet
 - **Belegt:** `0053_fachsprache_ohne_pruefung.sql`; `025_fachsprache_einheit.test.sql`; `scripts/import-plan/fachsprache.sql`; SR-84
+
+### 2026-10-17 – Fragen-Thread an Live-Lektionen standardmäßig an
+
+- **Entscheidung:** (Anna) Neue Live-Lektionen bekommen den Fragen-Thread automatisch (`chat_aktiv = true`), Selbstlern- und Repository-Lektionen nicht. Bestehende Live-Lektionen werden einmal eingeschaltet. Ausschalten bleibt je Lektion möglich.
+- **Begründung:** Mit dem Import neuer Lektionen (ab 02.11.) fehlte der Thread überall, weil der Standard aus war und ihn niemand einzeln eingeschaltet hatte.
+- **Folgen:** Deutsch/Fachdeutsch und Softskills Coaching hängen als Termine am Kurs, nicht an einer Lektion, und bekommen keinen Thread. Auf Staging gilt das auch für die Demo-Lektionen im Oktober, bei denen der Thread bisher aus war.
+- **Status:** gültig (Entscheidung Anna); Migration 0054
+- **Belegt:** `0054_thread_live_standard.sql`; `027_thread_live_standard.test.sql`; `013_lektion_beitrag.test.sql`; SR-74
