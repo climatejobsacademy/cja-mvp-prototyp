@@ -137,3 +137,18 @@ test("Zip: Verzeichnis und Einträge stückweise lesen", async () => {
   assert.deepEqual([...zip.slice(beginn + 1, beginn + 3)], [2, 3]);
 });
 
+
+test("elephantZuLernkurs: Audio-Baustein und Sortieren (Aufbau wie im Elephant-Export vom 17.10.2026)", () => {
+  const kurs = { course_name: "K", data: L({ name: "Kurs" }) };
+  const lektionen = [{ lesson_id: "a", sort_index: 0, data: L({ name: "Eins" }) }];
+  const lp = [
+    { lesson_id: "a", module_id: "s", sort_index: 0, module_type: "sort", data: { items: [{ correctIndex: 2, ...L({ text: "C" }) }, { correctIndex: 0, ...L({ text: "A" }) }, { correctIndex: 1, ...L({ text: "B" }) }, { correctIndex: 3, ...L({}) }], ...L({ questionText: "Welche Reihenfolge? " }) } },
+    { lesson_id: "a", module_id: "h", sort_index: 1, module_type: "audio", data: L({ assetName: "audio/x/x.wav" }) },
+  ];
+  const { kurs: k, uebersprungen } = elephantZuLernkurs(kurs, lektionen, lp);
+  assert.deepEqual(uebersprungen, []);
+  assert.deepEqual(k.kapitel[0].schritte[0].bausteine, [{ art: "sortieren", frage: "Welche Reihenfolge?", elemente: ["A", "B", "C"], rueckmeldung: [] }]);
+  assert.deepEqual(k.kapitel[0].schritte[1].bausteine, [{ art: "hoerbeitrag", quelle: "assets/audio/x/x.wav" }]);
+  assert.ok(kursMedien(k).has("assets/audio/x/x.wav"));
+  assert.equal(istErlaubtesMedium("assets/audio/x/x.wav"), true);
+});

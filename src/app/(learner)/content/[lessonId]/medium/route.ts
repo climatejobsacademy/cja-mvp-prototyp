@@ -30,6 +30,7 @@ const TYP: Record<string, string> = {
   avif: "image/avif",
   mp3: "audio/mpeg",
   m4a: "audio/mp4",
+  wav: "audio/wav",
   mp4: "video/mp4",
 };
 /** Teilbereiche höchstens so groß (Antwortgrenze der Serverless-Funktion). */

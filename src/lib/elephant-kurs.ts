@@ -82,7 +82,7 @@ export async function eintragLesen(lies: BereichLeser, e: ZipEintrag): Promise<U
 // 2. Kursinhalt -> Lernkurs
 
 export const KURS_ORDNER = "assets/assets/scorm_test_data/";
-const MEDIEN = /^(images|tts|videos|documents)\//;
+const MEDIEN = /^(images|tts|videos|audio|documents)\//;
 
 /** Zip-Pfad eines Mediums aus dem Kursinhalt ("images/x.jpg" -> "assets/images/x.jpg"). */
 export function medienPfad(pfad: unknown): string | null {
@@ -206,6 +206,22 @@ function modulZuSchritten(modul: Obj, id: string): Schritt[] | null {
     case "video": {
       const quelle = medienPfad(l.assetName ?? d.assetName);
       return quelle ? [{ id, bausteine: [{ art: "video", quelle, vorschau: medienPfad(l.thumbnailFilePath) }] }] : null;
+    }
+    case "audio": {
+      const quelle = medienPfad(l.assetName ?? d.assetName);
+      return quelle ? [{ id, bausteine: [{ art: "hoerbeitrag", quelle }] }] : null;
+    }
+    case "sort": {
+      const elemente = sortiert(arr(d.items).map(obj), (e) => Number(e.correctIndex) || 0)
+        .map((e) => str(lokal(e).text).trim())
+        .filter(Boolean);
+      if (elemente.length < 2) return null;
+      return [
+        {
+          id,
+          bausteine: [{ art: "sortieren", frage: str(l.questionText).trim(), elemente, rueckmeldung: htmlLesen(str(l.markupExplanation)) }],
+        },
+      ];
     }
     case "imagePicker":
       return [

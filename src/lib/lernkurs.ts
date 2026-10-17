@@ -39,6 +39,16 @@ export type Baustein =
   /** Eingesprochener Text zum Schritt (Knopf "Vorlesen"). */
   | { art: "audio"; quelle: MedienSchluessel }
   | { art: "video"; quelle: MedienSchluessel; vorschau: MedienSchluessel | null }
+  /** Eigener Audio-Baustein mit Abspielleiste (anders als "audio", das Vorlesen eines Schritts). */
+  | { art: "hoerbeitrag"; quelle: MedienSchluessel }
+  | {
+      art: "sortieren";
+      frage: string;
+      /** Einträge in der richtigen Reihenfolge; angezeigt werden sie gemischt. */
+      elemente: string[];
+      /** Erklärung nach der richtigen Reihenfolge. */
+      rueckmeldung: TextKnoten[];
+    }
   | {
       art: "frage";
       frage: string;
@@ -69,6 +79,12 @@ export function schrittFrage(s: Schritt): Extract<Baustein, { art: "frage" }> | 
   return null;
 }
 
+/** Aufgabe eines Schritts, die vor dem Weiterblättern gelöst sein muss (Frage oder Sortieren), sonst null. */
+export function schrittAufgabe(s: Schritt): Extract<Baustein, { art: "frage" | "sortieren" }> | null {
+  for (const b of s.bausteine) if (b.art === "frage" || b.art === "sortieren") return b;
+  return null;
+}
+
 /** Bilder eines Schritts (zum Vorladen). */
 export function schrittBilder(s: Schritt): MedienSchluessel[] {
   return s.bausteine.flatMap((b) => {
@@ -86,7 +102,7 @@ export function kursMedien(kurs: Lernkurs): Set<MedienSchluessel> {
   for (const kap of kurs.kapitel)
     for (const schritt of kap.schritte) {
       for (const p of schrittBilder(schritt)) s.add(p);
-      for (const b of schritt.bausteine) if (b.art === "audio" || b.art === "video") s.add(b.quelle);
+      for (const b of schritt.bausteine) if (b.art === "audio" || b.art === "video" || b.art === "hoerbeitrag") s.add(b.quelle);
     }
   return s;
 }

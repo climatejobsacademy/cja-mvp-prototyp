@@ -5,9 +5,9 @@
    den Bild-Optimierer ohne Session laden. */
 
 import { useEffect, useImperativeHandle, useRef, useState, useTransition, type ReactNode, type RefObject } from "react";
-import { ArrowLeft, ArrowRight, Check, Pause, PartyPopper, ThumbsDown, ThumbsUp, Volume2, X } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Check, Pause, PartyPopper, ThumbsDown, ThumbsUp, Volume2, X } from "lucide-react";
 
-import { schrittBilder, schrittFrage, type Baustein, type Lernkurs, type Schritt, type TextKnoten } from "@/lib/lernkurs";
+import { schrittAufgabe, schrittBilder, type Baustein, type Lernkurs, type Schritt, type TextKnoten } from "@/lib/lernkurs";
 import { cn } from "@/lib/utils";
 
 import { markLessonComplete } from "./actions";
@@ -48,7 +48,7 @@ export function NativeLektion({ lessonId, kurs, done }: { lessonId: string; kurs
   const medium: Medium = (schluessel) => `/content/${lessonId}/medium?pfad=${encodeURIComponent(schluessel)}`;
   const kapitel = kurs.kapitel[kap];
   const aktuell = kapitel.schritte[schritt];
-  const frageOffen = schrittFrage(aktuell) !== null && !geloest.has(aktuell.id);
+  const frageOffen = schrittAufgabe(aktuell) !== null && !geloest.has(aktuell.id);
   const gesamt = kurs.kapitel.reduce((s, k) => s + k.schritte.length, 0);
   // Prozent: abgeschlossene Kapitel plus Schritte im aktuellen Kapitel.
   const erledigt = kurs.kapitel.reduce((s, k, i) => s + (geschafft.has(i) ? k.schritte.length : 0), 0);
@@ -237,8 +237,12 @@ function BausteinAnzeige({ b, schrittId, ...fp }: { b: Baustein; schrittId: stri
           className="w-full rounded-xl bg-ink"
         />
       );
+    case "hoerbeitrag":
+      return <audio controls preload="metadata" src={medium(b.quelle)} className="w-full" />;
     case "frage":
       return <Frage b={b} schrittId={schrittId} {...fp} />;
+    case "sortieren":
+      return <Sortieren b={b} schrittId={schrittId} {...fp} />;
     case "hotspot":
       return <Hotspot b={b} medium={medium} />;
   }
@@ -426,6 +430,94 @@ function Quiz({
         {fertig && (
           <Rueckmeldung meldung={meldung} richtig>
             {erklaerung.length > 0 && <HtmlInhalt knoten={erklaerung} klein />}
+          </Rueckmeldung>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Sortieren: Einträge mit den Pfeilen in die richtige Reihenfolge bringen,
+ * dann "Prüfen". Falsch: neu sortieren (die richtige Position wird nicht
+ * verraten). Richtig: Erklärung, nächstes "Weiter" geht weiter.
+ */
+function Sortieren({ b, schrittId, geloest, onGeloest, pruefRef }: { b: Extract<Baustein, { art: "sortieren" }>; schrittId: string } & FrageProps) {
+  const richtig = b.elemente.map((_, i) => i);
+  const [reihe, setReihe] = useState<number[]>(() => {
+    if (geloest) return richtig;
+    const g = gemischt(richtig, schrittId);
+    // Nie schon richtig sortiert anzeigen.
+    return g.every((x, i) => x === i) ? [...g.slice(1), g[0]] : g;
+  });
+  const [stand, setStand] = useState<"offen" | "falsch" | "richtig">(geloest ? "richtig" : "offen");
+  const [meldung, setMeldung] = useState<Meldung>(LOB[0]);
+  const fertig = stand === "richtig";
+
+  useImperativeHandle(pruefRef, () => ({
+    pruefen() {
+      const ok = reihe.every((x, i) => x === i);
+      const liste = ok ? LOB : NOCHMAL;
+      setMeldung(liste[Math.floor(Math.random() * liste.length)]);
+      setStand(ok ? "richtig" : "falsch");
+      if (ok) onGeloest();
+      return ok ? "richtig" : "falsch";
+    },
+  }));
+
+  function schieben(pos: number, um: -1 | 1) {
+    const ziel = pos + um;
+    if (ziel < 0 || ziel >= reihe.length) return;
+    setReihe((alt) => {
+      const neu = [...alt];
+      [neu[pos], neu[ziel]] = [neu[ziel], neu[pos]];
+      return neu;
+    });
+    setStand("offen");
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-1">
+        <span className="text-sm font-semibold text-ink-muted">Bring die Einträge in die richtige Reihenfolge.</span>
+        {b.frage && <h2 className="text-[20px] leading-snug font-semibold md:text-[22px]">{b.frage}</h2>}
+      </div>
+      <ol className="flex flex-col gap-2" aria-label={b.frage || "Reihenfolge"}>
+        {reihe.map((x, pos) => (
+          <li
+            key={x}
+            className={cn(
+              "flex min-h-12 items-center gap-3 rounded-xl px-4 py-2 text-[16px]",
+              fertig ? "bg-brand font-semibold text-white" : "bg-subtle text-ink",
+              stand === "falsch" && "ring-2 ring-praxis-text"
+            )}
+          >
+            <span aria-hidden="true" className="w-5 flex-none text-sm font-bold tabular-nums opacity-70">
+              {pos + 1}.
+            </span>
+            <span className="min-w-0 flex-1">{b.elemente[x]}</span>
+            {!fertig && (
+              <span className="flex flex-none gap-1">
+                <button type="button" onClick={() => schieben(pos, -1)} disabled={pos === 0} aria-label={`„${b.elemente[x]}“ nach oben`} className={cn("inline-flex size-9 items-center justify-center rounded-full bg-white text-ink shadow-card disabled:invisible", FOKUS)}>
+                  <ArrowUp className="size-4" aria-hidden="true" />
+                </button>
+                <button type="button" onClick={() => schieben(pos, 1)} disabled={pos === reihe.length - 1} aria-label={`„${b.elemente[x]}“ nach unten`} className={cn("inline-flex size-9 items-center justify-center rounded-full bg-white text-ink shadow-card disabled:invisible", FOKUS)}>
+                  <ArrowDown className="size-4" aria-hidden="true" />
+                </button>
+              </span>
+            )}
+          </li>
+        ))}
+      </ol>
+      <div role="status" aria-live="polite">
+        {stand === "falsch" && (
+          <Rueckmeldung meldung={meldung} richtig={false}>
+            Die Reihenfolge stimmt noch nicht. Verschiebe die Einträge und klick dann wieder auf „Prüfen“.
+          </Rueckmeldung>
+        )}
+        {fertig && (
+          <Rueckmeldung meldung={meldung} richtig>
+            {b.rueckmeldung.length > 0 && <HtmlInhalt knoten={b.rueckmeldung} klein />}
           </Rueckmeldung>
         )}
       </div>
