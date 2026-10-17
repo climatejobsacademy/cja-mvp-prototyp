@@ -69,7 +69,7 @@ function wann(t: NaechsterTermin, heute: string): string {
   return `${tag}${t.start ? `, ${t.start.slice(0, 5)}` : ""}`;
 }
 
-/** Zeile 1 "Weiter geht's …" und Zeile 2 "Wenn du magst: …" (nur wenn etwas offen ist). */
+/** Zeile 1 nächster Termin ("Montag · Praxistag"; ohne "Weiter geht's", das steht schon in der Überschrift, Anna 2026-10-17) und Zeile 2 "Wenn du magst: …" (nur wenn etwas offen ist). */
 export function FreiZeilen({
   naechster,
   offen,
@@ -89,7 +89,6 @@ export function FreiZeilen({
               <>
                 <Icon className={cn("size-[18px] shrink-0", farbe)} aria-hidden="true" />
                 <span className="min-w-0 flex-1 text-[15px]">
-                  <span className="text-ink-muted">Weiter geht’s</span>{" "}
                   <span className="font-bold">{wann(naechster, heute)}</span>{" "}
                   <span className="text-ink-muted">· {text}</span>
                 </span>
