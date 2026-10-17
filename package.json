@@ -10,7 +10,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test src/lib/*.test.ts scripts/import-plan/*.test.mjs"
+    "test": "node --test src/lib/*.test.ts scripts/import-plan/*.test.mjs scripts/scorm-einspielen/*.test.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

@@ -52,6 +52,8 @@ Learner · Instructor / Team Lead · AfCJ trainer · Manager · AfCJ admin
 | Knowledge sources | —; — | —; — | —; — | —; — | read All; write All |
 | Guidance conversations | — (noch nicht Prototype) | — (noch nicht Prototype) | — (noch nicht Prototype) | — (noch nicht Prototype) | — (noch nicht Prototype) |
 
+SCORM-Pakete (Bucket `scorm-packages`, SR-50, SR-85): Die Zip lesen Angemeldete, wenn die Lektion des Pakets veröffentlicht ist (`scorm_packages_read_published`, 0017). Dieselbe Regel gilt seit 0055 für die ausgepackten Medien unter `<storage_pfad>.entpackt/` (`scorm_packages_entpackt_read_published`); keine neuen Rechte, keine Schreibrechte der App, geschrieben wird nur durch das Einspiel-Skript.
+
 Organisations-Logo (SR-76, 0025): Die Zuordnung `organisation.logo_pfad` folgt der Zeile „Organisation, membership“ (Lernende nur eigene Organisation). Die Bilddateien liegen im **öffentlichen** Bucket `org-logos`: Lesen für alle mit der URL, ohne Login (bewusst entschieden 2026-10-08, Dateinamen sind UUIDs). Schreiben nur AfCJ admin im Supabase-Dashboard; es gibt keine Storage-Policy und keine Schreibrechte der App.
 
 ## Anmerkungen
