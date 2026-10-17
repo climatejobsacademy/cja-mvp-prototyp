@@ -15,7 +15,7 @@
 import { inflateSync } from "fflate";
 
 // @ts-expect-error TS5097: .ts-Endung für node:test nötig
-import { textInhalt, type Baustein, type Kapitel, type Lernkurs, type Schritt, type TextKnoten, type TextTag } from "./lernkurs.ts";
+import { type Baustein, type Kapitel, type Lernkurs, type Schritt, type TextKnoten, type TextTag } from "./lernkurs.ts";
 
 // ---------------------------------------------------------------------------
 // 1. Zip lesen (ohne ZIP64 -- Elephant-Pakete liegen weit unter 4 GB)
@@ -261,55 +261,11 @@ export function elephantZuLernkurs(kurs: unknown, lektionen: unknown, lpDateien:
     })
     .filter((kap) => kap.schritte.length > 0);
   return {
-    kurs: begruessungKuerzen({ titel: str(k.name) || str(obj(kurs).course_name), beschreibung: str(k.description), kapitel }),
+    kurs: { titel: str(k.name) || str(obj(kurs).course_name), beschreibung: str(k.description), kapitel },
     uebersprungen,
   };
 }
 
-const BEGRUESSUNG = /^\s*willkommen/i;
-
-/** Überschrift eines Schritts: Titelkarte oder erste Überschrift im ersten Text. */
-function schrittUeberschrift(s: Schritt): string | null {
-  for (const b of s.bausteine) {
-    if (b.art === "ueberschrift") return b.text;
-    if (b.art === "text") {
-      const erste = b.inhalt[0];
-      return erste && typeof erste !== "string" && /^h[1-3]$/.test(erste.tag) ? textInhalt(erste.kinder) : null;
-    }
-  }
-  return null;
-}
-
-/** Bleibt nach dem Kürzen nur Vorlesen (oder nichts) übrig, fällt der Schritt weg. */
-const hatInhalt = (s: Schritt) => s.bausteine.some((b) => b.art !== "audio");
-
-/**
- * Doppelte Begrüßung am Kursanfang weglassen (SR-85, Entscheidung Anna
- * 2026-10-15): Die Lektion hat auf der Plattform schon einen Titel. Im
- * ersten Schritt fällt die Überschrift "Willkommen ..." weg (der Text, z. B.
- * "Hey du ...", bleibt); die nächsten zwei Schritte fallen ganz weg, wenn sie
- * mit "Willkommen ..." beginnen (z. B. Titelkarte "Willkommen zum Kurs").
- */
-export function begruessungKuerzen(kurs: Lernkurs): Lernkurs {
-  const [erstes, ...rest] = kurs.kapitel;
-  if (!erstes) return kurs;
-  const schritte = erstes.schritte.flatMap((s, i): Schritt[] => {
-    if (i > 2 || s.bausteine.some((b) => b.art === "frage")) return [s];
-    const titel = schrittUeberschrift(s);
-    if (!titel || !BEGRUESSUNG.test(titel)) return [s];
-    if (i > 0 || s.bausteine.some((b) => b.art === "ueberschrift")) return [];
-    let gekuerzt = false;
-    const bausteine = s.bausteine.flatMap((b): Baustein[] => {
-      if (gekuerzt || b.art !== "text") return [b];
-      gekuerzt = true;
-      const inhalt = b.inhalt.slice(1);
-      return inhalt.length ? [{ ...b, inhalt }] : [];
-    });
-    const neu = { ...s, bausteine };
-    return hatInhalt(neu) ? [neu] : [];
-  });
-  return { ...kurs, kapitel: schritte.length ? [{ ...erstes, schritte }, ...rest] : rest };
-}
 
 // ---------------------------------------------------------------------------
 // 3. HTML -> sichere Knoten (nur Text und erlaubte Tags, keine Attribute)

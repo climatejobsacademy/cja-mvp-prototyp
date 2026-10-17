@@ -6,7 +6,6 @@ import { test } from "node:test";
 import { zipSync, strToU8 } from "fflate";
 
 import {
-  begruessungKuerzen,
   datenBeginn,
   eintragLesen,
   elephantZuLernkurs,
@@ -20,7 +19,7 @@ import {
   // @ts-expect-error TS5097: .ts-Endung für node:test nötig
 } from "./elephant-kurs.ts";
 // @ts-expect-error TS5097: .ts-Endung für node:test nötig
-import { kursMedien, schrittBilder, schrittFrage, textInhalt, type Lernkurs, type Schritt } from "./lernkurs.ts";
+import { kursMedien, schrittBilder, schrittFrage, textInhalt, type Schritt } from "./lernkurs.ts";
 
 const L = (werte: Record<string, unknown>) => ({ localizations: { de_DE: werte, metadata: { masterLanguageCode: "de_DE" } } });
 const arten = (s: Schritt) => s.bausteine.map((b) => b.art);
@@ -138,42 +137,3 @@ test("Zip: Verzeichnis und Einträge stückweise lesen", async () => {
   assert.deepEqual([...zip.slice(beginn + 1, beginn + 3)], [2, 3]);
 });
 
-test("begruessungKuerzen: Willkommen-Überschrift und Willkommen-Titelkarte fallen weg", () => {
-  const kurs: Lernkurs = {
-    titel: "K",
-    beschreibung: "",
-    kapitel: [
-      {
-        id: "a",
-        titel: "Einführung",
-        schritte: [
-          { id: "1", bausteine: [{ art: "audio", quelle: "assets/tts/a.mp3" }, { art: "text", inhalt: htmlLesen("<h1>Willkommen zum Wechselstromkreis-Kurs</h1><p>Hey du!</p>") }] },
-          { id: "2", bausteine: [{ art: "ueberschrift", text: "Willkommen zum Kurs" }] },
-          { id: "3", bausteine: [{ art: "text", inhalt: htmlLesen("<h1>Los geht's</h1><p>Text</p>") }] },
-          { id: "4", bausteine: [{ art: "text", inhalt: htmlLesen("<h1>Willkommen später</h1>") }] },
-        ],
-      },
-    ],
-  };
-  const k = begruessungKuerzen(kurs);
-  assert.deepEqual(k.kapitel[0].schritte.map((s) => s.id), ["1", "3", "4"]);
-  assert.deepEqual(k.kapitel[0].schritte[0].bausteine[1], { art: "text", inhalt: [{ tag: "p", kinder: ["Hey du!"] }] });
-});
-
-test("begruessungKuerzen: erster Schritt nur mit Willkommen-Überschrift und Vorlesen fällt ganz weg", () => {
-  const kurs: Lernkurs = {
-    titel: "K",
-    beschreibung: "",
-    kapitel: [
-      {
-        id: "a",
-        titel: "Einführung",
-        schritte: [
-          { id: "1", bausteine: [{ art: "audio", quelle: "assets/tts/a.mp3" }, { art: "text", inhalt: htmlLesen("<h1>Willkommen!</h1>") }] },
-          { id: "2", bausteine: [{ art: "text", inhalt: htmlLesen("<p>Los</p>") }] },
-        ],
-      },
-    ],
-  };
-  assert.deepEqual(begruessungKuerzen(kurs).kapitel[0].schritte.map((s) => s.id), ["2"]);
-});
