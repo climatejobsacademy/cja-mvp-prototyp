@@ -189,6 +189,21 @@ export async function getAgendaZeitraum(
       allLessons = [...allLessons, ...(extraLessons ?? [])];
     }
 
+    // Live-Termine, die an einem Kurs statt an einer Lektion hängen: Kursnamen
+    // nachladen, sonst stünde dort nur "Live-Termin" (Anna 2026-10-17).
+    let allCourses = [...(courses ?? [])];
+    const sessionCourseIds = [
+      ...new Set(
+        (liveSessions ?? [])
+          .map((s) => s.course_id)
+          .filter((id): id is string => !!id && !allCourses.some((c) => c.id === id))
+      ),
+    ];
+    if (sessionCourseIds.length > 0) {
+      const { data: extraCourses } = await supabase.from("course").select("id, name").in("id", sessionCourseIds);
+      allCourses = [...allCourses, ...(extraCourses ?? [])];
+    }
+
     let progressByLesson = new Map<string, UnitProgressStatus>();
     const allLessonIdsForProgress = [...lessonIds, ...liveSessionLessonIds];
     if (allLessonIdsForProgress.length > 0) {
@@ -205,7 +220,7 @@ export async function getAgendaZeitraum(
         const session = liveSessions?.find((s) => s.id === entry.live_session_id);
         if (!session) continue;
         const lesson = session.lesson_id ? allLessons.find((l) => l.id === session.lesson_id) : null;
-        const course = session.course_id ? courses?.find((c) => c.id === session.course_id) : null;
+        const course = session.course_id ? allCourses.find((c) => c.id === session.course_id) : null;
         const titel = lesson ? lektionTitel(lesson.name, lesson.thema) : null;
         theorie.push({
           datum: entry.datum,
