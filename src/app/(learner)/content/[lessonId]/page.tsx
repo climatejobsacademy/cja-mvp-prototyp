@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { preload } from "react-dom";
-import { ArrowLeft, Repeat, Video } from "lucide-react";
+import { ArrowLeft, Video } from "lucide-react";
 
 import { ModulZeichen } from "@/components/modul-zeichen";
 import { UnitProgressBadge } from "@/components/status-badge";
@@ -92,12 +92,6 @@ export default async function LessonPage({
     const ersteBilder = nativKurs.kapitel.flatMap((k) => k.schritte).slice(0, 2).flatMap(schrittBilder).slice(0, 4);
     for (const pfad of ersteBilder) preload(`/content/${lesson.id}/medium?pfad=${encodeURIComponent(pfad)}`, { as: "image" });
   }
-  const ansichtHref = (wert: string | null) => {
-    const q = new URLSearchParams(herkunft);
-    if (wert) q.set("ansicht", wert);
-    const text = q.toString();
-    return `/content/${lesson.id}${text ? `?${text}` : ""}`;
-  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -146,12 +140,9 @@ export default async function LessonPage({
       )}
 
       {lesson.contentType === "scorm" && nativKurs && (
-        <>
-          <NativeLektion lessonId={lesson.id} kurs={nativKurs} done={done} />
-          <Link href={ansichtHref("scorm")} className="flex w-fit items-center gap-1.5 self-center text-sm text-ink-muted hover:text-ink">
-            <Repeat className="size-4" aria-hidden="true" /> Als SCORM ansehen
-          </Link>
-        </>
+        // Kein Umschalt-Link für Lernende (Anna 2026-10-17); das Team erreicht
+        // den SCORM-Player zum Vergleich über ?ansicht=scorm.
+        <NativeLektion lessonId={lesson.id} kurs={nativKurs} done={done} />
       )}
 
       {lesson.contentType === "scorm" && !nativKurs && (
@@ -168,11 +159,6 @@ export default async function LessonPage({
               <p className="text-sm text-muted-foreground">
                 Für diese Lektion ist noch kein SCORM-Paket hinterlegt.
               </p>
-            )}
-            {NATIVE_SELBSTLERNEN && ansicht === "scorm" && lesson.scorm && (
-              <Link href={ansichtHref(null)} className="flex w-fit items-center gap-1.5 text-sm text-ink-muted hover:text-ink">
-                <Repeat className="size-4" aria-hidden="true" /> Zur neuen Ansicht
-              </Link>
             )}
           </CardContent>
         </Card>
