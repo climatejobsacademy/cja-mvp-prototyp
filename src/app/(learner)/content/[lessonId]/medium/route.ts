@@ -1,15 +1,15 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { istErlaubtesMedium } from "@/lib/elephant-kurs";
-import { mediumOeffnen } from "@/lib/elephant-paket";
-import { scormPaketSignieren } from "@/lib/queries/scorm-paket";
+import { kursNutztMedium, mediumOeffnen } from "@/lib/elephant-paket";
+import { entpacktSignieren, scormPaketSignieren } from "@/lib/queries/scorm-paket";
 import { NATIVE_SELBSTLERNEN } from "@/lib/schalter";
 import { createClient } from "@/lib/supabase/server";
 
 // Medien der nativen Selbstlern-Ansicht (SR-85): Bild, Audio oder Video aus
 // dem eigenen SCORM-Paket der Lektion. Läuft mit der Session der
 // angemeldeten Person -- lesson, scorm_package, file_asset und
-// storage.objects sind per RLS geschützt (0016/0017), kein Service-Role-Key.
+// storage.objects sind per RLS geschützt (0016/0017/0055), kein Service-Role-Key.
 // Ausgeliefert wird nur, was der Kurs wirklich nutzt; kein SVG. Bewusst kein
 // Logging von Pfaden (CLAUDE.md Regel 9). Bereichsanfragen (Range) für
 // Audio/Video, weil Safari sonst nicht abspielt.
@@ -19,6 +19,13 @@ import { createClient } from "@/lib/supabase/server";
 // Speicher unten spart nur bei vielen Bildern einer Lektion die Prüfung;
 // fehlt der Eintrag (andere Instanz, abgelaufen), prüft die Route die Rechte
 // neu und signiert die URL neu.
+//
+// Ausgepackte Pakete (SR-50, 0055): Liegt das Medium ausgepackt in Storage
+// (Pfad-Schema src/lib/scorm-entpackt.ts, WAV als M4A), leitet die Route mit
+// 307 auf eine mit der Session signierte URL (10 Minuten) um. Dann stellt der
+// Browser auch Range-Anfragen direkt an Storage, und große Videos/Audios
+// laufen nicht durch die Funktion (Antwortgrenze 4,5 MB). Schlägt das
+// Signieren fehl (Datei fehlt), liest die Route wie bisher aus der Zip.
 
 const KEIN_CACHE = { "Cache-Control": "no-store" };
 const TYP: Record<string, string> = {
@@ -41,6 +48,19 @@ const BEREICH_MAX = 3 * 1024 * 1024;
 const ZUGRIFF_MS = 5 * 60 * 1000;
 const ZUGRIFF_MAX = 1000;
 const zugriff = new Map<string, { speicherPfad: string; url: string; bis: number }>();
+
+// Je Paket (Speicherpfad), ob es ausgepackt ist, 3 Minuten, höchstens
+// AUSGEPACKT_MAX Einträge. Spart bei nicht ausgepackten Paketen den
+// Fehlversuch. Gewährt nie ein Recht: Signiert wird immer mit der Session.
+const AUSGEPACKT_MS = 3 * 60 * 1000;
+const AUSGEPACKT_MAX = 200;
+const ausgepackt = new Map<string, { ja: boolean; bis: number }>();
+
+function ausgepacktMerken(speicherPfad: string, ja: boolean) {
+  ausgepackt.delete(speicherPfad);
+  ausgepackt.set(speicherPfad, { ja, bis: Date.now() + AUSGEPACKT_MS });
+  while (ausgepackt.size > AUSGEPACKT_MAX) ausgepackt.delete(ausgepackt.keys().next().value!);
+}
 
 function nichtGefunden() {
   return new NextResponse("Nicht gefunden", { status: 404, headers: KEIN_CACHE });
@@ -82,6 +102,22 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   }
 
   try {
+    // Nur was der Kurs nutzt, auch wenn es ausgepackt vorliegt.
+    if (!(await kursNutztMedium(z.speicherPfad, z.url, pfad))) return nichtGefunden();
+
+    const stand = ausgepackt.get(z.speicherPfad);
+    const bekannt = stand && stand.bis > Date.now() ? stand.ja : undefined;
+    if (bekannt !== false) {
+      const url = await entpacktSignieren(supabase, z.speicherPfad, pfad);
+      if (url) {
+        ausgepacktMerken(z.speicherPfad, true);
+        return NextResponse.redirect(url, { status: 307, headers: KEIN_CACHE });
+      }
+      // Einzelne Datei fehlt in einem ausgepackten Paket: nur diese aus der
+      // Zip, das Paket bleibt als ausgepackt gemerkt.
+      if (bekannt === undefined) ausgepacktMerken(z.speicherPfad, false);
+    }
+
     const medium = await mediumOeffnen(z.speicherPfad, z.url, pfad);
     if (!medium) return nichtGefunden();
     const gesamt = medium.groesse;

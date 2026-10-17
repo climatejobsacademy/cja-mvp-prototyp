@@ -1,3 +1,4 @@
+import { entpacktPfad } from "@/lib/scorm-entpackt";
 import { createClient } from "@/lib/supabase/server";
 
 /** Signierte URL gilt 1 Stunde (wie bisher beim SCORM-Player). */
@@ -48,4 +49,25 @@ export async function scormPaketSignieren(
     speicherPfad: fileAsset.storage_pfad,
     zipSignedUrl: signed.signedUrl,
   };
+}
+
+/** Signierte URL einer ausgepackten Datei gilt 10 Minuten (nur für den Redirect der Medien-Route). */
+export const ENTPACKT_URL_GUELTIG_SEKUNDEN = 600;
+
+/**
+ * Signierte URL für die ausgepackte Datei eines Paket-Mediums (SR-50, SR-85,
+ * Pfad-Schema in src/lib/scorm-entpackt.ts). Immer mit der Session der
+ * Person: Storage prüft dabei die Policy scorm_packages_entpackt_read_published
+ * (0055). Fehlt die Datei (Paket nicht ausgepackt) oder fehlt das Recht -> null.
+ */
+export async function entpacktSignieren(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  speicherPfad: string,
+  innererPfad: string
+): Promise<string | null> {
+  const { data, error } = await supabase.storage
+    .from("scorm-packages")
+    .createSignedUrl(entpacktPfad(speicherPfad, innererPfad), ENTPACKT_URL_GUELTIG_SEKUNDEN);
+  if (error || !data?.signedUrl) return null;
+  return data.signedUrl;
 }

@@ -143,6 +143,14 @@ function gemerkt(key: string): Uint8Array | undefined {
   return daten;
 }
 
+/**
+ * Nutzt der Kurs dieses Medium? Nur dann gibt die Medien-Route es heraus,
+ * auch ausgepackt (SR-85). Liest höchstens Verzeichnis und Kursdaten.
+ */
+export async function kursNutztMedium(speicherPfad: string, signierteUrl: string, pfad: string): Promise<boolean> {
+  return (await paketOeffnen(speicherPfad, signierteUrl)).medien.has(pfad);
+}
+
 export type Medium = {
   groesse: number;
   /** Bytes [start, ende] (beide einschließlich). */
