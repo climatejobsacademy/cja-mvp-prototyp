@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { PRAXISAUFGABE_LINK } from "@/lib/schalter";
 import { ArrowRight, BookOpen, CalendarDays, Check, Video, Wrench } from "lucide-react";
 
 import type { ErledigtEintrag, LiveAktivitaet, PraxisAktivitaet } from "@/lib/home-tag";
@@ -374,7 +375,9 @@ export function FokusPraxis({
       <FokusTitel titel={praxis.titel} stil={stil} aufCoral />
       <FokusTrainer art="praxis" trainer={trainer} />
       <StaerktPills kompetenzen={staerkt} aufCoral />
-      <PrimaerAktion href={`/praxistag/${praxis.fieldJobId}?von=home`}>Praxisaufgabe öffnen</PrimaerAktion>
+      {PRAXISAUFGABE_LINK && (
+        <PrimaerAktion href={`/praxistag/${praxis.fieldJobId}?von=home`}>Praxisaufgabe öffnen</PrimaerAktion>
+      )}
     </FokusRahmen>
   );
 }

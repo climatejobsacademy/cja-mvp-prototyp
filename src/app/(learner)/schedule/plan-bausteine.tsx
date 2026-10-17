@@ -129,16 +129,15 @@ export function FlexLeiste({ chip, gross }: { chip: Chip; gross: boolean }) {
  */
 export function GanztagsLeiste({ tag: g, gross }: { tag: Ganztag; gross: boolean }) {
   const zurueck = g.status !== "offen";
-  return (
-    <Link
-      href={g.href}
-      aria-label={`Praxisaufgabe, ganztägig, ${g.titel}${g.ort ? `, ${g.ort}` : ""}${g.trainer ? `, Praxis mit ${g.trainer.rufname}` : ""}, ${g.status === "erledigt" ? "erledigt" : g.status === "vorbei" ? "vorbei" : "offen"}`}
-      className={cn(
-        "flex min-w-0 items-start gap-2 rounded-xl px-3 py-2 font-semibold outline-none transition-[box-shadow] duration-150 hover:shadow-card focus-visible:ring-2 focus-visible:ring-brand motion-reduce:transition-none",
-        gross ? "text-sm" : "text-[13px] leading-snug",
-        zurueck ? "border border-line bg-card text-ink-muted" : "border-l-[3px] border-l-praxis bg-praxis-tint text-ink"
-      )}
-    >
+  const label = `Praxisaufgabe, ganztägig, ${g.titel}${g.ort ? `, ${g.ort}` : ""}${g.trainer ? `, Praxis mit ${g.trainer.rufname}` : ""}, ${g.status === "erledigt" ? "erledigt" : g.status === "vorbei" ? "vorbei" : "offen"}`;
+  const klasse = cn(
+    "flex min-w-0 items-start gap-2 rounded-xl px-3 py-2 font-semibold outline-none",
+    g.href && "transition-[box-shadow] duration-150 hover:shadow-card focus-visible:ring-2 focus-visible:ring-brand motion-reduce:transition-none",
+    gross ? "text-sm" : "text-[13px] leading-snug",
+    zurueck ? "border border-line bg-card text-ink-muted" : "border-l-[3px] border-l-praxis bg-praxis-tint text-ink"
+  );
+  const inhalt = (
+    <>
       <Wrench className="mt-px size-4 shrink-0 text-praxis-text" aria-hidden="true" />
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="hyphens-auto break-words">{g.titel}</span>
@@ -147,7 +146,17 @@ export function GanztagsLeiste({ tag: g, gross }: { tag: Ganztag; gross: boolean
         {g.trainer && <TrainerZeile art="praxis" trainer={g.trainer} klein className="mt-1 font-normal text-ink-muted" />}
       </span>
       {g.status === "erledigt" && <Check className="mt-0.5 size-3.5 shrink-0 text-progress" strokeWidth={3} aria-hidden="true" />}
+    </>
+  );
+  // Ohne Link (PRAXISAUFGABE_LINK aus) dieselbe Leiste als reiner Text.
+  return g.href ? (
+    <Link href={g.href} aria-label={label} className={klasse}>
+      {inhalt}
     </Link>
+  ) : (
+    <div role="group" aria-label={label} className={klasse}>
+      {inhalt}
+    </div>
   );
 }
 

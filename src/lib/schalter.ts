@@ -16,3 +16,21 @@ export function fachspracheEinheitAn(umgebung: Umgebung = process.env): boolean 
 }
 
 export const FACHSPRACHE_EINHEIT = fachspracheEinheitAn();
+
+/**
+ * Link zur Praxisaufgabe (/praxistag/[fieldJobId]) im Stundenplan, auf Home,
+ * in der Programm-Übersicht und in den Kompetenzen (Anna 2026-10-17). Aus:
+ * die Einträge stehen als Text ohne Link da; die Seite selbst bleibt über die
+ * Adresse erreichbar. An nur mit PRAXISAUFGABE_LINK=an.
+ */
+export function praxisaufgabeLinkAn(umgebung: Umgebung = process.env): boolean {
+  return umgebung.PRAXISAUFGABE_LINK?.trim().toLowerCase() === "an";
+}
+
+export const PRAXISAUFGABE_LINK = praxisaufgabeLinkAn();
+
+/** Ziel einer Praxisaufgabe oder null, wenn der Link ausgeschaltet ist. */
+export function praxisaufgabeHref(fieldJobId: string, von?: string, an: boolean = PRAXISAUFGABE_LINK): string | null {
+  if (!an) return null;
+  return von ? `/praxistag/${fieldJobId}?von=${von}` : `/praxistag/${fieldJobId}`;
+}

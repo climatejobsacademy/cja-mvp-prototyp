@@ -11,6 +11,8 @@ import type { Plantag } from "@/lib/queries/stundenplan";
 
 // @ts-expect-error TS5097: .ts-Endung für node:test nötig (wie die Tests)
 import { datumKurz, montagDerWoche } from "./date.ts";
+// @ts-expect-error TS5097: .ts-Endung für node:test nötig (wie die Tests)
+import { PRAXISAUFGABE_LINK, praxisaufgabeHref } from "./schalter.ts";
 
 export type LektionsStatus = "offen" | "erledigt" | "heute";
 export type LektionsTyp = "live" | "selbstlern" | "dokument" | "praxis";
@@ -58,7 +60,9 @@ export function panelWochen(
   heute: string,
   jetzt: string,
   /** Seite des gewählten Moduls ist das aktuelle: Woche von heute aufklappen, sonst die erste */
-  aktuellesModul: boolean
+  aktuellesModul: boolean,
+  /** Link zur Praxisaufgabe (Schalter PRAXISAUFGABE_LINK) */
+  praxisLink: boolean = PRAXISAUFGABE_LINK
 ): PanelWoche[] {
   // Termine je Lektion bzw. Praxistag aus dem Stundenplan des Modulzeitraums.
   const termin = new Map<string, { datum: string; start: string | null; ende: string | null; joinLink: string | null; live: string | null }>();
@@ -122,7 +126,7 @@ export function panelWochen(
           label: p.titel,
           meta: t ? metaText(t.datum, null) : null,
           status: t?.erledigt ? "erledigt" : t?.datum === heute ? "heute" : "offen",
-          href: p.fieldJobId ? `/praxistag/${p.fieldJobId}?von=programm` : null,
+          href: p.fieldJobId ? praxisaufgabeHref(p.fieldJobId, "programm", praxisLink) : null,
           extern: false,
         };
       });
