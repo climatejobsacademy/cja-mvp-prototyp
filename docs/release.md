@@ -70,7 +70,7 @@ Erst nach den Migrationen (der Import braucht mindestens 0030). Aus dem Release-
 
 - Trainer-Konten und Plan: `scripts/import-plan.mjs --ziel production --production-freigabe …` (siehe `docs/import-plan.md`).
 - SCORM (`scripts/scorm-einspielen.mjs`, veröffentlicht sofort), Fachsprache (`scripts/import-plan.mjs --fachsprache`), Teams-Links (`scripts/live-links.mjs`, ohne Begleitkurse): dieselben Skripte wie auf Staging, Ziel Production.
-- Lernende: Konto, Profil, Mitgliedschaft und Einschreibung mit dem Skript „Lernende anlegen“ (in Arbeit); **keine** Einladungsmail per `scripts/invite-learner.mjs`, deren Links in der App nicht funktionieren. Lernende melden sich selbst per Magic Link an.
+- Lernende: Login-Konten im Dashboard, dann `scripts/lernende-anlegen.mjs` mit `--plan-datei` (`docs/lernende-anlegen.md`). Es legt Profil, Mitgliedschaft, Rolle und Einschreibung an und startet den Plan-Import erneut, damit jede Lernende ihre Praxistage bekommt. Reihenfolge: erster Plan-Import (Kohorte) → Trainer:innen → Lernende. **Keine** Einladungsmail per `scripts/invite-learner.mjs`, deren Links in der App nicht funktionieren. Lernende melden sich selbst per Magic Link an.
 - Danach veröffentlichen (Lektionen `published`, Fachsprache `veroeffentlicht`) und mit dem Testkonto prüfen.
 
 ## Zurück, wenn etwas schiefgeht
