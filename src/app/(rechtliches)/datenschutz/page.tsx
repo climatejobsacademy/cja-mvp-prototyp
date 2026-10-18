@@ -54,6 +54,19 @@ export default function DatenschutzPage() {
         Vorerfahrung und Sprache. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.
       </p>
 
+      <h2>Partnerorganisation (Bildungsträger)</h2>
+      <p>
+        Sie nehmen an der Qualifizierung über eine Partnerorganisation teil, in
+        der Regel einen Bildungsträger. Ihren Namen und Ihre E-Mail-Adresse
+        erhalten wir von dieser Partnerorganisation, um Ihr Nutzerkonto
+        anzulegen. Wir geben Ihre Anwesenheit und Ihren Lernfortschritt an die
+        Partnerorganisation weiter, damit sie die Qualifizierung begleiten und,
+        soweit nötig, gegenüber Fördergebern nachweisen kann. Auf der Plattform
+        selbst hat die Partnerorganisation keinen Zugriff auf diese Daten.
+        Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO, soweit förderrechtlich
+        vorgeschrieben Art. 6 Abs. 1 lit. c DSGVO.
+      </p>
+
       <h2>Lernfortschritt und Nachweise</h2>
       <p>
         Die Plattform erfasst abgeschlossene Lerneinheiten und
@@ -108,12 +121,12 @@ export default function DatenschutzPage() {
         Symbole, keine Anhänge; Nachrichten lassen sich nicht bearbeiten. Bitte
         schreiben Sie keine sensiblen Angaben und keine Daten anderer Personen.
         Verarbeitet werden der Text Ihrer Nachricht, der Zeitpunkt, der Kanal,
-        Ihre Kohorte, Ihr Arbeitgeber (wird nicht angezeigt), Ihr Rufname mit
+        Ihre Kohorte, Ihre Partnerorganisation (wird nicht angezeigt), Ihr Rufname mit
         dem Anfangsbuchstaben Ihres Nachnamens in der Form, die beim Schreiben
         galt, sowie, bis wann Sie einen Kanal gelesen haben (für die Anzeige
         ungelesener Nachrichten). Sichtbar sind Ihre Nachrichten für alle
-        Teilnehmenden Ihrer Kohorte, auch wenn sie bei einem anderen
-        Arbeitgeber beschäftigt sind, für die Trainerinnen und Trainer Ihrer
+        Teilnehmenden Ihrer Kohorte, auch wenn sie über eine andere
+        Partnerorganisation teilnehmen, für die Trainerinnen und Trainer Ihrer
         Kohorte (alle, die dort mindestens einen Termin leiten), für Personen,
         die Ihre Kohorte moderieren, und für das zuständige Personal der
         Akademie für Klimajobs. Nach dem Ende Ihrer Kohorte können Sie und die
@@ -330,9 +343,10 @@ export default function DatenschutzPage() {
       <h2>Weitergabe an Dritte</h2>
       <p>
         Personenbezogene Daten werden nicht verkauft oder zu Werbezwecken
-        weitergegeben. Eine Weitergabe erfolgt ausschließlich an die
-        technischen Dienstleister Vercel (Hosting), Supabase (Datenbank) und
-        Brevo (E-Mail-Versand) sowie, soweit gesetzlich vorgeschrieben, an
+        weitergegeben. Eine Weitergabe erfolgt ausschließlich an Ihre
+        Partnerorganisation (Anwesenheit und Lernfortschritt, siehe oben), an
+        die technischen Dienstleister Vercel (Hosting), Supabase (Datenbank)
+        und Brevo (E-Mail-Versand) sowie, soweit gesetzlich vorgeschrieben, an
         Behörden.
       </p>
 
