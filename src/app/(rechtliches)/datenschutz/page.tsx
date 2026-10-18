@@ -10,6 +10,10 @@ export default function DatenschutzPage() {
   // Chat-Nachrichten 2026-10-16 (Entwurf, Prüfung Anna auf Staging; Datum
   // „Stand“ beim Merge setzen). Eigene Formulierung, nicht rechtlich geprüft;
   // offene Punkte in docs/datenschutz-offene-punkte.md.
+  // Ergänzungen für den Start 02.11. am 2026-10-18 (Anna mit Claude, SR folgt):
+  // Chat genauer, Fragen-Thread an Live-Lektionen, Fachsprache-Übungen mit
+  // Vorlesen, Anwesenheit und Kompetenzfortschritt, Trainer-Bereich,
+  // Anonymisieren beim Löschen eines Kontos. Datum „Stand“ im Release setzen.
   // Optional, nach Veröffentlichung:
   // (1) DPF-Zertifizierung von Vercel optional prüfen und ergänzen.
   return (
@@ -56,11 +60,16 @@ export default function DatenschutzPage() {
         SCORM-Lernpakete, bestätigte Teilnahmen und Anwesenheit bei
         Live-Sessions, Praxiseinsätze (Datum, Standort, Status, Ergebnis und
         Ihre Freitextangaben), die zugehörige Dokumentation, Prüfentscheidungen
-        mit Kommentar sowie daraus abgeleitete Kompetenznachweise. Einsehbar
-        sind diese Daten für Sie selbst und für berechtigtes Personal der
-        Akademie für Klimajobs. Trainerinnen und Trainer sehen die Anwesenheit
-        und die Praxisberichte der Teilnehmenden der Kohorten, in denen sie
-        mindestens einen Termin leiten. Sie tragen dort die Anwesenheit ein und
+        mit Kommentar sowie daraus abgeleitete Kompetenznachweise. Bestätigt
+        Ihre Trainerin oder Ihr Trainer Ihre Anwesenheit bei einer
+        Live-Lektion, gilt diese Lektion für Ihren Kompetenzfortschritt als
+        erledigt; wird die Anwesenheit später berichtigt, passt sich der
+        Fortschritt an. Einsehbar sind diese Daten für Sie selbst und für
+        berechtigtes Personal der Akademie für Klimajobs. Trainerinnen und
+        Trainer sehen Ihren Namen, Ihre Termine, Ihre Anwesenheit und Ihre
+        Praxisberichte, wenn sie in Ihrer Kohorte mindestens einen Termin
+        leiten; Ihr Foto, Ihre E-Mail-Adresse und weitere Profilangaben sehen
+        sie nicht. Sie tragen dort die Anwesenheit ein und
         können Praxisberichte prüfen, also bestätigen oder mit Kommentar
         zurückgeben. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.
       </p>
@@ -69,7 +78,7 @@ export default function DatenschutzPage() {
       <p>
         Zu einzelnen Lektionen können Teilnehmende Fragen stellen und auf
         Fragen antworten, sofern diese Funktion für die Lektion freigeschaltet
-        ist. Möglich sind nur Text und Symbole, keine Anhänge. Bitte schreiben
+        ist; bei Live-Lektionen ist sie in der Regel eingeschaltet. Möglich sind nur Text und Symbole, keine Anhänge. Bitte schreiben
         Sie keine sensiblen Angaben und keine Daten anderer Personen. Verarbeitet
         werden der Text Ihres Beitrags, der Zeitpunkt, die Lektion, Ihre
         Kohorte sowie Ihr Vorname mit dem Anfangsbuchstaben Ihres Nachnamens.
@@ -80,7 +89,9 @@ export default function DatenschutzPage() {
         eingetragen sind. Eigene Beiträge können Sie
         jederzeit löschen; der Text und Ihr Name werden dann entfernt.
         Moderierende und das Personal der Akademie für Klimajobs können
-        Beiträge ebenfalls entfernen. Beiträge, die Sie melden möchten, senden
+        Beiträge ebenfalls entfernen. Bei jeder Löschung vermerken wir ohne
+        den Text, wer wann welchen Beitrag gelöscht hat; diesen Vermerk sieht
+        nur das zuständige Personal der Akademie für Klimajobs. Beiträge, die Sie melden möchten, senden
         Sie bitte an{" "}
         <a href="mailto:info@climatejobsacademy.com">info@climatejobsacademy.com</a>.
         Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.
@@ -90,25 +101,37 @@ export default function DatenschutzPage() {
       <p>
         Wenn der Chat für Ihre Kohorte freigeschaltet ist, können Sie sich mit
         den Teilnehmenden Ihrer Kohorte austauschen. Es gibt zwei Kanäle: Im
-        Kanal „Ankündigungen“ schreiben nur Ihre Trainerinnen und Trainer und
-        das zuständige Personal der Akademie für Klimajobs, im Kanal
-        „Treffpunkt“ schreiben alle Teilnehmenden Ihrer Kohorte. Möglich sind
-        nur Text und Symbole, keine Anhänge. Bitte schreiben Sie keine
-        sensiblen Angaben und keine Daten anderer Personen. Verarbeitet werden
-        der Text Ihrer Nachricht, der Zeitpunkt, der Kanal, Ihre Kohorte, Ihr
-        Rufname mit dem Anfangsbuchstaben Ihres Nachnamens sowie, bis wann Sie
-        einen Kanal gelesen haben (für die Anzeige ungelesener Nachrichten).
-        Sichtbar sind Ihre Nachrichten für alle Teilnehmenden Ihrer Kohorte,
-        auch wenn sie bei einem anderen Arbeitgeber beschäftigt sind, für die
-        Trainerinnen und Trainer Ihrer Kohorte und für das zuständige Personal
-        der Akademie für Klimajobs. Eigene Nachrichten können Sie jederzeit
-        löschen; der Text und Ihr Name werden dann entfernt. Trainerinnen und
-        Trainer Ihrer Kohorte und das Personal der Akademie für Klimajobs
-        können Nachrichten ebenfalls entfernen. Nachrichten anderer können Sie
-        melden; gespeichert wird dabei nur, wer welche Nachricht gemeldet hat,
-        und die Meldung sehen nur die Moderierenden. Wer eine Nachricht
-        gelöscht hat, wird ohne den Text protokolliert. Rechtsgrundlage: Art. 6
-        Abs. 1 lit. b DSGVO.
+        Kanal „Ankündigungen“ schreiben nur die Trainerinnen und Trainer Ihrer
+        Kohorte, Personen, die Ihre Kohorte moderieren, und das zuständige
+        Personal der Akademie für Klimajobs; im Kanal „Treffpunkt“ schreiben
+        zusätzlich alle Teilnehmenden Ihrer Kohorte. Möglich sind nur Text und
+        Symbole, keine Anhänge; Nachrichten lassen sich nicht bearbeiten. Bitte
+        schreiben Sie keine sensiblen Angaben und keine Daten anderer Personen.
+        Verarbeitet werden der Text Ihrer Nachricht, der Zeitpunkt, der Kanal,
+        Ihre Kohorte, Ihr Arbeitgeber (wird nicht angezeigt), Ihr Rufname mit
+        dem Anfangsbuchstaben Ihres Nachnamens in der Form, die beim Schreiben
+        galt, sowie, bis wann Sie einen Kanal gelesen haben (für die Anzeige
+        ungelesener Nachrichten). Sichtbar sind Ihre Nachrichten für alle
+        Teilnehmenden Ihrer Kohorte, auch wenn sie bei einem anderen
+        Arbeitgeber beschäftigt sind, für die Trainerinnen und Trainer Ihrer
+        Kohorte (alle, die dort mindestens einen Termin leiten), für Personen,
+        die Ihre Kohorte moderieren, und für das zuständige Personal der
+        Akademie für Klimajobs. Nach dem Ende Ihrer Kohorte können Sie und die
+        anderen Teilnehmenden den Chat weiter lesen, aber nicht mehr schreiben.
+      </p>
+      <p>
+        Eigene Nachrichten können Sie jederzeit löschen; der Text und Ihr Name
+        werden dann entfernt. Die Trainerinnen und Trainer Ihrer Kohorte, die
+        Moderierenden und das Personal der Akademie für Klimajobs können
+        Nachrichten ebenfalls entfernen. Bei jeder Löschung vermerken wir ohne
+        den Text, wer wann welche Nachricht gelöscht hat; diesen Vermerk sieht
+        nur das zuständige Personal der Akademie für Klimajobs. Nachrichten
+        anderer können Sie melden. Gespeichert wird dabei, wer welche Nachricht
+        wann gemeldet hat; die Meldung sehen nur die Moderierenden, also die
+        Trainerinnen und Trainer Ihrer Kohorte, die Moderierenden und das
+        Personal der Akademie für Klimajobs. Die Person, deren Nachricht Sie
+        melden, erfährt nicht, wer gemeldet hat. Rechtsgrundlage: Art. 6 Abs. 1
+        lit. b DSGVO.
       </p>
 
       <h2>Lernmaterialien und externe Links</h2>
@@ -124,6 +147,25 @@ export default function DatenschutzPage() {
         nicht in die Plattform eingebettet. Für die verlinkten Seiten gelten die
         Datenschutzhinweise der jeweiligen Anbieter. Rechtsgrundlage: Art. 6
         Abs. 1 lit. b DSGVO.
+      </p>
+
+      <h2>Fachsprache-Übungen</h2>
+      <p>
+        Wenn diese Funktion freigeschaltet ist, bieten wir zu einzelnen
+        Lektionen Übungen zur Fachsprache an (Wörter, Quiz, Beispielsätze).
+        Ihre Antworten im Quiz werden nicht gespeichert und nicht ausgewertet;
+        sie zählen nicht für Ihren Lernfortschritt. Bilder zu den Übungen rufen
+        wir über zeitlich begrenzte Links aus unserem Datenbankdienst ab. Über
+        das Lautsprecher-Symbol können Sie sich Wörter und Sätze vorlesen
+        lassen. Dafür nutzt die Plattform die Sprachausgabe Ihres Browsers. Je
+        nach Browser und Gerät erzeugt Ihr Gerät die Sprache selbst oder Ihr
+        Browser nutzt dafür einen Online-Dienst seines Anbieters. In diesem
+        Fall übermittelt Ihr Browser den vorzulesenden Text und technische
+        Verbindungsdaten wie Ihre IP-Adresse an diesen Anbieter; es gelten
+        dessen Datenschutzhinweise. Vorgelesen werden nur Inhalte der Übung,
+        keine Angaben über Sie. Wenn Sie das nicht möchten, nutzen Sie die
+        Vorlese-Funktion nicht; die Übungen funktionieren auch ohne.
+        Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.
       </p>
 
       <h2>Profilfotos</h2>
@@ -257,7 +299,11 @@ export default function DatenschutzPage() {
       </p>
       <p>
         Beiträge zu Fragen und Antworten sowie Nachrichten im Kohorten-Chat
-        speichern wir, solange die jeweilige Kohorte besteht. Eine automatische Löschung nach dem Ende der Kohorte
+        speichern wir, solange die jeweilige Kohorte besteht. Wird Ihr
+        Nutzerkonto gelöscht, entfernen wir Text und Namen Ihrer Beiträge und
+        Nachrichten; an ihrer Stelle erscheint ein Hinweis, dass der Beitrag
+        gelöscht wurde, damit Antworten anderer verständlich bleiben. Eine
+        automatische Löschung nach dem Ende der Kohorte
         ist derzeit nicht eingerichtet; auf Anfrage löschen wir sie wie oben
         beschrieben. Gelöschte Daten und Beiträge können bis
         zu sieben Tage in den täglichen Sicherungskopien (Backups) unseres

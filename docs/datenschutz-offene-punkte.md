@@ -36,3 +36,9 @@ Beim Abgleich von Text und Code sind weitere Abweichungen aufgefallen:
 - **Kohortenansicht: gleicher Betrieb.** Die Kohortenansicht (PR #113) zeigt nur Teilnehmende derselben Kohorte **und** desselben Betriebs mit aktiver Einschreibung. Der Text sagt „Teilnehmende Ihrer Kohorte“, das ist weiter gefasst als die Technik.
 - **Kohortenansicht: Anzeigename.** Angezeigt wird der Rufname plus Initial des Nachnamens (`fn_meine_kohorte`, Migration 0034), nicht ein frei wählbarer „Anzeigename“. Der Text ist entsprechend formuliert.
 - **Reihenfolge der Veröffentlichung.** Der neue Abschnitt „Kohortenansicht“ beschreibt Funktionen, die erst mit PR #113 auf `dev` kommen. Vor einem Release auf Production müssen #113 und diese Erklärung gemeinsam gehen.
+
+## Ergänzungen für den Start 02.11. (Stand 18.10.2026)
+
+In die Erklärung aufgenommen (Entwurf Anna mit Claude, keine rechtliche Prüfung): Kohorten-Chat genauer (Moderierende, Lesen nach Kohortenende, Löschvermerk, Meldungen), Fragen-Thread an Live-Lektionen in der Regel an mit Löschvermerk, neuer Abschnitt „Fachsprache-Übungen“ (Vorlesen über die Sprachausgabe des Browsers, ggf. Online-Dienst des Browser-Anbieters), Anwesenheit zählt für den Kompetenzfortschritt (0052), Trainer:innen sehen Namen, Termine, Anwesenheit und Praxisberichte, kein Foto und keine E-Mail, Anonymisieren beim Löschen eines Kontos. Chat und Fachsprache sind mit „wenn freigeschaltet“ formuliert, damit der Text unabhängig vom Go/No-Go stimmt.
+
+Entscheidungen Anna 18.10.: Vorlesen bleibt mit allen Browser-Stimmen (O4, kein Umbau); Lernende lesen den Chat nach Kohortenende weiter; der Löschvermerk bei eigener Löschung nennt die Person (nur Admin-Team sieht ihn). Offen: Abschnitt „Hosting“ mit Vercel Pro (Punkt 7), Anna liest die Angaben nach; Datum „Stand“ im Release setzen (Punkt 9).
