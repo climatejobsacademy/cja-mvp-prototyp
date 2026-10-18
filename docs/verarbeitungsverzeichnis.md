@@ -91,11 +91,12 @@ Gilt für die Lernplattform learn.climatejobsacademy.com (Production, Supabase F
 
 - **Zweck:** Durchführung der Live-Lektionen; die Plattform enthält nur den Link zum Termin.
 - **Betroffene:** Lernende, Trainer:innen.
-- **Daten:** Name bzw. Anzeigename, ggf. E-Mail-Adresse, Bild und Ton während des Termins, Teilnahme- bzw. Anwesenheitslisten (in Klassenräumen automatisch), Chat in Teams.
+- **Daten:** Name bzw. Anzeigename, ggf. E-Mail-Adresse, Bild und Ton während des Termins (keine Aufzeichnung, Stand 18.10.2026), Teilnahme- bzw. Anwesenheitslisten (in Klassenräumen automatisch), Chat in Teams.
 - **Rechtsgrundlage:** Art. 6 Abs. 1 lit. b DSGVO.
-- **Empfänger:** Microsoft (Auftragsverarbeiter, falls der Teams-Bereich der Akademie gehört).
-- **Löschfrist:** offen.
-- **Offen:** Wem gehört der Teams-Bereich (Akademie, Partner oder Trainer:in)? Davon hängt ab, wer verantwortlich ist und ob ein Vertrag mit Microsoft oder dem Partner nötig ist. Werden Termine aufgezeichnet?
+- **Verantwortlich:** Der Teams-Bereich gehört dem Partner (Energiehelden); er ist für die Verarbeitung in Teams verantwortlich. Die Akademie stellt den Link bereit, ihre Trainer:innen leiten die Termine.
+- **Empfänger:** Microsoft (Auftragsverarbeiter des Partners).
+- **Löschfrist:** nach den Vorgaben des Partners.
+- **Offen:** Ob zwischen Akademie und Partner eine Vereinbarung nötig ist (z. B. gemeinsame Verantwortung nach Art. 26 DSGVO, wenn die Akademie Anwesenheitslisten aus Teams für die Plattform nutzt).
 
 ### 10. Ablage in Google Drive (vorläufig, außerhalb der Plattform)
 
@@ -123,6 +124,6 @@ Gilt für die Lernplattform learn.climatejobsacademy.com (Production, Supabase F
 
 - Auftragsverarbeitungsverträge: Supabase, Vercel und Brevo binden ihren Vertrag über die Nutzungsbedingungen ein; ablegen bzw. Link festhalten.
 - Gesamtverzeichnis der Akademie: ob es eins gibt, ist unklar. Wenn ja, die Abschnitte 9 und 10 dorthin übernehmen; wenn nein, dieses Verzeichnis nach dem Pilot um die übrigen Tätigkeiten der Akademie erweitern.
-- Teams: wem der Bereich gehört und ob aufgezeichnet wird (Abschnitt 9).
+- Teams: Vereinbarung mit dem Partner nötig? (Abschnitt 9)
 - Aufbewahrungspflichten (AZAV) für Nachweise: rechtlich klären.
 - Keine rechtliche Prüfinstanz.
