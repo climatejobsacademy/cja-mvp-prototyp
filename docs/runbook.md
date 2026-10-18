@@ -36,7 +36,7 @@ Stand: 30.09.2026, Zuständigkeiten ergänzt am 18.10.2026 (Anna).
 | GitHub Actions | https://github.com/climatejobsacademy/cja-mvp-prototyp/actions | Automatische Prüfungen (`lint-and-types`, `rls-tests`) bei jedem Pull Request |
 | Statusseiten der Anbieter | https://status.supabase.com und https://www.vercel-status.com | Hat der Anbieter gerade selbst eine Störung? |
 
-Zugänge (Stand 18.10.2026): GitHub – Anna, Malte, Vera (alle Admin). Vercel – Anna (Owner). Supabase-Dashboard – Anna, Malte, Vera mit eigenen Konten. Rollen in Vercel und Supabase für Malte und Vera: offen (Anna ergänzt).
+Zugänge (Stand 18.10.2026): GitHub – Anna, Malte, Vera (alle Admin). Supabase-Dashboard – Anna, Malte, Vera mit eigenen Konten, Malte und Vera als Administratoren. Vercel – ein Konto (Annas), das das Team gemeinsam nutzt. Brevo – ein gemeinsames Konto für das Team.
 
 ## Wen informieren
 
@@ -76,7 +76,7 @@ sind). Die Meldung beweist also nicht, dass eine Mail verschickt wurde.
    dort ein Fehler beim Versand?
 6. Den E-Mail-Dienst prüfen. Die Mails verschickt nicht die App, sondern
    Supabase über einen externen Versanddienst (Brevo, seit 30.09.2026). Das
-   Versandprotokoll steht in Brevo unter Transactional → Logs. Wer Zugang zu Brevo hat: offen (Anna ergänzt).
+   Versandprotokoll steht in Brevo unter Transactional → Logs. Zugang: gemeinsames Team-Konto (Anna, Malte, Vera).
 7. Hat die Person viele Links kurz hintereinander angefordert? Supabase begrenzt,
    wie viele Mails in einem Zeitraum verschickt werden: Supabase-Dashboard → Projekt → Authentication → Rate Limits. Production (Frankfurt): 30 E-Mails pro Stunde (Stand 18.10.2026), bei 9 Lernenden im Pilot ausreichend. Zusätzlich gilt je Adresse eine kurze Wartezeit zwischen zwei Links.
 
@@ -299,7 +299,7 @@ davon weiß.
 
 **Selbst tun**
 
-- **App vom Netz nehmen:** entscheidet Anna. Wie genau (z. B. Wartungsseite oder Pausieren in Vercel): offen, vor dem Start klären.
+- **App vom Netz nehmen:** entscheidet Anna. Weg: Wartungsseite (Entscheidung Anna 18.10.). Technisch noch offen: Die App braucht dafür einen Schalter, der statt aller Seiten eine Wartungsseite zeigt (Umsetzung folgt).
 - **Meldung an die Aufsichtsbehörde** (Sächsische Datenschutz- und Transparenzbeauftragte) innerhalb von 72 Stunden und **Information der Betroffenen:** Anna.
 
 Technischer Hintergrund für die Technik: Die Zugriffsregeln liegen als
