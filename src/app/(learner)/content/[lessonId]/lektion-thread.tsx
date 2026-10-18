@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowUp, ChevronDown, MessageSquareText, RefreshCw } from "lucide-react";
 
+import { ChatRegelnLink } from "@/components/chat/chat-regeln";
 import { zeitpunktKurzInBerlin } from "@/lib/date";
 import { MAX_ZEICHEN, beitragNormalisieren, zeichenAnzahl, type ThreadBeitrag } from "@/lib/lektion-thread";
 import type { LektionThread as LektionThreadDaten } from "@/lib/queries/lektion-thread";
@@ -107,6 +108,8 @@ function DatenschutzHinweis() {
       <Link href="/datenschutz" className="underline underline-offset-2 hover:text-ink">
         Datenschutz
       </Link>
+      {" · "}
+      <ChatRegelnLink />
     </p>
   );
 }

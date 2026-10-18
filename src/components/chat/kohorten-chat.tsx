@@ -5,6 +5,7 @@ import { ArrowLeft, Coffee, Flag, Megaphone, MessageCircle, Send, Trash2, X } fr
 
 import { nachrichtLoeschen, nachrichtMelden, nachrichtSenden } from "@/app/(learner)/chat-actions";
 import { meldungenErledigt, nachrichtLoeschenTrainer, nachrichtSendenTrainer } from "@/app/(trainer)/trainer/chat-actions";
+import { ChatRegelnLink } from "@/components/chat/chat-regeln";
 import type { ChatKanal } from "@/lib/database.types";
 import { zeitpunktKurzInBerlin } from "@/lib/date";
 import { ABFRAGE_OFFEN_MS, ABFRAGE_ZU_MS, kuerzel, NACHRICHT_MAX, vorschau } from "@/lib/kohorten-chat";
@@ -406,7 +407,13 @@ export function KohortenChat({
                     <Send className="size-[18px]" aria-hidden="true" />
                   </button>
                 </form>
-              ) : (
+              ) : null}
+              {aktiv?.darfSchreiben && !trainer && (
+                <p className="-mt-1 px-4 pb-3 text-xs text-muted-foreground">
+                  Bitte beachte unsere <ChatRegelnLink />.
+                </p>
+              )}
+              {aktiv?.darfSchreiben ? null : (
                 aktiv && <p className="border-t border-border px-4 py-3 text-center text-xs text-muted-foreground">Hier schreiben nur deine Trainer:innen und das Team.</p>
               )}
             </>
