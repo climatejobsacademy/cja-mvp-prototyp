@@ -2,7 +2,7 @@
 
 Stand 18.10.2026 · **Entwurf** (Anna mit Claude), keine rechtliche Prüfung. Abgeleitet aus `docs/data-model.md`, `docs/access-matrix.md`, der Datenschutzerklärung (`src/app/(rechtliches)/datenschutz/page.tsx`), `docs/loeschweg.md` und `docs/runbook.md`.
 
-Gilt für die Lernplattform learn.climatejobsacademy.com (Production, Supabase Frankfurt). Staging enthält keine echten Personen und ist nicht Teil des Verzeichnisses. Werkzeuge rund um den Pilot (Microsoft Teams, Google Drive) stehen vorläufig unter 9 und 10. Andere Verarbeitungen der Akademie (z. B. Buchhaltung, Bewerbungen) gehören in ein Gesamtverzeichnis, siehe „Offen“.
+Gilt für die Lernplattform learn.climatejobsacademy.com (Production, Supabase Frankfurt). Staging enthält keine echten Personen und ist nicht Teil des Verzeichnisses. Werkzeuge rund um den Pilot (Microsoft Teams, Google Drive) stehen vorläufig unter 9 und 10. Ein Gesamtverzeichnis der Akademie gibt es noch nicht (Stand 18.10.2026); dieses Verzeichnis ist der Anfang und wird nach dem Pilot um die übrigen Tätigkeiten der Akademie (z. B. Buchhaltung, Bewerbungen) erweitert.
 
 ## Allgemeine Angaben (gelten für jede der folgenden Tätigkeiten)
 
@@ -124,7 +124,7 @@ Gilt für die Lernplattform learn.climatejobsacademy.com (Production, Supabase F
 ## Offen
 
 - Auftragsverarbeitungsverträge: die aktuellen DPAs von Supabase, Vercel und Brevo als PDF mit Datum ablegen (Anna, 18.10.2026).
-- Gesamtverzeichnis der Akademie: ob es eins gibt, ist unklar. Wenn ja, die Abschnitte 9 und 10 dorthin übernehmen; wenn nein, dieses Verzeichnis nach dem Pilot um die übrigen Tätigkeiten der Akademie erweitern.
+- Nach dem Pilot: dieses Verzeichnis um die übrigen Tätigkeiten der Akademie erweitern (es gibt kein Gesamtverzeichnis).
 - Teams: gemeinsame Verantwortlichkeit mit dem Partner klären (Abschnitt 9).
-- Aufbewahrungspflichten (AZAV) für Nachweise: rechtlich klären.
+- Aufbewahrungspflichten (AZAV) für Nachweise: Anna fragt Energiehelden am 29.10.2026.
 - Keine rechtliche Prüfinstanz.
