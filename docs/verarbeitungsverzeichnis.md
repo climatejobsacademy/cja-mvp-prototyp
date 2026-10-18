@@ -4,14 +4,15 @@ Stand 18.10.2026 · **Entwurf** (Anna mit Claude), keine rechtliche Prüfung. Ab
 
 Gilt für die Lernplattform learn.climatejobsacademy.com (Production, Supabase Frankfurt). Staging enthält keine echten Personen und ist nicht Teil des Verzeichnisses. Werkzeuge rund um den Pilot (Microsoft Teams, Google Drive) stehen vorläufig unter 9 und 10. Andere Verarbeitungen der Akademie (z. B. Buchhaltung, Bewerbungen) gehören in ein Gesamtverzeichnis, siehe „Offen“.
 
-## Allgemeine Angaben (gelten für alle Tätigkeiten)
+## Allgemeine Angaben (gelten für jede der folgenden Tätigkeiten)
 
 | Angabe | Inhalt |
 |---|---|
 | Verantwortliche Stelle | Akademie für Klimajobs UG (haftungsbeschränkt), Kochstraße 42, 04275 Leipzig, vertreten durch die Geschäftsführerin Anna Sauter-Getschmann, info@climatejobsacademy.com |
+| Gemeinsam Verantwortliche | keine für die Plattform; für Microsoft Teams ggf. der Partner Energiehelden (Art. 26 DSGVO, zu klären, siehe Tätigkeit 9) |
 | Datenschutzbeauftragte:r | keine:r benannt; nicht verpflichtend, weil weniger als 20 Personen ständig mit der Verarbeitung personenbezogener Daten beschäftigt sind (§ 38 BDSG, Bestätigung Anna 18.10.2026) |
-| Auftragsverarbeiter | Supabase (Datenbank, Login, Dateispeicher; EU, Frankfurt), Vercel Inc. (Hosting; Funktionen in Frankfurt, weltweites Netzwerk; EU-Standardvertragsklauseln), Brevo GmbH Berlin (Versand der Login-Mails; EU-Rechenzentren, Unterauftragsverarbeiter z. B. Cloudflare) |
-| Drittlandübermittlung | Vercel (USA) und Unterauftragsverarbeiter von Brevo: EU-Standardvertragsklauseln bzw. EU-US Data Privacy Framework |
+| Auftragsverarbeiter (Art. 28 DSGVO) | Supabase (Datenbank, Login, Dateispeicher; Server in der EU, Frankfurt; Vertragspartei laut aktuellem DPA prüfen: Supabase, Inc., USA, bzw. Supabase Pte. Ltd.), Vercel Inc., USA (Hosting; Funktionen in Frankfurt, weltweites Netzwerk), Brevo GmbH, Berlin (Versand der Login-Mails; EU-Rechenzentren, Unterauftragsverarbeiter z. B. Cloudflare) |
+| Drittlandübermittlung (Art. 30 Abs. 1 lit. e) | **Vercel Inc. (USA):** zertifiziert nach dem EU-US Data Privacy Framework, also Angemessenheitsbeschluss (Art. 45 DSGVO); zusätzlich Standardvertragsklauseln im DPA. **Supabase:** Daten auf Servern in Frankfurt; mögliche Zugriffe aus dem Drittland abgesichert über Standardvertragsklauseln (Art. 46 Abs. 2 lit. c DSGVO, Durchführungsbeschluss (EU) 2021/914) im DPA; eine eigene Risikoanalyse (Transfer Impact Assessment) liegt nicht vor (offen). **Unterauftragsverarbeiter von Brevo:** Standardvertragsklauseln bzw. Data Privacy Framework laut Brevo. |
 | Technische und organisatorische Maßnahmen | siehe Abschnitt „TOM“ am Ende |
 
 ## Tätigkeiten
@@ -48,7 +49,7 @@ Gilt für die Lernplattform learn.climatejobsacademy.com (Production, Supabase F
 - **Zweck:** Gruppe kennt sich, gemeinsames Lernen.
 - **Betroffene:** Lernende, Trainer:innen.
 - **Daten:** freiwilliges Profilfoto; Rufname mit Anfangsbuchstabe des Nachnamens.
-- **Rechtsgrundlage:** Art. 6 Abs. 1 lit. b DSGVO (Namensanzeige; nicht rechtlich geprüft); Foto freiwillig, der Upload ist die Freigabe.
+- **Rechtsgrundlage:** Foto: Einwilligung nach Art. 6 Abs. 1 lit. a DSGVO, jederzeit widerrufbar durch Entfernen des Fotos (so auch in der Datenschutzerklärung). Namensanzeige (Rufname und Anfangsbuchstabe des Nachnamens): Art. 6 Abs. 1 lit. b DSGVO, hilfsweise lit. f (berechtigtes Interesse an einer gemeinsamen Lernumgebung); nicht rechtlich geprüft.
 - **Empfänger:** Lernende derselben Kohorte und desselben Betriebs; Fotos der Trainer:innen sehen ihre Lernenden; Team der Akademie.
 - **Löschfrist:** Foto jederzeit selbst entfernbar; sonst wie Tätigkeit 1 (Datei im Speicher wird beim Löschen des Kontos von Hand entfernt).
 
@@ -59,7 +60,7 @@ Gilt für die Lernplattform learn.climatejobsacademy.com (Production, Supabase F
 - **Daten:** Text der Nachricht oder des Beitrags, Zeitpunkt, Kanal bzw. Lektion, Kohorte, Arbeitgeber (nicht angezeigt), Anzeigename; Gelesen-Stand; Meldungen (wer welche Nachricht gemeldet hat); Löschvermerk ohne Text.
 - **Rechtsgrundlage:** Art. 6 Abs. 1 lit. b DSGVO.
 - **Empfänger:** alle Lernenden der Kohorte (über Arbeitgeber hinweg), Trainer:innen der Kohorte bzw. Moderierende, Team der Akademie; Löschvermerke nur das Team.
-- **Löschfrist:** solange die Kohorte besteht; keine automatische Löschung nach Kohortenende; beim Löschen eines Kontos werden Text und Name anonymisiert.
+- **Löschfrist:** solange die Kohorte besteht; keine automatische Löschung nach Kohortenende. Beim Löschen eines Kontos werden Text **und** Name der Beiträge entfernt; es bleibt nur ein Platzhalter „gelöscht“, der Personenbezug ist damit aufgehoben.
 
 ### 6. Fachsprache-Übungen (nur wenn eingeschaltet)
 
@@ -93,10 +94,10 @@ Gilt für die Lernplattform learn.climatejobsacademy.com (Production, Supabase F
 - **Betroffene:** Lernende, Trainer:innen.
 - **Daten:** Name bzw. Anzeigename, ggf. E-Mail-Adresse, Bild und Ton während des Termins (keine Aufzeichnung, Stand 18.10.2026), Teilnahme- bzw. Anwesenheitslisten (in Klassenräumen automatisch), Chat in Teams.
 - **Rechtsgrundlage:** Art. 6 Abs. 1 lit. b DSGVO.
-- **Verantwortlich:** Der Teams-Bereich gehört dem Partner (Energiehelden); er ist für die Verarbeitung in Teams verantwortlich. Die Akademie stellt den Link bereit, ihre Trainer:innen leiten die Termine.
+- **Verantwortlich:** Der Teams-Bereich gehört dem Partner (Energiehelden). Die Akademie stellt den Link bereit, ihre Trainer:innen leiten die Termine, und sie bestätigt die Anwesenheit auf der Plattform (ggf. anhand der Teams-Liste) für eigene Zwecke. Damit liegt wahrscheinlich eine gemeinsame Verantwortlichkeit (Art. 26 DSGVO) vor; zu klären.
 - **Empfänger:** Microsoft (Auftragsverarbeiter des Partners).
 - **Löschfrist:** nach den Vorgaben des Partners.
-- **Offen:** Ob zwischen Akademie und Partner eine Vereinbarung nötig ist (z. B. gemeinsame Verantwortung nach Art. 26 DSGVO, wenn die Akademie Anwesenheitslisten aus Teams für die Plattform nutzt).
+- **Offen:** Mit dem Partner klären (Termin 29.10.2026), wer wofür verantwortlich ist, und eine Vereinbarung nach Art. 26 DSGVO schließen bzw. die Rollen schriftlich festhalten.
 
 ### 10. Ablage in Google Drive (vorläufig, außerhalb der Plattform)
 
@@ -122,8 +123,9 @@ Gilt für die Lernplattform learn.climatejobsacademy.com (Production, Supabase F
 
 ## Offen
 
-- Auftragsverarbeitungsverträge: Supabase, Vercel und Brevo binden ihren Vertrag über die Nutzungsbedingungen ein; ablegen bzw. Link festhalten.
+- Auftragsverarbeitungsverträge: die aktuellen DPAs von Supabase, Vercel und Brevo als PDF herunterladen, wo nötig unterzeichnen (Supabase: im Dashboard bzw. laut DPA „signs or otherwise agrees“ prüfen) und mit Datum ablegen.
+- Transfer Impact Assessment für Supabase (Standardvertragsklauseln): kurz dokumentieren oder auf die Unterlagen von Supabase verweisen.
 - Gesamtverzeichnis der Akademie: ob es eins gibt, ist unklar. Wenn ja, die Abschnitte 9 und 10 dorthin übernehmen; wenn nein, dieses Verzeichnis nach dem Pilot um die übrigen Tätigkeiten der Akademie erweitern.
-- Teams: Vereinbarung mit dem Partner nötig? (Abschnitt 9)
+- Teams: gemeinsame Verantwortlichkeit mit dem Partner klären (Abschnitt 9).
 - Aufbewahrungspflichten (AZAV) für Nachweise: rechtlich klären.
 - Keine rechtliche Prüfinstanz.
