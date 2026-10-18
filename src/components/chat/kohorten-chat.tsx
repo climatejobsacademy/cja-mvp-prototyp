@@ -303,6 +303,11 @@ export function KohortenChat({
               )}
             </div>
           )}
+          {!kanal && !trainer && (
+            <p className="border-t border-border px-4 py-3 text-xs text-muted-foreground">
+              Bitte beachte unsere <ChatRegelnLink />.
+            </p>
+          )}
 
           {/* Unterhaltung */}
           {kanal && (
@@ -414,7 +419,17 @@ export function KohortenChat({
                 </p>
               )}
               {aktiv?.darfSchreiben ? null : (
-                aktiv && <p className="border-t border-border px-4 py-3 text-center text-xs text-muted-foreground">Hier schreiben nur deine Trainer:innen und das Team.</p>
+                aktiv && (
+                  <p className="border-t border-border px-4 py-3 text-center text-xs text-muted-foreground">
+                    Hier schreiben nur deine Trainer:innen und das Team.
+                    {!trainer && (
+                      <>
+                        {" · "}
+                        <ChatRegelnLink />
+                      </>
+                    )}
+                  </p>
+                )
               )}
             </>
           )}
