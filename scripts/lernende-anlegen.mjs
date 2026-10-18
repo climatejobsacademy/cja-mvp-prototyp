@@ -10,6 +10,17 @@
 //   node scripts/lernende-anlegen.mjs --datei <lernende-staging.csv> --ziel staging            (Probelauf)
 //   node scripts/lernende-anlegen.mjs --datei <lernende-staging.csv> --ziel staging --ausfuehren
 //   node scripts/lernende-anlegen.mjs --datei <lernende.csv> --ziel production --production-freigabe [--ausfuehren]
+//   … --plan-datei <plan.xlsx> --trainer-datei <trainer-….csv> [--kohorte "Name@+7"] [--ohne-praxis II]
+//        (danach Plan-Import für die Kohorten der Liste, damit die Lernenden ihre Praxistage bekommen)
+//
+// Praxistage (field_job, schedule_entry mit enrolment_id) hängen an der
+// Einschreibung und entstehen nur über scripts/import-plan.mjs (Entscheidung
+// Anna 18.10., „Variante B“). Mit --plan-datei ruft dieses Skript nach seinem
+// eigenen Teil den Plan-Import als Kindprozess auf: im Probelauf ebenfalls
+// als Probelauf; im echten Lauf erst als Probelauf, dann nach „ja“ mit
+// --ausfuehren (Production fragt dort zusätzlich die Ref ab). Nach jedem
+// echten Lauf zählt eine lesende Kontrolle, wie viele aktive Einschreibungen
+// der Kohorten keine eigenen Praxistage haben, obwohl die Kohorte welche hat.
 //
 // Die Auth-Konten legt AfCJ im Supabase-Dashboard an (Authentication → Users →
 // Add user → Create new user, Auto Confirm, keine Einladung). Das Skript
@@ -38,6 +49,17 @@ import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 
 import { leseLernendeDatei, pruefeDateiZiel, pruefeDemo } from "./lernende-anlegen/eingabe.mjs";
+import {
+  analyseArgumente,
+  befehlAlsText,
+  bewerteKontrolle,
+  importPlanArgumente,
+  istJa,
+  kohortenFuerImport,
+  kontrolleSql,
+  leseKontrolle,
+  pruefePlanDateien,
+} from "./lernende-anlegen/plan-import.mjs";
 
 const HIER = dirname(fileURLToPath(import.meta.url));
 
@@ -63,6 +85,9 @@ const NUTZUNG = `Nutzung:
   node scripts/lernende-anlegen.mjs --datei <pfad.csv> --nur-pruefen [--ziel staging|production]
   node scripts/lernende-anlegen.mjs --datei <pfad.csv> --ziel staging|production
        [--programm EFK-EE] [--production-freigabe] [--ausfuehren]
+       [--plan-datei <plan.xlsx> --trainer-datei <trainer-….csv>
+        [--kohorte "Name@+7"]... [--module I,II] [--ohne-praxis II] [--ohne-zuordnung-erlauben]]
+  Mit --plan-datei läuft danach der Plan-Import für die Kohorten der Liste (Praxistage je Einschreibung).
   CSV: E-Mail,Vorname,Nachname,Rufname,Betrieb,Kohorte   (Rufname optional, sonst Vorname)`;
 
 function abbruch(text) {
@@ -80,6 +105,12 @@ try {
       "nur-pruefen": { type: "boolean", default: false },
       ausfuehren: { type: "boolean", default: false },
       "production-freigabe": { type: "boolean", default: false },
+      "plan-datei": { type: "string" },
+      "trainer-datei": { type: "string" },
+      kohorte: { type: "string", multiple: true, default: [] },
+      module: { type: "string" },
+      "ohne-praxis": { type: "string" },
+      "ohne-zuordnung-erlauben": { type: "boolean", default: false },
       hilfe: { type: "boolean", default: false },
     },
   }));
@@ -106,8 +137,43 @@ try {
   abbruch(`Abbruch:\n${fehler.message}`);
 }
 
+// ---------- Plan-Import (optional): vor jeder Datenbank-Verbindung prüfen ----------
+const listenKohorten = [...new Set(eintraege.map((e) => e.kohorte))];
+const IMPORT_PLAN = join(HIER, "import-plan.mjs");
+let planOpts = null;
+if (arg["plan-datei"]) {
+  try {
+    pruefePlanDateien({ planDatei: arg["plan-datei"], trainerDatei: arg["trainer-datei"], ziel: arg.ziel });
+    if (!existsSync(arg["plan-datei"])) throw new Error("Plan-Datei nicht gefunden.");
+    if (!existsSync(arg["trainer-datei"])) throw new Error("Trainer-Datei nicht gefunden.");
+    planOpts = {
+      planDatei: arg["plan-datei"],
+      ziel: arg.ziel,
+      productionFreigabe: arg["production-freigabe"],
+      trainerDatei: arg["trainer-datei"],
+      kohorten: kohortenFuerImport(listenKohorten, arg.kohorte),
+      module: arg.module,
+      ohnePraxis: arg["ohne-praxis"],
+      ohneZuordnungErlauben: arg["ohne-zuordnung-erlauben"],
+    };
+  } catch (fehler) {
+    abbruch(`Abbruch:\n${fehler.message}`);
+  }
+} else if (
+  arg["trainer-datei"] || arg.kohorte.length || arg.module !== undefined || arg["ohne-praxis"] !== undefined || arg["ohne-zuordnung-erlauben"]
+) {
+  abbruch("Abbruch: --trainer-datei, --kohorte, --module, --ohne-praxis und --ohne-zuordnung-erlauben nur zusammen mit --plan-datei.");
+}
+
 console.log(`\n== Lernenden-Datei: ${eintraege.length} Zeilen ==`);
 for (const e of eintraege) console.log(`  Zeile ${e.zeile}: ${e.maskiert} -> Betrieb „${e.betrieb}“, Kohorte „${e.kohorte}“`);
+if (planOpts) {
+  // Excel vorab lesen (import-plan --nur-analyse, keine Datenbank), damit ein
+  // Fehler in der Plan-Datei auffällt, bevor Lernende gespeichert sind.
+  const analyse = spawnSync(process.execPath, analyseArgumente({ ...planOpts, skript: IMPORT_PLAN }), { stdio: ["ignore", "ignore", "inherit"] });
+  if (analyse.status !== 0) abbruch("Abbruch: Die Plan-Datei lässt sich nicht lesen (Meldung oben). Nichts angefasst.");
+  console.log(`\n== Plan-Import danach: Kohorten ${planOpts.kohorten.map((k) => `„${k}“`).join(", ")} (Plan-Datei gelesen) ==`);
+}
 if (arg["nur-pruefen"]) {
   console.log("\nNur geprüft, keine Datenbank.");
   process.exit(0);
@@ -225,14 +291,105 @@ const ergebnis = spawnSync(
 );
 if (ergebnis.status !== 0) process.exit(ergebnis.status ?? 1);
 
-const kohorten = [...new Set(eintraege.map((e) => e.kohorte))];
-console.log(`
-== ${arg.ausfuehren ? "Danach" : "Nach dem echten Lauf (--ausfuehren)"} ==
-1. Praxistage: Die neuen Lernenden bekommen ihre Praxistage erst über den Plan-Import
-   (field_job je aktiver Einschreibung). Erneut laufen lassen, erst Probelauf, dann --ausfuehren:
-   node scripts/import-plan.mjs --datei <plan.xlsx> --ziel ${arg.ziel}${arg.ziel === "production" ? " --production-freigabe" : ""} \\
-     --trainer-datei <trainer-${arg.ziel}.csv> ${kohorten.map((k) => `--kohorte "${k}"`).join(" ")}
-   (bei mehreren Kohorten alle mit ihrem Versatz angeben; siehe docs/import-plan.md)
-2. Startnachricht an die Lernenden: Anmelden selbst per Magic Link auf
+// ---------- Plan-Import und Kontrolle ----------
+const anzeigeOpts = planOpts ?? {
+  planDatei: "<plan.xlsx>",
+  ziel: arg.ziel,
+  productionFreigabe: arg["production-freigabe"],
+  trainerDatei: `<trainer-${arg.ziel}.csv>`,
+  kohorten: listenKohorten,
+};
+const nachholBefehl = befehlAlsText(importPlanArgumente(anzeigeOpts));
+const nachholText = `   ${nachholBefehl}
+   (erst so als Probelauf, dann denselben Befehl mit --ausfuehren${planOpts ? "" : "; Kohorten mit Versatz als \"Name@+7\" angeben, siehe docs/import-plan.md"})`;
+
+function importPlanLauf(ausfuehren, bestaetigung) {
+  const argumente = importPlanArgumente({ ...planOpts, skript: IMPORT_PLAN }, { ausfuehren, bestaetigung });
+  console.log(`\n== Plan-Import (${ausfuehren ? "ECHTER LAUF" : "Probelauf"}): ${befehlAlsText(importPlanArgumente(planOpts, { ausfuehren, bestaetigung }))} ==`);
+  return spawnSync(process.execPath, argumente, { stdio: "inherit" }).status === 0;
+}
+
+function kontrolle() {
+  const sqlKontrolle = kontrolleSql(listenKohorten, `k_${randomBytes(6).toString("hex")}`);
+  const lauf = spawnSync(
+    psqlPfad(),
+    [`host=${ziel.host} port=5432 dbname=postgres user=postgres.${ziel.ref} sslmode=require`, "-X", "-q", "-A", "-t", "-P", "pager=off"],
+    { input: sqlKontrolle, encoding: "utf8", stdio: ["pipe", "pipe", "inherit"], env: { ...process.env, PGPASSWORD: passwort() } }
+  );
+  console.log("\n== Kontrolle: Praxistage je aktiver Einschreibung ==");
+  let ergebnisKontrolle;
+  try {
+    if (lauf.status !== 0) throw new Error("psql-Fehler");
+    ergebnisKontrolle = bewerteKontrolle(leseKontrolle(lauf.stdout), listenKohorten);
+  } catch {
+    console.log(`WARNUNG: Kontrolle nicht möglich. Bitte prüfen, ob alle Lernenden Praxistage haben; sonst Plan-Import erneut ausführen:\n${nachholText}`);
+    return false;
+  }
+  for (const z of ergebnisKontrolle.zeilen) console.log(z);
+  if (ergebnisKontrolle.ohne > 0) {
+    console.log(`
+!!! WARNUNG: ${ergebnisKontrolle.ohne} Lernende ohne Praxistage – sie sehen einen falschen Stand
+!!! (z. B. „Weiter geht's Samstag“, Kompetenzen eines späteren Moduls). Plan-Import erneut ausführen:
+${nachholText}`);
+    return false;
+  }
+  return true;
+}
+
+const startText = `Startnachricht an die Lernenden: Anmelden selbst per Magic Link auf
    ${ziel.app}
-   (E-Mail eingeben, Link aus der Mail öffnen). Keine Einladungsmail verschicken.`);
+   (E-Mail eingeben, Link aus der Mail öffnen). Keine Einladungsmail verschicken.`;
+
+if (!arg.ausfuehren) {
+  if (planOpts) {
+    console.log(`
+== Plan-Import als Probelauf ==
+Hinweis: Dieser Probelauf hat die Einschreibungen eben zurückgerollt. Der Plan-Import-Probelauf
+sieht die neuen Lernenden darum noch nicht: Praxistage für neue Lernende zeigt erst der echte Lauf.
+Er zeigt aber, ob Plan, Trainer-Datei und Kohorten durchlaufen.`);
+    if (!importPlanLauf(false)) abbruch("\nPlan-Import-Probelauf fehlgeschlagen (Meldung oben). Vor dem echten Lauf klären.");
+  }
+  console.log(`
+== Nach dem echten Lauf (--ausfuehren) ==
+1. Praxistage: ${planOpts ? "Der echte Lauf mit --plan-datei führt den Plan-Import selbst aus (Probelauf, dann Frage „ja“)." : `Die neuen Lernenden bekommen ihre Praxistage erst über den Plan-Import
+   (field_job je aktiver Einschreibung). Am einfachsten denselben Aufruf mit --plan-datei und --trainer-datei,
+   sonst danach von Hand:
+${nachholText}`}
+2. ${startText}`);
+  process.exit(0);
+}
+
+// Echter Lauf: Lernende sind gespeichert (COMMIT oben).
+let importFertig = !planOpts;
+if (planOpts) {
+  const fehlerText = (grund) => `
+!!! ${grund}
+!!! Die Lernenden SIND angelegt, haben aber noch KEINE Praxistage (sie sehen einen falschen Stand).
+!!! Nachholen:
+${nachholText}`;
+  if (!importPlanLauf(false)) {
+    console.log(fehlerText("Plan-Import-Probelauf fehlgeschlagen (Meldung oben)."));
+  } else {
+    console.log(`
+Prüfen: Bei schon importierten Kohorten sollte oben nur bei field_job und schedule_entry (Praxis) etwas neu sein.
+Ist bei live_session oder schedule_entry (live) etwas neu, stimmt vermutlich der Versatz nicht (--kohorte "Name@+7").`);
+    const rl = createInterface({ input: process.stdin, output: process.stdout });
+    const antwort = await rl.question("\nPlan-Import jetzt speichern? Tippe ja: ");
+    rl.close();
+    if (!istJa(antwort)) {
+      console.log(fehlerText("Plan-Import nicht gespeichert (keine Bestätigung)."));
+    } else if (!importPlanLauf(true, antwort)) {
+      console.log(fehlerText("Plan-Import fehlgeschlagen (Meldung oben)."));
+    } else {
+      importFertig = true;
+    }
+  }
+}
+
+const kontrolleOk = kontrolle();
+
+console.log(`
+== Danach ==
+${importFertig && kontrolleOk ? "1. Praxistage: Kontrolle ohne Befund (Lernende ohne Praxistage: 0, Einzelheiten oben)." : "1. Praxistage: NICHT vollständig – siehe Warnung oben, dort steht der Befehl zum Nachholen."}
+2. ${startText}`);
+if (!importFertig || !kontrolleOk) process.exit(1);
