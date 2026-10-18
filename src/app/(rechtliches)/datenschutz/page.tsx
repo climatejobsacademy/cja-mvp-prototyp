@@ -36,7 +36,9 @@ export default function DatenschutzPage() {
         Leipzig, vertreten durch die Geschäftsführerin Anna Sauter-Getschmann.
         E-Mail:{" "}
         <a href="mailto:info@climatejobsacademy.com">info@climatejobsacademy.com</a>.
-        Bei Fragen zum Datenschutz erreichen Sie uns unter dieser Adresse.
+        Bei Fragen zum Datenschutz erreichen Sie uns unter dieser Adresse. Eine
+        oder ein Datenschutzbeauftragter ist nicht benannt, da die
+        gesetzlichen Voraussetzungen dafür (§ 38 BDSG) nicht vorliegen.
       </p>
 
       <h2>Account und Authentifizierung</h2>
@@ -302,11 +304,19 @@ export default function DatenschutzPage() {
         und die damit verbundenen Daten innerhalb eines Monats nach Eingang
         Ihrer Anfrage (Art. 12 Abs. 3 DSGVO), soweit keine
         Aufbewahrungspflichten entgegenstehen. Die Löschung erfolgt derzeit
-        manuell.
+        manuell. Nach dem Ende Ihrer Qualifizierung bewahren wir Ihre
+        Nachweise (Anwesenheit, Lernfortschritt, Praxisberichte,
+        Kompetenznachweise) auf, um Ihre Qualifizierung Ihnen gegenüber und
+        gegenüber Fördergebern belegen zu können (Art. 6 Abs. 1 lit. f DSGVO,
+        soweit gesetzlich vorgeschrieben Art. 6 Abs. 1 lit. c DSGVO). Eine
+        feste Frist und eine automatische Löschung danach legen wir derzeit
+        fest; bis dahin löschen wir auf Anfrage wie oben beschrieben.
       </p>
       <p>
         Beiträge zu Fragen und Antworten sowie Nachrichten im Kohorten-Chat
-        speichern wir, solange die jeweilige Kohorte besteht. Wird Ihr
+        speichern wir, solange die jeweilige Kohorte besteht; nach ihrem Ende
+        bleiben sie für die Teilnehmenden zum Nachlesen verfügbar (Art. 6 Abs.
+        1 lit. f DSGVO). Wird Ihr
         Nutzerkonto gelöscht, entfernen wir Text und Namen Ihrer Beiträge und
         Nachrichten; an ihrer Stelle erscheint ein Hinweis, dass der Beitrag
         gelöscht wurde, damit Antworten anderer verständlich bleiben. Eine
@@ -333,7 +343,11 @@ export default function DatenschutzPage() {
         Datenübertragbarkeit (Art. 20). Soweit wir Daten auf Grundlage
         berechtigter Interessen (Art. 6 Abs. 1 lit. f DSGVO) verarbeiten, können
         Sie dem aus Gründen, die sich aus Ihrer besonderen Situation ergeben,
-        widersprechen (Art. 21 DSGVO). Zur Ausübung dieser Rechte:{" "}
+        widersprechen (Art. 21 DSGVO); der Widerspruch ist an keine Form
+        gebunden. Eine Einwilligung (zum Beispiel für Ihr Profilfoto) können
+        Sie jederzeit mit Wirkung für die Zukunft widerrufen (Art. 7 Abs. 3
+        DSGVO); die bis dahin erfolgte Verarbeitung bleibt rechtmäßig. Zur
+        Ausübung dieser Rechte:{" "}
         <a href="mailto:info@climatejobsacademy.com">info@climatejobsacademy.com</a>
       </p>
 
