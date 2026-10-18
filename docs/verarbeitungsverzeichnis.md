@@ -19,9 +19,10 @@ Gilt für die Lernplattform learn.climatejobsacademy.com (Production, Supabase F
 
 ### 1. Nutzerkonto und Anmeldung
 
-- **Zweck:** Zugang zur Lernplattform, Zuordnung zu Betrieb, Rolle und Kohorte.
+- **Zweck:** Zugang zur Lernplattform, Zuordnung zu Partnerorganisation (Bildungsträger), Rolle und Kohorte.
 - **Betroffene:** Lernende, Trainer:innen, Team der Akademie.
-- **Daten:** E-Mail-Adresse, Name, Rufname, Benutzername, Rolle, Organisation (Betrieb), Zeitpunkte der Anmeldung; soweit erfasst Geburtsdatum, Geschlecht, Vorerfahrung, Sprache.
+- **Daten:** E-Mail-Adresse, Name, Rufname, Benutzername, Rolle, Organisation (Partnerorganisation), Zeitpunkte der Anmeldung; soweit erfasst Geburtsdatum, Geschlecht, Vorerfahrung, Sprache.
+- **Herkunft der Daten (Art. 14 DSGVO):** Name und E-Mail-Adresse der Lernenden stammen von der Partnerorganisation (im Pilot der Bildungsträger Energiehelden); die Information darüber steht in der Datenschutzerklärung.
 - **Rechtsgrundlage:** Art. 6 Abs. 1 lit. b DSGVO.
 - **Empfänger:** Team der Akademie (Admin); Auftragsverarbeiter Supabase.
 - **Löschfrist:** solange das Konto besteht und der Zweck der Qualifizierung es erfordert; Löschung auf Anfrage innerhalb eines Monats (`docs/loeschweg.md`), soweit keine Aufbewahrungspflicht entgegensteht.
@@ -41,7 +42,7 @@ Gilt für die Lernplattform learn.climatejobsacademy.com (Production, Supabase F
 - **Betroffene:** Lernende; Trainer:innen (als Leitende von Terminen und bei bestätigter Anwesenheit oder Prüfung).
 - **Daten:** Einschreibung in Kohorte, persönliche Termine und Praxistage, abgeschlossene Lerneinheiten und SCORM-Pakete, Anwesenheit bei Live-Lektionen, Praxisberichte (Datum, Standort, Status, Freitext), Prüfentscheidungen mit Kommentar, daraus abgeleitete Kompetenznachweise.
 - **Rechtsgrundlage:** Art. 6 Abs. 1 lit. b DSGVO; ggf. Art. 6 Abs. 1 lit. c DSGVO bei förderrechtlichen Nachweispflichten (AZAV, offen).
-- **Empfänger:** die lernende Person selbst; Trainer:innen der Kohorte (Name, Termine, Anwesenheit, Praxisberichte, kein Foto, keine E-Mail); Team der Akademie. Arbeitgeber haben auf der Plattform keinen Zugriff auf Fortschritt oder Anwesenheit.
+- **Empfänger:** die lernende Person selbst; Trainer:innen der Kohorte (Name, Termine, Anwesenheit, Praxisberichte, kein Foto, keine E-Mail); Team der Akademie. **Partnerorganisation (Bildungsträger):** erhält Anwesenheit und Lernfortschritt außerhalb der Plattform (Begleitung, Nachweis gegenüber Fördergebern), hat auf der Plattform keinen Zugriff darauf; Rechtsgrundlage Art. 6 Abs. 1 lit. b, soweit förderrechtlich vorgeschrieben lit. c DSGVO.
 - **Löschfrist:** wie Tätigkeit 1. Anwesenheit und Prüfungen werden als unveränderlich behandelt; bei einer Löschanfrage Fall für Fall (Aufbewahrungspflicht klären, `docs/loeschweg.md`, E1).
 
 ### 4. Profilfoto und Kohortenansicht
@@ -50,16 +51,16 @@ Gilt für die Lernplattform learn.climatejobsacademy.com (Production, Supabase F
 - **Betroffene:** Lernende, Trainer:innen.
 - **Daten:** freiwilliges Profilfoto; Rufname mit Anfangsbuchstabe des Nachnamens.
 - **Rechtsgrundlage:** Foto: Einwilligung nach Art. 6 Abs. 1 lit. a DSGVO, jederzeit widerrufbar durch Entfernen des Fotos (so auch in der Datenschutzerklärung). Namensanzeige (Rufname und Anfangsbuchstabe des Nachnamens): Art. 6 Abs. 1 lit. b DSGVO, hilfsweise lit. f (berechtigtes Interesse an einer gemeinsamen Lernumgebung); nicht rechtlich geprüft.
-- **Empfänger:** Lernende derselben Kohorte und desselben Betriebs; Fotos der Trainer:innen sehen ihre Lernenden; Team der Akademie.
+- **Empfänger:** Lernende derselben Kohorte und derselben Partnerorganisation; Fotos der Trainer:innen sehen ihre Lernenden; Team der Akademie.
 - **Löschfrist:** Foto jederzeit selbst entfernbar; sonst wie Tätigkeit 1 (Datei im Speicher wird beim Löschen des Kontos von Hand entfernt).
 
 ### 5. Kohorten-Chat und Fragen-Thread (nur wenn eingeschaltet)
 
 - **Zweck:** Austausch in der Kohorte, Fragen zu Lektionen, Ankündigungen.
 - **Betroffene:** Lernende, Trainer:innen, Team der Akademie.
-- **Daten:** Text der Nachricht oder des Beitrags, Zeitpunkt, Kanal bzw. Lektion, Kohorte, Arbeitgeber (nicht angezeigt), Anzeigename; Gelesen-Stand; Meldungen (wer welche Nachricht gemeldet hat); Löschvermerk ohne Text.
+- **Daten:** Text der Nachricht oder des Beitrags, Zeitpunkt, Kanal bzw. Lektion, Kohorte, Partnerorganisation (nicht angezeigt), Anzeigename; Gelesen-Stand; Meldungen (wer welche Nachricht gemeldet hat); Löschvermerk ohne Text.
 - **Rechtsgrundlage:** Art. 6 Abs. 1 lit. b DSGVO.
-- **Empfänger:** alle Lernenden der Kohorte (über Arbeitgeber hinweg), Trainer:innen der Kohorte bzw. Moderierende, Team der Akademie; Löschvermerke nur das Team.
+- **Empfänger:** alle Lernenden der Kohorte (über Partnerorganisationen hinweg), Trainer:innen der Kohorte bzw. Moderierende, Team der Akademie; Löschvermerke nur das Team.
 - **Löschfrist:** solange die Kohorte besteht; keine automatische Löschung nach Kohortenende. Beim Löschen eines Kontos werden Text **und** Name der Beiträge entfernt; es bleibt nur ein Platzhalter „gelöscht“, der Personenbezug ist damit aufgehoben.
 
 ### 6. Fachsprache-Übungen (nur wenn eingeschaltet)
@@ -112,7 +113,7 @@ Gilt für die Lernplattform learn.climatejobsacademy.com (Production, Supabase F
 
 - **Zugriff:** Rechte je Rolle und Kohorte in der Datenbank erzwungen (Row Level Security auf jeder Tabelle, getestet in `supabase/tests`); Zugriffsregeln in `docs/access-matrix.md`.
 - **Anmeldung:** ohne Passwort per Einmallink; Konten legt nur das Team an.
-- **Mandantentrennung:** jede Arbeitgeber-Tabelle mit `organisation_id`.
+- **Mandantentrennung:** jede Tabelle einer Partnerorganisation mit `organisation_id`.
 - **Unveränderlichkeit:** Anwesenheit und Prüfungen werden nicht geändert, Korrekturen als neuer Eintrag.
 - **Speicherort:** Datenbank und Dateien in der EU (Frankfurt); Dateien nur über zeitlich begrenzte Links.
 - **Protokolle:** keine personenbezogenen Daten und keine Nachrichteninhalte in App-Logs.
