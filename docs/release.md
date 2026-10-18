@@ -26,7 +26,7 @@ Migrationen kommen **vor** dem Merge: Die neue App erwartet die neuen Tabellen. 
 - [ ] **Umfang:** Welche Commits und welche Migrationen gehen mit? Liste mit `git log origin/main..origin/dev` und `ls supabase/migrations`, Abgleich mit `supabase migration list` im Release-Ordner (nur lesend).
 - [ ] **Jede fehlende Migration einmal lesen:** additiv oder nicht? Ändert sie Daten (z. B. 0054 schaltet den Fragen-Thread an allen Live-Lektionen ein)?
 - [ ] **Schalter für Production in Vercel** (Settings → Environment Variables, Umgebung Production): `FACHSPRACHE_EINHEIT` und `PRAXISAUFGABE_LINK` nicht gesetzt oder nicht `an`, solange die Funktion aus sein soll. `NATIVE_SELBSTLERNEN` ist ohne Variable **an** (native Selbstlern-Ansicht); nur `aus` schaltet sie ab. Der Kohorten-Chat ist je Kohorte über `cohort.chat_aktiv` aus (Standard), der Fragen-Thread je Lektion über `lesson.chat_aktiv`.
-- [ ] **Backup:** Im Supabase-Dashboard (Frankfurt) unter Database → Backups nachsehen, welcher Stand vorhanden ist und von wann. Gibt es auf Production Daten, die bleiben müssen, vor dem Release einen frischen Stand sicherstellen.
+- [ ] **Backup:** Im Supabase-Dashboard (Frankfurt) unter Database → Backups prüfen, dass die Sicherung der letzten Nacht da ist (tägliche Sicherung, 7 Tage, Storage-Dateien nicht enthalten; Details im Runbook Abschnitt 5). Wurde seit Mitternacht viel auf Production geändert, den Release lieber am nächsten Tag machen.
 - [ ] **Zugänge:** eigenes Supabase-Konto mit Zugriff auf das Frankfurter Projekt, `cja-db-fra` (und für Staging `cja-db-irl`) im Schlüsselbund, `psql` (Postgres.app oder Homebrew) für die Skripte, Merge-Recht für `main` auf GitHub, Zugriff auf Vercel.
 - [ ] **Datenschutzerklärung:** Stimmt sie für alles, was mit diesem Release sichtbar wird? Das Datum „Stand dieser Erklärung“ (`src/app/(rechtliches)/datenschutz/page.tsx`) wird im Release-PR gesetzt.
 
@@ -87,7 +87,3 @@ Ein eigener Ordner verhindert, dass ein Befehl aus Versehen gegen die falsche Da
 2. Production-Passwort selbst in den Schlüsselbund (`cja-db-fra`), dann im Ordner `SUPABASE_DB_PASSWORD="$(security find-generic-password -s cja-db-fra -w)" npx supabase@2.117.0 link --project-ref vqfnmkcfjsudsujiuoqm`. Claude sieht das Passwort nie.
 3. Prüfen, dass `supabase/.temp/project-ref` die Frankfurter Ref enthält, und im Staging-Ordner weiterhin die Irland-Ref.
 4. Die Befehle `/release` (Code und Migrationen) und `/production-inhalte` (Inhalte, Konten, Lernende) für Claude führen durch diese Seite, mit Anhalten vor jedem Production-Schritt. Einrichtung für weitere Personen: `ONBOARDING-PRODUCTION.md` (lokal, wird per Datei weitergegeben).
-
-## Offen
-
-- Welche Backups hat der Tarif, und wer darf wiederherstellen? (Asana „Backup der Production-Datenbank prüfen“; laut Veras Board gab es am 09.10. eine Restore-Probe.)
