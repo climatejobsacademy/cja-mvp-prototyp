@@ -16,10 +16,10 @@ DATEI="$DIR/Modul_II___Kompetenzen_Import.xlsx"
 # Analyse (keine Datenbank)
 node scripts/import-plan.mjs --datei "$DATEI" --nur-analyse
 
-# Probelauf Staging (ROLLBACK), beide Kohorten, DEMO Rim um eine Woche verschoben
+# Probelauf Staging (ROLLBACK), beide Kohorten, DEMO Rim um zwei Wochen verschoben (seit 15.10. +14, belegt auf Staging)
 node scripts/import-plan.mjs --datei "$DATEI" --ziel staging \
   --trainer-datei "$DIR/trainer-staging.csv" \
-  --kohorte "Energiehelden 28.09.26" --kohorte "DEMO Rim@+7"
+  --kohorte "Energiehelden 28.09.26" --kohorte "DEMO Rim@+14"
 
 # Echter Lauf Staging (erst nach der Demo am 15.10.): gleicher Aufruf mit --ausfuehren
 
