@@ -275,7 +275,10 @@ function passwort() {
 function psqlPfad() {
   if (process.env.PSQL) return process.env.PSQL;
   const brew = "/opt/homebrew/opt/postgresql@17/bin/psql";
-  return existsSync(brew) ? brew : "psql";
+  if (existsSync(brew)) return brew;
+  // Postgres.app (Mac ohne Homebrew), Anna 2026-10-18
+  const app = "/Applications/Postgres.app/Contents/Versions/latest/bin/psql";
+  return existsSync(app) ? app : "psql";
 }
 
 // ---------- SQL zusammensetzen ----------

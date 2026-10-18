@@ -41,7 +41,7 @@ node scripts/scorm-einspielen.mjs --datei "$DIR/scorm-production.csv" --pakete-o
 - `npm ci` im Repo (das Skript nutzt `fflate` und Code der App aus `src/lib/`).
 - Node 24 (lädt die TypeScript-Dateien der App direkt).
 - Ein Mac: Audio, das nicht MP3 oder M4A ist (z. B. WAV), wandelt das Skript mit `afconvert` um. Das Programm gehört zu macOS (`/usr/bin/afconvert`). Fehlt es, bricht das Skript ab, bevor es etwas tut.
-- `psql` 17. Gesucht wird in `PSQL`, dann `/opt/homebrew/opt/postgresql@17/bin/psql`, dann `psql`.
+- `psql` 17 oder neuer, z. B. aus Homebrew oder Postgres.app (https://postgresapp.com). Gesucht wird in `PSQL`, dann `/opt/homebrew/opt/postgresql@17/bin/psql`, dann `/Applications/Postgres.app/Contents/Versions/latest/bin/psql`, dann `psql`.
 - Passwort der Datenbank: `PGPASSWORD` in der eigenen Shell oder ein macOS-Schlüsselbund-Eintrag (`cja-db-irl` für Staging, `cja-db-fra` für Production), wie beim Plan-Import. Das Skript gibt das Passwort nie aus.
 - Anmeldung der Supabase CLI für das Hochladen, einmal je Rechner:
   ```sh
