@@ -224,8 +224,13 @@ export default function DatenschutzPage() {
         Bestandteil der Nutzungsbedingungen von Brevo. Verarbeitet werden Ihre
         E-Mail-Adresse und technische Versanddaten (Zeitpunkt, Betreff,
         Zustellstatus). Öffnungs- und Klickstatistiken werden anonymisiert,
-        ohne Zuordnung zu einzelnen Personen, erfasst.
-        {/* TODO Vera: Aussage zu IP-Adresse beim anonymen Tracking prüfen (Brevo-Hilfeartikel nennt sie nicht), ggf. Brevo-Support fragen */}
+        ohne Zuordnung zu einzelnen Personen, erfasst. Beim Öffnen der E-Mail
+        oder beim Klick auf den Link erhält Brevo technisch bedingt Ihre
+        IP-Adresse; nach Angaben von Brevo werden E-Mail-Adresse und
+        IP-Adresse bei der anonymisierten Erfassung anonymisiert und Ihnen
+        nicht zugeordnet. Inhaltsvorschauen der E-Mails speichert Brevo für
+        uns nicht.
+        {/* Quelle IP: Brevo-Hilfe „Can I anonymize the tracking of opens and clicks for my emails?“ (help.brevo.com/hc/en-us/articles/11643306229906), geprüft 2026-10-18 */}
         {" "}Die Verarbeitung erfolgt in Rechenzentren innerhalb der EU
         (Frankreich, Deutschland, Belgien). Brevo setzt außerdem
         Unterauftragsverarbeiter ein, die auch in Drittländern sitzen können
