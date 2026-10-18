@@ -32,7 +32,7 @@ node scripts/import-plan.mjs --datei "$DATEI" --ziel production --production-fre
 ## Voraussetzungen
 
 - `npm ci` im Repo (das Skript nutzt `fflate` aus den App-Abhängigkeiten).
-- `psql` 17. Gesucht wird in `PSQL`, dann `/opt/homebrew/opt/postgresql@17/bin/psql`, dann `psql`.
+- `psql` 17 oder neuer, z. B. aus Homebrew oder Postgres.app (https://postgresapp.com). Gesucht wird in `PSQL`, dann `/opt/homebrew/opt/postgresql@17/bin/psql`, dann `/Applications/Postgres.app/Contents/Versions/latest/bin/psql`, dann `psql`.
 - Passwort der Datenbank: entweder `PGPASSWORD` in der eigenen Shell oder ein macOS-Schlüsselbund-Eintrag (`cja-db-irl` für Staging, `cja-db-fra` für Production). Das Skript gibt das Passwort nie aus. Verbunden wird über den Session-Pooler als `postgres`, ohne Service-Role-Key.
 - Die Datenbank muss mindestens auf Migration 0030 stehen, sonst bricht das Skript ab. **Production steht am 13.10. auf 0024**: Zuerst müssen 0025–0030 im Release angewendet werden.
 

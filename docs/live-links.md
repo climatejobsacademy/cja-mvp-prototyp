@@ -30,7 +30,7 @@ node scripts/live-links.mjs --datei "$DIR/teams-links-production.csv" --ziel pro
 
 ## Voraussetzungen
 
-- `psql` 17. Gesucht wird in `PSQL`, dann `/opt/homebrew/opt/postgresql@17/bin/psql`, dann `psql`.
+- `psql` 17 oder neuer, z. B. aus Homebrew oder Postgres.app (https://postgresapp.com). Gesucht wird in `PSQL`, dann `/opt/homebrew/opt/postgresql@17/bin/psql`, dann `/Applications/Postgres.app/Contents/Versions/latest/bin/psql`, dann `psql`.
 - Passwort der Datenbank: entweder `PGPASSWORD` in der eigenen Shell oder ein macOS-Schlüsselbund-Eintrag (`cja-db-irl` für Staging, `cja-db-fra` für Production). Das Skript gibt das Passwort nie aus. Verbunden wird wie beim Plan-Import über den Session-Pooler als `postgres`, ohne Service-Role-Key.
 - Die Datenbank steht mindestens auf Migration 0028 (Modul-Ebene), sonst bricht das Skript ab.
 - Die Termine sind schon da: Das Skript legt keine Termine an. Erst den Stundenplan importieren (`docs/import-plan.md`), dann die Links.
