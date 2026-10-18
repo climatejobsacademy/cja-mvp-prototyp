@@ -2,14 +2,14 @@
 
 Stand 18.10.2026 · **Entwurf** (Anna mit Claude), keine rechtliche Prüfung. Abgeleitet aus `docs/data-model.md`, `docs/access-matrix.md`, der Datenschutzerklärung (`src/app/(rechtliches)/datenschutz/page.tsx`), `docs/loeschweg.md` und `docs/runbook.md`.
 
-Gilt für die Lernplattform learn.climatejobsacademy.com (Production, Supabase Frankfurt). Staging enthält keine echten Personen und ist nicht Teil des Verzeichnisses. Verarbeitungen außerhalb der Plattform (z. B. Live-Unterricht in Microsoft Teams, Buchhaltung, Bewerbungen) gehören ins Gesamtverzeichnis der Akademie, siehe „Offen“.
+Gilt für die Lernplattform learn.climatejobsacademy.com (Production, Supabase Frankfurt). Staging enthält keine echten Personen und ist nicht Teil des Verzeichnisses. Werkzeuge rund um den Pilot (Microsoft Teams, Google Drive) stehen vorläufig unter 9 und 10. Andere Verarbeitungen der Akademie (z. B. Buchhaltung, Bewerbungen) gehören in ein Gesamtverzeichnis, siehe „Offen“.
 
 ## Allgemeine Angaben (gelten für alle Tätigkeiten)
 
 | Angabe | Inhalt |
 |---|---|
 | Verantwortliche Stelle | Akademie für Klimajobs UG (haftungsbeschränkt), Kochstraße 42, 04275 Leipzig, vertreten durch die Geschäftsführerin Anna Sauter-Getschmann, info@climatejobsacademy.com |
-| Datenschutzbeauftragte:r | keine:r benannt (offen, siehe unten) |
+| Datenschutzbeauftragte:r | keine:r benannt; nicht verpflichtend, weil weniger als 20 Personen ständig mit der Verarbeitung personenbezogener Daten beschäftigt sind (§ 38 BDSG, Bestätigung Anna 18.10.2026) |
 | Auftragsverarbeiter | Supabase (Datenbank, Login, Dateispeicher; EU, Frankfurt), Vercel Inc. (Hosting; Funktionen in Frankfurt, weltweites Netzwerk; EU-Standardvertragsklauseln), Brevo GmbH Berlin (Versand der Login-Mails; EU-Rechenzentren, Unterauftragsverarbeiter z. B. Cloudflare) |
 | Drittlandübermittlung | Vercel (USA) und Unterauftragsverarbeiter von Brevo: EU-Standardvertragsklauseln bzw. EU-US Data Privacy Framework |
 | Technische und organisatorische Maßnahmen | siehe Abschnitt „TOM“ am Ende |
@@ -85,7 +85,26 @@ Gilt für die Lernplattform learn.climatejobsacademy.com (Production, Supabase F
 - **Daten:** Anfrage, Kontaktdaten, Vorgangsnummer, Ergebnis (nur Zahlen, keine Inhalte).
 - **Rechtsgrundlage:** Art. 6 Abs. 1 lit. c DSGVO.
 - **Empfänger:** Anna (Freigabe), ausführende Person im Team.
-- **Löschfrist:** offen (Vorschlag: 3 Jahre nach Abschluss, Nachweis der Bearbeitung).
+- **Löschfrist:** 3 Jahre nach Abschluss der Anfrage, als Nachweis der Bearbeitung (Entscheidung Anna 18.10.2026).
+
+### 9. Live-Unterricht in Microsoft Teams (vorläufig, außerhalb der Plattform)
+
+- **Zweck:** Durchführung der Live-Lektionen; die Plattform enthält nur den Link zum Termin.
+- **Betroffene:** Lernende, Trainer:innen.
+- **Daten:** Name bzw. Anzeigename, ggf. E-Mail-Adresse, Bild und Ton während des Termins, Teilnahme- bzw. Anwesenheitslisten (in Klassenräumen automatisch), Chat in Teams.
+- **Rechtsgrundlage:** Art. 6 Abs. 1 lit. b DSGVO.
+- **Empfänger:** Microsoft (Auftragsverarbeiter, falls der Teams-Bereich der Akademie gehört).
+- **Löschfrist:** offen.
+- **Offen:** Wem gehört der Teams-Bereich (Akademie, Partner oder Trainer:in)? Davon hängt ab, wer verantwortlich ist und ob ein Vertrag mit Microsoft oder dem Partner nötig ist. Werden Termine aufgezeichnet?
+
+### 10. Ablage in Google Drive (vorläufig, außerhalb der Plattform)
+
+- **Zweck:** Ablage von Lernmaterial, SCORM-Paketen, Fachsprache-Bildern und Trainerfotos.
+- **Betroffene:** Trainer:innen (Fotos); Lernende nur, falls Listen dort liegen (Lernendenlisten gehören nicht dorthin, sie liegen nur lokal).
+- **Daten:** Fotos der Trainer:innen (mit Einwilligung); sonst keine Personendaten vorgesehen.
+- **Rechtsgrundlage:** Einwilligung der Trainer:innen (Art. 6 Abs. 1 lit. a DSGVO) bzw. Art. 6 Abs. 1 lit. b DSGVO.
+- **Empfänger:** Google (Auftragsverarbeiter, Vertrag über Google Workspace prüfen).
+- **Löschfrist:** solange die Person als Trainer:in tätig ist bzw. bis zum Widerruf.
 
 ## TOM (technische und organisatorische Maßnahmen, Kurzfassung)
 
@@ -102,8 +121,8 @@ Gilt für die Lernplattform learn.climatejobsacademy.com (Production, Supabase F
 
 ## Offen
 
-- Datenschutzbeauftragte:r: Pflicht laut § 38 BDSG erst ab 20 Personen, die ständig mit der Verarbeitung personenbezogener Daten beschäftigt sind; vermutlich nicht nötig, kurz bestätigen.
 - Auftragsverarbeitungsverträge: Supabase, Vercel und Brevo binden ihren Vertrag über die Nutzungsbedingungen ein; ablegen bzw. Link festhalten.
-- Microsoft Teams (Live-Unterricht), Google Drive (Lernmaterial, Trainerfotos) und weitere Werkzeuge außerhalb der Plattform: ins Gesamtverzeichnis der Akademie aufnehmen.
+- Gesamtverzeichnis der Akademie: ob es eins gibt, ist unklar. Wenn ja, die Abschnitte 9 und 10 dorthin übernehmen; wenn nein, dieses Verzeichnis nach dem Pilot um die übrigen Tätigkeiten der Akademie erweitern.
+- Teams: wem der Bereich gehört und ob aufgezeichnet wird (Abschnitt 9).
 - Aufbewahrungspflichten (AZAV) für Nachweise: rechtlich klären.
 - Keine rechtliche Prüfinstanz.
