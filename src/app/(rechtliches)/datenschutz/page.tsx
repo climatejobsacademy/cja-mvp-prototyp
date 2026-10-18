@@ -14,8 +14,6 @@ export default function DatenschutzPage() {
   // Chat genauer, Fragen-Thread an Live-Lektionen, Fachsprache-Übungen mit
   // Vorlesen, Anwesenheit und Kompetenzfortschritt, Trainer-Bereich,
   // Anonymisieren beim Löschen eines Kontos. Datum „Stand“ im Release setzen.
-  // Optional, nach Veröffentlichung:
-  // (1) DPF-Zertifizierung von Vercel optional prüfen und ergänzen.
   return (
     <main className="prose mx-auto px-4 py-12">
       <h1>Datenschutzerklärung</h1>
@@ -38,7 +36,9 @@ export default function DatenschutzPage() {
         Leipzig, vertreten durch die Geschäftsführerin Anna Sauter-Getschmann.
         E-Mail:{" "}
         <a href="mailto:info@climatejobsacademy.com">info@climatejobsacademy.com</a>.
-        Bei Fragen zum Datenschutz erreichen Sie uns unter dieser Adresse.
+        Bei Fragen zum Datenschutz erreichen Sie uns unter dieser Adresse. Eine
+        oder ein Datenschutzbeauftragter ist nicht benannt, da die
+        gesetzlichen Voraussetzungen dafür (§ 38 BDSG) nicht vorliegen.
       </p>
 
       <h2>Account und Authentifizierung</h2>
@@ -52,6 +52,19 @@ export default function DatenschutzPage() {
         und Organisation, Zeitpunkte der Anmeldung sowie, soweit erfasst,
         Geburtsdatum, Geschlecht (die Angabe „keine Angabe“ ist möglich),
         Vorerfahrung und Sprache. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.
+      </p>
+
+      <h2>Partnerorganisation (Bildungsträger)</h2>
+      <p>
+        Sie nehmen an der Qualifizierung über eine Partnerorganisation teil, in
+        der Regel einen Bildungsträger. Ihren Namen und Ihre E-Mail-Adresse
+        erhalten wir von dieser Partnerorganisation, um Ihr Nutzerkonto
+        anzulegen. Wir geben Ihre Anwesenheit und Ihren Lernfortschritt an die
+        Partnerorganisation weiter, damit sie die Qualifizierung begleiten und,
+        soweit nötig, gegenüber Fördergebern nachweisen kann. Auf der Plattform
+        selbst hat die Partnerorganisation keinen Zugriff auf diese Daten.
+        Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO, soweit förderrechtlich
+        vorgeschrieben Art. 6 Abs. 1 lit. c DSGVO.
       </p>
 
       <h2>Lernfortschritt und Nachweise</h2>
@@ -108,12 +121,12 @@ export default function DatenschutzPage() {
         Symbole, keine Anhänge; Nachrichten lassen sich nicht bearbeiten. Bitte
         schreiben Sie keine sensiblen Angaben und keine Daten anderer Personen.
         Verarbeitet werden der Text Ihrer Nachricht, der Zeitpunkt, der Kanal,
-        Ihre Kohorte, Ihr Arbeitgeber (wird nicht angezeigt), Ihr Rufname mit
+        Ihre Kohorte, Ihre Partnerorganisation (wird nicht angezeigt), Ihr Rufname mit
         dem Anfangsbuchstaben Ihres Nachnamens in der Form, die beim Schreiben
         galt, sowie, bis wann Sie einen Kanal gelesen haben (für die Anzeige
         ungelesener Nachrichten). Sichtbar sind Ihre Nachrichten für alle
-        Teilnehmenden Ihrer Kohorte, auch wenn sie bei einem anderen
-        Arbeitgeber beschäftigt sind, für die Trainerinnen und Trainer Ihrer
+        Teilnehmenden Ihrer Kohorte, auch wenn sie über eine andere
+        Partnerorganisation teilnehmen, für die Trainerinnen und Trainer Ihrer
         Kohorte (alle, die dort mindestens einen Termin leiten), für Personen,
         die Ihre Kohorte moderieren, und für das zuständige Personal der
         Akademie für Klimajobs. Nach dem Ende Ihrer Kohorte können Sie und die
@@ -245,8 +258,11 @@ export default function DatenschutzPage() {
         Serverseitige Funktionen laufen in der EU (Frankfurt). Beim Aufruf der
         Plattform verarbeitet Vercel technische Verbindungsdaten wie Ihre
         IP-Adresse; einzelne Anfragen können dabei über das weltweit verteilte
-        Netzwerk von Vercel laufen. Die Übermittlung in die USA stützt sich auf
-        die EU-Standardvertragsklauseln nach Art. 46 Abs. 2 lit. c DSGVO, die in
+        Netzwerk von Vercel laufen. Vercel ist nach dem EU-US Data Privacy
+        Framework zertifiziert; die Übermittlung in die USA stützt sich daher
+        auf den Angemessenheitsbeschluss der EU-Kommission (Art. 45 DSGVO) und
+        zusätzlich auf die EU-Standardvertragsklauseln nach Art. 46 Abs. 2
+        lit. c DSGVO, die in
         die Datenverarbeitungsvereinbarung (DPA) von Vercel eingebunden sind (
         <a href="https://vercel.com/legal/dpa">vercel.com/legal/dpa</a>).
         Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (sicherer und effizienter
@@ -256,11 +272,12 @@ export default function DatenschutzPage() {
       <h2>Datenbankdienst</h2>
       <p>
         Alle Nutzerdaten, Lernfortschritte und Nachweise werden in Supabase
-        (Supabase Inc., USA) gespeichert. Der Datenbankserver befindet sich in
-        der EU (Frankfurt). Mit Supabase besteht ein Auftragsverarbeitungsvertrag.
-        Da der Anbieter seinen Konzernsitz in den USA hat, sichern wir mögliche
-        Zugriffe zusätzlich durch Standardvertragsklauseln nach Art. 46 Abs. 2
-        lit. c DSGVO ab.
+        (Supabase Pte. Ltd., Singapur) gespeichert. Der Datenbankserver befindet
+        sich in der EU (Frankfurt). Mit Supabase besteht ein
+        Auftragsverarbeitungsvertrag. Da der Anbieter seinen Sitz außerhalb der
+        EU hat und zu einer Unternehmensgruppe mit Gesellschaften in den USA
+        gehört, sichern wir mögliche Zugriffe zusätzlich durch
+        Standardvertragsklauseln nach Art. 46 Abs. 2 lit. c DSGVO ab.
       </p>
 
       <h2>Cookies und Session-Management</h2>
@@ -300,11 +317,19 @@ export default function DatenschutzPage() {
         und die damit verbundenen Daten innerhalb eines Monats nach Eingang
         Ihrer Anfrage (Art. 12 Abs. 3 DSGVO), soweit keine
         Aufbewahrungspflichten entgegenstehen. Die Löschung erfolgt derzeit
-        manuell.
+        manuell. Nach dem Ende Ihrer Qualifizierung bewahren wir Ihre
+        Nachweise (Anwesenheit, Lernfortschritt, Praxisberichte,
+        Kompetenznachweise) auf, um Ihre Qualifizierung Ihnen gegenüber und
+        gegenüber Fördergebern belegen zu können (Art. 6 Abs. 1 lit. f DSGVO,
+        soweit gesetzlich vorgeschrieben Art. 6 Abs. 1 lit. c DSGVO). Eine
+        feste Frist und eine automatische Löschung danach legen wir derzeit
+        fest; bis dahin löschen wir auf Anfrage wie oben beschrieben.
       </p>
       <p>
         Beiträge zu Fragen und Antworten sowie Nachrichten im Kohorten-Chat
-        speichern wir, solange die jeweilige Kohorte besteht. Wird Ihr
+        speichern wir, solange die jeweilige Kohorte besteht; nach ihrem Ende
+        bleiben sie für die Teilnehmenden zum Nachlesen verfügbar (Art. 6 Abs.
+        1 lit. f DSGVO). Wird Ihr
         Nutzerkonto gelöscht, entfernen wir Text und Namen Ihrer Beiträge und
         Nachrichten; an ihrer Stelle erscheint ein Hinweis, dass der Beitrag
         gelöscht wurde, damit Antworten anderer verständlich bleiben. Eine
@@ -318,9 +343,10 @@ export default function DatenschutzPage() {
       <h2>Weitergabe an Dritte</h2>
       <p>
         Personenbezogene Daten werden nicht verkauft oder zu Werbezwecken
-        weitergegeben. Eine Weitergabe erfolgt ausschließlich an die
-        technischen Dienstleister Vercel (Hosting), Supabase (Datenbank) und
-        Brevo (E-Mail-Versand) sowie, soweit gesetzlich vorgeschrieben, an
+        weitergegeben. Eine Weitergabe erfolgt ausschließlich an Ihre
+        Partnerorganisation (Anwesenheit und Lernfortschritt, siehe oben), an
+        die technischen Dienstleister Vercel (Hosting), Supabase (Datenbank)
+        und Brevo (E-Mail-Versand) sowie, soweit gesetzlich vorgeschrieben, an
         Behörden.
       </p>
 
@@ -331,7 +357,11 @@ export default function DatenschutzPage() {
         Datenübertragbarkeit (Art. 20). Soweit wir Daten auf Grundlage
         berechtigter Interessen (Art. 6 Abs. 1 lit. f DSGVO) verarbeiten, können
         Sie dem aus Gründen, die sich aus Ihrer besonderen Situation ergeben,
-        widersprechen (Art. 21 DSGVO). Zur Ausübung dieser Rechte:{" "}
+        widersprechen (Art. 21 DSGVO); der Widerspruch ist an keine Form
+        gebunden. Eine Einwilligung (zum Beispiel für Ihr Profilfoto) können
+        Sie jederzeit mit Wirkung für die Zukunft widerrufen (Art. 7 Abs. 3
+        DSGVO); die bis dahin erfolgte Verarbeitung bleibt rechtmäßig. Zur
+        Ausübung dieser Rechte:{" "}
         <a href="mailto:info@climatejobsacademy.com">info@climatejobsacademy.com</a>
       </p>
 
