@@ -9,7 +9,7 @@ Skript: `scripts/lernende-anlegen.mjs` (Teile in `scripts/lernende-anlegen/`). R
 3. Datei prüfen ohne Datenbank: `--nur-pruefen`.
 4. Probelauf gegen Staging. Das ist der Standard, am Ende wird alles zurückgerollt.
 5. Echter Lauf mit `--ausfuehren`, nur mit Freigabe. Mit `--plan-datei` und `--trainer-datei` läuft danach gleich der Plan-Import für die Kohorten der Liste (Praxistage), mit Rückfrage „Tippe ja“.
-6. Kontrolle am Ende lesen (läuft immer nach dem echten Lauf), dann Startnachricht an die Lernenden.
+6. Kontrolle am Ende lesen (läuft immer nach dem echten Lauf). Die Anmeldung erklärt Malte im ersten Termin (keine Startnachricht, Entscheidung Anna 18.10.).
 
 ```sh
 DIR="$HOME/Projects/import-daten"
@@ -43,15 +43,20 @@ node scripts/lernende-anlegen.mjs --datei "$DIR/lernende-staging.csv" --ziel sta
 
 # Production, echter Lauf (Ref-Abfrage, dann „Tippe ja“, dann Ref-Abfrage des Plan-Imports)
 node scripts/lernende-anlegen.mjs --datei "$DIR/lernende-production.csv" --ziel production --production-freigabe \
-  --plan-datei "$DIR/<plan.xlsx>" --trainer-datei "$DIR/trainer-production.csv" --ohne-praxis II --ausfuehren
+  --plan-datei "$DIR/<plan.xlsx>" --trainer-datei "$DIR/trainer-production.csv" --ausfuehren
 ```
 
 ## Reihenfolge auf Production
 
-1. **Plan-Import** (`docs/import-plan.md`): legt Module, Kompetenzen, Aufträge und die Kohorten-Termine an. Vorher gibt es die Kohorte auf Production gar nicht.
-2. **Trainer:innen** verknüpfen (`import-plan.mjs … --nur-trainer`, siehe `docs/import-plan.md`).
-3. **Lernende** mit diesem Skript, **mit `--plan-datei` und `--trainer-datei`**. Das ist der zweite Plan-Import, er läuft am Ende automatisch mit.
-4. Fertig: Kontrolle am Ende ohne Warnung, dann Startnachricht.
+Kohorte „Energiehelden 28.09.26“ und Betrieb Energiehelden gibt es auf Production schon (nur lesend geprüft am 18.10.). Der erste Plan-Import braucht deshalb noch keine Lernenden.
+
+1. **Release 1** (`docs/release.md`): Migrationen und App-Version.
+2. **Plan-Import** (`docs/import-plan.md`): legt Module, Kompetenzen, Aufträge und die Kohorten-Termine an.
+3. **Trainer:innen** verknüpfen (`import-plan.mjs … --nur-trainer`, siehe `docs/import-plan.md`).
+4. SCORM-Pakete (`docs/scorm-einspielen.md`) und Fachsprache (`docs/import-plan.md`).
+5. **Team-Testkonten** (siehe unten).
+6. **Lernende** mit diesem Skript, sobald die Liste da ist, **mit `--plan-datei` und `--trainer-datei`**. Das ist der zweite Plan-Import, er läuft am Ende automatisch mit.
+7. Fertig: Kontrolle am Ende ohne Warnung.
 
 ### Warum der zweite Plan-Import nötig ist
 
@@ -115,7 +120,7 @@ Sprache (`DE`), Geschlecht („keine Angabe“), Geburtsdatum und Vorerfahrung s
 | `--plan-datei <plan.xlsx>` | dieselbe Excel wie beim Plan-Import; schaltet den Plan-Import am Ende ein |
 | `--trainer-datei <trainer-….csv>` | mit `--plan-datei` Pflicht; dieselbe staging-Regel wie beim Plan-Import |
 | `--kohorte "Name@+7"` | Versatz in Tagen für eine Kohorte **aus der Lernenden-Liste** (wie beim Plan-Import). Ohne Angabe Versatz 0. Eine Kohorte, die nicht in der Liste steht, ist ein Fehler |
-| `--module`, `--ohne-praxis II`, `--ohne-zuordnung-erlauben` | werden unverändert an den Plan-Import gegeben (Production zurzeit mit `--ohne-praxis II`) |
+| `--module`, `--ohne-praxis II`, `--ohne-zuordnung-erlauben` | werden unverändert an den Plan-Import gegeben (Production mit Praxis Modul II, also ohne `--ohne-praxis`) |
 
 Nicht weitergegeben werden Fachsprache (`--fachsprache`, `--nur-fachsprache`), `--nur-trainer` und `--migration-vorab`. Diese Parameter gelten nur zusammen mit `--plan-datei`.
 
@@ -144,7 +149,7 @@ Je Zeile die Zeilennummer, die maskierte Adresse (`t***@example.org`, nie die ga
 | Konflikt | nichts geschrieben, Grund im Hinweis (siehe Regeln) |
 | Auth-Konto fehlt | kein Konto mit dieser E-Mail: zuerst im Dashboard anlegen |
 
-Danach je Tabelle, was neu bzw. unverändert ist, mit `--plan-datei` den Plan-Import, nach dem echten Lauf die Kontrolle, und den Hinweis auf die Startnachricht.
+Danach je Tabelle, was neu bzw. unverändert ist, mit `--plan-datei` den Plan-Import, nach dem echten Lauf die Kontrolle, und den Hinweis zur Anmeldung.
 
 ### Was das Skript schreibt
 
@@ -166,9 +171,9 @@ node scripts/import-plan.mjs --datei "$DIR/<plan.xlsx>" --ziel staging \
   --trainer-datei "$DIR/trainer-staging.csv" --kohorte "<Kohortenname>"
 ```
 
-## Schritt 4: Startnachricht
+## Schritt 4: Anmeldung der Lernenden
 
-Die Lernenden melden sich selbst an: Seite öffnen, E-Mail eingeben, Link aus der Mail öffnen.
+Es gibt keine Startnachricht: Malte erklärt die Anmeldung im ersten Termin am 02.11. (Entscheidung Anna 18.10.). Die Lernenden melden sich selbst an: Seite öffnen, E-Mail eingeben, Link aus der Mail öffnen.
 
 - Production: https://learn.climatejobsacademy.com/login
 - Staging (Vorschau): https://cja-mvp-prototyp-git-dev-af-cj-s.vercel.app/login
@@ -182,7 +187,7 @@ Team-Mitglieder bekommen eigene **Lernenden**-Test-Konten über dasselbe Skript,
 - Eigene Adresse mit Zusatz, z. B. `name+test@…` (nicht `+demo@`, die fasst das Skript nie an). Auth-Konto wie in Schritt 1 im Dashboard anlegen.
 - Eine Zeile in der Lernenden-CSV, Aufruf mit `--plan-datei`, damit das Konto auch Praxistage bekommt.
 - **Staging:** im Betrieb Energiehelden, in der Kohorte der echten Test-Lernenden.
-- **Production: noch offen**, ob im Betrieb Energiehelden oder in einem eigenen Team-Betrieb. Bei einem eigenen Team-Betrieb sähen echte Lernende das Test-Konto nicht in „Deine Kohorte“, im Chat und in der Anwesenheitsliste der Kohorte aber schon. Bis zur Entscheidung keine Team-Testkonten auf Production anlegen.
+- **Production:** in einem eigenen Team-Betrieb, in der Kohorte der Lernenden (Entscheidung Anna 18.10.). Dafür gibt es schon den Betrieb „Test-Arbeitgeber (Dev)“ (Name später änderbar). Echte Lernende sehen die Testkonten dann nicht in „Deine Kohorte“. Ob sie im Chat oder in der Anwesenheitsliste auftauchen, beim Klicktest prüfen. Tauchen sie dort auf, nimmt Anna sie vor dem 02.11. wieder aus der Kohorte.
 
 ## Regeln
 

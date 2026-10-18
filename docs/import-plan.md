@@ -21,12 +21,12 @@ node scripts/import-plan.mjs --datei "$DATEI" --ziel staging \
   --trainer-datei "$DIR/trainer-staging.csv" \
   --kohorte "Energiehelden 28.09.26" --kohorte "DEMO Rim@+14"
 
-# Echter Lauf Staging (erst nach der Demo am 15.10.): gleicher Aufruf mit --ausfuehren
+# Echter Lauf Staging: gleicher Aufruf mit --ausfuehren
 
-# Production: nur mit --production-freigabe; ohne Tagesplanung Modul II die Praxis weglassen;
+# Production: nur mit --production-freigabe, mit Praxis Modul II (Entscheidung Anna 18.10.);
 # der echte Lauf fragt zusätzlich die Projekt-Ref ab
 node scripts/import-plan.mjs --datei "$DATEI" --ziel production --production-freigabe \
-  --trainer-datei "$DIR/trainer-production.csv" --ohne-praxis II --kohorte "<Kohortenname>" [--ausfuehren]
+  --trainer-datei "$DIR/trainer-production.csv" --kohorte "Energiehelden 28.09.26" [--ausfuehren]
 ```
 
 ## Voraussetzungen
@@ -40,7 +40,8 @@ node scripts/import-plan.mjs --datei "$DATEI" --ziel production --production-fre
 
 - Migrationen 0025–0030 (und 0031 für die Kann-Sätze) sind auf Production angewendet.
 - **Die Teilschritte ohne jede Zuordnung sind in der Excel korrigiert** (Stand 13.10.: 9, Liste mit `--nur-analyse`). Solange es welche gibt, bricht das Skript gegen Production ab. Abschalten nur bewusst mit `--ohne-zuordnung-erlauben`.
-- Die Tagesplanung des Praxisblocks Modul II liegt vor. Bis dahin läuft Production mit `--ohne-praxis II`.
+- Die Tagesplanung des Praxisblocks Modul II steht in der Excel (seit 16.10.). Production läuft deshalb **mit** Praxis Modul II. Meldet der Probelauf trotzdem „VORLÄUFIG“ (Aufträge ohne Tagesbindung), vor dem echten Lauf mit Malte klären.
+- Die Kohorte und ihr Betrieb gibt es schon (nur lesend geprüft am 18.10.): „Energiehelden 28.09.26“ mit 20 Stundenplan-Einträgen, alle am Betrieb Energiehelden. Der Import legt keine Kohorte an. Er nimmt den Betrieb aus den vorhandenen Stundenplan-Einträgen, sonst aus den Einschreibungen; ist er nicht eindeutig, bricht er ab. Lernende müssen für den ersten Import also noch nicht angelegt sein.
 - Trainer-Konten sind im Dashboard angelegt, `trainer-production.csv` ist gepflegt.
 
 ## Trainer-Konten
@@ -127,7 +128,7 @@ Die Ausgabe listet, was bewusst nicht in die Datenbank geht, mit Grund (u. a. Mo
 
 ### Praxisblock ohne Tagesbindung (Modul II, 16.–24.11.): vorläufig
 
-**Vorläufig, die Tagesplanung von Malte fehlt.** `field_job` hat genau ein Datum, und Home zeigt die offene Praxisaufgabe von heute („Zur Praxisaufgabe“). Als Platzhalter verteilt das Skript die Aufträge der Reihe nach auf die Blocktage: zwei pro Tag, am letzten Tag einer, ganztägig ohne Uhrzeit. Die Ausgabe kennzeichnet das als „VORLÄUFIG“. Für Production mit `--ohne-praxis II` laufen lassen, bis die Planung da ist. Danach die Verteilung im Skript bzw. in der Excel nachziehen. Achtung: Wurden Platzhalter-Praxistage schon gespeichert (Staging), legt ein Lauf mit neuer Verteilung die neuen Tage zusätzlich an (Schlüssel ist das Datum). Die alten Platzhalter dann vorher entfernen oder verschieben.
+**Vorläufig, die Tagesplanung von Malte fehlt.** `field_job` hat genau ein Datum, und Home zeigt die offene Praxisaufgabe von heute („Zur Praxisaufgabe“). Als Platzhalter verteilt das Skript die Aufträge der Reihe nach auf die Blocktage: zwei pro Tag, am letzten Tag einer, ganztägig ohne Uhrzeit. Die Ausgabe kennzeichnet das als „VORLÄUFIG“. Seit dem 16.10. hat die Excel die Tagesplanung; der Platzhalter greift nur noch für Aufträge ohne Tagesbindung. Taucht „VORLÄUFIG“ im Production-Probelauf auf, vorher mit Malte klären. Achtung: Wurden Platzhalter-Praxistage schon gespeichert (Staging), legt ein Lauf mit neuer Verteilung die neuen Tage zusätzlich an (Schlüssel ist das Datum). Die alten Platzhalter dann vorher entfernen oder verschieben.
 
 ## Fachsprache-Einheiten
 
