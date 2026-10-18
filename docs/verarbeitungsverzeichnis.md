@@ -11,8 +11,8 @@ Gilt für die Lernplattform learn.climatejobsacademy.com (Production, Supabase F
 | Verantwortliche Stelle | Akademie für Klimajobs UG (haftungsbeschränkt), Kochstraße 42, 04275 Leipzig, vertreten durch die Geschäftsführerin Anna Sauter-Getschmann, info@climatejobsacademy.com |
 | Gemeinsam Verantwortliche | keine für die Plattform; für Microsoft Teams ggf. der Partner Energiehelden (Art. 26 DSGVO, zu klären, siehe Tätigkeit 9) |
 | Datenschutzbeauftragte:r | keine:r benannt; nicht verpflichtend, weil weniger als 20 Personen ständig mit der Verarbeitung personenbezogener Daten beschäftigt sind (§ 38 BDSG, Bestätigung Anna 18.10.2026) |
-| Auftragsverarbeiter (Art. 28 DSGVO) | Supabase (Datenbank, Login, Dateispeicher; Server in der EU, Frankfurt; Vertragspartei laut aktuellem DPA prüfen: Supabase, Inc., USA, bzw. Supabase Pte. Ltd.), Vercel Inc., USA (Hosting; Funktionen in Frankfurt, weltweites Netzwerk), Brevo GmbH, Berlin (Versand der Login-Mails; EU-Rechenzentren, Unterauftragsverarbeiter z. B. Cloudflare) |
-| Drittlandübermittlung (Art. 30 Abs. 1 lit. e) | **Vercel Inc. (USA):** zertifiziert nach dem EU-US Data Privacy Framework, also Angemessenheitsbeschluss (Art. 45 DSGVO); zusätzlich Standardvertragsklauseln im DPA. **Supabase:** Daten auf Servern in Frankfurt; mögliche Zugriffe aus dem Drittland abgesichert über Standardvertragsklauseln (Art. 46 Abs. 2 lit. c DSGVO, Durchführungsbeschluss (EU) 2021/914) im DPA; eine eigene Risikoanalyse (Transfer Impact Assessment) liegt nicht vor (offen). **Unterauftragsverarbeiter von Brevo:** Standardvertragsklauseln bzw. Data Privacy Framework laut Brevo. |
+| Auftragsverarbeiter (Art. 28 DSGVO) | Supabase Pte. Ltd., Singapur (Datenbank, Login, Dateispeicher; Server in der EU, Frankfurt; DPA Version 1 vom 01.08.2026, gilt ohne gesonderte Unterschrift), Vercel Inc., USA (Hosting; Funktionen in Frankfurt, weltweites Netzwerk), Brevo GmbH, Berlin (Versand der Login-Mails; EU-Rechenzentren, Unterauftragsverarbeiter z. B. Cloudflare) |
+| Drittlandübermittlung (Art. 30 Abs. 1 lit. e) | **Vercel Inc. (USA):** zertifiziert nach dem EU-US Data Privacy Framework, also Angemessenheitsbeschluss (Art. 45 DSGVO); zusätzlich Standardvertragsklauseln im DPA. **Supabase:** Daten auf Servern in Frankfurt; mögliche Zugriffe aus dem Drittland abgesichert über Standardvertragsklauseln (Art. 46 Abs. 2 lit. c DSGVO, Durchführungsbeschluss (EU) 2021/914) im DPA; Risikoanalyse (Transfer Impact Assessment) in `docs/tia-supabase.md`. **Unterauftragsverarbeiter von Brevo:** Standardvertragsklauseln bzw. Data Privacy Framework laut Brevo. |
 | Technische und organisatorische Maßnahmen | siehe Abschnitt „TOM“ am Ende |
 
 ## Tätigkeiten
@@ -123,8 +123,7 @@ Gilt für die Lernplattform learn.climatejobsacademy.com (Production, Supabase F
 
 ## Offen
 
-- Auftragsverarbeitungsverträge: die aktuellen DPAs von Supabase, Vercel und Brevo als PDF herunterladen, wo nötig unterzeichnen (Supabase: im Dashboard bzw. laut DPA „signs or otherwise agrees“ prüfen) und mit Datum ablegen.
-- Transfer Impact Assessment für Supabase (Standardvertragsklauseln): kurz dokumentieren oder auf die Unterlagen von Supabase verweisen.
+- Auftragsverarbeitungsverträge: die aktuellen DPAs von Supabase, Vercel und Brevo als PDF mit Datum ablegen (Anna, 18.10.2026).
 - Gesamtverzeichnis der Akademie: ob es eins gibt, ist unklar. Wenn ja, die Abschnitte 9 und 10 dorthin übernehmen; wenn nein, dieses Verzeichnis nach dem Pilot um die übrigen Tätigkeiten der Akademie erweitern.
 - Teams: gemeinsame Verantwortlichkeit mit dem Partner klären (Abschnitt 9).
 - Aufbewahrungspflichten (AZAV) für Nachweise: rechtlich klären.
