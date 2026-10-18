@@ -14,8 +14,6 @@ export default function DatenschutzPage() {
   // Chat genauer, Fragen-Thread an Live-Lektionen, Fachsprache-Übungen mit
   // Vorlesen, Anwesenheit und Kompetenzfortschritt, Trainer-Bereich,
   // Anonymisieren beim Löschen eines Kontos. Datum „Stand“ im Release setzen.
-  // Optional, nach Veröffentlichung:
-  // (1) DPF-Zertifizierung von Vercel optional prüfen und ergänzen.
   return (
     <main className="prose mx-auto px-4 py-12">
       <h1>Datenschutzerklärung</h1>
@@ -245,8 +243,11 @@ export default function DatenschutzPage() {
         Serverseitige Funktionen laufen in der EU (Frankfurt). Beim Aufruf der
         Plattform verarbeitet Vercel technische Verbindungsdaten wie Ihre
         IP-Adresse; einzelne Anfragen können dabei über das weltweit verteilte
-        Netzwerk von Vercel laufen. Die Übermittlung in die USA stützt sich auf
-        die EU-Standardvertragsklauseln nach Art. 46 Abs. 2 lit. c DSGVO, die in
+        Netzwerk von Vercel laufen. Vercel ist nach dem EU-US Data Privacy
+        Framework zertifiziert; die Übermittlung in die USA stützt sich daher
+        auf den Angemessenheitsbeschluss der EU-Kommission (Art. 45 DSGVO) und
+        zusätzlich auf die EU-Standardvertragsklauseln nach Art. 46 Abs. 2
+        lit. c DSGVO, die in
         die Datenverarbeitungsvereinbarung (DPA) von Vercel eingebunden sind (
         <a href="https://vercel.com/legal/dpa">vercel.com/legal/dpa</a>).
         Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO (sicherer und effizienter
@@ -256,11 +257,12 @@ export default function DatenschutzPage() {
       <h2>Datenbankdienst</h2>
       <p>
         Alle Nutzerdaten, Lernfortschritte und Nachweise werden in Supabase
-        (Supabase Inc., USA) gespeichert. Der Datenbankserver befindet sich in
-        der EU (Frankfurt). Mit Supabase besteht ein Auftragsverarbeitungsvertrag.
-        Da der Anbieter seinen Konzernsitz in den USA hat, sichern wir mögliche
-        Zugriffe zusätzlich durch Standardvertragsklauseln nach Art. 46 Abs. 2
-        lit. c DSGVO ab.
+        (Supabase Pte. Ltd., Singapur) gespeichert. Der Datenbankserver befindet
+        sich in der EU (Frankfurt). Mit Supabase besteht ein
+        Auftragsverarbeitungsvertrag. Da der Anbieter seinen Sitz außerhalb der
+        EU hat und zu einer Unternehmensgruppe mit Gesellschaften in den USA
+        gehört, sichern wir mögliche Zugriffe zusätzlich durch
+        Standardvertragsklauseln nach Art. 46 Abs. 2 lit. c DSGVO ab.
       </p>
 
       <h2>Cookies und Session-Management</h2>
