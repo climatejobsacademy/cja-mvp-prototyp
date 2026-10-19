@@ -82,7 +82,13 @@ function karten(
     }
     case "D":
       return {
-        fokus: <FokusErledigt naechsterTag={naechster ? naechsterTagText(naechster) : null} gestaerkt={gestaerkt} />,
+        fokus: (
+          <FokusErledigt
+            naechsterTag={naechster ? naechsterTagText(naechster) : null}
+            gestaerkt={gestaerkt}
+            praxis={zustand.erledigt.some((e) => e.typ === "praxis")}
+          />
+        ),
         leiste: <HeuteErledigtLeiste erledigt={zustand.erledigt} />,
       };
     case "E":

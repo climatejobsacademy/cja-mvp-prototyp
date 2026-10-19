@@ -297,21 +297,26 @@ export function FokusFlex({
 /**
  * D: alles erledigt, Vorschau auf den nächsten geplanten Tag. Die heute
  * gestärkten Ringe nur, wenn es keine Kompetenz-Spalte gibt (sonst stehen
- * sie dort schon unter "Heute dran").
+ * sie dort schon unter "Heute dran"). An einem Praxistag in Coral wie die
+ * Praxistag-Karte (Anna 2026-10-19).
  */
 export function FokusErledigt({
   naechsterTag,
   gestaerkt,
+  praxis,
 }: {
   naechsterTag: string | null;
   gestaerkt: GestaerkteKompetenz[];
+  praxis?: boolean;
 }) {
+  const leise = praxis ? "text-ink/80" : "text-white/85";
   return (
     <FokusRahmen
+      praxis={praxis}
       rechts={
         gestaerkt.length > 0 && (
           <div className="flex flex-col gap-3">
-            <span className="text-sm font-semibold text-white/85">Heute gestärkt</span>
+            <span className={cn("text-sm font-semibold", leise)}>Heute gestärkt</span>
             <ul className="flex flex-wrap gap-7">
               {gestaerkt.slice(0, 3).map((k) => (
                 <li
@@ -319,8 +324,8 @@ export function FokusErledigt({
                   aria-label={`${k.name}, ${k.prozent} Prozent, heute dran`}
                   className="flex w-24 flex-col items-center gap-2.5 text-center"
                 >
-                  <Ring prozent={k.prozent} glow dunkel />
-                  <span aria-hidden="true" className="text-[13px] leading-snug text-white/85">
+                  <Ring prozent={k.prozent} glow dunkel={!praxis} />
+                  <span aria-hidden="true" className={cn("text-[13px] leading-snug", leise)}>
                     {k.name}
                   </span>
                 </li>
@@ -333,7 +338,7 @@ export function FokusErledigt({
       <LimePill>Für heute</LimePill>
       <h3 className="font-heading text-[36px] leading-none font-normal md:text-[48px]">Alles erledigt</h3>
       {naechsterTag && (
-        <span className="mt-1 inline-flex items-center gap-2.5 text-[15px] text-white/85">
+        <span className={cn("mt-1 inline-flex items-center gap-2.5 text-[15px]", leise)}>
           <CalendarDays className="size-[18px] shrink-0" aria-hidden="true" />
           {naechsterTag}
         </span>
