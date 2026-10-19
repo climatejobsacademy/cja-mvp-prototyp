@@ -161,9 +161,23 @@ function FokusTitel({
 }
 
 /** "Live mit …" / "Praxis mit …" mit Foto (SR-78); ohne eingetragene Person nichts. */
-function FokusTrainer({ art, trainer }: { art: "live" | "praxis"; trainer?: TrainerAnzeige | null }) {
+function FokusTrainer({
+  art,
+  trainer,
+  aufCoral,
+}: {
+  art: "live" | "praxis";
+  trainer?: TrainerAnzeige | null;
+  aufCoral?: boolean;
+}) {
   if (!trainer) return null;
-  return <TrainerZeile art={art} trainer={trainer} className={cn("mt-1", art === "praxis" ? "text-ink" : "text-white/85")} />;
+  return (
+    <TrainerZeile
+      art={art}
+      trainer={trainer}
+      className={cn("mt-1", art === "praxis" || aufCoral ? "text-ink" : "text-white/85")}
+    />
+  );
 }
 
 /**
@@ -202,6 +216,9 @@ function StaerktPills({ kompetenzen, aufCoral }: { kompetenzen?: StaerktKompeten
   );
 }
 
+// An einem Praxistag sind alle Fokus-Karten in Coral, nicht nur die
+// Praxistag-Karte selbst (Anna 2026-10-19): Prop `praxis`.
+
 /** A (bevorstehend) und B (läuft gerade). */
 export function FokusLive({
   live,
@@ -209,16 +226,20 @@ export function FokusLive({
   staerkt,
   trainer,
   stil,
+  praxis,
 }: {
   live: LiveAktivitaet;
   laeuft: boolean;
   staerkt?: StaerktKompetenz[];
   trainer?: TrainerAnzeige | null;
   stil?: TitelStil;
+  /** Heute ist ein Praxistag: Karte in Coral */
+  praxis?: boolean;
 }) {
   const ziel = live.joinLink ?? (live.lessonId ? lektionHref(live.lessonId) : null);
   return (
     <FokusRahmen
+      praxis={praxis}
       links={
         laeuft ? (
           <>
@@ -240,14 +261,15 @@ export function FokusLive({
         icon={<Video className="size-[22px]" />}
         art={laeuft ? `Live-Unterricht, seit ${hhmm(live.start)}` : "Live-Unterricht"}
         stil={stil}
+        aufCoral={praxis}
       />
-      <FokusTrainer art="live" trainer={trainer} />
-      <StaerktPills kompetenzen={staerkt} />
+      <FokusTrainer art="live" trainer={trainer} aufCoral={praxis} />
+      <StaerktPills kompetenzen={staerkt} aufCoral={praxis} />
       {ziel && (
         <PrimaerAktion
           href={ziel}
           extern={!!live.joinLink}
-          mehr={live.lessonId && <MehrMenue lessonId={live.lessonId} />}
+          mehr={live.lessonId && <MehrMenue lessonId={live.lessonId} aufCoral={praxis} />}
         >
           {laeuft ? "Jetzt beitreten" : "Zum Live-Unterricht"}
         </PrimaerAktion>
@@ -267,28 +289,37 @@ export function FokusFlex({
   staerkt,
   nurSelbstlernen,
   stil,
+  praxis,
 }: {
   lektion: OffeneLektion & { thema: string | null; festigt: boolean };
   staerkt?: StaerktKompetenz[];
   nurSelbstlernen?: boolean;
   stil?: TitelStil;
+  /** Heute ist ein Praxistag: Karte in Coral */
+  praxis?: boolean;
 }) {
   return (
     <FokusRahmen
+      praxis={praxis}
       links={
         <>
           {nurSelbstlernen ? <LimePill>Heute</LimePill> : ALS_NAECHSTES}
-          <span className="flex size-12 items-center justify-center rounded-2xl bg-white/15 text-white md:size-16">
+          <span
+            className={cn(
+              "flex size-12 items-center justify-center rounded-2xl md:size-16",
+              praxis ? "bg-white/45 text-ink" : "bg-white/15 text-white"
+            )}
+          >
             <BookOpen className="size-6 md:size-8" aria-hidden="true" />
           </span>
         </>
       }
     >
-      <span className="text-sm text-white/85">
+      <span className={cn("text-sm", praxis ? "text-ink/80" : "text-white/85")}>
         {lektion.festigt ? "Selbstlernen · Wissen festigen" : "Selbstlernen · flexibel"}
       </span>
-      <FokusTitel titel={lektion.titel} thema={lektion.thema} stil={stil} />
-      <StaerktPills kompetenzen={staerkt} />
+      <FokusTitel titel={lektion.titel} thema={lektion.thema} stil={stil} aufCoral={praxis} />
+      <StaerktPills kompetenzen={staerkt} aufCoral={praxis} />
       <PrimaerAktion href={lektionHref(lektion.lessonId)}>{lektion.begonnen ? "Weiterlernen" : "Starten"}</PrimaerAktion>
     </FokusRahmen>
   );
@@ -297,8 +328,7 @@ export function FokusFlex({
 /**
  * D: alles erledigt, Vorschau auf den nächsten geplanten Tag. Die heute
  * gestärkten Ringe nur, wenn es keine Kompetenz-Spalte gibt (sonst stehen
- * sie dort schon unter "Heute dran"). An einem Praxistag in Coral wie die
- * Praxistag-Karte (Anna 2026-10-19).
+ * sie dort schon unter "Heute dran").
  */
 export function FokusErledigt({
   naechsterTag,
