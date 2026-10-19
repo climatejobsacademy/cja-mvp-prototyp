@@ -77,14 +77,16 @@ export type Tageszustand =
   | { zustand: "C"; fokus: FlexAktivitaet; erledigt: ErledigtEintrag[] }
   /** D – alles von heute erledigt */
   | { zustand: "D"; erledigt: ErledigtEintrag[] }
-  /** E – Praxistag; `nachholen` nur, wenn heute nichts Flexibles offen ist */
+  /** E – Praxistag (offen oder schon durchgeführt); `nachholen` nur, wenn heute nichts Flexibles offen ist */
   | { zustand: "E"; praxis: PraxisAktivitaet; danach: FlexAktivitaet | null; nachholen: NachholLektion | null }
   /** F – heute nichts geplant; ggf. offene Lektion von früher zum Weiterlernen */
   | { zustand: "F"; nachholen: NachholLektion | null };
 
 /**
  * Regeln (Brief 3):
- * - Ein offener Praxistag hat Vorrang (E), er ist der Einstieg in den Praxis-Workflow.
+ * - Ein Praxistag hat Vorrang (E), er ist der Einstieg in den Praxis-Workflow.
+ *   Auch ein schon durchgeführter Praxistag bleibt den ganzen Tag die
+ *   Praxistag-Karte (Anna 2026-10-19), nicht "Alles erledigt".
  * - Solange eine Live-Session läuft (B) oder bevorsteht (A), ist sie die
  *   Hauptaktion -- nie eine offene Selbstlernlektion.
  * - Danach wird die offene Selbstlernlektion zum Fokus (C).
@@ -99,10 +101,11 @@ export function getDayState(jetzt: string, tag: TagesAktivitaeten): Tageszustand
   const live = [...tag.live].sort((a, b) => a.start.localeCompare(b.start));
   const ersteOffeneFlex = tag.flex.find((f) => !f.erledigt) ?? null;
 
-  const praxisOffen = tag.praxis.find((p) => !p.durchgefuehrt);
+  // Offener Praxistag zuerst, sonst der erste (schon durchgeführte) des Tages.
+  const praxisHeute = tag.praxis.find((p) => !p.durchgefuehrt) ?? tag.praxis[0];
   const nachholen = tag.nachholen ?? null;
-  if (praxisOffen) {
-    return { zustand: "E", praxis: praxisOffen, danach: ersteOffeneFlex, nachholen: ersteOffeneFlex ? null : nachholen };
+  if (praxisHeute) {
+    return { zustand: "E", praxis: praxisHeute, danach: ersteOffeneFlex, nachholen: ersteOffeneFlex ? null : nachholen };
   }
 
   const laufend = live.find((l) => zeit(l.start) <= jetzt && jetzt < zeit(l.ende));
