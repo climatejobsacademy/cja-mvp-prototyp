@@ -52,8 +52,9 @@ test("E: offener Praxistag hat Vorrang, auch vor Live-Unterricht", () => {
   assert.ok(z.zustand === "E" && z.danach?.id === "f1");
 });
 
-test("Durchgeführter Praxistag zählt als erledigt", () => {
-  assert.equal(getDayState(jetzt("16:00"), tag({ praxis: [{ ...praxis, durchgefuehrt: true }] })).zustand, "D");
+test("Durchgeführter Praxistag bleibt die Praxistag-Karte (E)", () => {
+  const z = getDayState(jetzt("16:00"), tag({ praxis: [{ ...praxis, durchgefuehrt: true }] }));
+  assert.ok(z.zustand === "E" && z.praxis.durchgefuehrt);
 });
 
 test("F: nichts geplant", () => {

@@ -155,7 +155,6 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         gestaerkt={heuteRinge.length > 0 ? [] : gestaerkt}
         trainer={trainer}
         stil={stil}
-        praxistag={heuteAktiv.praxis.length > 0}
       />
       <FachspracheKaestchen einheiten={fachsprache.get(tag.datum) ?? []} />
       {modul && <ModulFortschritt modul={modul} kompetenzen={ringe} />}

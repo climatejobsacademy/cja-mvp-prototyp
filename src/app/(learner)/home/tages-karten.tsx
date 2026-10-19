@@ -161,23 +161,9 @@ function FokusTitel({
 }
 
 /** "Live mit …" / "Praxis mit …" mit Foto (SR-78); ohne eingetragene Person nichts. */
-function FokusTrainer({
-  art,
-  trainer,
-  aufCoral,
-}: {
-  art: "live" | "praxis";
-  trainer?: TrainerAnzeige | null;
-  aufCoral?: boolean;
-}) {
+function FokusTrainer({ art, trainer }: { art: "live" | "praxis"; trainer?: TrainerAnzeige | null }) {
   if (!trainer) return null;
-  return (
-    <TrainerZeile
-      art={art}
-      trainer={trainer}
-      className={cn("mt-1", art === "praxis" || aufCoral ? "text-ink" : "text-white/85")}
-    />
-  );
+  return <TrainerZeile art={art} trainer={trainer} className={cn("mt-1", art === "praxis" ? "text-ink" : "text-white/85")} />;
 }
 
 /**
@@ -216,9 +202,6 @@ function StaerktPills({ kompetenzen, aufCoral }: { kompetenzen?: StaerktKompeten
   );
 }
 
-// An einem Praxistag sind alle Fokus-Karten in Coral, nicht nur die
-// Praxistag-Karte selbst (Anna 2026-10-19): Prop `praxis`.
-
 /** A (bevorstehend) und B (läuft gerade). */
 export function FokusLive({
   live,
@@ -226,20 +209,16 @@ export function FokusLive({
   staerkt,
   trainer,
   stil,
-  praxis,
 }: {
   live: LiveAktivitaet;
   laeuft: boolean;
   staerkt?: StaerktKompetenz[];
   trainer?: TrainerAnzeige | null;
   stil?: TitelStil;
-  /** Heute ist ein Praxistag: Karte in Coral */
-  praxis?: boolean;
 }) {
   const ziel = live.joinLink ?? (live.lessonId ? lektionHref(live.lessonId) : null);
   return (
     <FokusRahmen
-      praxis={praxis}
       links={
         laeuft ? (
           <>
@@ -261,15 +240,14 @@ export function FokusLive({
         icon={<Video className="size-[22px]" />}
         art={laeuft ? `Live-Unterricht, seit ${hhmm(live.start)}` : "Live-Unterricht"}
         stil={stil}
-        aufCoral={praxis}
       />
-      <FokusTrainer art="live" trainer={trainer} aufCoral={praxis} />
-      <StaerktPills kompetenzen={staerkt} aufCoral={praxis} />
+      <FokusTrainer art="live" trainer={trainer} />
+      <StaerktPills kompetenzen={staerkt} />
       {ziel && (
         <PrimaerAktion
           href={ziel}
           extern={!!live.joinLink}
-          mehr={live.lessonId && <MehrMenue lessonId={live.lessonId} aufCoral={praxis} />}
+          mehr={live.lessonId && <MehrMenue lessonId={live.lessonId} />}
         >
           {laeuft ? "Jetzt beitreten" : "Zum Live-Unterricht"}
         </PrimaerAktion>
@@ -289,37 +267,28 @@ export function FokusFlex({
   staerkt,
   nurSelbstlernen,
   stil,
-  praxis,
 }: {
   lektion: OffeneLektion & { thema: string | null; festigt: boolean };
   staerkt?: StaerktKompetenz[];
   nurSelbstlernen?: boolean;
   stil?: TitelStil;
-  /** Heute ist ein Praxistag: Karte in Coral */
-  praxis?: boolean;
 }) {
   return (
     <FokusRahmen
-      praxis={praxis}
       links={
         <>
           {nurSelbstlernen ? <LimePill>Heute</LimePill> : ALS_NAECHSTES}
-          <span
-            className={cn(
-              "flex size-12 items-center justify-center rounded-2xl md:size-16",
-              praxis ? "bg-white/45 text-ink" : "bg-white/15 text-white"
-            )}
-          >
+          <span className="flex size-12 items-center justify-center rounded-2xl bg-white/15 text-white md:size-16">
             <BookOpen className="size-6 md:size-8" aria-hidden="true" />
           </span>
         </>
       }
     >
-      <span className={cn("text-sm", praxis ? "text-ink/80" : "text-white/85")}>
+      <span className="text-sm text-white/85">
         {lektion.festigt ? "Selbstlernen · Wissen festigen" : "Selbstlernen · flexibel"}
       </span>
-      <FokusTitel titel={lektion.titel} thema={lektion.thema} stil={stil} aufCoral={praxis} />
-      <StaerktPills kompetenzen={staerkt} aufCoral={praxis} />
+      <FokusTitel titel={lektion.titel} thema={lektion.thema} stil={stil} />
+      <StaerktPills kompetenzen={staerkt} />
       <PrimaerAktion href={lektionHref(lektion.lessonId)}>{lektion.begonnen ? "Weiterlernen" : "Starten"}</PrimaerAktion>
     </FokusRahmen>
   );
@@ -333,20 +302,16 @@ export function FokusFlex({
 export function FokusErledigt({
   naechsterTag,
   gestaerkt,
-  praxis,
 }: {
   naechsterTag: string | null;
   gestaerkt: GestaerkteKompetenz[];
-  praxis?: boolean;
 }) {
-  const leise = praxis ? "text-ink/80" : "text-white/85";
   return (
     <FokusRahmen
-      praxis={praxis}
       rechts={
         gestaerkt.length > 0 && (
           <div className="flex flex-col gap-3">
-            <span className={cn("text-sm font-semibold", leise)}>Heute gestärkt</span>
+            <span className="text-sm font-semibold text-white/85">Heute gestärkt</span>
             <ul className="flex flex-wrap gap-7">
               {gestaerkt.slice(0, 3).map((k) => (
                 <li
@@ -354,8 +319,8 @@ export function FokusErledigt({
                   aria-label={`${k.name}, ${k.prozent} Prozent, heute dran`}
                   className="flex w-24 flex-col items-center gap-2.5 text-center"
                 >
-                  <Ring prozent={k.prozent} glow dunkel={!praxis} />
-                  <span aria-hidden="true" className={cn("text-[13px] leading-snug", leise)}>
+                  <Ring prozent={k.prozent} glow dunkel />
+                  <span aria-hidden="true" className="text-[13px] leading-snug text-white/85">
                     {k.name}
                   </span>
                 </li>
@@ -368,7 +333,7 @@ export function FokusErledigt({
       <LimePill>Für heute</LimePill>
       <h3 className="font-heading text-[36px] leading-none font-normal md:text-[48px]">Alles erledigt</h3>
       {naechsterTag && (
-        <span className={cn("mt-1 inline-flex items-center gap-2.5 text-[15px]", leise)}>
+        <span className="mt-1 inline-flex items-center gap-2.5 text-[15px] text-white/85">
           <CalendarDays className="size-[18px] shrink-0" aria-hidden="true" />
           {naechsterTag}
         </span>

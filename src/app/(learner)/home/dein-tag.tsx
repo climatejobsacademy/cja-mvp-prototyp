@@ -35,8 +35,7 @@ function karten(
   staerkt: StaerktFn,
   gestaerkt: GestaerkteKompetenz[],
   trainer: Map<string, TrainerAnzeige>,
-  stil: TitelStil,
-  praxistag: boolean
+  stil: TitelStil
 ): { fokus: ReactNode; leiste: ReactNode } {
   const person = (id: string | null) => (id ? (trainer.get(id) ?? null) : null);
   switch (zustand.zustand) {
@@ -49,7 +48,6 @@ function karten(
             staerkt={staerkt("lektion", zustand.live.lessonId)}
             trainer={person(zustand.live.trainerId)}
             stil={stil}
-            praxis={praxistag}
           />
         ),
         leiste: zustand.danach && <FlexLeiste lektion={zustand.danach} festigt={zustand.danach.festigt} />,
@@ -63,7 +61,6 @@ function karten(
             staerkt={staerkt("lektion", zustand.live.lessonId)}
             trainer={person(zustand.live.trainerId)}
             stil={stil}
-            praxis={praxistag}
           />
         ),
         leiste: zustand.danach && <FlexLeiste lektion={zustand.danach} festigt={zustand.danach.festigt} />,
@@ -77,7 +74,6 @@ function karten(
             staerkt={staerkt("lektion", zustand.fokus.lessonId)}
             nurSelbstlernen={!hatteLive}
             stil={stil}
-            praxis={praxistag}
           />
         ),
         // Ohne Live-Unterricht heute keine "Erledigt"-Leiste, dafür die Zeile mit dem nächsten Tag.
@@ -86,13 +82,7 @@ function karten(
     }
     case "D":
       return {
-        fokus: (
-          <FokusErledigt
-            naechsterTag={naechster ? naechsterTagText(naechster) : null}
-            gestaerkt={gestaerkt}
-            praxis={praxistag}
-          />
-        ),
+        fokus: <FokusErledigt naechsterTag={naechster ? naechsterTagText(naechster) : null} gestaerkt={gestaerkt} />,
         leiste: <HeuteErledigtLeiste erledigt={zustand.erledigt} />,
       };
     case "E":
@@ -131,7 +121,6 @@ export function DeinTag({
   gestaerkt,
   trainer,
   stil,
-  praxistag,
 }: {
   zustand: Tageszustand;
   heute: string;
@@ -142,10 +131,8 @@ export function DeinTag({
   trainer: Map<string, TrainerAnzeige>;
   /** Modul für die kleine Zeile über dem Titel (Modul-Ebene, 0028) */
   stil: TitelStil;
-  /** Heute ist ein Praxistag: Fokus-Karte immer in Coral (Anna 2026-10-19) */
-  praxistag: boolean;
 }) {
-  const { fokus, leiste } = karten(zustand, heute, naechster, staerkt, gestaerkt, trainer, stil, praxistag);
+  const { fokus, leiste } = karten(zustand, heute, naechster, staerkt, gestaerkt, trainer, stil);
   // Home v13: steht sonst nichts unter der Fokus-Karte, eine dezente Zeile mit
   // dem nächsten Tag. Nicht in D und F -- dort nennt die Karte ihn schon.
   const naechsterZeile =
