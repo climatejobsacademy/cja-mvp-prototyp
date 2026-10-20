@@ -15,7 +15,7 @@ import { getMeineKohorte } from "@/lib/queries/kohorte";
 import { getMeineTrainer } from "@/lib/queries/trainer";
 import { parseNowParameter } from "@/lib/stundenplan";
 
-import { tagErledigt } from "../schedule/plan-bausteine";
+import { tagErledigt, tagZaehlt } from "../schedule/plan-bausteine";
 import { planModell } from "../schedule/plan-modell";
 
 import { InhaltePanel } from "./inhalte-panel";
@@ -102,8 +102,9 @@ export default async function ProgrammPage({
 
   // Lerntage (Entscheidung Anna 2026-10-11): geplante Tage im Zeitraum des
   // Moduls; absolviert = alles an dem Tag erledigt -- derselbe Haken wie im
-  // Stundenplan (Live nur mit bestätigter Anwesenheit).
-  const lernTage = planModell(plan, heute, jetzt).filter((t) => t.bloecke.length > 0 || t.chips.length > 0 || t.ganztags.length > 0);
+  // Stundenplan (Live nur mit bestätigter Anwesenheit; Live ohne eigene
+  // Lektion wie Deutsch oder Coaching zählt nicht, Anna 2026-10-20).
+  const lernTage = planModell(plan, heute, jetzt).filter(tagZaehlt);
 
   const kacheln: Kachel[] = [
     imModul.length > 0 ? { wert: String(imModul.length), label: imModul.length === 1 ? "Kompetenz" : "Kompetenzen" } : null,

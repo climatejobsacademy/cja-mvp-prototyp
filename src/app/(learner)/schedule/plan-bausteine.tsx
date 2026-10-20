@@ -52,13 +52,27 @@ export function AbweichungsLabel({ typ, haupt }: { typ: Tagestyp | null; haupt: 
   return <span className={cn("text-xs font-semibold", TAGESTYP[typ].farbe)}>{TAGESTYP[typ].text}</span>;
 }
 
-/** Tag mit Inhalten, die alle erledigt sind (Häkchen in der Tagesliste, Punkt 8). */
-export function tagErledigt(tag: TagModell): boolean {
-  const alle = [
-    ...tag.bloecke.map((b) => b.status === "erledigt"),
+/**
+ * Was an einem Tag als erledigt zählen kann. Live-Termine ohne eigene Lektion
+ * (Deutsch/Fachdeutsch, Softskills Coaching) zählen nicht mit: für sie wird
+ * keine Anwesenheit bestätigt (Entscheidung Anna 2026-10-20).
+ */
+function zaehlendeStatus(tag: TagModell): boolean[] {
+  return [
+    ...tag.bloecke.filter((b) => b.art !== "live" || b.lessonId).map((b) => b.status === "erledigt"),
     ...tag.ganztags.map((g) => g.status === "erledigt"),
     ...tag.chips.map((c) => c.erledigt),
   ];
+}
+
+/** Tag mit etwas, das erledigt werden kann (zählt als Lerntag). */
+export function tagZaehlt(tag: TagModell): boolean {
+  return zaehlendeStatus(tag).length > 0;
+}
+
+/** Tag, an dem alles Zählende erledigt ist (Häkchen in der Tagesliste, Punkt 8). */
+export function tagErledigt(tag: TagModell): boolean {
+  const alle = zaehlendeStatus(tag);
   return alle.length > 0 && alle.every(Boolean);
 }
 
