@@ -150,7 +150,8 @@ export const PHASEN_TEXTE: Record<PhaseId, { instruktion: string; hastDuAlles: s
 export const DATEIEN_ORDNER = "/praxisflow-demo";
 
 export const DATEIEN: { titel: string; dateiname: string }[] = [
-  { titel: "Auftragsblatt AA-E-02 – Leitungsverlängerung 230 V", dateiname: "aa-e-02-leitungsverlaengerung-230v.pdf" },
+  // Das Auftragsblatt (AA) entfällt: die Lernenden laden den unterschriebenen
+  // Papierauftrag selbst hoch ("Auftrag erhalten", Anna 2026-10-20).
   { titel: "Arbeitsunterlage AU-E-02 – Leitungsverlängerung 230 V", dateiname: "au-e-02-leitungsverlaengerung-230v.pdf" },
 ];
 
