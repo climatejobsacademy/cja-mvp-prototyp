@@ -3,291 +3,443 @@
 import { useId, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MessageSquareText, RefreshCw, Reply, Send, Trash2 } from "lucide-react";
+import { ArrowUp, ChevronDown, MessageSquareText, RefreshCw } from "lucide-react";
 
-import { buttonVariants } from "@/components/ui/button";
-import { zeitpunktInBerlin } from "@/lib/date";
+import { ChatRegelnLink } from "@/components/chat/chat-regeln";
+import { zeitpunktKurzInBerlin } from "@/lib/date";
 import { MAX_ZEICHEN, beitragNormalisieren, zeichenAnzahl, type ThreadBeitrag } from "@/lib/lektion-thread";
 import type { LektionThread as LektionThreadDaten } from "@/lib/queries/lektion-thread";
 import { cn } from "@/lib/utils";
 
 import { beitragLoeschen, beitragSchreiben } from "./thread-actions";
 
-const AKTION = cn(buttonVariants({ variant: "outline" }), "h-11 gap-2 px-3 sm:h-9");
-const KLEINE_AKTION = cn(buttonVariants({ variant: "ghost" }), "h-11 gap-1.5 px-2 text-[13px] sm:h-8");
+// Fragen-Thread unter einer Lektion (SR-74), Board-Darstellung wie demo
+// (Entscheidung Anna 2026-10-12): Eingabe oben, jede Frage als Karte mit
+// Avatar (Initialen, keine Fotos anderer Lernender), Antworten zum
+// Aufklappen. Regeln wie bisher: nur Text (React escaped, Zeilenumbrüche
+// bleiben), keine Echtzeit ("Aktualisieren" lädt neu), Löschen eigener
+// Beiträge, Datenschutz-Hinweis an der Eingabe. Gelöschte Beiträge bleiben
+// als "Beitrag gelöscht" stehen (SR-74) -- anders als demo, das sie ausblendet.
+// Knöpfe werden nur ein- oder ausgeblendet, entscheiden tut das Backend.
 
-/**
- * Fragen-Thread unter einer Lektion (SR-74). Reiner Text:
- * React escaped alles, kein Markdown, keine Links, Zeilenumbrüche bleiben
- * (whitespace-pre-wrap). Kein Echtzeit: "Aktualisieren" lädt neu. Buttons
- * werden nur ein- oder ausgeblendet, entscheiden tut das Backend.
- */
-export function LektionThread({ lessonId, thread }: { lessonId: string; thread: LektionThreadDaten }) {
-  const router = useRouter();
-  const [aktualisiert, startAktualisieren] = useTransition();
-  const [antwortAuf, setAntwortAuf] = useState<string | null>(null);
-  const [status, setStatus] = useState<string>("");
-  const [fehler, setFehler] = useState<string>("");
-  const [loescht, startLoeschen] = useTransition();
+type Eintrag = ThreadBeitrag & { antworten: ThreadBeitrag[] };
 
-  function aktualisieren() {
-    setFehler("");
-    startAktualisieren(() => router.refresh());
-  }
+const AVATAR_FARBEN = [
+  "bg-brand-tint text-brand",
+  "bg-self-tint text-self",
+  "bg-praxis-tint text-praxis-text",
+  "bg-subtle text-ink",
+];
 
-  function loeschen(beitrag: ThreadBeitrag) {
-    const eigener = beitrag.person_id === thread.personId;
-    const frage = eigener ? "Deinen Beitrag wirklich löschen?" : "Diesen Beitrag wirklich löschen?";
-    if (!window.confirm(frage)) return;
-    setFehler("");
-    startLoeschen(async () => {
-      const ergebnis = await beitragLoeschen(lessonId, beitrag.id);
-      if (!ergebnis.ok) {
-        setFehler(ergebnis.fehler);
-        return;
-      }
-      setStatus("Beitrag gelöscht.");
-      router.refresh();
-    });
-  }
 
-  function darfLoeschen(beitrag: ThreadBeitrag) {
-    return !beitrag.geloescht_am && (beitrag.person_id === thread.personId || thread.istModeration);
-  }
 
-  function gesendet() {
-    setAntwortAuf(null);
-    setFehler("");
-    setStatus("Beitrag gesendet.");
-    router.refresh();
-  }
+function initialen(name: string): string {
+  const teile = name.trim().split(/\s+/).filter(Boolean);
+  return ((teile[0]?.[0] ?? "?") + (teile.length > 1 ? teile[teile.length - 1][0] : "")).toUpperCase();
+}
 
+function Avatar({ name, klein }: { name: string; klein?: boolean }) {
+  const summe = [...name].reduce((s, z) => s + z.charCodeAt(0), 0);
   return (
-    <section aria-labelledby="thread-ueberschrift" className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 id="thread-ueberschrift" className="flex items-center gap-2 text-[15px] font-semibold text-eco-deep-green">
-          <MessageSquareText className="size-[18px] text-eco-green" aria-hidden="true" />
-          Fragen zur Lektion
-        </h2>
-        <button type="button" onClick={aktualisieren} disabled={aktualisiert} className={AKTION}>
-          <RefreshCw className={cn(aktualisiert && "animate-spin motion-reduce:animate-none")} aria-hidden="true" />
-          {aktualisiert ? "Wird aktualisiert …" : "Aktualisieren"}
-        </button>
-      </div>
-
-      <p className="sr-only" aria-live="polite">
-        {status}
-      </p>
-      {fehler && (
-        <p role="alert" className="rounded-lg border-2 border-coral p-3 text-sm text-eco-deep-green">
-          {fehler}
-        </p>
+    <span
+      aria-hidden="true"
+      className={cn(
+        "flex flex-none items-center justify-center rounded-full font-bold",
+        klein ? "size-7 text-[11px]" : "size-9 text-[13px]",
+        AVATAR_FARBEN[summe % AVATAR_FARBEN.length]
       )}
-
-      {thread.mehrAlsLimit && (
-        <p className="text-[13px] text-muted-foreground">
-          Es gibt mehr Beiträge, als hier angezeigt werden. Angezeigt werden die neuesten 300.
-        </p>
-      )}
-
-      {thread.eintraege.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Noch keine Fragen. Stell gern die erste.</p>
-      ) : (
-        <ul className="flex flex-col gap-3">
-          {thread.eintraege.map((eintrag) => (
-            <li key={eintrag.id} className="flex flex-col gap-2 rounded-xl border border-border p-4">
-              <BeitragAnzeige
-                beitrag={eintrag}
-                loeschbar={darfLoeschen(eintrag)}
-                loescht={loescht}
-                onLoeschen={() => loeschen(eintrag)}
-                antwortbar={thread.kannSchreiben && !eintrag.geloescht_am && eintrag.parent_id === null}
-                onAntworten={() => {
-                  setStatus("");
-                  setAntwortAuf(antwortAuf === eintrag.id ? null : eintrag.id);
-                }}
-                antwortOffen={antwortAuf === eintrag.id}
-              />
-              {eintrag.antworten.length > 0 && (
-                <ul className="ml-3 flex flex-col gap-3 border-l-2 border-border pl-3 sm:ml-5 sm:pl-4">
-                  {eintrag.antworten.map((antwort) => (
-                    <li key={antwort.id} className="flex flex-col gap-2">
-                      <BeitragAnzeige
-                        beitrag={antwort}
-                        loeschbar={darfLoeschen(antwort)}
-                        loescht={loescht}
-                        onLoeschen={() => loeschen(antwort)}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {antwortAuf === eintrag.id && (
-                <div className="ml-3 border-l-2 border-eco-green pl-3 sm:ml-5 sm:pl-4">
-                  <BeitragFormular
-                    lessonId={lessonId}
-                    cohortId={thread.cohortId}
-                    parentId={eintrag.id}
-                    label={`Antwort an ${eintrag.autor_anzeigename ?? "diesen Beitrag"}`}
-                    onGesendet={gesendet}
-                    onFehler={setFehler}
-                    onAbbrechen={() => setAntwortAuf(null)}
-                  />
-                </div>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {thread.kannSchreiben && (
-        <BeitragFormular
-          lessonId={lessonId}
-          cohortId={thread.cohortId}
-          parentId={null}
-          label="Neue Frage"
-          onGesendet={gesendet}
-          onFehler={setFehler}
-        />
-      )}
-    </section>
+    >
+      {initialen(name)}
+    </span>
   );
 }
 
-function BeitragAnzeige({
-  beitrag,
-  loeschbar,
-  loescht,
-  onLoeschen,
-  antwortbar = false,
+function Kopf({ beitrag, eigener }: { beitrag: ThreadBeitrag; eigener: boolean }) {
+  return (
+    <p className="text-[13px] text-ink-subtle">
+      <span className="font-semibold text-ink">{eigener ? "Du" : (beitrag.autor_anzeigename ?? "Unbekannt")}</span>
+      {" · "}
+      <time dateTime={beitrag.created_at}>{zeitpunktKurzInBerlin(beitrag.created_at)}</time>
+    </p>
+  );
+}
+
+const TEXT_LINK =
+  "rounded-sm text-[13px] font-semibold text-ink-muted outline-none hover:text-brand focus-visible:ring-2 focus-visible:ring-brand disabled:opacity-50";
+
+function Aktionen({
+  name,
+  antwortbar,
   onAntworten,
-  antwortOffen = false,
+  antwortOffen,
+  loeschbar,
+  onLoeschen,
+  loescht,
 }: {
-  beitrag: ThreadBeitrag;
-  loeschbar: boolean;
-  loescht: boolean;
-  onLoeschen: () => void;
+  name: string;
   antwortbar?: boolean;
   onAntworten?: () => void;
   antwortOffen?: boolean;
+  loeschbar: boolean;
+  onLoeschen: () => void;
+  loescht: boolean;
 }) {
-  if (beitrag.geloescht_am) {
-    return <p className="text-sm text-muted-foreground italic">Beitrag gelöscht</p>;
-  }
-  const name = beitrag.autor_anzeigename ?? "Unbekannt";
+  if (!antwortbar && !loeschbar) return null;
   return (
-    <div className="flex flex-col gap-1">
-      <p className="text-[13px] text-muted-foreground">
-        <span className="font-medium text-eco-deep-green">{name}</span> ·{" "}
-        <time dateTime={beitrag.created_at}>{zeitpunktInBerlin(beitrag.created_at)}</time>
-      </p>
-      {/* Reiner Text: React escaped, keine Links, Zeilenumbrüche bleiben. */}
-      <p className="text-[15px] whitespace-pre-wrap break-words text-eco-deep-green">{beitrag.text}</p>
-      {(antwortbar || loeschbar) && (
-        <div className="flex flex-wrap gap-1">
-          {antwortbar && (
-            <button type="button" onClick={onAntworten} aria-expanded={antwortOffen} className={KLEINE_AKTION}>
-              <Reply className="size-4" aria-hidden="true" /> Antworten
-              <span className="sr-only"> auf den Beitrag von {name}</span>
-            </button>
-          )}
-          {loeschbar && (
-            <button type="button" onClick={onLoeschen} disabled={loescht} className={KLEINE_AKTION}>
-              <Trash2 className="size-4" aria-hidden="true" /> Löschen
-              <span className="sr-only"> (Beitrag von {name})</span>
-            </button>
-          )}
-        </div>
+    <div className="flex gap-4">
+      {antwortbar && (
+        <button type="button" onClick={onAntworten} aria-expanded={antwortOffen} className={TEXT_LINK}>
+          Antworten<span className="sr-only"> auf den Beitrag von {name}</span>
+        </button>
+      )}
+      {loeschbar && (
+        <button type="button" onClick={onLoeschen} disabled={loescht} className={TEXT_LINK}>
+          Löschen<span className="sr-only"> (Beitrag von {name})</span>
+        </button>
       )}
     </div>
   );
 }
 
-function BeitragFormular({
+function DatenschutzHinweis() {
+  return (
+    <p className="px-1 text-xs text-ink-subtle">
+      Bitte keine sensiblen Angaben und keine Daten anderer Personen.{" "}
+      <Link href="/datenschutz" className="underline underline-offset-2 hover:text-ink">
+        Datenschutz
+      </Link>
+      {" · "}
+      <ChatRegelnLink />
+    </p>
+  );
+}
+
+/**
+ * Schmale Eingabe nach Messenger-Muster: wächst mit dem Text, runder
+ * Senden-Knopf, Enter sendet, Umschalt+Enter macht eine neue Zeile. Den
+ * Zeichenzähler sieht man erst kurz vor der Grenze.
+ */
+function Eingabe({
   lessonId,
   cohortId,
   parentId,
   label,
+  platzhalter,
   onGesendet,
   onFehler,
   onAbbrechen,
+  autoFocus,
+  mitHinweis = true,
 }: {
   lessonId: string;
   cohortId: string;
   parentId: string | null;
   label: string;
+  platzhalter: string;
   onGesendet: () => void;
   onFehler: (fehler: string) => void;
   onAbbrechen?: () => void;
+  autoFocus?: boolean;
+  mitHinweis?: boolean;
 }) {
   const id = useId();
-  const textfeld = useRef<HTMLTextAreaElement>(null);
+  const feld = useRef<HTMLTextAreaElement>(null);
   const [text, setText] = useState("");
   const [sendet, startSenden] = useTransition();
-
-  // Zählt wie die Datenbank (Codepoints nach NFC und Trimmen); kein maxLength,
-  // weil das Browserlimit UTF-16-Einheiten zählt.
   const anzahl = zeichenAnzahl(beitragNormalisieren(text));
   const zuLang = anzahl > MAX_ZEICHEN;
   const leer = anzahl === 0;
 
-  function absenden(e: React.FormEvent) {
-    e.preventDefault();
-    if (leer || zuLang) return;
+  function hoeheAnpassen() {
+    const el = feld.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 200)}px`;
+  }
+
+  function absenden() {
+    if (leer || zuLang || sendet) return;
     startSenden(async () => {
       const ergebnis = await beitragSchreiben(lessonId, cohortId, parentId, text);
       if (!ergebnis.ok) {
         onFehler(ergebnis.fehler);
-        textfeld.current?.focus();
+        feld.current?.focus();
         return;
       }
       setText("");
+      requestAnimationFrame(hoeheAnpassen);
       onGesendet();
-      textfeld.current?.focus();
     });
   }
 
   return (
-    <form onSubmit={absenden} className="flex flex-col gap-2">
-      <p className="text-[13px] text-muted-foreground">
-        Bitte keine sensiblen Angaben und keine Daten anderer Personen schreiben.{" "}
-        <Link href="/datenschutz" className="text-eco-deep-green underline underline-offset-2">
-          Datenschutzerklärung
-        </Link>
-      </p>
-      <label htmlFor={`${id}-text`} className="text-sm font-medium text-eco-deep-green">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        absenden();
+      }}
+      className="flex flex-col gap-1.5"
+    >
+      <label htmlFor={`${id}-text`} className="sr-only">
         {label}
       </label>
-      <textarea
-        id={`${id}-text`}
-        ref={textfeld}
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        rows={parentId ? 3 : 4}
-        aria-describedby={`${id}-zaehler`}
-        aria-invalid={zuLang || undefined}
-        className="rounded-lg border border-border bg-white px-3 py-2.5 text-[15px] text-eco-deep-green outline-none focus-visible:ring-2 focus-visible:ring-eco-green focus-visible:ring-offset-2"
-      />
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p id={`${id}-zaehler`} className={cn("text-[13px] tabular-nums", zuLang ? "text-eco-deep-green font-semibold" : "text-muted-foreground")}>
-          {anzahl} / {MAX_ZEICHEN} Zeichen{zuLang ? " – zu lang" : ""}
-        </p>
-        <div className="flex gap-2">
-          {onAbbrechen && (
-            <button type="button" onClick={onAbbrechen} disabled={sendet} className={AKTION}>
-              Abbrechen
-            </button>
-          )}
-          <button
-            type="submit"
-            disabled={sendet || leer || zuLang}
-            className={cn(buttonVariants(), "h-11 gap-2 px-4 sm:h-9")}
-          >
-            <Send aria-hidden="true" />
-            {sendet ? "Wird gesendet …" : parentId ? "Antwort senden" : "Frage senden"}
-          </button>
-        </div>
+      <div className="flex items-end gap-2 rounded-[22px] border border-line bg-white py-1.5 pr-1.5 pl-4 focus-within:ring-2 focus-within:ring-brand">
+        <textarea
+          id={`${id}-text`}
+          ref={feld}
+          value={text}
+          rows={1}
+          autoFocus={autoFocus}
+          placeholder={platzhalter}
+          onChange={(e) => {
+            setText(e.target.value);
+            hoeheAnpassen();
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+              e.preventDefault();
+              absenden();
+            }
+            if (e.key === "Escape" && onAbbrechen) onAbbrechen();
+          }}
+          aria-describedby={`${id}-zaehler`}
+          aria-invalid={zuLang || undefined}
+          className="min-h-9 flex-1 resize-none bg-transparent py-2 text-[15px] text-ink outline-none placeholder:text-ink-subtle"
+        />
+        <button
+          type="submit"
+          disabled={sendet || leer || zuLang}
+          aria-label={parentId ? "Antwort senden" : "Frage senden"}
+          className="flex size-9 flex-none items-center justify-center rounded-full bg-brand text-white outline-none transition-opacity hover:bg-brand/90 focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:opacity-40"
+        >
+          <ArrowUp className="size-[18px]" aria-hidden="true" />
+        </button>
       </div>
+      <p id={`${id}-zaehler`} className={cn("px-1 text-xs tabular-nums", zuLang ? "font-semibold text-ink" : "text-ink-subtle", anzahl < MAX_ZEICHEN - 100 && "sr-only")}>
+        {anzahl} / {MAX_ZEICHEN} Zeichen{zuLang ? " – zu lang" : ""}
+      </p>
+      {mitHinweis && <DatenschutzHinweis />}
     </form>
   );
+}
+
+/** Logik des Threads: Aktualisieren, Löschen, Antwort-Ziel, Meldungen. */
+function useThread(lessonId: string, thread: LektionThreadDaten) {
+  const router = useRouter();
+  const [aktualisiert, startAktualisieren] = useTransition();
+  const [loescht, startLoeschen] = useTransition();
+  const [antwortAuf, setAntwortAuf] = useState<string | null>(null);
+  const [status, setStatus] = useState("");
+  const [fehler, setFehler] = useState("");
+
+  // SR-74: gelöschte Beiträge bleiben als "Beitrag gelöscht" sichtbar, damit
+  // Antworten ihren Bezug behalten (Soft-Delete).
+  const sichtbar: Eintrag[] = thread.eintraege;
+
+  return {
+    sichtbar,
+    antwortAuf,
+    setAntwortAuf,
+    status,
+    fehler,
+    setFehler,
+    aktualisiert,
+    loescht,
+    eigener: (b: ThreadBeitrag) => b.person_id === thread.personId,
+    darfLoeschen: (b: ThreadBeitrag) => !b.geloescht_am && (b.person_id === thread.personId || thread.istModeration),
+    antwortbar: (e: Eintrag) => thread.kannSchreiben && !e.geloescht_am && e.parent_id === null,
+    aktualisieren: () => {
+      setFehler("");
+      startAktualisieren(() => router.refresh());
+    },
+    loeschen: (b: ThreadBeitrag) => {
+      const frage = b.person_id === thread.personId ? "Deinen Beitrag wirklich löschen?" : "Diesen Beitrag wirklich löschen?";
+      if (!window.confirm(frage)) return;
+      setFehler("");
+      startLoeschen(async () => {
+        const ergebnis = await beitragLoeschen(lessonId, b.id);
+        if (!ergebnis.ok) {
+          setFehler(ergebnis.fehler);
+          return;
+        }
+        setStatus("Beitrag gelöscht.");
+        router.refresh();
+      });
+    },
+    gesendet: () => {
+      setAntwortAuf(null);
+      setFehler("");
+      setStatus("Beitrag gesendet.");
+      router.refresh();
+    },
+  };
+}
+
+function Rahmen({
+  t,
+  thread,
+  anzahl,
+  children,
+}: {
+  t: ReturnType<typeof useThread>;
+  thread: LektionThreadDaten;
+  anzahl: number;
+  children: React.ReactNode;
+}) {
+  return (
+    <section aria-labelledby="thread-ueberschrift" className="flex flex-col gap-5 rounded-karte bg-card p-5 shadow-card md:p-6">
+      <div className="flex items-center justify-between gap-2">
+        <h2 id="thread-ueberschrift" className="flex items-center gap-2 text-base font-bold text-ink">
+          <MessageSquareText className="size-[18px] text-brand" aria-hidden="true" />
+          Fragen zur Lektion
+          {anzahl > 0 && <span className="text-sm font-medium text-ink-subtle tabular-nums">· {anzahl}</span>}
+        </h2>
+        <button
+          type="button"
+          onClick={t.aktualisieren}
+          disabled={t.aktualisiert}
+          aria-label={t.aktualisiert ? "Wird aktualisiert" : "Aktualisieren"}
+          title="Aktualisieren"
+          className="flex size-9 items-center justify-center rounded-full text-ink-muted outline-none hover:bg-subtle hover:text-ink focus-visible:ring-2 focus-visible:ring-brand"
+        >
+          <RefreshCw className={cn("size-4", t.aktualisiert && "animate-spin motion-reduce:animate-none")} aria-hidden="true" />
+        </button>
+      </div>
+      <p className="sr-only" aria-live="polite">
+        {t.status}
+      </p>
+      {t.fehler && (
+        <p role="alert" className="rounded-zeile border-2 border-praxis p-3 text-sm text-ink">
+          {t.fehler}
+        </p>
+      )}
+      {thread.mehrAlsLimit && (
+        <p className="text-[13px] text-ink-subtle">Angezeigt werden die neuesten 300 Beiträge.</p>
+      )}
+      {children}
+    </section>
+  );
+}
+
+const LEER = <p className="text-sm text-ink-subtle">Noch keine Fragen. Stell gern die erste.</p>;
+const GELOESCHT = <p className="text-sm text-ink-subtle italic">Beitrag gelöscht</p>;
+
+function Board({ lessonId, thread }: { lessonId: string; thread: LektionThreadDaten }) {
+  const t = useThread(lessonId, thread);
+  const [offen, setOffen] = useState<Set<string>>(new Set());
+  const umschalten = (id: string) =>
+    setOffen((alt) => {
+      const neu = new Set(alt);
+      if (neu.has(id)) neu.delete(id);
+      else neu.add(id);
+      return neu;
+    });
+  return (
+    <Rahmen t={t} thread={thread} anzahl={t.sichtbar.length}>
+      {thread.kannSchreiben && (
+        <Eingabe
+          lessonId={lessonId}
+          cohortId={thread.cohortId}
+          parentId={null}
+          label="Neue Frage"
+          platzhalter="Stell eine Frage zur Lektion …"
+          onGesendet={t.gesendet}
+          onFehler={t.setFehler}
+        />
+      )}
+      {t.sichtbar.length === 0 ? (
+        LEER
+      ) : (
+        <ul className="flex flex-col gap-3">
+          {t.sichtbar.map((e) => {
+            const name = e.autor_anzeigename ?? "Unbekannt";
+            const aufgeklappt = offen.has(e.id) || t.antwortAuf === e.id;
+            return (
+              <li key={e.id} className="flex flex-col gap-3 rounded-zeile border border-line p-4">
+                {e.geloescht_am ? (
+                  GELOESCHT
+                ) : (
+                  <div className="flex items-start gap-3">
+                    <Avatar name={name} />
+                    <div className="flex min-w-0 flex-1 flex-col gap-1">
+                      <Kopf beitrag={e} eigener={t.eigener(e)} />
+                      <p className="text-[15px] whitespace-pre-wrap break-words text-ink">{e.text}</p>
+                    </div>
+                  </div>
+                )}
+                <div className="flex flex-wrap items-center gap-4 pl-12">
+                  {e.antworten.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => umschalten(e.id)}
+                      aria-expanded={aufgeklappt}
+                      className={cn(TEXT_LINK, "inline-flex items-center gap-1 text-brand")}
+                    >
+                      {e.antworten.length} {e.antworten.length === 1 ? "Antwort" : "Antworten"}
+                      <ChevronDown
+                        className={cn("size-4 transition-transform motion-reduce:transition-none", aufgeklappt && "rotate-180")}
+                        aria-hidden="true"
+                      />
+                    </button>
+                  )}
+                  <Aktionen
+                    name={name}
+                    antwortbar={t.antwortbar(e)}
+                    onAntworten={() => t.setAntwortAuf(t.antwortAuf === e.id ? null : e.id)}
+                    antwortOffen={t.antwortAuf === e.id}
+                    loeschbar={t.darfLoeschen(e)}
+                    onLoeschen={() => t.loeschen(e)}
+                    loescht={t.loescht}
+                  />
+                </div>
+                {aufgeklappt && (
+                  <ul className="flex flex-col gap-3 border-t border-line pt-3 pl-12">
+                    {e.antworten.map((a) =>
+                      a.geloescht_am ? (
+                        <li key={a.id}>{GELOESCHT}</li>
+                      ) : (
+                      <li key={a.id} className="flex items-start gap-2.5">
+                        <Avatar name={a.autor_anzeigename ?? "Unbekannt"} klein />
+                        <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                          <Kopf beitrag={a} eigener={t.eigener(a)} />
+                          <p className="text-[15px] whitespace-pre-wrap break-words text-ink">{a.text}</p>
+                          <Aktionen
+                            name={a.autor_anzeigename ?? "Unbekannt"}
+                            loeschbar={t.darfLoeschen(a)}
+                            onLoeschen={() => t.loeschen(a)}
+                            loescht={t.loescht}
+                          />
+                        </div>
+                      </li>
+                      )
+                    )}
+                    {t.antwortAuf === e.id && (
+                      <li>
+                        <Eingabe
+                          lessonId={lessonId}
+                          cohortId={thread.cohortId}
+                          parentId={e.id}
+                          label={`Antwort an ${name}`}
+                          platzhalter={`Antwort an ${name} …`}
+                          onGesendet={t.gesendet}
+                          onFehler={t.setFehler}
+                          onAbbrechen={() => t.setAntwortAuf(null)}
+                          autoFocus
+                          mitHinweis={false}
+                        />
+                      </li>
+                    )}
+                  </ul>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </Rahmen>
+  );
+}
+
+export function LektionThread({ lessonId, thread }: { lessonId: string; thread: LektionThreadDaten }) {
+  return <Board lessonId={lessonId} thread={thread} />;
 }

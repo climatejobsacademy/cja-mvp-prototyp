@@ -15,14 +15,18 @@ create extension if not exists pgtap schema extensions;
 select plan(2);
 
 -- ------------------------------------------------------------
--- Seed: ein Programm + ein Modul darin, nur als Fremdschlüssel für die
--- beiden Inserts unten benötigt.
+-- Seed: ein Programm + ein Modul + eine Woche (module, seit 0028 mit
+-- modul_id, wochentyp, lage), nur als Fremdschlüssel für die beiden
+-- Inserts unten benötigt.
 -- ------------------------------------------------------------
 insert into programme (id, name, kuerzel) values
   ('00000000-0000-0000-0000-000000000001', 'Testprogramm XOR', 'TEST-XOR');
 
-insert into module (id, programme_id, name, reihenfolge) values
-  ('00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', 'Testmodul', 1);
+insert into modul (id, programme_id, ueberzeile, name, reihenfolge) values
+  ('00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', 'Modul I', 'Testmodul', 1);
+
+insert into module (id, programme_id, modul_id, name, reihenfolge, wochentyp, lage) values
+  ('00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000003', 'Testwoche', 1, 'theorie', 'online');
 
 -- Test 1: module_id UND programme_id gleichzeitig gesetzt -> Constraint
 -- schlägt fehl. reihenfolge wird mitgegeben (not null, kein Default) --

@@ -27,17 +27,20 @@
  * der Typ ehrlich das ganze Schema abbildet.
  */
 
-type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 // ---- Wiederkehrende Statuswerte (Übersetzungsregeln: feste Werteliste) ----
 export type OrganisationTyp = "afcj" | "employer";
 export type OrganisationStatus = "aktiv" | "trial" | "pausiert";
 export type Sprache = "DE" | "UK";
-export type Rolle = "learner" | "afcj_admin";
+export type Rolle = "learner" | "afcj_admin" | "trainer"; // trainer seit 0030 (SR-78)
 export type CourseTyp = "synchron" | "asynchron";
 export type ContentType = "scorm" | "live" | "repository";
 export type LessonResourceTyp = "datei" | "link";
 export type CompetencyQuelle = "TQ-ARP" | "EFKffT" | "EFK-EE";
+// Woche (Tabelle module, seit 0028)
+export type Wochentyp = "theorie" | "praxis";
+export type WochenLage = "online" | "praesenz" | "betrieb";
 export type CompetencyStepTyp = "theoretisch" | "praktisch";
 export type EnrolmentStatus = "aktiv" | "abgeschlossen" | "abgebrochen";
 export type ScheduleArt = "live" | "asynchron" | "feld";
@@ -45,11 +48,12 @@ export type FieldJobStatus = "geplant" | "durchgeführt";
 export type FieldJobErgebnis = "erledigt" | "problem";
 export type FieldCapturePhase = "start" | "abschluss";
 export type UnitProgressStatus = "offen" | "in Bearbeitung" | "abgeschlossen";
-export type AttendanceStatus = "anwesend" | "abwesend" | "entschuldigt";
+export type AttendanceStatus = "anwesend" | "nicht anwesend"; // seit 0011
 export type FieldCaptureStatus = "submitted" | "verified" | "rejected";
 export type VerificationEntscheidung = "verified" | "rejected";
 export type KnowledgeSourceStatus = "entwurf" | "freigegeben";
 export type CompetencyEvidenceQuelltyp = "lesson_completion" | "field_verification";
+export type FachspracheEinheitStatus = "entwurf" | "veroeffentlicht"; // seit 0051; Prüfspalten seit 0053 entfernt
 
 interface Timestamps {
   created_at: string;
@@ -82,6 +86,19 @@ type OrganisationRow = Flatten<
     name: string;
     typ: OrganisationTyp;
     status: OrganisationStatus;
+    logo_pfad: string | null; // 0025, SR-76
+  }
+>;
+
+type FachspracheEinheitRow = Flatten<
+  Timestamps & {
+    id: string;
+    lesson_id: string;
+    titel: string;
+    dauer_minuten: number | null;
+    inhalt: Json; // Form: src/lib/fachsprache.ts (parseInhalt), Bilder im Bucket fachsprache-bilder
+    inhalt_version: number;
+    status: FachspracheEinheitStatus;
   }
 >;
 
@@ -95,6 +112,8 @@ type PersonRow = Flatten<
     geschlecht: string | null;
     vorerfahrung: string | null;
     sprache: Sprache;
+    rufname: string; // 0029, SR-48/SR-73
+    foto_pfad: string | null; // 0030, SR-77: "<person_id>/<uuid>.jpg" im Bucket profilfotos
   }
 >;
 
@@ -148,11 +167,35 @@ type ProgrammeRow = Flatten<
   }
 >;
 
+// Modul-Ebene (0028): modul über den Wochen; module ist (noch) die Woche.
+type ModulRow = Flatten<
+  Timestamps & {
+    id: string;
+    programme_id: string;
+    ueberzeile: string;
+    name: string;
+    reihenfolge: number;
+  }
+>;
+
 type ModuleRow = Flatten<
   Timestamps & {
     id: string;
     programme_id: string;
+    modul_id: string;
     name: string;
+    reihenfolge: number;
+    wochentyp: Wochentyp;
+    lage: WochenLage;
+  }
+>;
+
+type ModulCompetencyRow = Flatten<
+  Timestamps & {
+    id: string;
+    modul_id: string;
+    competency_id: string;
+    kuerzel: string | null;
     reihenfolge: number;
   }
 >;
@@ -177,6 +220,8 @@ type LessonRow = Flatten<
     inhalt: Json | null;
     reihenfolge: number;
     chat_aktiv: boolean;
+    thema: string | null; // 0029, SR-13
+    live_lektion_id: string | null; // 0029, SR-15: Selbstlernen -> Live, 1:1
   }
 >;
 
@@ -194,6 +239,31 @@ type LektionBeitragRow = {
   text: string | null;
   geloescht_am: string | null;
 };
+
+// Kohorten-Chat (0050, SR-83). Learner dürfen organisation_id und updated_at
+// nicht lesen (Spalten-Grant); Row enthält nur die lesbaren Spalten.
+export type ChatKanal = "ankuendigungen" | "treffpunkt";
+type ChatNachrichtRow = {
+  id: string;
+  created_at: string;
+  cohort_id: string;
+  kanal: ChatKanal;
+  person_id: string | null;
+  autor_anzeigename: string | null;
+  text: string | null;
+  geloescht_am: string | null;
+};
+
+// Meldungen (0050): lesen nur Moderierende der Kohorte, schreiben nur über Funktionen.
+type ChatMeldungRow = Flatten<
+  Timestamps & {
+    id: string;
+    nachricht_id: string;
+    person_id: string | null;
+    erledigt_am: string | null;
+    erledigt_von: string | null;
+  }
+>;
 
 type KohorteModerationRow = Flatten<
   Timestamps & {
@@ -285,6 +355,9 @@ type CompetencyCompetencyStepRow = Flatten<
     id: string;
     competency_id: string;
     competency_step_id: string;
+    // 0027_competency_step_reihenfolge.sql: Position je Kompetenz, > 0,
+    // eindeutig je Kompetenz (deferrable).
+    reihenfolge: number;
   }
 >;
 
@@ -295,6 +368,8 @@ type CohortRow = Flatten<
     name: string;
     start_datum: string;
     end_datum: string | null;
+    // Kohorten-Chat freigeschaltet (0050, SR-83), Standard false
+    chat_aktiv: boolean;
   }
 >;
 
@@ -360,6 +435,9 @@ type FieldJobRow = Flatten<
     organisation_id: string;
     datum: string;
     standort: string | null;
+    // 0026_field_job_uhrzeit.sql (SR-13): beide oder keiner, ende > start.
+    start: string | null;
+    ende: string | null;
     field_job_type_id: string;
     learner_id: string;
     instructor_id: string | null;
@@ -396,6 +474,8 @@ type UnitProgressRow = Flatten<
     lesson_id: string;
     status: UnitProgressStatus;
     abgeschlossen_am: string | null;
+    /** Stand in einer Selbstlern-Lektion (0056), Form: src/lib/lernstand.ts */
+    stand: Json | null;
   }
 >;
 
@@ -407,6 +487,10 @@ type AttendanceRow = Flatten<
     live_session_id: string;
     status: AttendanceStatus;
     bestaetigt_von: string | null;
+    /** Zeitpunkt der Bestätigung (0032, SR-07) */
+    bestaetigt_am: string;
+    /** Storno: korrigiert diese Zeile (0032, E4); aktueller Wert über attendance_aktuell */
+    korrigiert_id: string | null;
   }
 >;
 
@@ -454,6 +538,8 @@ type VerificationRow = Flatten<
     entscheidung: VerificationEntscheidung;
     verifiziert_am: string;
     kommentar: string | null;
+    /** Storno: ersetzt diese Entscheidung (0032, E4); aktueller Wert über verification_aktuell */
+    korrigiert_id: string | null;
   }
 >;
 
@@ -490,8 +576,23 @@ export type Database = {
     Tables: {
       organisation: Table<
         OrganisationRow,
-        Flatten<Partial<Timestamps> & { id?: string; name: string; typ: OrganisationTyp; status?: OrganisationStatus }>,
+        Flatten<Partial<Timestamps> & { id?: string; name: string; typ: OrganisationTyp; status?: OrganisationStatus; logo_pfad?: string | null }>,
         Partial<OrganisationRow>
+      >;
+      fachsprache_einheit: Table<
+        FachspracheEinheitRow,
+        Flatten<
+          Partial<Timestamps> & {
+            id?: string;
+            lesson_id: string;
+            titel: string;
+            dauer_minuten?: number | null;
+            inhalt: Json;
+            inhalt_version?: number;
+            status?: FachspracheEinheitStatus;
+          }
+        >,
+        Partial<FachspracheEinheitRow>
       >;
       person: Table<
         PersonRow,
@@ -505,6 +606,8 @@ export type Database = {
             geschlecht?: string | null;
             vorerfahrung?: string | null;
             sprache?: Sprache;
+            rufname?: string; // Trigger belegt ihn aus name vor
+            foto_pfad?: string | null;
           }
         >,
         Partial<PersonRow>
@@ -560,9 +663,26 @@ export type Database = {
         Flatten<Partial<Timestamps> & { id?: string; name: string; kuerzel: string; beschreibung?: string | null }>,
         Partial<ProgrammeRow>
       >;
+      modul: Table<
+        ModulRow,
+        Flatten<
+          Partial<Timestamps> & { id?: string; programme_id: string; ueberzeile: string; name: string; reihenfolge: number }
+        >,
+        Partial<ModulRow>
+      >;
       module: Table<
         ModuleRow,
-        Flatten<Partial<Timestamps> & { id?: string; programme_id: string; name: string; reihenfolge: number }>,
+        Flatten<
+          Partial<Timestamps> & {
+            id?: string;
+            programme_id: string;
+            modul_id: string;
+            name: string;
+            reihenfolge: number;
+            wochentyp: Wochentyp;
+            lage: WochenLage;
+          }
+        >,
         Partial<ModuleRow>
       >;
       course: Table<
@@ -590,6 +710,8 @@ export type Database = {
             inhalt?: Json | null;
             reihenfolge: number;
             chat_aktiv?: boolean;
+            thema?: string | null;
+            live_lektion_id?: string | null;
           }
         >,
         Partial<LessonRow>
@@ -607,6 +729,14 @@ export type Database = {
         Partial<KohorteModerationRow>
       >;
       moderationsprotokoll: Table<ModerationsprotokollRow, Record<string, never>, Record<string, never>>;
+      // Insert nur Kennung, Kohorte, Kanal, Text (Spalten-Grant, 0050); person_id,
+      // organisation_id und autor_anzeigename setzt der Trigger. Kein Update.
+      chat_meldung: Table<ChatMeldungRow, Record<string, never>, Record<string, never>>;
+      chat_nachricht: Table<
+        ChatNachrichtRow,
+        { id?: string; cohort_id: string; kanal: ChatKanal; text: string },
+        Record<string, never>
+      >;
       lesson_resource: Table<
         LessonResourceRow,
         Flatten<
@@ -642,13 +772,26 @@ export type Database = {
       >;
       competency_competency_step: Table<
         CompetencyCompetencyStepRow,
-        Flatten<Partial<Timestamps> & { id?: string; competency_id: string; competency_step_id: string }>,
+        Flatten<Partial<Timestamps> & { id?: string; competency_id: string; competency_step_id: string; reihenfolge: number }>,
         Partial<CompetencyCompetencyStepRow>
       >;
       field_job_type_competency_mapping: Table<
         FieldJobTypeCompetencyMappingRow,
         Flatten<Partial<Timestamps> & { id?: string; field_job_type_id: string; competency_step_id: string }>,
         Partial<FieldJobTypeCompetencyMappingRow>
+      >;
+      modul_competency: Table<
+        ModulCompetencyRow,
+        Flatten<
+          Partial<Timestamps> & {
+            id?: string;
+            modul_id: string;
+            competency_id: string;
+            kuerzel?: string | null;
+            reihenfolge: number;
+          }
+        >,
+        Partial<ModulCompetencyRow>
       >;
       competency_programme: Table<
         CompetencyProgrammeRow,
@@ -745,6 +888,8 @@ export type Database = {
             organisation_id: string;
             datum: string;
             standort?: string | null;
+            start?: string | null;
+            ende?: string | null;
             field_job_type_id: string;
             learner_id: string;
             instructor_id?: string | null;
@@ -792,6 +937,7 @@ export type Database = {
             lesson_id: string;
             status?: UnitProgressStatus;
             abgeschlossen_am?: string | null;
+            stand?: Json | null;
           }
         >,
         Partial<UnitProgressRow>
@@ -806,6 +952,8 @@ export type Database = {
             live_session_id: string;
             status?: AttendanceStatus;
             bestaetigt_von?: string | null;
+            bestaetigt_am?: string;
+            korrigiert_id?: string | null;
           }
         >,
         Partial<AttendanceRow>
@@ -888,6 +1036,9 @@ export type Database = {
       competency_evidence: View<CompetencyEvidenceRow>;
       // SR-72 (0021): AND-Logik je Learner und Kompetenz, ebenfalls kein Write.
       competency_fulfilment: View<CompetencyFulfilmentRow>;
+      // 0032 (SR-07, E4): aktuelle Zeilen ohne Storno, RLS über die Basistabellen.
+      attendance_aktuell: View<AttendanceRow>;
+      verification_aktuell: View<VerificationRow>;
     };
     Functions: {
       // Soft-Delete eines Beitrags (0024): Autor:in eigene, Moderation alle der Kohorte.
@@ -895,6 +1046,34 @@ export type Database = {
       // Sichtbarkeit und Schreibrecht im Thread (0024), gleiche Regel wie die Policies.
       fn_kann_beitraege_lesen: { Args: { p_lesson_id: string; p_cohort_id: string }; Returns: boolean };
       fn_kann_beitrag_schreiben: { Args: { p_lesson_id: string; p_cohort_id: string }; Returns: boolean };
+      // Zeitraum je Modul aus dem Stundenplan der Kohorte (0028), RLS der aufrufenden Person.
+      fn_modul_zeitraum: { Args: { p_cohort_id: string }; Returns: { modul_id: string; von: string; bis: string }[] };
+      // Trainer:innen im eigenen Plan, nur Rolle trainer (0030, SR-78).
+      // 0032 (SR-81, SR-82): Lernende der Kohorten, in denen die Trainer:in einen Termin hat (E3).
+      fn_trainer_teilnehmende: {
+        Args: Record<string, never>;
+        Returns: { person_id: string; cohort_id: string; enrolment_id: string; name: string; rufname: string }[];
+      };
+      fn_meine_trainer: {
+        Args: Record<string, never>;
+        Returns: { person_id: string; name: string; rufname: string; foto_pfad: string | null }[];
+      };
+      // Andere Lernende der eigenen Kohorte, gleiche Organisation, aktiv (0034, SR-30).
+      fn_meine_kohorte: {
+        Args: Record<string, never>;
+        Returns: { person_id: string; anzeigename: string; foto_pfad: string | null }[];
+      };
+      // Kohorten-Chat (0050, SR-83): gleiche Regeln wie die Policies.
+      fn_chat_darf_lesen: { Args: { p_cohort_id: string }; Returns: boolean };
+      fn_chat_darf_schreiben: { Args: { p_cohort_id: string; p_kanal: ChatKanal }; Returns: boolean };
+      fn_chat_moderiert: { Args: { p_cohort_id: string }; Returns: boolean };
+      fn_chat_nachricht_loeschen: { Args: { p_nachricht_id: string }; Returns: undefined };
+      fn_chat_nachricht_melden: { Args: { p_nachricht_id: string }; Returns: undefined };
+      fn_chat_meldung_erledigt: { Args: { p_meldung_id: string }; Returns: undefined };
+      fn_chat_gelesen_setzen: { Args: { p_cohort_id: string; p_kanal: ChatKanal }; Returns: undefined };
+      fn_chat_ungelesen: { Args: { p_cohort_id: string }; Returns: { kanal: ChatKanal; anzahl: number }[] };
+      // Darf die eingeloggte Person die Fotos im Ordner sehen? (0030, SR-77)
+      fn_darf_foto_sehen: { Args: { p_ordner: string }; Returns: boolean };
     };
   };
 };

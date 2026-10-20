@@ -102,8 +102,8 @@ insert into lektion_beitrag (id, lesson_id, cohort_id, person_id, text) values
 select is(
   (select column_default from information_schema.columns
    where table_schema = 'public' and table_name = 'lesson' and column_name = 'chat_aktiv'),
-  'false',
-  'lesson.chat_aktiv ist standardmäßig false'
+  null,
+  'lesson.chat_aktiv hat keinen festen Standard; beim Anlegen entscheidet der Trigger aus 0054 (Live an, sonst aus)'
 );
 select throws_ok(
   $$insert into lektion_beitrag (lesson_id, cohort_id, person_id, text)

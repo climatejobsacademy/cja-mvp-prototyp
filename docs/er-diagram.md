@@ -22,6 +22,8 @@ erDiagram
         uuid id PK "= auth.users.id"
         text email
         text name
+        text rufname "seit 0029"
+        text foto_pfad "Bucket profilfotos, seit 0030"
         text username
         date geburtsdatum
         text geschlecht
@@ -49,12 +51,30 @@ erDiagram
         text beschreibung
         text status "published/unpublished, seit 2026-09-11"
     }
+    modul {
+        uuid id PK
+        uuid programme_id FK
+        text ueberzeile "Modul I ... Abschluss"
+        text name
+        int reihenfolge "eindeutig je Programm"
+        text status "published/unpublished"
+    }
     module {
         uuid id PK
         uuid programme_id FK
+        uuid modul_id FK "seit 0028, gleiches Programm"
         text name
         int reihenfolge
         text status "published/unpublished, seit 2026-09-11"
+        text wochentyp "theorie/praxis, seit 0028"
+        text lage "online/praesenz/betrieb, seit 0028"
+    }
+    modul_competency {
+        uuid id PK
+        uuid modul_id FK
+        uuid competency_id FK
+        text kuerzel "z. B. M2.01"
+        int reihenfolge
     }
     course {
         uuid id PK
@@ -73,6 +93,8 @@ erDiagram
         jsonb inhalt "nur noch scorm, repository siehe lesson_resource"
         int reihenfolge
         text status "published/unpublished, seit 2026-09-11"
+        text thema "seit 0029"
+        uuid live_lektion_id FK "Selbstlernen -> Live, 1:1, seit 0029"
     }
     lesson_resource {
         uuid id PK
@@ -256,7 +278,11 @@ erDiagram
     organisation ||--o{ role_assignment : ""
     person ||--o{ role_assignment : ""
 
+    programme ||--o{ modul : ""
+    modul ||--o{ module : "Wochen"
     programme ||--o{ module : ""
+    modul ||--o{ modul_competency : ""
+    competency ||--o{ modul_competency : ""
     programme ||--o{ course : "(wenn kein Modul)"
     module ||--o{ course : ""
     course ||--o{ lesson : ""
@@ -289,6 +315,7 @@ erDiagram
 
     person ||--o{ unit_progress : ""
     lesson ||--o{ unit_progress : ""
+    lesson |o--o| lesson : "live_lektion_id (Selbstlernen -> Live)"
     person ||--o{ attendance : ""
     live_session ||--o{ attendance : ""
 

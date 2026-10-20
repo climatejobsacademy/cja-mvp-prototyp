@@ -1,3 +1,5 @@
+import { plusTage } from "@/lib/date";
+import { lektionTitel } from "@/lib/lektion-titel";
 import { createClient } from "@/lib/supabase/server";
 import type { ContentType, UnitProgressStatus } from "@/lib/database.types";
 
@@ -8,7 +10,14 @@ export type FeldEintrag = {
   titel: string;
   beschreibung: string | null;
   bildOderIcon: string | null;
+  /** Freitext-Ort des Field Jobs (z. B. Betrieb); im Prototyp oft leer. */
+  standort: string | null;
+  /** Uhrzeit des Praxistags (0026, SR-13); beide null = ganztägig ohne Uhrzeit */
+  start: string | null;
+  ende: string | null;
   status: "geplant" | "durchgeführt";
+  /** Begleitende Person (field_job.instructor_id, SR-78), sonst null */
+  trainerId: string | null;
 };
 
 export type TheorieEintrag = {
@@ -16,14 +25,23 @@ export type TheorieEintrag = {
   scheduleEntryId: string;
   lessonId: string | null;
   art: "live" | "asynchron";
+  /** Lektionstitel ohne Klammer, wenn thema gesetzt ist (SR-13, 0029) */
   titel: string;
+  /** Thema der Lektion (lesson.thema), sonst null */
+  thema: string | null;
+  /** Selbstlern-Lektion: zugehörige Live-Lektion (lesson.live_lektion_id, 0029), sonst null */
+  liveLektionId: string | null;
   contentType: ContentType | "kurs";
   unitProgressStatus: UnitProgressStatus | null;
   liveSession: {
+    /** live_session.id (Stundenplan: bestätigte Anwesenheit) */
+    id: string;
     datum: string;
     start: string;
     ende: string;
     joinLink: string | null;
+    /** Trainer:in des Termins (live_session.trainer_id, SR-78), sonst null */
+    trainerId: string | null;
   } | null;
 };
 
@@ -47,14 +65,33 @@ export async function getTagesAgenda(
   learnerId: string,
   datum: string
 ): Promise<TagesAgenda> {
+  const [tag] = await getAgendaZeitraum(organisationId, cohortId, enrolmentId, learnerId, datum, datum);
+  return tag;
+}
+
+/**
+ * Wie getTagesAgenda, aber für jeden Tag von `von` bis `bis` (einschließlich)
+ * in einem Durchgang -- gebündelte Abfragen statt einer Runde je Tag
+ * (Stundenplan v2: Woche und Monat).
+ */
+export async function getAgendaZeitraum(
+  organisationId: string,
+  cohortId: string,
+  enrolmentId: string,
+  learnerId: string,
+  von: string,
+  bis: string
+): Promise<TagesAgenda[]> {
   const supabase = await createClient();
 
   const { data: entries } = await supabase
     .from("schedule_entry")
-    .select("id, art, reihenfolge, cohort_id, enrolment_id, course_id, lesson_id, live_session_id, field_job_id")
+    .select("id, datum, art, reihenfolge, cohort_id, enrolment_id, course_id, lesson_id, live_session_id, field_job_id")
     .eq("organisation_id", organisationId)
-    .eq("datum", datum)
+    .gte("datum", von)
+    .lte("datum", bis)
     .or(`cohort_id.eq.${cohortId},enrolment_id.eq.${enrolmentId}`)
+    .order("datum", { ascending: true })
     .order("reihenfolge", { ascending: true });
 
   const rows = entries ?? [];
@@ -62,12 +99,12 @@ export async function getTagesAgenda(
   const feldEntries = rows.filter((r) => r.art === "feld" && r.field_job_id);
   const theorieEntries = rows.filter((r) => r.art !== "feld");
 
-  const feld: FeldEintrag[] = [];
+  const feld: (FeldEintrag & { datum: string })[] = [];
   if (feldEntries.length > 0) {
     const fieldJobIds = feldEntries.map((r) => r.field_job_id!) as string[];
     const { data: fieldJobs } = await supabase
       .from("field_job")
-      .select("id, status, field_job_type_id")
+      .select("id, status, standort, start, ende, field_job_type_id, instructor_id")
       .in("id", fieldJobIds);
 
     const typeIds = [...new Set((fieldJobs ?? []).map((j) => j.field_job_type_id))];
@@ -81,19 +118,24 @@ export async function getTagesAgenda(
       const type = fieldJobTypes?.find((t) => t.id === job?.field_job_type_id);
       if (job && type) {
         feld.push({
+          datum: entry.datum,
           kind: "feld",
           scheduleEntryId: entry.id,
           fieldJobId: job.id,
           titel: type.titel,
           beschreibung: type.beschreibung,
           bildOderIcon: type.bild_oder_icon,
+          standort: job.standort,
+          start: job.start,
+          ende: job.ende,
           status: job.status,
+          trainerId: job.instructor_id,
         });
       }
     }
   }
 
-  const theorie: TheorieEintrag[] = [];
+  const theorie: (TheorieEintrag & { datum: string })[] = [];
   if (theorieEntries.length > 0) {
     const lessonIds = [...new Set(theorieEntries.map((r) => r.lesson_id).filter(Boolean))] as string[];
     const courseIds = [...new Set(theorieEntries.map((r) => r.course_id).filter(Boolean))] as string[];
@@ -101,17 +143,36 @@ export async function getTagesAgenda(
 
     const [{ data: lessons }, { data: courses }, { data: liveSessions }] = await Promise.all([
       lessonIds.length
-        ? supabase.from("lesson").select("id, name, content_type").in("id", lessonIds)
-        : Promise.resolve({ data: [] as { id: string; name: string; content_type: ContentType }[] }),
+        ? supabase.from("lesson").select("id, name, thema, content_type, live_lektion_id").in("id", lessonIds)
+        : Promise.resolve({
+            data: [] as {
+              id: string;
+              name: string;
+              thema: string | null;
+              content_type: ContentType;
+              live_lektion_id: string | null;
+            }[],
+          }),
       courseIds.length
         ? supabase.from("course").select("id, name").in("id", courseIds)
         : Promise.resolve({ data: [] as { id: string; name: string }[] }),
       liveSessionIds.length
         ? supabase
             .from("live_session")
-            .select("id, lesson_id, course_id, datum, start, ende, join_link")
+            .select("id, lesson_id, course_id, datum, start, ende, join_link, trainer_id")
             .in("id", liveSessionIds)
-        : Promise.resolve({ data: [] as { id: string; lesson_id: string | null; course_id: string | null; datum: string; start: string; ende: string; join_link: string | null }[] }),
+        : Promise.resolve({
+            data: [] as {
+              id: string;
+              lesson_id: string | null;
+              course_id: string | null;
+              datum: string;
+              start: string;
+              ende: string;
+              join_link: string | null;
+              trainer_id: string | null;
+            }[],
+          }),
     ]);
 
     // Live-Sessions können eigene lesson_id haben, die nicht auf dem
@@ -123,9 +184,24 @@ export async function getTagesAgenda(
     if (liveSessionLessonIds.length > 0) {
       const { data: extraLessons } = await supabase
         .from("lesson")
-        .select("id, name, content_type")
+        .select("id, name, thema, content_type, live_lektion_id")
         .in("id", liveSessionLessonIds);
       allLessons = [...allLessons, ...(extraLessons ?? [])];
+    }
+
+    // Live-Termine, die an einem Kurs statt an einer Lektion hängen: Kursnamen
+    // nachladen, sonst stünde dort nur "Live-Termin" (Anna 2026-10-17).
+    let allCourses = [...(courses ?? [])];
+    const sessionCourseIds = [
+      ...new Set(
+        (liveSessions ?? [])
+          .map((s) => s.course_id)
+          .filter((id): id is string => !!id && !allCourses.some((c) => c.id === id))
+      ),
+    ];
+    if (sessionCourseIds.length > 0) {
+      const { data: extraCourses } = await supabase.from("course").select("id, name").in("id", sessionCourseIds);
+      allCourses = [...allCourses, ...(extraCourses ?? [])];
     }
 
     let progressByLesson = new Map<string, UnitProgressStatus>();
@@ -144,31 +220,41 @@ export async function getTagesAgenda(
         const session = liveSessions?.find((s) => s.id === entry.live_session_id);
         if (!session) continue;
         const lesson = session.lesson_id ? allLessons.find((l) => l.id === session.lesson_id) : null;
-        const course = session.course_id ? courses?.find((c) => c.id === session.course_id) : null;
+        const course = session.course_id ? allCourses.find((c) => c.id === session.course_id) : null;
+        const titel = lesson ? lektionTitel(lesson.name, lesson.thema) : null;
         theorie.push({
+          datum: entry.datum,
           kind: "theorie",
           scheduleEntryId: entry.id,
           lessonId: lesson?.id ?? null,
           art: "live",
-          titel: lesson?.name ?? course?.name ?? "Live-Termin",
+          titel: titel?.titel ?? course?.name ?? "Live-Termin",
+          thema: titel?.thema ?? null,
+          liveLektionId: null,
           contentType: "live",
           unitProgressStatus: lesson ? progressByLesson.get(lesson.id) ?? "offen" : null,
           liveSession: {
+            id: session.id,
             datum: session.datum,
             start: session.start,
             ende: session.ende,
             joinLink: session.join_link,
+            trainerId: session.trainer_id,
           },
         });
       } else if (entry.lesson_id) {
         const lesson = allLessons.find((l) => l.id === entry.lesson_id);
         if (!lesson) continue;
+        const titel = lektionTitel(lesson.name, lesson.thema);
         theorie.push({
+          datum: entry.datum,
           kind: "theorie",
           scheduleEntryId: entry.id,
           lessonId: lesson.id,
           art: "asynchron",
-          titel: lesson.name,
+          titel: titel.titel,
+          thema: titel.thema,
+          liveLektionId: lesson.live_lektion_id,
           contentType: lesson.content_type,
           unitProgressStatus: progressByLesson.get(lesson.id) ?? "offen",
           liveSession: null,
@@ -177,11 +263,14 @@ export async function getTagesAgenda(
         const course = courses?.find((c) => c.id === entry.course_id);
         if (!course) continue;
         theorie.push({
+          datum: entry.datum,
           kind: "theorie",
           scheduleEntryId: entry.id,
           lessonId: null,
           art: "asynchron",
           titel: course.name,
+          thema: null,
+          liveLektionId: null,
           contentType: "kurs",
           unitProgressStatus: null,
           liveSession: null,
@@ -190,20 +279,27 @@ export async function getTagesAgenda(
     }
   }
 
-  return { datum, istPraxistag: feld.length > 0, feld, theorie };
+  const ohneDatum = <T extends { datum: string }>(eintrag: T): Omit<T, "datum"> => {
+    const kopie: Partial<T> = { ...eintrag };
+    delete kopie.datum;
+    return kopie as Omit<T, "datum">;
+  };
+  const tage: TagesAgenda[] = [];
+  for (let d = von; d <= bis; d = plusTage(d, 1)) {
+    const tagFeld = feld.filter((e) => e.datum === d).map(ohneDatum);
+    tage.push({
+      datum: d,
+      istPraxistag: tagFeld.length > 0,
+      feld: tagFeld,
+      theorie: theorie.filter((e) => e.datum === d).map(ohneDatum),
+    });
+  }
+  return tage;
 }
 
-export type WochenTag = {
-  datum: string;
-  art: "feld" | "theorie" | "frei";
-  offeneEintraege: number;
-  abgeschlosseneEintraege: number;
-};
-
-/** Wochenübersicht (Mo–So der Woche von `anyDateInWeek`) mit Typ-Kennzeichnung
- * und einem einfachen Abschluss-Indikator je Tag (design-specifications.md 2.2). */
 export type NaechsterTermin = {
   datum: string;
+  art: "live" | "asynchron" | "feld";
   /** Startzeit HH:MM:SS, nur bei Live-Terminen vorhanden. */
   start: string | null;
 };
@@ -223,7 +319,7 @@ export async function getNaechsterTermin(
 
   const { data: entry } = await supabase
     .from("schedule_entry")
-    .select("datum, live_session_id")
+    .select("datum, art, live_session_id")
     .eq("organisation_id", organisationId)
     .gt("datum", nachDatum)
     .or(`cohort_id.eq.${cohortId},enrolment_id.eq.${enrolmentId}`)
@@ -244,182 +340,5 @@ export async function getNaechsterTermin(
     start = session?.start ?? null;
   }
 
-  return { datum: entry.datum, start };
-}
-
-export async function getWochenUebersicht(
-  organisationId: string,
-  cohortId: string,
-  enrolmentId: string,
-  learnerId: string,
-  anyDateInWeek: string
-): Promise<WochenTag[]> {
-  const supabase = await createClient();
-
-  const start = startOfWeek(anyDateInWeek);
-  const days = Array.from({ length: 7 }, (_, i) => addDays(start, i));
-
-  const { data: entries } = await supabase
-    .from("schedule_entry")
-    .select("datum, art, lesson_id")
-    .eq("organisation_id", organisationId)
-    .gte("datum", days[0])
-    .lte("datum", days[6])
-    .or(`cohort_id.eq.${cohortId},enrolment_id.eq.${enrolmentId}`);
-
-  const rows = entries ?? [];
-  const lessonIds = [...new Set(rows.map((r) => r.lesson_id).filter(Boolean))] as string[];
-
-  let progressByLesson = new Map<string, UnitProgressStatus>();
-  if (lessonIds.length > 0) {
-    const { data: progress } = await supabase
-      .from("unit_progress")
-      .select("lesson_id, status")
-      .eq("learner_id", learnerId)
-      .in("lesson_id", lessonIds);
-    progressByLesson = new Map((progress ?? []).map((p) => [p.lesson_id, p.status]));
-  }
-
-  return days.map((datum) => {
-    const dayRows = rows.filter((r) => r.datum === datum);
-    const hatFeld = dayRows.some((r) => r.art === "feld");
-    const art: WochenTag["art"] = dayRows.length === 0 ? "frei" : hatFeld ? "feld" : "theorie";
-    const withLesson = dayRows.filter((r) => r.lesson_id) as { lesson_id: string }[];
-    const abgeschlossen = withLesson.filter(
-      (r) => progressByLesson.get(r.lesson_id) === "abgeschlossen"
-    ).length;
-    return {
-      datum,
-      art,
-      offeneEintraege: dayRows.length - abgeschlossen,
-      abgeschlosseneEintraege: abgeschlossen,
-    };
-  });
-}
-
-export type ProgrammPhase = {
-  id: string;
-  name: string;
-  reihenfolge: number;
-  typ: "module" | "kurs" | "praxis";
-  // Anker-Fragment für /content#<contentAnchor> (siehe schedule-tabs.tsx).
-  contentAnchor: string;
-  // Nur bei typ="module" gesetzt (SR-59): zwei unabhängige Icons an der
-  // Modul-Phase statt einer eigenen Praxis-Phase -- Theorie-Icon, wenn das
-  // Modul mindestens einen Kurs hat, Praxis-Icon, wenn es mindestens einen
-  // field_job_type hat (SR-58). Ein rein praktisches oder rein
-  // theoretisches Modul zeigt entsprechend nur eins der beiden.
-  hatTheorie?: boolean;
-  hatPraxis?: boolean;
-};
-
-export type ProgrammUebersicht = {
-  programmeName: string;
-  startDatum: string;
-  endDatum: string | null;
-  phasen: ProgrammPhase[];
-};
-
-/** Programm-Überblick: Start-/Enddatum + grobe Phasen als Zeitleiste, rein
- * orientierend, nicht interaktiv (design-specifications.md 2.2). */
-export async function getProgrammUebersicht(
-  cohortId: string,
-  programmeId: string,
-  programmeName: string
-): Promise<ProgrammUebersicht> {
-  const supabase = await createClient();
-
-  const { data: cohort } = await supabase
-    .from("cohort")
-    .select("start_datum, end_datum")
-    .eq("id", cohortId)
-    .single();
-
-  const { data: modules } = await supabase
-    .from("module")
-    .select("id, name, reihenfolge")
-    .eq("programme_id", programmeId)
-    .order("reihenfolge", { ascending: true });
-
-  let phasen: ProgrammPhase[];
-
-  if ((modules ?? []).length > 0) {
-    // Module vorhanden -> Kurse UND Field-Job-Typen eines Moduls tauchen
-    // nicht einzeln (und auch nicht als eigene gebündelte Praxis-Phase) im
-    // Programm-Überblick auf, sondern nur als zwei unabhängige Icons an der
-    // jeweiligen Modul-Phase (SR-59): Theorie-Icon, wenn das Modul
-    // mindestens einen Kurs hat, Praxis-Icon, wenn es mindestens einen
-    // field_job_type hat (SR-58).
-    const moduleIds = (modules ?? []).map((m) => m.id);
-    const [{ data: coursesViaModule }, { data: fieldJobTypesViaModule }] = await Promise.all([
-      supabase.from("course").select("id, module_id").in("module_id", moduleIds),
-      supabase.from("field_job_type").select("id, module_id").in("module_id", moduleIds),
-    ]);
-    const modulesMitKursen = new Set((coursesViaModule ?? []).map((c) => c.module_id));
-    const modulesMitPraxis = new Set((fieldJobTypesViaModule ?? []).map((ft) => ft.module_id));
-
-    phasen = (modules ?? []).map((m) => ({
-      id: m.id,
-      name: m.name,
-      reihenfolge: m.reihenfolge,
-      typ: "module" as const,
-      contentAnchor: `modul-${m.id}`,
-      hatTheorie: modulesMitKursen.has(m.id),
-      hatPraxis: modulesMitPraxis.has(m.id),
-    }));
-  } else {
-    // Kein Modul vorhanden -> Kurse hängen direkt am Programm (Entscheidung
-    // 2026-09-09, data-model.md Group 2) und dienen dann als Phasen.
-    const { data: courses } = await supabase
-      .from("course")
-      .select("id, name, reihenfolge")
-      .eq("programme_id", programmeId)
-      .order("reihenfolge", { ascending: true });
-    phasen = (courses ?? []).map((c) => ({
-      id: c.id,
-      name: c.name,
-      reihenfolge: c.reihenfolge,
-      typ: "kurs" as const,
-      contentAnchor: `kurs-${c.id}`,
-    }));
-
-    // Field-Job-Typen ohne Modul hängen direkt am Programm (SR-58) und
-    // erscheinen -- anders als im Modul-Fall -- einzeln als eigene
-    // Praxis-Phasen, analog zu den einzeln aufgeführten Kursen hier.
-    const { data: fieldJobTypesViaProgramme } = await supabase
-      .from("field_job_type")
-      .select("id, titel, reihenfolge")
-      .eq("programme_id", programmeId)
-      .order("reihenfolge", { ascending: true });
-    phasen.push(
-      ...(fieldJobTypesViaProgramme ?? []).map((ft) => ({
-        id: ft.id,
-        name: ft.titel,
-        reihenfolge: ft.reihenfolge,
-        typ: "praxis" as const,
-        contentAnchor: `praxis-${ft.id}`,
-      }))
-    );
-  }
-
-  return {
-    programmeName,
-    startDatum: cohort?.start_datum ?? "",
-    endDatum: cohort?.end_datum ?? null,
-    phasen,
-  };
-}
-
-function startOfWeek(dateStr: string): string {
-  const d = new Date(`${dateStr}T00:00:00Z`);
-  const day = d.getUTCDay(); // 0 = Sonntag
-  const diff = day === 0 ? -6 : 1 - day; // Woche beginnt Montag
-  d.setUTCDate(d.getUTCDate() + diff);
-  return d.toISOString().slice(0, 10);
-}
-
-function addDays(dateStr: string, days: number): string {
-  const d = new Date(`${dateStr}T00:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + days);
-  return d.toISOString().slice(0, 10);
+  return { datum: entry.datum, art: entry.art, start };
 }

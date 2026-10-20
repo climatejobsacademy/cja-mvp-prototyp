@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { erledigteLektionIds } from "./lektionen-erledigt";
 import type { CompetencyStepTyp } from "@/lib/database.types";
 
 export type StepStatus = "abgeschlossen" | "in Prüfung" | "abgelehnt" | "offen";
@@ -21,6 +22,8 @@ export type CompetencyStepView = {
   typ: CompetencyStepTyp;
   status: StepStatus;
   fortschritt: StepFortschritt | null;
+  /** Position innerhalb der Kompetenz (competency_competency_step.reihenfolge, 0027) */
+  reihenfolge: number;
 };
 
 export type CompetencyView = {
@@ -43,8 +46,15 @@ export type CompetencyView = {
  * theoretischer Teilschritt der Kompetenz hängt (content_competency_mapping);
  * Kompetenzen ganz ohne Mapping (nur praktische Teilschritte) fallen ans Ende.
  */
-export async function getKompetenzFortschritt(learnerId: string): Promise<CompetencyView[]> {
+export async function getKompetenzFortschritt(learnerId: string, programmeId?: string): Promise<CompetencyView[]> {
   const supabase = await createClient();
+
+  // SR-70: mit programmeId nur die Kompetenzen dieses Programms
+  // (competency_programme, 0020); ohne alle (bisheriges Verhalten).
+  const { data: programmZuordnung } = programmeId
+    ? await supabase.from("competency_programme").select("competency_id").eq("programme_id", programmeId)
+    : { data: null };
+  const imProgramm = programmZuordnung ? new Set(programmZuordnung.map((z) => z.competency_id)) : null;
 
   const { data: competencies } = await supabase
     .from("competency")
@@ -53,19 +63,25 @@ export async function getKompetenzFortschritt(learnerId: string): Promise<Compet
     .from("competency_step")
     .select("id, name, typ");
   // N:M seit SR-69 (0019): ein Teilschritt kann an mehreren Kompetenzen
-  // hängen und zählt dann in jeder davon mit.
+  // hängen und zählt dann in jeder davon mit. Reihenfolge je Kompetenz aus
+  // competency_competency_step.reihenfolge (0027).
   const { data: competencySteps } = await supabase
     .from("competency_competency_step")
-    .select("competency_id, competency_step_id");
+    .select("competency_id, competency_step_id, reihenfolge")
+    .order("reihenfolge", { ascending: true });
 
   if (!competencies || !steps || !competencySteps) return [];
+  const kompetenzListe = imProgramm ? competencies.filter((c) => imProgramm.has(c.id)) : competencies;
 
   const stepById = new Map(steps.map((s) => [s.id, s]));
+  // Eingefügt in reihenfolge-Sortierung, die Listen sind damit je Kompetenz sortiert.
   const stepIdsByCompetency = new Map<string, string[]>();
+  const positionJeZuordnung = new Map<string, number>();
   for (const cs of competencySteps) {
     const list = stepIdsByCompetency.get(cs.competency_id) ?? [];
     list.push(cs.competency_step_id);
     stepIdsByCompetency.set(cs.competency_id, list);
+    positionJeZuordnung.set(`${cs.competency_id}:${cs.competency_step_id}`, cs.reihenfolge);
   }
 
   const stepIds = steps.map((s) => s.id);
@@ -78,7 +94,7 @@ export async function getKompetenzFortschritt(learnerId: string): Promise<Compet
     .eq("learner_id", learnerId);
   const fulfilmentByCompetency = new Map((fulfilment ?? []).map((f) => [f.competency_id, f]));
 
-  const [{ data: mappings }, { data: praxisMappings }, { data: completedLessons }] =
+  const [{ data: mappings }, { data: praxisMappings }, completedLessonIds] =
     await Promise.all([
       stepIds.length
         ? supabase
@@ -92,11 +108,8 @@ export async function getKompetenzFortschritt(learnerId: string): Promise<Compet
             .select("competency_step_id, field_job_type_id")
             .in("competency_step_id", stepIds)
         : Promise.resolve({ data: [] as { competency_step_id: string; field_job_type_id: string }[] }),
-      supabase
-        .from("unit_progress")
-        .select("lesson_id")
-        .eq("learner_id", learnerId)
-        .eq("status", "abgeschlossen"),
+      // abgeschlossen oder (Live) bestätigte Anwesenheit -- wie competency_fulfilment (0052)
+      erledigteLektionIds(supabase, learnerId),
     ]);
 
   // Verifizierungs-Zwischenstände (pending/abgelehnt) — nur relevant, wenn
@@ -152,11 +165,11 @@ export async function getKompetenzFortschritt(learnerId: string): Promise<Compet
     return "offen";
   }
 
-  // Teilschritt-Fortschritt (SR-62, seit SR-63 auch Status): abgeschlossene Lektion =
-  // unit_progress.status 'abgeschlossen'; abgeschlossene Praxisaufgabe =
+  // Teilschritt-Fortschritt (SR-62, seit SR-63 auch Status): erledigte Lektion =
+  // unit_progress.status 'abgeschlossen' oder, bei Live, bestätigte
+  // Anwesenheit (0052); abgeschlossene Praxisaufgabe =
   // mindestens eine verifizierte Selbstauskunft (field_capture.status
   // 'verified') zu einem field_job dieses Typs -- nicht schon 'durchgeführt'.
-  const completedLessonIds = new Set((completedLessons ?? []).map((u) => u.lesson_id));
   const verifiedJobIds = new Set(
     (myCaptures ?? []).filter((c) => c.status === "verified").map((c) => c.field_job_id)
   );
@@ -193,18 +206,32 @@ export async function getKompetenzFortschritt(learnerId: string): Promise<Compet
     };
   }
 
-  const result: CompetencyView[] = competencies.map((c) => {
+  const result: CompetencyView[] = kompetenzListe.map((c) => {
     const mySteps = (stepIdsByCompetency.get(c.id) ?? [])
       .map((id) => stepById.get(id))
       .filter((s) => s !== undefined);
     const stepViews: CompetencyStepView[] = mySteps.map((s) => {
       const fortschritt = stepFortschritt(s.id, s.typ);
-      return { id: s.id, name: s.name, typ: s.typ, status: stepStatus(s.id, fortschritt), fortschritt };
+      return {
+        id: s.id,
+        name: s.name,
+        typ: s.typ,
+        status: stepStatus(s.id, fortschritt),
+        fortschritt,
+        reihenfolge: positionJeZuordnung.get(`${c.id}:${s.id}`) ?? Number.MAX_SAFE_INTEGER,
+      };
     });
     // Keine Zeile in competency_fulfilment = noch kein Teilschritt erfüllt.
     const f = fulfilmentByCompetency.get(c.id);
     const gesamt = f?.teilschritte_gesamt ?? stepViews.length;
     const erfuelltAnzahl = f?.teilschritte_erfuellt ?? 0;
+    // Anteiliger Fortschritt (Anna 2026-10-16): jeder Teilschritt zählt mit
+    // seinem Anteil erledigter Lektionen bzw. Praxisaufgaben, nicht erst ganz.
+    // "erfüllt" bleibt die AND-Regel aus der Datenbank.
+    const anteile = stepViews.map((s) =>
+      s.status === "abgeschlossen" ? 1 : s.fortschritt && s.fortschritt.gesamt > 0 ? s.fortschritt.abgeschlossen / s.fortschritt.gesamt : 0
+    );
+    const anteilig = anteile.length > 0 ? anteile.reduce((a, b) => a + b, 0) / anteile.length : 0;
     const order = Math.min(
       ...mySteps.map((s) => minOrderByStep.get(s.id) ?? Number.MAX_SAFE_INTEGER),
       Number.MAX_SAFE_INTEGER
@@ -216,62 +243,11 @@ export async function getKompetenzFortschritt(learnerId: string): Promise<Compet
       teilschritteErfuellt: erfuelltAnzahl,
       teilschritteGesamt: gesamt,
       erfuellt: f?.erfuellt ?? false,
-      fortschrittProzent: gesamt > 0 ? Math.round((erfuelltAnzahl / gesamt) * 100) : 0,
+      fortschrittProzent: Math.round(anteilig * 100),
       curriculumReihenfolge: order,
       steps: stepViews,
     };
   });
 
   return result.sort((a, b) => a.curriculumReihenfolge - b.curriculumReihenfolge);
-}
-
-export type CurriculumFortschritt = {
-  gesamtLektionen: number;
-  abgeschlosseneLektionen: number;
-  prozent: number;
-};
-
-/** Curriculum-Fortschritt: % abgeschlossene Lektionen im Programm der Person. */
-export async function getCurriculumFortschritt(
-  learnerId: string,
-  programmeId: string
-): Promise<CurriculumFortschritt> {
-  const supabase = await createClient();
-
-  const { data: modules } = await supabase.from("module").select("id").eq("programme_id", programmeId);
-  const { data: coursesViaProgramme } = await supabase
-    .from("course")
-    .select("id")
-    .eq("programme_id", programmeId);
-  const moduleIds = (modules ?? []).map((m) => m.id);
-  const { data: coursesViaModule } = moduleIds.length
-    ? await supabase.from("course").select("id").in("module_id", moduleIds)
-    : { data: [] as { id: string }[] };
-
-  const courseIds = [...new Set([...(coursesViaProgramme ?? []), ...(coursesViaModule ?? [])].map((c) => c.id))];
-
-  if (courseIds.length === 0) {
-    return { gesamtLektionen: 0, abgeschlosseneLektionen: 0, prozent: 0 };
-  }
-
-  const { data: lessons } = await supabase.from("lesson").select("id").in("course_id", courseIds);
-  const lessonIds = (lessons ?? []).map((l) => l.id);
-
-  if (lessonIds.length === 0) {
-    return { gesamtLektionen: 0, abgeschlosseneLektionen: 0, prozent: 0 };
-  }
-
-  const { data: progress } = await supabase
-    .from("unit_progress")
-    .select("lesson_id, status")
-    .eq("learner_id", learnerId)
-    .in("lesson_id", lessonIds);
-
-  const abgeschlossen = (progress ?? []).filter((p) => p.status === "abgeschlossen").length;
-
-  return {
-    gesamtLektionen: lessonIds.length,
-    abgeschlosseneLektionen: abgeschlossen,
-    prozent: Math.round((abgeschlossen / lessonIds.length) * 100),
-  };
 }

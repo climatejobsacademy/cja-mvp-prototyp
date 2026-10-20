@@ -5,8 +5,8 @@ einem Symptom und führt in dieser Reihenfolge durch:
 **Prüfen** (von einfach nach aufwendig) → **Selbst tun** (ohne Code) →
 **Abbrechen und informieren**.
 
-Wo ein Vorgehen noch nicht geklärt ist, steht **TODO Vera: klären**.
-Stand: 30.09.2026.
+Wo ein Vorgehen noch nicht geklärt ist, steht **offen**.
+Stand: 30.09.2026, Zuständigkeiten ergänzt am 18.10.2026 (Anna).
 
 ---
 
@@ -36,17 +36,17 @@ Stand: 30.09.2026.
 | GitHub Actions | https://github.com/climatejobsacademy/cja-mvp-prototyp/actions | Automatische Prüfungen (`lint-and-types`, `rls-tests`) bei jedem Pull Request |
 | Statusseiten der Anbieter | https://status.supabase.com und https://www.vercel-status.com | Hat der Anbieter gerade selbst eine Störung? |
 
-TODO Vera: klären, wer im Team Zugang zu Vercel, Supabase und GitHub hat und mit
-welcher Rolle.
+Zugänge (Stand 18.10.2026): GitHub – Anna, Malte, Vera (alle Admin). Supabase-Dashboard – Anna, Malte, Vera mit eigenen Konten, Malte und Vera als Administratoren. Vercel – ein Konto (Annas), das das Team gemeinsam nutzt. Brevo – ein gemeinsames Konto für das Team.
 
 ## Wen informieren
 
 | Thema | Person | Erreichbar über |
 |---|---|---|
-| Technik (App, Deployment, Datenbank) | TODO Vera: klären | TODO Vera: klären |
-| Freigabe von Releases | Malte (derzeit einziger Reviewer) | TODO Vera: klären |
-| Datenschutzvorfall | TODO Vera: klären | TODO Vera: klären |
-| Vertretung während Veras Urlaub (17.10.–01.11.) | TODO Vera: klären | TODO Vera: klären |
+| Technik (App, Deployment, Datenbank) | Malte, Vertretung Anna | Kontaktwege in Notion (nicht im Repo) |
+| Freigabe von Releases | die jeweils andere Person (Anna ↔ Malte); ist sie nicht erreichbar, merged die Person allein per Admin-Bypass und vermerkt „Ohne Zweitfreigabe“ im PR (`docs/release.md`) | Kontaktwege in Notion |
+| Datenschutzvorfall (Meldung, Betroffene informieren) | Anna (Geschäftsführung) | Kontaktwege in Notion |
+| App im Notfall vom Netz nehmen | entscheidet Anna | Kontaktwege in Notion |
+| Vertretung während Veras Urlaub (17.10.–01.11.) | Malte für Technik, Anna für alles andere | Kontaktwege in Notion |
 
 ---
 
@@ -76,11 +76,9 @@ sind). Die Meldung beweist also nicht, dass eine Mail verschickt wurde.
    dort ein Fehler beim Versand?
 6. Den E-Mail-Dienst prüfen. Die Mails verschickt nicht die App, sondern
    Supabase über einen externen Versanddienst (Brevo, seit 30.09.2026). Das
-   Versandprotokoll steht in Brevo unter Transactional → Logs. TODO Vera:
-   klären, wer Zugang hat.
+   Versandprotokoll steht in Brevo unter Transactional → Logs. Zugang: gemeinsames Team-Konto (Anna, Malte, Vera).
 7. Hat die Person viele Links kurz hintereinander angefordert? Supabase begrenzt,
-   wie viele Mails in einem Zeitraum verschickt werden. TODO Vera: klären, welche
-   Grenzen eingestellt sind und wo man sie einsieht.
+   wie viele Mails in einem Zeitraum verschickt werden: Supabase-Dashboard → Projekt → Authentication → Rate Limits. Production (Frankfurt): 30 E-Mails pro Stunde (Stand 18.10.2026), bei 9 Lernenden im Pilot ausreichend. Zusätzlich gilt je Adresse eine kurze Wartezeit zwischen zwei Links.
 
 **Die Mail kommt an, der Login klappt trotzdem nicht.** Dann erscheint auf der
 Login-Seite ein Hinweis:
@@ -97,8 +95,7 @@ Login-Seite ein Hinweis:
   Browser öffnen.
 - Konto anlegen oder erneut einladen, Profil oder Einschreibung anlegen: Das
   läuft heute über ein Skript bzw. direkt in der Datenbank und braucht
-  jemanden aus der Technik. TODO Vera: klären, wer das darf und wie es beauftragt
-  wird.
+  jemanden aus der Technik. Dürfen: Anna und Malte (Production nur aus dem Release-Ordner, `docs/release.md`).
 
 **Abbrechen und informieren**, wenn
 
@@ -139,9 +136,8 @@ Vorher unbedingt prüfen:
   „Release:“), dass eine **Migration** dabei war, **nicht** zurückrollen. Die
   alte App-Version passt dann womöglich nicht mehr zur Datenbank.
   Stattdessen informieren.
-- Nach einem Rollback immer informieren, damit der Fehler behoben wird. TODO
-  Vera: klären, was nach einem Rollback nötig ist, damit spätere Releases wieder
-  automatisch live gehen.
+- Nach einem Rollback immer informieren, damit der Fehler behoben wird.
+- **Nach einem Rollback gehen neue Merges auf `main` nicht mehr automatisch live.** Vercel schaltet die automatische Zuweisung der Production-Domain ab. Ist der Fehler behoben: Vercel → Deployments → beim Production-Deployment „Undo Rollback“ (bzw. die richtige Version per „Promote“) wählen; danach laufen Releases wieder automatisch (Vercel-Doku „Instant Rollback“).
 
 **Abbrechen und informieren**, wenn
 
@@ -158,8 +154,7 @@ Vorher unbedingt prüfen:
 **Prüfen**
 
 1. Betrifft es eine Person oder alle? Wenn möglich mit einem eigenen
-   Lernenden-Konto ansehen. TODO Vera: klären, ob es ein Test-Konto für das Team
-   gibt.
+   Lernenden-Konto ansehen. Für Production gibt es ein Test-Konto des Teams (wird mit dem Skript „Lernende anlegen“ angelegt; Zugang bei Anna und Malte).
 2. **Ist der Inhalt veröffentlicht?** Lernende sehen nur Inhalte mit Status
    `published`. In Supabase → **Table Editor** in den Tabellen `programme`,
    `module`, `course`, `lesson` bzw. `field_job_type` die Spalte `status`
@@ -188,8 +183,7 @@ Vorher unbedingt prüfen:
 - Nur ansehen und beschreiben: welcher Inhalt, welche Seite, bei wem, seit
   wann.
 - Inhalte ändern (Status setzen, Texte korrigieren, Termine eintragen) nur nach
-  Absprache, weil es die einzige Datenbank mit echten Daten ist. TODO Vera: klären,
-  wer Inhalte im Table Editor pflegen darf.
+  Absprache, weil es die einzige Datenbank mit echten Daten ist. Dürfen: Anna und Malte.
 - **Niemals Kompetenzen löschen.** Das löscht derzeit Teilschritte mit, die
   auch an anderen Kompetenzen hängen.
 
@@ -273,9 +267,15 @@ Am 02.10.2026 lesend abgeglichen: In Frankfurt und Irland sind RLS-Policies
 (7, darunter `ensure_rls`) und die Definition von `rls_auto_enable()`
 identisch. Wie man so einen Abgleich lesend macht: siehe Anhang.
 
-TODO Vera: klären, welche Backups der aktuelle Supabase-Tarif enthält, wer eine
-Wiederherstellung auslösen darf und ob sie schon einmal geprobt wurde (Asana:
-„Backup-Konzept für Supabase prüfen“).
+**Backups (Stand 18.10.2026, geprüft von Anna im Dashboard Frankfurt, Database → Backups):**
+
+- Supabase sichert die Datenbank **täglich** gegen Mitternacht (Region Frankfurt; letzte Sicherung am 18.10. um 02:10). Aufbewahrt werden die Sicherungen der **letzten 7 Tage**.
+- **Point in Time Recovery** (Wiederherstellung auf eine bestimmte Minute) ist nicht gebucht. Das ist für den Pilot ausreichend.
+- **Nicht gesichert sind Dateien im Storage** (SCORM-Pakete und ausgepackte Medien, Lernmaterialien, Profilfotos, Fachsprache-Bilder); die Sicherung enthält nur ihre Einträge in der Datenbank. Gelöschte Dateien kommen mit einer Wiederherstellung nicht zurück. SCORM-Pakete und Fachsprache-Bilder liegen zusätzlich im Google-Drive-Ordner und lassen sich mit den Skripten neu einspielen; für Profilfotos und hochgeladene Materialien gibt es keine zweite Kopie.
+- **Eine Wiederherstellung setzt die ganze Datenbank auf den Stand der Sicherung zurück.** Alles seitdem geht verloren: Anwesenheiten, Fortschritt, Chat-Nachrichten, neue Konten. Deshalb nur als letzter Ausweg, wenn Daten sonst nicht zu retten sind.
+- **Wer entscheidet:** Anna. Ausgelöst wird im Dashboard (Database → Backups → Restore) von Anna oder Malte, nach Absprache.
+- Laut Veras Board gab es am 09.10. eine Probe-Wiederherstellung auf Production.
+- Vor einem Release mit Migrationen: Die Sicherung der letzten Nacht ist der Rückweg. Wurde seitdem auf Production viel geändert, den Release lieber am nächsten Tag machen.
 
 ---
 
@@ -307,11 +307,8 @@ davon weiß.
 
 **Selbst tun**
 
-- TODO Vera: klären, ob und wie die App im Notfall vom Netz genommen wird und wer
-  das entscheidet.
-- TODO Vera: klären, wer die Meldung an die Aufsichtsbehörde (Sächsische
-  Datenschutz- und Transparenzbeauftragte) übernimmt und wer die Betroffenen
-  informiert.
+- **App vom Netz nehmen:** entscheidet Anna. Weg: Wartungsseite (Entscheidung Anna 18.10.). Technisch noch offen: Die App braucht dafür einen Schalter, der statt aller Seiten eine Wartungsseite zeigt (Umsetzung folgt).
+- **Meldung an die Aufsichtsbehörde** (Sächsische Datenschutz- und Transparenzbeauftragte) innerhalb von 72 Stunden und **Information der Betroffenen:** Anna.
 
 Technischer Hintergrund für die Technik: Die Zugriffsregeln liegen als
 Row-Level-Security in `supabase/migrations`, die Tests in

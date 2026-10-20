@@ -1,10 +1,15 @@
 import { heuteInBerlin } from "@/lib/date";
+import { lektionTitel } from "@/lib/lektion-titel";
+import { eigenerLiveTermin, type Plan } from "@/lib/live-termin";
 import { createClient } from "@/lib/supabase/server";
+import { scormPaketSignieren, type ScormPaket } from "@/lib/queries/scorm-paket";
 import type { ContentType, UnitProgressStatus } from "@/lib/database.types";
 
 export type LessonListItem = {
   id: string;
+  /** Titel ohne Klammer, wenn thema gesetzt ist (SR-13, 0029) */
   name: string;
+  thema: string | null;
   contentType: ContentType;
   status: UnitProgressStatus;
 };
@@ -29,6 +34,11 @@ export type FieldJobTypeListItem = {
 export type ModuleGroup = {
   id: string | null; // null = Kurse hängen direkt am Programm, kein Modul
   name: string | null;
+  /** Modul der Woche (module.modul_id, 0028); null ohne Zuordnung bzw. ohne Woche */
+  modulId: string | null;
+  /** theorie/praxis und online/praesenz/betrieb (0028), null wenn nicht gepflegt */
+  wochentyp: "theorie" | "praxis" | null;
+  lage: "online" | "praesenz" | "betrieb" | null;
   courses: CourseListItem[];
   praxisTypen: FieldJobTypeListItem[];
 };
@@ -48,7 +58,7 @@ export async function getContentLibrary(
   const [{ data: modules }, { data: coursesViaProgramme }, { data: fieldJobTypesViaProgramme }] = await Promise.all([
     supabase
       .from("module")
-      .select("id, name, reihenfolge")
+      .select("id, name, reihenfolge, modul_id, wochentyp, lage")
       .eq("programme_id", programmeId)
       .order("reihenfolge", { ascending: true }),
     supabase
@@ -96,10 +106,19 @@ export async function getContentLibrary(
   const { data: lessons } = courseIds.length
     ? await supabase
         .from("lesson")
-        .select("id, course_id, name, content_type, reihenfolge")
+        .select("id, course_id, name, thema, content_type, reihenfolge")
         .in("course_id", courseIds)
         .order("reihenfolge", { ascending: true })
-    : { data: [] as { id: string; course_id: string; name: string; content_type: ContentType; reihenfolge: number }[] };
+    : {
+        data: [] as {
+          id: string;
+          course_id: string;
+          name: string;
+          thema: string | null;
+          content_type: ContentType;
+          reihenfolge: number;
+        }[],
+      };
 
   const lessonIds = (lessons ?? []).map((l) => l.id);
   const { data: progress } = lessonIds.length
@@ -117,7 +136,8 @@ export async function getContentLibrary(
       .filter((l) => l.course_id === course.id)
       .map((l) => ({
         id: l.id,
-        name: l.name,
+        name: lektionTitel(l.name, l.thema).titel,
+        thema: lektionTitel(l.name, l.thema).thema,
         contentType: l.content_type,
         status: statusByLesson.get(l.id) ?? "offen",
       }));
@@ -170,6 +190,9 @@ export async function getContentLibrary(
   const groups: ModuleGroup[] = (modules ?? []).map((m) => ({
     id: m.id,
     name: m.name,
+    modulId: m.modul_id,
+    wochentyp: m.wochentyp,
+    lage: m.lage,
     courses: allCourses.filter((c) => c.module_id === m.id).map(buildCourse),
     praxisTypen: allFieldJobTypes.filter((ft) => ft.module_id === m.id).map(buildPraxisTyp),
   }));
@@ -177,102 +200,142 @@ export async function getContentLibrary(
   const ungruppierteKurse = allCourses.filter((c) => !c.module_id).map(buildCourse);
   const ungruppiertePraxisTypen = allFieldJobTypes.filter((ft) => !ft.module_id).map(buildPraxisTyp);
   if (ungruppierteKurse.length > 0 || ungruppiertePraxisTypen.length > 0) {
-    groups.push({ id: null, name: null, courses: ungruppierteKurse, praxisTypen: ungruppiertePraxisTypen });
+    groups.push({
+      id: null,
+      name: null,
+      modulId: null,
+      wochentyp: null,
+      lage: null,
+      courses: ungruppierteKurse,
+      praxisTypen: ungruppiertePraxisTypen,
+    });
   }
 
   return groups;
 }
 
+/** Verknüpfte Lektion (0029, live_lektion_id), nur wenn für Learner lesbar. */
+export type VerknuepfteLektion = { id: string; titel: string };
+
 export type LessonDetail = {
   id: string;
+  /** Titel ohne Klammer, wenn thema gesetzt ist (SR-13, 0029) */
   name: string;
+  thema: string | null;
   contentType: ContentType;
   chatAktiv: boolean;
   status: UnitProgressStatus;
-  liveSession: { datum: string; start: string; ende: string; joinLink: string | null } | null;
-  scorm: { entryPointPfad: string; zipSignedUrl: string } | null;
+  /** Gespeicherter Stand in der Selbstlern-Lektion (0056), ungeprüft; Prüfung: src/lib/lernstand.ts */
+  lernStand: unknown;
+  liveSession: {
+    datum: string;
+    start: string;
+    ende: string;
+    joinLink: string | null;
+    /** live_session.trainer_id (SR-78), sonst null */
+    trainerId: string | null;
+  } | null;
+  scorm: ScormPaket | null;
+  /** Live-Lektion: die zugehörige Selbstlern-Lektion ("Wissen festigen") */
+  festigen: VerknuepfteLektion | null;
+  /** Selbstlern-Lektion: die zugehörige Live-Lektion */
+  liveLektion: VerknuepfteLektion | null;
+  /** Modul der Lektion (Kurs → Woche → modul, 0028), klein über dem Titel; null ohne Zuordnung */
+  modul: { ueberzeile: string; name: string } | null;
 };
 
 export async function getLessonDetail(
   lessonId: string,
-  learnerId: string
+  learnerId: string,
+  plan: Plan
 ): Promise<LessonDetail | null> {
   const supabase = await createClient();
 
   const { data: lesson } = await supabase
     .from("lesson")
-    .select("id, name, content_type, chat_aktiv")
+    .select("id, name, thema, content_type, chat_aktiv, live_lektion_id, course_id")
     .eq("id", lessonId)
     .single();
   if (!lesson) return null;
 
+  // Modul über Kurs und Woche (module.modul_id, 0028) -- nicht über das
+  // Datum und eine feste Gliederung. Unveröffentlichtes filtert RLS heraus.
+  const { data: kurs } = await supabase.from("course").select("module_id").eq("id", lesson.course_id).maybeSingle();
+  const { data: woche } = kurs?.module_id
+    ? await supabase.from("module").select("modul_id").eq("id", kurs.module_id).maybeSingle()
+    : { data: null };
+  const { data: modul } = woche?.modul_id
+    ? await supabase.from("modul").select("ueberzeile, name").eq("id", woche.modul_id).maybeSingle()
+    : { data: null };
+
+  // Selbstlernen <-> Live (SR-15, Datenlücke Nr. 8): über live_lektion_id an
+  // der Selbstlern-Lektion, 1:1 -- nicht mehr über gleichen Titel am selben
+  // Tag. Unveröffentlichte Lektionen filtert RLS heraus.
+  const { data: verknuepft } =
+    lesson.content_type === "live"
+      ? await supabase.from("lesson").select("id, name, thema").eq("live_lektion_id", lesson.id).maybeSingle()
+      : lesson.live_lektion_id
+        ? await supabase.from("lesson").select("id, name, thema").eq("id", lesson.live_lektion_id).maybeSingle()
+        : { data: null };
+  const verknuepfteLektion: VerknuepfteLektion | null = verknuepft
+    ? { id: verknuepft.id, titel: lektionTitel(verknuepft.name, verknuepft.thema).titel }
+    : null;
+
   const { data: progress } = await supabase
     .from("unit_progress")
-    .select("status")
+    .select("status, stand")
     .eq("learner_id", learnerId)
     .eq("lesson_id", lessonId)
     .maybeSingle();
 
   let liveSession: LessonDetail["liveSession"] = null;
   if (lesson.content_type === "live") {
-    const { data: session } = await supabase
+    // SR-15, SR-21: Termin aus dem Plan der eigenen Kohorte bzw. Einschreibung,
+    // nicht der früheste Termin der Lektion (Kohorten können sich eine
+    // Lektion teilen). Nichts im eigenen Plan → kein Termin.
+    const { data: sessions } = await supabase
       .from("live_session")
-      .select("datum, start, ende, join_link")
-      .eq("lesson_id", lessonId)
-      .order("datum", { ascending: true })
-      .limit(1)
-      .maybeSingle();
+      .select("id, datum, start, ende, join_link, trainer_id")
+      .eq("lesson_id", lessonId);
+    const { data: eintraege } = sessions?.length
+      ? await supabase
+          .from("schedule_entry")
+          .select("live_session_id, cohort_id, enrolment_id")
+          .eq("art", "live")
+          .in("live_session_id", sessions.map((s) => s.id))
+          .or(`cohort_id.eq.${plan.cohortId},enrolment_id.eq.${plan.enrolmentId}`)
+      : { data: [] };
+    const session = eigenerLiveTermin(sessions ?? [], eintraege ?? [], plan);
     if (session) {
       liveSession = {
         datum: session.datum,
         start: session.start,
         ende: session.ende,
         joinLink: session.join_link,
+        trainerId: session.trainer_id,
       };
     }
   }
 
   // SCORM (SR-50/51/52, Architektur-Entscheidung 2026-09-16): Entry-Point und
-  // eine kurzlebige signierte URL fuers Zip laden. RLS greift zweifach --
-  // scorm_package ueber die published-lesson-Policy, storage.objects ueber
-  // scorm_packages_read_published (0017) -- kein Service-Role-Key noetig.
-  let scorm: LessonDetail["scorm"] = null;
-  if (lesson.content_type === "scorm") {
-    const { data: scormPackage } = await supabase
-      .from("scorm_package")
-      .select("entry_point_pfad, file_asset_id")
-      .eq("lesson_id", lessonId)
-      .maybeSingle();
+  // eine kurzlebige signierte URL fuers Zip laden, mit der Session der
+  // Person (RLS 0016/0017, kein Service-Role-Key). Speicherpfad fuer die
+  // native Ansicht (SR-85).
+  const scorm: LessonDetail["scorm"] = lesson.content_type === "scorm" ? await scormPaketSignieren(lessonId) : null;
 
-    if (scormPackage) {
-      const { data: fileAsset } = await supabase
-        .from("file_asset")
-        .select("storage_pfad")
-        .eq("id", scormPackage.file_asset_id)
-        .maybeSingle();
-
-      if (fileAsset) {
-        const { data: signed } = await supabase.storage
-          .from("scorm-packages")
-          .createSignedUrl(fileAsset.storage_pfad, 3600);
-
-        if (signed?.signedUrl) {
-          scorm = {
-            entryPointPfad: scormPackage.entry_point_pfad,
-            zipSignedUrl: signed.signedUrl,
-          };
-        }
-      }
-    }
-  }
-
+  const titel = lektionTitel(lesson.name, lesson.thema);
   return {
     id: lesson.id,
-    name: lesson.name,
+    name: titel.titel,
+    thema: titel.thema,
     contentType: lesson.content_type,
     chatAktiv: lesson.chat_aktiv,
     status: progress?.status ?? "offen",
+    lernStand: progress?.stand ?? null,
     liveSession,
     scorm,
+    festigen: lesson.content_type === "live" ? verknuepfteLektion : null,
+    liveLektion: lesson.content_type === "live" ? null : verknuepfteLektion,
+    modul: modul ? { ueberzeile: modul.ueberzeile, name: modul.name } : null,
   };
 }

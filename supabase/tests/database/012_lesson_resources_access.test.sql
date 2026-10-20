@@ -52,8 +52,11 @@ insert into programme (id, name, kuerzel) values
   ('00000000-0000-0000-0000-000000000721', 'Programm A', 'PRG-A'),
   ('00000000-0000-0000-0000-000000000722', 'Programm B', 'PRG-B');
 
-insert into module (id, programme_id, name, reihenfolge) values
-  ('00000000-0000-0000-0000-000000000723', '00000000-0000-0000-0000-000000000721', 'Modul A', 1);
+insert into modul (id, programme_id, ueberzeile, name, reihenfolge) values
+  ('00000000-0000-0000-0000-000000000726', '00000000-0000-0000-0000-000000000721', 'Modul I', 'Modul A', 1);
+
+insert into module (id, programme_id, modul_id, name, reihenfolge, wochentyp, lage) values
+  ('00000000-0000-0000-0000-000000000723', '00000000-0000-0000-0000-000000000721', '00000000-0000-0000-0000-000000000726', 'Woche A', 1, 'theorie', 'online');
 
 -- Kurs 724 hängt über das Modul an Programm A, Kurs 725 direkt an Programm A.
 insert into course (id, module_id, programme_id, name, typ, reihenfolge, status) values

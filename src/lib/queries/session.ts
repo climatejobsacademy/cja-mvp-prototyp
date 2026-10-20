@@ -1,11 +1,19 @@
 import { cache } from "react";
 import { redirect } from "next/navigation";
 
+import { type HeaderLogo, headerLogo } from "@/lib/org-logo";
 import { createClient } from "@/lib/supabase/server";
+import { zielOhneEinschreibung } from "@/lib/trainer-tag";
+
+import { signierteFotoLinks } from "./trainer";
 
 export type CurrentLearner = {
   personId: string;
   name: string;
+  /** Rufname für Begrüßung und Anzeige (person.rufname, 0029) */
+  rufname: string;
+  /** Eigenes Profilfoto als signierter Link (SR-77, 1 Stunde), null = keins */
+  fotoUrl: string | null;
   email: string;
   enrolmentId: string;
   cohortId: string;
@@ -13,6 +21,8 @@ export type CurrentLearner = {
   programmeId: string;
   programmeName: string;
   cohortName: string;
+  /** Logo der Organisation für den Header (SR-76), null = Fallback. */
+  organisationLogo: HeaderLogo | null;
 };
 
 /**
@@ -41,7 +51,7 @@ export const requireCurrentLearner = cache(async (): Promise<CurrentLearner> => 
 
   const { data: person, error: personError } = await supabase
     .from("person")
-    .select("id, name")
+    .select("id, name, rufname, foto_pfad")
     .eq("id", user.id)
     .single();
 
@@ -51,7 +61,7 @@ export const requireCurrentLearner = cache(async (): Promise<CurrentLearner> => 
     redirect("/login?error=kein-profil");
   }
 
-  // Bewusst als drei einfache Abfragen statt eines verschachtelten Selects:
+  // Bewusst als einfache Abfragen statt eines verschachtelten Selects:
   // hält die Typinferenz robust, ohne von den (hier von Hand geschriebenen,
   // nicht generierten) Relationships-Metadaten abhängig zu sein.
   const { data: enrolment, error: enrolmentError } = await supabase
@@ -64,18 +74,30 @@ export const requireCurrentLearner = cache(async (): Promise<CurrentLearner> => 
     .maybeSingle();
 
   if (enrolmentError || !enrolment) {
-    redirect("/login?error=keine-einschreibung");
+    // Trainer:innen ohne Einschreibung haben ihren eigenen Bereich (SR-81, Paket G2).
+    const { data: rollen } = await supabase
+      .from("role_assignment")
+      .select("rolle")
+      .eq("person_id", person.id)
+      .eq("rolle", "trainer")
+      .limit(1);
+    redirect(zielOhneEinschreibung((rollen ?? []).length > 0));
   }
 
-  const { data: cohort, error: cohortError } = await supabase
-    .from("cohort")
-    .select("programme_id, name")
-    .eq("id", enrolment.cohort_id)
-    .single();
+  // Organisation parallel zur Kohorte: kein zusätzlicher Roundtrip. Lesbar nur
+  // bei Mitgliedschaft (organisation_learner_select, 0009). Fehler oder keine
+  // Zeile (auch: Spalte logo_pfad noch nicht migriert) -> kein Logo, die Seite
+  // bricht daran nicht.
+  const [{ data: cohort, error: cohortError }, { data: organisation }] = await Promise.all([
+    supabase.from("cohort").select("programme_id, name").eq("id", enrolment.cohort_id).single(),
+    supabase.from("organisation").select("name, logo_pfad").eq("id", enrolment.organisation_id).maybeSingle(),
+  ]);
 
   if (cohortError || !cohort) {
     redirect("/login?error=keine-einschreibung");
   }
+
+  const fotoLinks = await signierteFotoLinks(supabase, person.foto_pfad ? [person.foto_pfad] : []);
 
   const { data: programme, error: programmeError } = await supabase
     .from("programme")
@@ -90,6 +112,8 @@ export const requireCurrentLearner = cache(async (): Promise<CurrentLearner> => 
   return {
     personId: person.id,
     name: person.name,
+    rufname: person.rufname,
+    fotoUrl: person.foto_pfad ? (fotoLinks.get(person.foto_pfad) ?? null) : null,
     email: user.email ?? "",
     enrolmentId: enrolment.id,
     cohortId: enrolment.cohort_id,
@@ -97,5 +121,9 @@ export const requireCurrentLearner = cache(async (): Promise<CurrentLearner> => 
     programmeId: programme.id,
     programmeName: programme.name,
     cohortName: cohort.name,
+    organisationLogo: headerLogo(
+      organisation ? { name: organisation.name, logoPfad: organisation.logo_pfad } : null,
+      process.env.NEXT_PUBLIC_SUPABASE_URL
+    ),
   };
 });
