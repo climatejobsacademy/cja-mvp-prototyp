@@ -33,7 +33,7 @@ export function FachspracheChip({ eintrag, mitTitel }: { eintrag: EinstiegEintra
       )}
     >
       <MessageCircle className="size-4 shrink-0 text-self" aria-hidden="true" />
-      <span className="min-w-0 flex-1 hyphens-auto break-words">{mitTitel ? `Fachsprache: ${eintrag.titel}` : "Fachsprache"}</span>
+      <span className="min-w-0 flex-1 truncate">{mitTitel ? `Fachsprache: ${eintrag.titel}` : "Fachsprache"}</span>
     </Link>
   );
 }

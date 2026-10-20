@@ -6,7 +6,16 @@ import { datumLang, plusTage, wochentagLang } from "@/lib/date";
 import { stundenBereich, stunden, type Tagestyp } from "@/lib/stundenplan";
 import { cn } from "@/lib/utils";
 
-import { AbweichungsLabel, FlexChip, FlexLeiste, GanztagsLeiste, MonatsTags, StundenSpalte, TagSpalte, tagErledigt } from "./plan-bausteine";
+import {
+  AbweichungsLabel,
+  FlexChip,
+  FlexLeiste,
+  GanztagsLeiste,
+  MonatsTags,
+  StundenSpalte,
+  TagSpalte,
+  tagErledigt,
+} from "./plan-bausteine";
 import { FachspracheChip, FachspracheLeiste } from "./fachsprache-chip";
 import type { TagModell } from "./plan-modell";
 
