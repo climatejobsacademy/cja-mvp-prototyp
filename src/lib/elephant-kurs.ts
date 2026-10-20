@@ -300,7 +300,13 @@ function entschluesseln(t: string): string {
   });
 }
 
+// Formeln mitten im Satz (Elephant: <span data-type="inline-math">$…$</span>)
+// werden zu \(…\), damit die Anzeige sie von einzelnen $-Zeichen im Text
+// unterscheiden kann; Formel-Blöcke stehen schon als $$…$$ im Text (Anna 2026-10-20).
+const INLINE_FORMEL = /<span\b[^>]*data-type=["']inline-math["'][^>]*>\s*\$([\s\S]*?)\$\s*<\/span>/gi;
+
 export function htmlLesen(html: string): TextKnoten[] {
+  html = html.replace(INLINE_FORMEL, (_ganz, tex: string) => `\\(${tex}\\)`);
   const wurzel: { tag: TextTag | null; kinder: TextKnoten[] } = { tag: null, kinder: [] };
   const stapel: { tag: TextTag | null; kinder: TextKnoten[] }[] = [wurzel];
   for (const m of html.matchAll(/<(\/?)([a-zA-Z0-9]+)[^>]*?(\/?)>|([^<]+)|</g)) {
