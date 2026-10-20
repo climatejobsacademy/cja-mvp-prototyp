@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 
 import { Auftragsakte } from "@/components/praxisflow/auftragsakte";
+import { JetztDranFlow } from "./jetzt-dran";
 import { Einschaetzung } from "@/components/praxisflow/bewertung";
 import { CodewortGate } from "@/components/praxisflow/codewort-gate";
 import { DemoLeiste } from "@/components/praxisflow/demo-leiste";
@@ -91,7 +92,7 @@ import { cn } from "@/lib/utils";
 
 // Verlauf der Auftragsakte (Anna 2026-10-20): feste Texte, damit die Akte
 // Freigabe und Abgabe darin wiederfindet.
-const VERLAUF = {
+export const VERLAUF = {
   angenommen: "Auftrag angenommen",
   entschieden: "Planung vollständig, Ausführung begonnen",
   aufbauFertig: "Aufbau fertig, Kontrolle begonnen",
@@ -101,9 +102,9 @@ const VERLAUF = {
 };
 
 /** Zustand ändern und im Verlauf festhalten (Berliner Zeit). */
-const protokolliert = (text: string) => (z: DemoZustand) => mitVerlauf(z, jetztInBerlin(), text);
+export const protokolliert = (text: string) => (z: DemoZustand) => mitVerlauf(z, jetztInBerlin(), text);
 
-function speicher(): Storage | null {
+export function speicher(): Storage | null {
   try {
     return window.localStorage;
   } catch {
@@ -111,7 +112,7 @@ function speicher(): Storage | null {
   }
 }
 
-function neueId(): string {
+export function neueId(): string {
   try {
     return crypto.randomUUID();
   } catch {
@@ -119,7 +120,7 @@ function neueId(): string {
   }
 }
 
-const pruefen = (eingabe: string) => codewortKorrekt(eingabe, DEMO_CODEWORT);
+export const pruefen = (eingabe: string) => codewortKorrekt(eingabe, DEMO_CODEWORT);
 const nichts = () => () => {};
 
 type Zurueck = { href: string; label: string };
@@ -128,7 +129,16 @@ type Zurueck = { href: string; label: string };
  * Rendert den Flow erst im Browser: der Stand liegt im localStorage, der
  * Server kennt ihn nicht. So gibt es keinen Hydration-Unterschied.
  */
-export function PraxisflowDemo({ zurueck, unterSpannung = true }: { zurueck: Zurueck; unterSpannung?: boolean }) {
+export function PraxisflowDemo({
+  zurueck,
+  unterSpannung = true,
+  ansicht = "alt",
+}: {
+  zurueck: Zurueck;
+  unterSpannung?: boolean;
+  /** "neu": Ansicht "Jetzt dran" (Anna 2026-10-20), ?ansicht=neu */
+  ansicht?: "alt" | "neu";
+}) {
   const imBrowser = useSyncExternalStore(
     nichts,
     () => true,
@@ -154,12 +164,20 @@ export function PraxisflowDemo({ zurueck, unterSpannung = true }: { zurueck: Zur
           mit {TRAINER_PRAXIS_DEMO.name}
         </span>
       </div>
-      {imBrowser ? <Flow unterSpannung={unterSpannung} /> : <p className="text-sm text-ink-muted">Demo wird geladen …</p>}
+      {imBrowser ? (
+        ansicht === "neu" ? (
+          <JetztDranFlow unterSpannung={unterSpannung} />
+        ) : (
+          <Flow unterSpannung={unterSpannung} />
+        )
+      ) : (
+        <p className="text-sm text-ink-muted">Demo wird geladen …</p>
+      )}
     </div>
   );
 }
 
-type Liste = "werkzeuge" | "materialien" | "schritte";
+export type Liste = "werkzeuge" | "materialien" | "schritte";
 
 const PHASEN_SYMBOL: Record<PhaseId, typeof Wrench> = {
   analyse: Search,
@@ -170,7 +188,7 @@ const PHASEN_SYMBOL: Record<PhaseId, typeof Wrench> = {
   bewerten: Star,
 };
 
-const EDITOR: Record<Liste, { icon: typeof Wrench; einzahl: string; leerText: string; platzhalter: string }> = {
+export const EDITOR: Record<Liste, { icon: typeof Wrench; einzahl: string; leerText: string; platzhalter: string }> = {
   werkzeuge: {
     icon: Wrench,
     einzahl: "Werkzeug",
@@ -458,7 +476,7 @@ function ErledigtZeile({ text, onAendern }: { text: string; onAendern?: () => vo
 }
 
 // Bogen mit den Stufentexten je Skala (Ja/Nein oder gestuft).
-const BOGEN = BEWERTUNGSBOGEN_STANDARD.map((k) => ({
+export const BOGEN = BEWERTUNGSBOGEN_STANDARD.map((k) => ({
   ...k,
   beschreibungen: k.skala.length === 2 ? JA_NEIN_BESCHREIBUNGEN : NOTEN_BESCHREIBUNGEN,
 }));
@@ -959,7 +977,7 @@ function KontrollierenSchritte({
  * nichts wird übertragen). Mehrere Dateien, jede wieder entfernbar. Ohne
  * `onDateien` nur die Liste zum Ansehen.
  */
-function DateienListe({
+export function DateienListe({
   id,
   accept,
   dateien,
@@ -1018,7 +1036,7 @@ function DateienListe({
 }
 
 /** Auftragsakte aus dem Demo-Stand (Anna 2026-10-20). */
-function AkteAusZustand({ zustand, unterSpannung }: { zustand: DemoZustand; unterSpannung: boolean }) {
+export function AkteAusZustand({ zustand, unterSpannung }: { zustand: DemoZustand; unterSpannung: boolean }) {
   const letzte = (text: string) => [...zustand.verlauf].reverse().find((v) => v.text === text)?.zeit ?? null;
   const abgabe = letzte(VERLAUF.abgeschlossen);
   return (

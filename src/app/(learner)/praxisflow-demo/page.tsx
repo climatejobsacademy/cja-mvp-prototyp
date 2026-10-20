@@ -8,13 +8,19 @@ import { PraxisflowDemo } from "./praxisflow-demo";
 export default async function PraxisflowDemoPage({
   searchParams,
 }: {
-  searchParams: Promise<{ von?: string; spannung?: string }>;
+  searchParams: Promise<{ von?: string; spannung?: string; ansicht?: string }>;
 }) {
-  const { von, spannung } = await searchParams;
+  const { von, spannung, ansicht } = await searchParams;
   // Wie im alten Flow (praxistag/[fieldJobId]/page.tsx): aus dem Reiter
   // Programm zurück dorthin, sonst zum Stundenplan.
   const zurueck = von === "programm" ? { href: "/content", label: "Programm" } : { href: "/schedule", label: "Stundenplan" };
 
   // Auftrag ohne Spannung zum Ausprobieren: ?spannung=aus (Anna 2026-10-20).
-  return <PraxisflowDemo zurueck={zurueck} unterSpannung={DEMO_AUFTRAG.unterSpannung && spannung !== "aus"} />;
+  return (
+    <PraxisflowDemo
+      zurueck={zurueck}
+      unterSpannung={DEMO_AUFTRAG.unterSpannung && spannung !== "aus"}
+      ansicht={ansicht === "neu" ? "neu" : "alt"}
+    />
+  );
 }

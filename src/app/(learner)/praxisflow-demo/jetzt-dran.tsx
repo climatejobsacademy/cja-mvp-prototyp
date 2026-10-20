@@ -1,0 +1,731 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { ArrowLeft, ArrowRight, CalendarClock, Camera, Check, KeyRound, PartyPopper, ShieldCheck, Users } from "lucide-react";
+
+import { CodewortGate } from "@/components/praxisflow/codewort-gate";
+import { DemoLeiste } from "@/components/praxisflow/demo-leiste";
+import { DateienBlock } from "@/components/praxisflow/instruktion-karte";
+import { ListenEditor } from "@/components/praxisflow/listen-editor";
+import { PlanUebersicht } from "@/components/praxisflow/plan-uebersicht";
+import { FOKUS, PRIMAER, SEKUNDAER, TEXT } from "@/components/praxisflow/stile";
+import {
+  DATEIEN,
+  DATEIEN_ORDNER,
+  DEMO_AUFTRAG,
+  PHASEN,
+  PRUEFLISTE_STANDARD,
+  SPEICHER_PRAEFIX,
+  TEXTE,
+  UPLOAD_FORMATE,
+  type PhaseId,
+} from "@/lib/praxisflow-daten";
+import {
+  demoZuruecksetzen,
+  eintragBearbeiten,
+  eintragLoeschen,
+  eintraegeAnhaengen,
+  eintragVerschieben,
+  erledigtBereinigen,
+  nacharbeitNoetig,
+  startZustand,
+  zurNacharbeit,
+  zustandLaden,
+  zustandSpeichern,
+  type DemoZustand,
+  type Eintrag,
+} from "@/lib/praxisflow-logik";
+import { TRAINER_PRAXIS_DEMO } from "@/lib/demo-personen";
+import { cn } from "@/lib/utils";
+
+import {
+  AkteAusZustand,
+  BOGEN,
+  DateienListe,
+  EDITOR,
+  VERLAUF,
+  neueId,
+  protokolliert,
+  pruefen,
+  speicher,
+  type Liste,
+} from "./praxisflow-demo";
+
+// ---------------------------------------------------------------------------
+// "Jetzt dran" (Anna 2026-10-20, ?ansicht=neu): beim Öffnen genau ein
+// nächster Schritt als Karte mit einer Frage und einer einfachen Antwort.
+// Gleiche Funktionen und gleicher gespeicherter Stand wie die bisherige
+// Ansicht; neu ist nur die Führung. Rückmeldung klein auf der Karte bzw. als
+// kurze Meldung, ein großer Moment nur bei der Freigabe und am Ende.
+// Übergaben (Freigabe, Peer, Trainer:in) haben ein eigenes, gleiches Muster.
+// ---------------------------------------------------------------------------
+
+type Schritt = { id: string; phase: PhaseId };
+
+/** Alle Schritte des Auftrags in Reihenfolge; hängt vom Plan und vom Auftrag ab. */
+function alleSchritte(z: DemoZustand, unterSpannung: boolean): Schritt[] {
+  const s = (phase: PhaseId, ids: string[]) => ids.map((id) => ({ id, phase }));
+  return [
+    ...s("analyse", ["auftrag", "lesen"]),
+    ...s("planen", ["werkzeuge", "materialien", "schritte", "plaene"]),
+    ...s("entscheiden", ["rueckblick"]),
+    ...s("durchfuehren", z.schritte.map((x) => `tun:${x.id}`)),
+    ...s("kontrolle", [
+      ...PRUEFLISTE_STANDARD.spannungsfrei.map((p) => `a:${p.id}`),
+      ...(unterSpannung ? ["freigabe", ...PRUEFLISTE_STANDARD.unterSpannung.map((p) => `c:${p.id}`)] : []),
+      "protokoll",
+    ]),
+    ...s("bewerten", [
+      ...BOGEN.map((k) => `selbst:${k.id}`),
+      "uebergabe-peer",
+      ...BOGEN.map((k) => `peer:${k.id}`),
+      "uebergabe-trainer",
+      ...BOGEN.map((k) => `fremd:${k.id}`),
+      "ergebnis",
+    ]),
+    { id: "fertig", phase: "bewerten" },
+  ];
+}
+
+const POSITION = `${SPEICHER_PRAEFIX}jetzt-dran-position`;
+
+function positionLaden(): string | null {
+  try {
+    return speicher()?.getItem(POSITION) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function vibrieren() {
+  try {
+    navigator.vibrate?.(15);
+  } catch {
+    // ohne Vibration weiter
+  }
+}
+
+const phasenName = (id: PhaseId) => PHASEN.find((p) => p.id === id)?.name ?? "";
+
+export function JetztDranFlow({ unterSpannung }: { unterSpannung: boolean }) {
+  const [zustand, setZustand] = useState<DemoZustand>(() => zustandLaden(speicher(), SPEICHER_PRAEFIX));
+  const [position, setPosition] = useState<string>(() => positionLaden() ?? "auftrag");
+  const [meldung, setMeldung] = useState<string | null>(null);
+
+  useEffect(() => {
+    zustandSpeichern(speicher(), SPEICHER_PRAEFIX, zustand);
+  }, [zustand]);
+
+  useEffect(() => {
+    try {
+      speicher()?.setItem(POSITION, position);
+    } catch {
+      // Demo läuft ohne Speichern weiter
+    }
+  }, [position]);
+
+  useEffect(() => {
+    if (!meldung) return;
+    const t = setTimeout(() => setMeldung(null), 2200);
+    return () => clearTimeout(t);
+  }, [meldung]);
+
+  const schritte = alleSchritte(zustand, unterSpannung);
+  const index = Math.max(
+    0,
+    schritte.findIndex((s) => s.id === position)
+  );
+  const aktuell = schritte[index];
+  const inPhase = schritte.filter((s) => s.phase === aktuell.phase && s.id !== "fertig");
+  const nrInPhase = inPhase.findIndex((s) => s.id === aktuell.id) + 1;
+  const phasenIndex = PHASEN.findIndex((p) => p.id === aktuell.phase);
+
+  /** Zum nächsten Schritt; beim Wechsel der Phase eine kurze Meldung. */
+  function weiter(aendern?: (z: DemoZustand) => DemoZustand) {
+    const neu = aendern ? aendern(zustand) : zustand;
+    const liste = alleSchritte(neu, unterSpannung);
+    const i = liste.findIndex((s) => s.id === aktuell.id);
+    const naechster = liste[Math.min(i + 1, liste.length - 1)];
+    vibrieren();
+    if (naechster.phase !== aktuell.phase) setMeldung(`${phasenName(aktuell.phase)} erledigt`);
+    setZustand({ ...neu, phase: naechster.phase, erledigt: erledigtBereinigen(neu.erledigt, neu.schritte) });
+    setPosition(naechster.id);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function zurueck() {
+    const vorher = schritte[Math.max(0, index - 1)];
+    setZustand((z) => ({ ...z, phase: vorher.phase }));
+    setPosition(vorher.id);
+  }
+
+  function springen(phase: PhaseId) {
+    const ziel = schritte.find((s) => s.phase === phase);
+    if (!ziel) return;
+    setZustand((z) => ({ ...z, phase }));
+    setPosition(ziel.id);
+  }
+
+  function liste(name: Liste, aendern: (l: Eintrag[]) => Eintrag[]) {
+    setZustand((z) => {
+      const neu = aendern(z[name]);
+      return name === "schritte" ? { ...z, schritte: neu, erledigt: erledigtBereinigen(z.erledigt, neu) } : { ...z, [name]: neu };
+    });
+  }
+
+  function zuruecksetzen() {
+    demoZuruecksetzen(speicher(), SPEICHER_PRAEFIX);
+    setZustand(startZustand());
+    setPosition("auftrag");
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      <Kopf phasenIndex={phasenIndex} fertig={aktuell.id === "fertig"} onPhase={springen} />
+      <p role="status" aria-live="polite" className={cn("min-h-6 text-center text-sm font-semibold text-progress", !meldung && "sr-only")}>
+        {meldung && (
+          <span className="inline-flex items-center gap-1.5 animate-in fade-in-0 duration-200 motion-reduce:animate-none">
+            <Check className="size-4" strokeWidth={3} aria-hidden="true" /> {meldung}
+          </span>
+        )}
+      </p>
+      <div key={aktuell.id} className="animate-in fade-in-0 slide-in-from-bottom-2 duration-300 motion-reduce:animate-none">
+        <SchrittKarte
+          schritt={aktuell}
+          nr={nrInPhase}
+          von={inPhase.length}
+          zustand={zustand}
+          setZustand={setZustand}
+          liste={liste}
+          weiter={weiter}
+          zurueck={index > 0 && aktuell.id !== "fertig" ? zurueck : undefined}
+          onPosition={setPosition}
+          unterSpannung={unterSpannung}
+        />
+      </div>
+      <DemoLeiste onZuruecksetzen={zuruecksetzen} />
+    </div>
+  );
+}
+
+/** Schmale Leiste: sechs Punkte, Name der Phase, Frist. Erledigte Phasen antippbar. */
+function Kopf({ phasenIndex, fertig, onPhase }: { phasenIndex: number; fertig: boolean; onPhase: (p: PhaseId) => void }) {
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <ol className="flex items-center gap-1.5" aria-label="Phasen">
+        {PHASEN.map((p, i) => {
+          const erledigt = fertig || i < phasenIndex;
+          const jetzt = !fertig && i === phasenIndex;
+          return (
+            <li key={p.id}>
+              <button
+                type="button"
+                disabled={!erledigt && !jetzt}
+                onClick={() => onPhase(p.id)}
+                aria-label={`${p.name}${erledigt ? ", erledigt" : jetzt ? ", jetzt" : ""}`}
+                aria-current={jetzt ? "step" : undefined}
+                className={cn(
+                  "flex h-2.5 rounded-full transition-[width,background-color] duration-300 motion-reduce:transition-none",
+                  jetzt ? "w-8 bg-brand" : "w-2.5",
+                  erledigt ? "bg-progress" : !jetzt && "bg-line",
+                  FOKUS
+                )}
+              />
+            </li>
+          );
+        })}
+      </ol>
+      <span className="inline-flex items-center gap-1.5 text-[13px] text-ink-muted">
+        <CalendarClock className="size-4" aria-hidden="true" />
+        Abgabe {DEMO_AUFTRAG.frist}
+      </span>
+    </div>
+  );
+}
+
+/** Eine Karte: oben klein die Phase, groß die Frage, darunter die Antwort. */
+function Karte({
+  phase,
+  nr,
+  von,
+  frage,
+  hinweis,
+  zurueck,
+  ton = "weiss",
+  children,
+}: {
+  phase: string;
+  nr?: number;
+  von?: number;
+  frage: string;
+  hinweis?: string;
+  zurueck?: () => void;
+  ton?: "weiss" | "praxis" | "brand";
+  children: React.ReactNode;
+}) {
+  return (
+    <section
+      className={cn(
+        "flex flex-col gap-5 rounded-karte p-5 shadow-card md:p-7",
+        ton === "weiss" && "bg-card text-ink",
+        ton === "praxis" && "bg-praxis text-ink",
+        ton === "brand" && "bg-brand text-white"
+      )}
+      aria-labelledby="frage"
+    >
+      <div className="flex items-center justify-between gap-3">
+        <span className={cn("text-sm font-semibold", ton === "brand" ? "text-white/85" : "text-ink-muted")}>
+          {phase}
+          {nr && von && von > 1 ? ` · ${nr} von ${von}` : ""}
+        </span>
+        {zurueck && (
+          <button
+            type="button"
+            onClick={zurueck}
+            className={cn("inline-flex items-center gap-1 rounded-sm text-sm", ton === "brand" ? "text-white/85 hover:text-white" : "text-ink-muted hover:text-ink", FOKUS)}
+          >
+            <ArrowLeft className="size-4" aria-hidden="true" /> Zurück
+          </button>
+        )}
+      </div>
+      <div className="flex flex-col gap-2">
+        <h2 id="frage" className="font-heading text-[28px] leading-tight md:text-[36px]">
+          {frage}
+        </h2>
+        {hinweis && <p className={cn(TEXT, ton === "brand" && "text-white/90")}>{hinweis}</p>}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+const GROSS = cn(PRIMAER, "min-h-14 w-full text-[17px] sm:w-full");
+
+function SchrittKarte({
+  schritt,
+  nr,
+  von,
+  zustand,
+  setZustand,
+  liste,
+  weiter,
+  zurueck,
+  onPosition,
+  unterSpannung,
+}: {
+  schritt: Schritt;
+  nr: number;
+  von: number;
+  zustand: DemoZustand;
+  setZustand: React.Dispatch<React.SetStateAction<DemoZustand>>;
+  liste: (name: Liste, aendern: (l: Eintrag[]) => Eintrag[]) => void;
+  weiter: (aendern?: (z: DemoZustand) => DemoZustand) => void;
+  zurueck?: () => void;
+  onPosition: (id: string) => void;
+  unterSpannung: boolean;
+}) {
+  const phase = phasenName(schritt.phase);
+  const k = { phase, nr, von, zurueck };
+  const [art, id] = schritt.id.includes(":") ? schritt.id.split(":") : [schritt.id, ""];
+
+  // ----- Informieren
+  if (art === "auftrag") {
+    return (
+      <Karte {...k} frage="Hast du deinen Auftrag bekommen?" hinweis="Mach ein Foto von deinem unterschriebenen Auftrag.">
+        <DateienListe
+          id="auftrag"
+          accept={UPLOAD_FORMATE.auftrag}
+          dateien={zustand.auftragDateien}
+          onDateien={(d) => setZustand((z) => ({ ...z, auftragDateien: d }))}
+        />
+        <button
+          type="button"
+          disabled={zustand.auftragDateien.length === 0}
+          onClick={() => weiter(protokolliert(VERLAUF.angenommen))}
+          className={GROSS}
+        >
+          Auftrag angenommen <ArrowRight aria-hidden="true" />
+        </button>
+      </Karte>
+    );
+  }
+  if (art === "lesen") {
+    return (
+      <Karte {...k} frage="Das ist dein Auftrag" hinweis={TEXTE.analyse.arbeitsauftrag}>
+        <DateienBlock titel="Deine Unterlagen" ordner={DATEIEN_ORDNER} dateien={DATEIEN} />
+        <button type="button" onClick={() => weiter()} className={GROSS}>
+          Verstanden <ArrowRight aria-hidden="true" />
+        </button>
+      </Karte>
+    );
+  }
+
+  // ----- Planen
+  if (art === "werkzeuge" || art === "materialien" || art === "schritte") {
+    const name = art as Liste;
+    const fragen: Record<Liste, string> = {
+      werkzeuge: "Welche Werkzeuge brauchst du?",
+      materialien: "Welches Material brauchst du?",
+      schritte: "In welchen Schritten arbeitest du?",
+    };
+    const hinweise: Record<Liste, string> = {
+      werkzeuge: "Schreib jedes Werkzeug in eine Zeile.",
+      materialien: "Das wird deine Materialliste für das Lager.",
+      schritte: "Bring die Schritte in die Reihenfolge, in der du arbeitest.",
+    };
+    const gesperrt = name === "schritte" && zustand.schritte.length === 0;
+    return (
+      <Karte {...k} frage={fragen[name]} hinweis={hinweise[name]}>
+        <ListenEditor
+          id={name}
+          titel={EDITOR[name].einzahl === "Schritt" ? "Arbeitsschritte" : name === "werkzeuge" ? "Werkzeuge" : "Material"}
+          {...EDITOR[name]}
+          eintraege={zustand[name]}
+          onHinzufuegen={(t) => liste(name, (l) => eintraegeAnhaengen(l, t, neueId))}
+          onBearbeiten={(eid, t) => liste(name, (l) => eintragBearbeiten(l, eid, t))}
+          onLoeschen={(eid) => liste(name, (l) => eintragLoeschen(l, eid))}
+          onVerschieben={name === "schritte" ? (eid, r) => liste("schritte", (l) => eintragVerschieben(l, eid, r)) : undefined}
+          eingabeTexte={TEXTE.eingabe}
+        />
+        <button type="button" disabled={gesperrt} onClick={() => weiter()} className={GROSS}>
+          Weiter <ArrowRight aria-hidden="true" />
+        </button>
+      </Karte>
+    );
+  }
+  if (art === "plaene") {
+    return (
+      <Karte {...k} frage="Hast du einen Plan gezeichnet?" hinweis="Auf Papier oder mit einem Programm? Dann mach ein Foto oder lade die Datei hoch.">
+        <DateienListe
+          id="plaene"
+          accept={UPLOAD_FORMATE.plaene}
+          dateien={zustand.planDateien}
+          onDateien={(d) => setZustand((z) => ({ ...z, planDateien: d }))}
+        />
+        <button type="button" onClick={() => weiter()} className={GROSS}>
+          {zustand.planDateien.length > 0 ? "Weiter" : "Ohne Plan weiter"} <ArrowRight aria-hidden="true" />
+        </button>
+      </Karte>
+    );
+  }
+
+  // ----- Entscheiden
+  if (art === "rueckblick") {
+    return (
+      <Karte {...k} frage="Hast du alles?" hinweis="Schau dir deinen Plan an. Wenn alles passt, kannst du anfangen.">
+        <PlanUebersicht werkzeuge={zustand.werkzeuge} materialien={zustand.materialien} schritte={zustand.schritte} />
+        {zustand.planDateien.length > 0 && <DateienListe id="plaene-rueckblick" accept="" dateien={zustand.planDateien} />}
+        <button type="button" onClick={() => weiter(protokolliert(VERLAUF.entschieden))} className={GROSS}>
+          Ich fange an <ArrowRight aria-hidden="true" />
+        </button>
+        <button type="button" onClick={() => onPosition("werkzeuge")} className={cn(SEKUNDAER, "sm:self-center")}>
+          Plan ändern
+        </button>
+      </Karte>
+    );
+  }
+
+  // ----- Ausführen: ein Arbeitsschritt pro Karte
+  if (art === "tun") {
+    const s = zustand.schritte.find((x) => x.id === id);
+    const letzter = nr === von;
+    return (
+      <Karte {...k} frage={s?.text ?? "Arbeitsschritt"} hinweis={letzter ? "Das ist dein letzter Arbeitsschritt." : undefined}>
+        <button
+          type="button"
+          onClick={() =>
+            weiter((z) => {
+              const neu = { ...z, erledigt: z.erledigt.includes(id) ? z.erledigt : [...z.erledigt, id] };
+              return letzter ? protokolliert(VERLAUF.aufbauFertig)(neu) : neu;
+            })
+          }
+          className={GROSS}
+        >
+          <Check aria-hidden="true" /> Erledigt
+        </button>
+        <button type="button" onClick={() => onPosition("schritte")} className={cn(SEKUNDAER, "sm:self-center")}>
+          Plan anpassen
+        </button>
+      </Karte>
+    );
+  }
+
+  // ----- Kontrollieren
+  if (art === "a" || art === "c") {
+    const p = (art === "a" ? PRUEFLISTE_STANDARD.spannungsfrei : PRUEFLISTE_STANDARD.unterSpannung).find((x) => x.id === id);
+    const feld = art === "a" ? "geprueftSpannungsfrei" : "geprueftUnterSpannung";
+    return (
+      <Karte
+        {...k}
+        frage={p?.titel ?? "Prüfung"}
+        hinweis={art === "a" ? "Ohne Spannung. Das prüfst du allein." : "Unter Spannung. Deine Trainer:in ist dabei."}
+      >
+        <button
+          type="button"
+          onClick={() => weiter((z) => ({ ...z, [feld]: z[feld].includes(id) ? z[feld] : [...z[feld], id] }))}
+          className={GROSS}
+        >
+          <Check aria-hidden="true" /> Geprüft
+        </button>
+      </Karte>
+    );
+  }
+  if (art === "freigabe") {
+    if (zustand.inbetriebnahmeFreigegeben) {
+      return (
+        <Moment
+          icon={ShieldCheck}
+          titel="Freigegeben"
+          text="Du darfst die Spannung zuschalten. Deine Trainer:in bleibt dabei."
+          knopf="Weiter prüfen"
+          onWeiter={() => weiter()}
+        />
+      );
+    }
+    return (
+      <Uebergabe
+        {...k}
+        ton="praxis"
+        icon={KeyRound}
+        frage="Hol deine Trainer:in"
+        hinweis={TEXTE.kontrolle.freigabeText}
+      >
+        <CodewortGate
+          id="gate-jetzt-dran"
+          hinweis={TEXTE.gates.kontrolle}
+          label={TEXTE.codewort.label}
+          buttonText="Inbetriebnahme freigeben"
+          fehlerText={TEXTE.codewort.falsch}
+          pruefen={pruefen}
+          onFreigabe={() => {
+            vibrieren();
+            setZustand((z) => protokolliert(VERLAUF.freigabe)({ ...z, inbetriebnahmeFreigegeben: true }));
+          }}
+        />
+      </Uebergabe>
+    );
+  }
+  if (art === "protokoll") {
+    return (
+      <Karte {...k} frage="Fotografiere das Prüfprotokoll" hinweis="Oder lade das PDF aus dem Prüfgerät hoch.">
+        <DateienListe
+          id="protokoll"
+          accept={UPLOAD_FORMATE.protokoll}
+          dateien={zustand.protokollDateien}
+          onDateien={(d) => setZustand((z) => ({ ...z, protokollDateien: d }))}
+        />
+        <button type="button" disabled={zustand.protokollDateien.length === 0} onClick={() => weiter()} className={GROSS}>
+          Weiter <ArrowRight aria-hidden="true" />
+        </button>
+      </Karte>
+    );
+  }
+
+  // ----- Bewerten: ein Kriterium pro Karte, Antippen geht weiter
+  if (art === "selbst" || art === "peer" || art === "fremd") {
+    const kriterium = BOGEN.find((x) => x.id === id);
+    if (!kriterium) return null;
+    const wer = { selbst: "Wie gut ist es dir gelungen?", peer: "Wie gut ist es gelungen?", fremd: "Wie gut ist es gelungen?" }[art];
+    const ton = art === "selbst" ? "weiss" : art === "peer" ? "brand" : "praxis";
+    const rolle = { selbst: "Deine Einschätzung", peer: "Einschätzung Peer", fremd: "Einschätzung Trainer:in" }[art];
+    const wert = zustand[art][kriterium.id];
+    return (
+      <Karte {...k} phase={`${phase} · ${rolle}`} frage={kriterium.titel} hinweis={wer} ton={ton}>
+        {kriterium.ko && (
+          <span className="w-fit rounded-full bg-white/70 px-2.5 py-0.5 text-xs font-semibold text-praxis-text">K.-o.-Kriterium</span>
+        )}
+        <div className={cn("grid gap-2", kriterium.skala.length === 2 ? "grid-cols-2" : "grid-cols-3")}>
+          {kriterium.skala.map((p) => (
+            <button
+              key={p}
+              type="button"
+              aria-pressed={wert === p}
+              onClick={() => {
+                setZustand((z) => ({ ...z, [art]: { ...z[art], [kriterium.id]: p } }));
+                setTimeout(() => weiter((z) => ({ ...z, [art]: { ...z[art], [kriterium.id]: p } })), 180);
+              }}
+              className={cn(
+                "flex min-h-16 flex-col items-center justify-center rounded-2xl text-ink",
+                wert === p ? "bg-ink font-bold text-white" : "bg-white hover:bg-subtle",
+                FOKUS
+              )}
+            >
+              <span className="text-[22px] tabular-nums">{p}</span>
+              <span className={cn("text-xs", wert === p ? "text-white/80" : "text-ink-subtle")}>
+                {kriterium.skala.length === 2 ? (p > 0 ? "erfüllt" : "nicht erfüllt") : "Punkte"}
+              </span>
+            </button>
+          ))}
+        </div>
+      </Karte>
+    );
+  }
+  if (art === "uebergabe-peer") {
+    return (
+      <Uebergabe
+        {...k}
+        ton="brand"
+        icon={Users}
+        frage="Gib das Gerät einer Person aus deiner Gruppe"
+        hinweis="Sie schaut sich deine Arbeit an und schätzt sie ein. Danach bekommst du das Gerät zurück."
+      >
+        <button type="button" onClick={() => weiter()} className={GROSS}>
+          Ich bin dran <ArrowRight aria-hidden="true" />
+        </button>
+      </Uebergabe>
+    );
+  }
+  if (art === "uebergabe-trainer") {
+    return (
+      <Uebergabe
+        {...k}
+        ton="praxis"
+        icon={KeyRound}
+        frage="Jetzt ist deine Trainer:in dran"
+        hinweis={`Gib das Gerät ${TRAINER_PRAXIS_DEMO.name}.`}
+      >
+        <CodewortGate
+          id="gate-bewerten-jetzt-dran"
+          hinweis={TEXTE.gates.bewerten}
+          label={TEXTE.codewort.label}
+          buttonText="Einschätzen"
+          fehlerText={TEXTE.codewort.falsch}
+          pruefen={pruefen}
+          onFreigabe={() => weiter((z) => ({ ...z, fremdFreigegeben: true }))}
+        />
+      </Uebergabe>
+    );
+  }
+  if (art === "ergebnis") {
+    const unterschiede = BOGEN.filter((x) => zustand.selbst[x.id] !== zustand.fremd[x.id] || zustand.peer[x.id] !== zustand.fremd[x.id]);
+    const nacharbeit = nacharbeitNoetig(BOGEN, zustand.fremd);
+    return (
+      <Karte
+        {...k}
+        frage={nacharbeit ? "Noch nicht ganz" : "Gut gemacht"}
+        hinweis={
+          nacharbeit
+            ? TEXTE.bewerten.nacharbeitText
+            : unterschiede.length === 0
+              ? "Ihr wart euch überall einig."
+              : "Hier wart ihr euch nicht einig. Sprich mit deiner Trainer:in darüber."
+        }
+      >
+        <p className="text-sm text-ink-muted">Gib das Gerät zurück an die Person, die den Auftrag gemacht hat.</p>
+        {unterschiede.length > 0 && (
+          <ul className="flex flex-col gap-2">
+            {unterschiede.map((x) => (
+              <li key={x.id} className="flex flex-col gap-1.5 rounded-zeile bg-subtle px-4 py-3">
+                <span className="text-[15px] font-semibold">{x.titel}</span>
+                <span className="flex gap-4 text-sm text-ink-muted tabular-nums">
+                  <span>Du: {zustand.selbst[x.id] ?? "–"}</span>
+                  <span>Peer: {zustand.peer[x.id] ?? "–"}</span>
+                  <span className="font-semibold text-ink">Trainer:in: {zustand.fremd[x.id] ?? "–"}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+        {nacharbeit ? (
+          <button
+            type="button"
+            onClick={() => {
+              const erster = zustand.schritte[0];
+              setZustand((z) => protokolliert(VERLAUF.nacharbeit)(zurNacharbeit(z)));
+              onPosition(erster ? `tun:${erster.id}` : "schritte");
+            }}
+            className={GROSS}
+          >
+            {TEXTE.bewerten.nacharbeitButton} <ArrowLeft aria-hidden="true" />
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => weiter((z) => protokolliert(VERLAUF.abgeschlossen)({ ...z, bewertungAbgeschlossen: true }))}
+            className={GROSS}
+          >
+            Auftrag abschließen <Check aria-hidden="true" />
+          </button>
+        )}
+      </Karte>
+    );
+  }
+
+  // ----- Ende
+  if (art === "fertig") {
+    return (
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center gap-4 rounded-karte bg-lime p-5 text-on-lime shadow-card md:p-6">
+          <PartyPopper className="size-8 shrink-0" aria-hidden="true" />
+          <div className="flex flex-col">
+            <h2 className="font-heading text-[26px] leading-tight md:text-[32px]">Auftrag fertig!</h2>
+            <p className="text-[15px]">Hier ist alles, was du gemacht hast. Die Akademie bestätigt deine Arbeit.</p>
+          </div>
+        </div>
+        <AkteAusZustand zustand={zustand} unterSpannung={unterSpannung} />
+      </div>
+    );
+  }
+  return null;
+}
+
+/** Übergabe an eine andere Person: eigene Farbe, klar, wer dran ist. */
+function Uebergabe({
+  icon: Icon,
+  frage,
+  hinweis,
+  ton,
+  zurueck,
+  phase,
+  children,
+}: {
+  icon: typeof Camera;
+  frage: string;
+  hinweis: string;
+  ton: "praxis" | "brand";
+  zurueck?: () => void;
+  phase: string;
+  nr?: number;
+  von?: number;
+  children: React.ReactNode;
+}) {
+  return (
+    <Karte phase={phase} frage={frage} hinweis={hinweis} ton={ton} zurueck={zurueck}>
+      <span
+        className={cn("flex size-14 items-center justify-center rounded-full", ton === "brand" ? "bg-white/15 text-white" : "bg-white/60 text-ink")}
+        aria-hidden="true"
+      >
+        <Icon className="size-7" />
+      </span>
+      <div className={cn(ton === "brand" && "rounded-zeile bg-white p-4 text-ink")}>{children}</div>
+    </Karte>
+  );
+}
+
+/** Großer Moment, nur bei der Freigabe. */
+function Moment({
+  icon: Icon,
+  titel,
+  text,
+  knopf,
+  onWeiter,
+}: {
+  icon: typeof Camera;
+  titel: string;
+  text: string;
+  knopf: string;
+  onWeiter: () => void;
+}) {
+  return (
+    <section className="flex flex-col items-center gap-4 rounded-karte bg-progress p-7 text-center text-white shadow-card animate-in zoom-in-95 duration-300 motion-reduce:animate-none">
+      <span className="flex size-20 items-center justify-center rounded-full bg-white/15" aria-hidden="true">
+        <Icon className="size-10" />
+      </span>
+      <h2 className="font-heading text-[36px] leading-none md:text-[44px]">{titel}</h2>
+      <p className="max-w-sm text-[16px] text-white/90">{text}</p>
+      <button type="button" onClick={onWeiter} className={cn(GROSS, "max-w-sm")}>
+        {knopf} <ArrowRight aria-hidden="true" />
+      </button>
+    </section>
+  );
+}
