@@ -53,6 +53,8 @@ export type Chip = {
   festigen: boolean;
   href: string;
   erledigt: boolean;
+  /** Schon begonnen ("in Bearbeitung"): dann "Weiterlernen", sonst kein Zusatz (Anna 2026-10-20) */
+  begonnen: boolean;
 };
 
 /** Praxistag ohne Uhrzeit (field_job.start/ende leer): ganztägig, über dem Raster. */
@@ -191,6 +193,7 @@ export function planModell(
           festigen,
           href: e.lessonId ? lektionHref(e.lessonId) : "/content",
           erledigt: e.unitProgressStatus === "abgeschlossen",
+          begonnen: e.unitProgressStatus === "in Bearbeitung",
         },
       ];
     });

@@ -64,7 +64,7 @@ export function tagErledigt(tag: TagModell): boolean {
 
 /**
  * Selbstlern-Eintrag in "Flexibel" der Wochenansicht -- nie mit Uhrzeit
- * (Brief 5.5). Punkt 7: voller Titel (umbrechen), kein Status-Text; offen
+ * (Brief 5.5). Punkt 7: voller Titel (umbrechen), als Status nur "Weiterlernen" bei begonnenen; offen
  * weiß mit leichtem grauem Rahmen (Anna 2026-10-13), erledigt weiß mit grauem Text und Häkchen.
  */
 export function FlexChip({ chip }: { chip: Chip }) {
@@ -72,7 +72,7 @@ export function FlexChip({ chip }: { chip: Chip }) {
     <Link
       href={chip.href}
       title={chip.festigen ? chip.volltitel : undefined}
-      aria-label={`Selbstlernen, flexibel, ${chip.festigen ? "Wissen festigen: " : ""}${chip.volltitel}, ${chip.erledigt ? "erledigt" : "offen"}`}
+      aria-label={`Selbstlernen, flexibel, ${chip.festigen ? "Wissen festigen: " : ""}${chip.volltitel}, ${chip.erledigt ? "erledigt" : chip.begonnen ? "weiterlernen" : "offen"}`}
       className={cn(
         "flex min-w-0 items-start gap-2 rounded-xl px-3 py-2.5 text-[13px] leading-snug font-semibold outline-none transition-[box-shadow] duration-150 hover:shadow-card focus-visible:ring-2 focus-visible:ring-brand motion-reduce:transition-none",
         chip.erledigt ? "text-ink-muted" : "border border-line bg-card text-ink"
@@ -80,7 +80,11 @@ export function FlexChip({ chip }: { chip: Chip }) {
     >
       <BookOpen className="mt-px size-4 shrink-0 text-self" aria-hidden="true" />
       {/* Thema als Titel bzw. "Wissen festigen" (Anna 2026-10-16, wie demo). */}
-      <span className="min-w-0 flex-1 hyphens-auto break-words">{chip.titel}</span>
+      <span className="flex min-w-0 flex-1 flex-col hyphens-auto break-words">
+        {chip.titel}
+        {/* Schon begonnen: "Weiterlernen" wie in der Tagesansicht und auf dem Handy (Anna 2026-10-20). */}
+        {chip.begonnen && !chip.erledigt && <span className="text-xs font-bold text-ink-muted">Weiterlernen</span>}
+      </span>
       {chip.erledigt && <Check className="mt-0.5 size-3.5 shrink-0 text-progress" strokeWidth={3} aria-hidden="true" />}
     </Link>
   );
@@ -99,7 +103,7 @@ export function FlexLeiste({ chip, gross }: { chip: Chip; gross: boolean }) {
     <Link
       href={chip.href}
       title={chip.festigen ? chip.volltitel : undefined}
-      aria-label={`Selbstlernen, flexibel, ${chip.festigen ? "Wissen festigen: " : ""}${chip.volltitel}, ${chip.erledigt ? "erledigt" : "weiterlernen"}`}
+      aria-label={`Selbstlernen, flexibel, ${chip.festigen ? "Wissen festigen: " : ""}${chip.volltitel}${chip.erledigt ? ", erledigt" : chip.begonnen ? ", weiterlernen" : ""}`}
       style={{ marginLeft: rand.links, marginRight: rand.rechts }}
       className={cn(
         "flex min-w-0 items-center gap-2 rounded-xl px-3 py-2 text-[13px] font-semibold outline-none transition-[box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-brand motion-reduce:transition-none",
@@ -110,11 +114,12 @@ export function FlexLeiste({ chip, gross }: { chip: Chip; gross: boolean }) {
     >
       <BookOpen className="size-4 shrink-0 text-self" aria-hidden="true" />
       <span className="min-w-0 flex-1">{chip.titel}</span>
+      {/* "Weiterlernen" nur, wenn schon begonnen; sonst nur der Pfeil (Anna 2026-10-20, Handy und Laptop gleich). */}
       {chip.erledigt ? (
         <Check className="size-3.5 shrink-0 text-progress" strokeWidth={3} aria-hidden="true" />
       ) : (
         <span aria-hidden="true" className="inline-flex shrink-0 items-center gap-1 text-xs font-bold">
-          Weiterlernen
+          {chip.begonnen && "Weiterlernen"}
           <ArrowRight className="size-3.5" aria-hidden="true" />
         </span>
       )}
