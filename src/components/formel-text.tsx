@@ -7,12 +7,14 @@ import "katex/dist/katex.min.css";
 // das Formel-HTML ohne Links oder eigene Befehle (trust: false); bei einem
 // Fehler im LaTeX steht die Formel als Text da statt einer Fehlermeldung.
 
+// Ohne g-Flag für die Prüfung: ein globales test() verschiebt lastIndex, und
+// matchAll übernähme diese Stelle (dann würde keine Formel gefunden).
+const FORMEL_DA = /\$\$[\s\S]+?\$\$/;
 const FORMEL = /\$\$([\s\S]+?)\$\$/g;
 
 /** Hat der Text eine Formel? */
 export function hatFormel(text: string): boolean {
-  FORMEL.lastIndex = 0;
-  return FORMEL.test(text);
+  return FORMEL_DA.test(text);
 }
 
 /** Text mit Formeln: Formeln gerendert, der Rest bleibt Text. Steht nur eine Formel da, als eigene Zeile. */
