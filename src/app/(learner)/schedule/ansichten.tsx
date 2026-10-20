@@ -6,7 +6,17 @@ import { datumLang, plusTage, wochentagLang } from "@/lib/date";
 import { stundenBereich, stunden, type Tagestyp } from "@/lib/stundenplan";
 import { cn } from "@/lib/utils";
 
-import { AbweichungsLabel, FlexChip, FlexLeiste, GanztagsLeiste, MonatsTags, StundenSpalte, TagSpalte, tagErledigt } from "./plan-bausteine";
+import {
+  AbweichungsLabel,
+  FlexChip,
+  FlexLeiste,
+  GanztagsLeiste,
+  MonatsTags,
+  StundenSpalte,
+  TagSpalte,
+  tagErledigt,
+  type FlexStil,
+} from "./plan-bausteine";
 import { FachspracheChip, FachspracheLeiste } from "./fachsprache-chip";
 import type { TagModell } from "./plan-modell";
 
@@ -147,12 +157,14 @@ export function WochenAnsicht({
   jetzt,
   simuliert,
   tagHref,
+  flexStil,
 }: {
   tage: TagModell[];
   haupt: Tagestyp | null;
   jetzt: string;
   simuliert: boolean;
   tagHref: (datum: string) => string;
+  flexStil?: FlexStil;
 }) {
   const bloecke = tage.flatMap((t) => t.bloecke);
   const bereich = stundenBereich(bloecke);
@@ -218,7 +230,7 @@ export function WochenAnsicht({
         {tage.map((t) => (
           <div key={t.datum} className={cn("flex min-w-0 flex-col gap-1.5 px-1.5 pt-2 pb-1.5", heute(t))}>
             {t.chips.map((c) => (
-              <FlexChip key={c.id} chip={c} />
+              <FlexChip key={c.id} chip={c} stil={flexStil} />
             ))}
             {t.fachsprache.map((e) => (
               <FachspracheChip key={e.einheitId} eintrag={e} mitTitel={t.fachsprache.length > 1} />

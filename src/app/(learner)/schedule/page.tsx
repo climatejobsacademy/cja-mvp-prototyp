@@ -48,10 +48,10 @@ const DATUM = /^\d{4}-\d{2}-\d{2}$/;
 export default async function SchedulePage({
   searchParams,
 }: {
-  searchParams: Promise<{ ansicht?: string; datum?: string; now?: string }>;
+  searchParams: Promise<{ ansicht?: string; datum?: string; now?: string; flex?: string }>;
 }) {
   const learner = await requireCurrentLearner();
-  const { ansicht: ansichtParam, datum: datumParam, now } = await searchParams;
+  const { ansicht: ansichtParam, datum: datumParam, now, flex } = await searchParams;
 
   // Wie Home: simuliertes "jetzt" zum Testen (?now=…), nie auf Production.
   const simuliert = process.env.VERCEL_ENV !== "production" ? parseNowParameter(now) : null;
@@ -148,7 +148,7 @@ export default async function SchedulePage({
               zusatz={zusatz}
               umschalterHref={(a) => href(a, woche.includes(heute) && a === "tag" ? heute : datum)}
             />
-            <WochenAnsicht tage={wochenTage} haupt={haupt} jetzt={jetzt} simuliert={!!simuliert} tagHref={tagHref} />
+            <WochenAnsicht tage={wochenTage} haupt={haupt} jetzt={jetzt} simuliert={!!simuliert} tagHref={tagHref} flexStil={flex === "text" ? "text" : "symbol"} />
           </div>
         )}
 

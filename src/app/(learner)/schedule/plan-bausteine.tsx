@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, Check, Video, Wrench } from "lucide-react";
+import { ArrowRight, BookOpen, Check, Play, Video, Wrench } from "lucide-react";
 
 import { spuren, stunden, type Tagestyp } from "@/lib/stundenplan";
 import { TrainerZeile } from "@/components/trainer-zeile";
@@ -62,30 +62,44 @@ export function tagErledigt(tag: TagModell): boolean {
   return alle.length > 0 && alle.every(Boolean);
 }
 
+/** Darstellung "begonnen" in der Wochenansicht (Varianten zum Vergleich, Anna 2026-10-20): ?flex=text */
+export type FlexStil = "symbol" | "text";
+
 /**
  * Selbstlern-Eintrag in "Flexibel" der Wochenansicht -- nie mit Uhrzeit
- * (Brief 5.5). Punkt 7: voller Titel (umbrechen), als Status nur "Weiterlernen" bei begonnenen; offen
- * weiß mit leichtem grauem Rahmen (Anna 2026-10-13), erledigt weiß mit grauem Text und Häkchen.
+ * (Brief 5.5). Alle Einträge gleich hoch und gleich gerahmt wie
+ * "Fachsprache", auch erledigte (Anna 2026-10-20: sonst "uneben"). Rechts
+ * ein Zeichen: erledigt Häkchen, begonnen ein Weiter-Symbol bzw. (?flex=text)
+ * "Weiter" in derselben Zeile; offen nichts.
  */
-export function FlexChip({ chip }: { chip: Chip }) {
+export function FlexChip({ chip, stil = "symbol" }: { chip: Chip; stil?: FlexStil }) {
+  const status = chip.erledigt ? "erledigt" : chip.begonnen ? "weiterlernen" : "offen";
   return (
     <Link
       href={chip.href}
-      title={chip.festigen ? chip.volltitel : undefined}
-      aria-label={`Selbstlernen, flexibel, ${chip.festigen ? "Wissen festigen: " : ""}${chip.volltitel}, ${chip.erledigt ? "erledigt" : chip.begonnen ? "weiterlernen" : "offen"}`}
+      title={chip.volltitel}
+      aria-label={`Selbstlernen, flexibel, ${chip.festigen ? "Wissen festigen: " : ""}${chip.volltitel}, ${status}`}
       className={cn(
-        "flex min-w-0 items-start gap-2 rounded-xl px-3 py-2.5 text-[13px] leading-snug font-semibold outline-none transition-[box-shadow] duration-150 hover:shadow-card focus-visible:ring-2 focus-visible:ring-brand motion-reduce:transition-none",
-        chip.erledigt ? "text-ink-muted" : "border border-line bg-card text-ink"
+        "flex min-h-11 min-w-0 items-center gap-2 rounded-xl border border-line bg-card px-3 py-2 text-[13px] leading-snug font-semibold outline-none transition-[box-shadow] duration-150 hover:shadow-card focus-visible:ring-2 focus-visible:ring-brand motion-reduce:transition-none",
+        chip.erledigt ? "text-ink-muted" : "text-ink"
       )}
     >
-      <BookOpen className="mt-px size-4 shrink-0 text-self" aria-hidden="true" />
+      <BookOpen className="size-4 shrink-0 text-self" aria-hidden="true" />
       {/* Thema als Titel bzw. "Wissen festigen" (Anna 2026-10-16, wie demo). */}
-      <span className="flex min-w-0 flex-1 flex-col hyphens-auto break-words">
-        {chip.titel}
-        {/* Schon begonnen: "Weiterlernen" wie in der Tagesansicht und auf dem Handy (Anna 2026-10-20). */}
-        {chip.begonnen && !chip.erledigt && <span className="text-xs font-bold text-ink-muted">Weiterlernen</span>}
-      </span>
-      {chip.erledigt && <Check className="mt-0.5 size-3.5 shrink-0 text-progress" strokeWidth={3} aria-hidden="true" />}
+      <span className="min-w-0 flex-1 truncate">{chip.titel}</span>
+      {chip.erledigt ? (
+        <Check className="size-3.5 shrink-0 text-progress" strokeWidth={3} aria-hidden="true" />
+      ) : chip.begonnen ? (
+        stil === "text" ? (
+          <span aria-hidden="true" className="inline-flex shrink-0 items-center gap-0.5 text-xs font-bold text-ink-muted">
+            Weiter <ArrowRight className="size-3" aria-hidden="true" />
+          </span>
+        ) : (
+          <span aria-hidden="true" title="Weiterlernen" className="flex size-5 shrink-0 items-center justify-center rounded-full bg-self-tint text-self">
+            <Play className="size-2.5 fill-current" />
+          </span>
+        )
+      ) : null}
     </Link>
   );
 }
