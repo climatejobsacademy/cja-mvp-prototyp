@@ -442,6 +442,7 @@ export function MobilAnsicht({
   jetzt,
   simuliert,
   tagHref,
+  umschalterHref,
 }: {
   tag: TagModell;
   tage: TagModell[];
@@ -454,12 +455,17 @@ export function MobilAnsicht({
   jetzt: string;
   simuliert: boolean;
   tagHref: (datum: string) => string;
+  /** Umschalter Tag | Woche | Monat auch mobil (Vorschau Anna 2026-10-20) */
+  umschalterHref: (a: Ansicht) => string;
 }) {
   return (
     <div className="flex flex-col gap-4 text-ink">
       <div className="flex items-end justify-between">
         <h1 className="font-heading text-[34px] leading-none">Stundenplan</h1>
         <HeuteLink href={heuteHref} />
+      </div>
+      <div className="self-start">
+        <AnsichtUmschalter aktiv="tag" href={umschalterHref} />
       </div>
       <div className="flex items-center justify-between text-sm">
         <Link href={zurueckHref} aria-label="Vorherige Woche" className={PFEIL}>
@@ -486,4 +492,162 @@ export function inWochen(tage: TagModell[], montage: string[]): TagModell[][] {
     const bis = plusTage(m, 6);
     return tage.filter((t) => t.datum >= m && t.datum <= bis);
   });
+}
+
+// ---------------------------------------------------------------------------
+// Mobil Woche und Monat (Vorschau Anna 2026-10-20): auf dem Handy passen die
+// Raster vom Laptop nicht. Woche als Liste der Tage untereinander, Monat als
+// kleiner Kalender mit farbigen Punkten; Antippen öffnet den Tag.
+
+const PUNKT = { live: "bg-brand", praxis: "bg-praxis", selbst: "bg-self" } as const;
+
+type Zeile = { id: string; zeit: string | null; text: string; art: keyof typeof PUNKT; erledigt: boolean };
+
+function zeilenDes(t: TagModell): Zeile[] {
+  return [
+    ...t.ganztags.map((g) => ({ id: g.id, zeit: "ganztägig", text: g.titel, art: "praxis" as const, erledigt: g.status === "erledigt" })),
+    ...[...t.bloecke]
+      .sort((a, b) => a.start.localeCompare(b.start))
+      .map((b) => ({ id: b.id, zeit: b.start.slice(0, 5), text: b.titel, art: b.art, erledigt: b.status === "erledigt" })),
+    ...t.chips.map((c) => ({ id: c.id, zeit: null, text: c.titel, art: "selbst" as const, erledigt: c.erledigt })),
+  ];
+}
+
+/** Mobil: Woche als Liste, je Tag eine Karte mit kurzen Zeilen (Uhrzeit, Farbe der Art, Titel). */
+export function MobilWoche({ tage, tagHref }: { tage: TagModell[]; tagHref: (datum: string) => string }) {
+  return (
+    <ul className="flex flex-col gap-2.5">
+      {tage.map((t) => {
+        const zeilen = zeilenDes(t);
+        return (
+          <li key={t.datum}>
+            <Link
+              href={tagHref(t.datum)}
+              aria-label={`${datumLang(t.datum)}, Tagesansicht öffnen`}
+              className={cn(
+                "flex gap-3 rounded-2xl bg-card p-3.5 shadow-card outline-none focus-visible:ring-2 focus-visible:ring-brand",
+                t.heute && "ring-2 ring-brand"
+              )}
+            >
+              <span className="flex w-10 shrink-0 flex-col items-center gap-0.5">
+                <span className="text-xs font-semibold text-ink-muted uppercase">{kurzname(t.datum)}</span>
+                <DatumsKreis datum={t.datum} heute={t.heute} klein />
+              </span>
+              {zeilen.length === 0 ? (
+                <span className="self-center text-sm text-ink-muted">Nichts geplant</span>
+              ) : (
+                <ul className="flex min-w-0 flex-1 flex-col gap-1.5">
+                  {zeilen.map((z) => (
+                    <li key={z.id} className={cn("flex min-w-0 items-center gap-2 text-[14px]", z.erledigt ? "text-ink-muted" : "text-ink")}>
+                      <span aria-hidden="true" className={cn("size-2 shrink-0 rounded-full", PUNKT[z.art])} />
+                      {z.zeit && <span className="shrink-0 tabular-nums text-ink-muted">{z.zeit}</span>}
+                      <span className="min-w-0 truncate font-medium">{z.text}</span>
+                      {z.erledigt && <Check className="size-3.5 shrink-0 text-progress" strokeWidth={3} aria-label="erledigt" />}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Link>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+/** Mobil: Monat als kleiner Kalender (Mo–So), je Tag farbige Punkte; Legende darunter. */
+export function MobilMonat({
+  wochen,
+  monat,
+  tagHref,
+}: {
+  wochen: TagModell[][];
+  monat: string;
+  tagHref: (datum: string) => string;
+}) {
+  const kopf = wochen[0] ?? [];
+  return (
+    <div className="flex flex-col gap-3 rounded-2xl bg-card p-3 text-ink shadow-card">
+      <div className="grid grid-cols-7 text-center">
+        {kopf.map((t) => (
+          <span key={t.datum} className="pb-1 text-[11px] font-semibold text-ink-muted uppercase">
+            {kurzname(t.datum)}
+          </span>
+        ))}
+      </div>
+      {wochen.map((woche) => (
+        <div key={woche[0].datum} className="grid grid-cols-7">
+          {woche.map((t) => {
+            const arten = [...new Set(zeilenDes(t).map((z) => z.art))];
+            const fremd = !t.datum.startsWith(monat);
+            return (
+              <Link
+                key={t.datum}
+                href={tagHref(t.datum)}
+                aria-label={`${datumLang(t.datum)}${arten.length ? `, ${arten.length} Arten von Terminen` : ", nichts geplant"}`}
+                className={cn(
+                  "flex min-h-14 flex-col items-center gap-1 rounded-lg py-1.5 outline-none focus-visible:ring-2 focus-visible:ring-brand",
+                  fremd && "opacity-40"
+                )}
+              >
+                <DatumsKreis datum={t.datum} heute={t.heute} klein />
+                <span className="flex gap-0.5" aria-hidden="true">
+                  {arten.map((a) => (
+                    <span key={a} className={cn("size-1.5 rounded-full", PUNKT[a])} />
+                  ))}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      ))}
+      <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 border-t border-line pt-2.5 text-xs text-ink-muted">
+        <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-brand" aria-hidden="true" />Live</span>
+        <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-praxis" aria-hidden="true" />Praxis</span>
+        <span className="inline-flex items-center gap-1.5"><span className="size-2 rounded-full bg-self" aria-hidden="true" />Selbstlernen</span>
+      </div>
+    </div>
+  );
+}
+
+/** Mobil: Kopf mit Überschrift, "Heute", Umschalter Tag | Woche | Monat und Pfeilen mit Zeitraum. */
+export function MobilKopf({
+  ansicht,
+  heuteHref,
+  umschalterHref,
+  zurueckHref,
+  vorHref,
+  zurueckLabel,
+  vorLabel,
+  titel,
+}: {
+  ansicht: Ansicht;
+  heuteHref: string | null;
+  umschalterHref: (a: Ansicht) => string;
+  zurueckHref: string;
+  vorHref: string;
+  zurueckLabel: string;
+  vorLabel: string;
+  titel: string;
+}) {
+  return (
+    <div className="flex flex-col gap-3 text-ink">
+      <div className="flex items-end justify-between">
+        <h1 className="font-heading text-[34px] leading-none">Stundenplan</h1>
+        <HeuteLink href={heuteHref} />
+      </div>
+      <div className="self-start">
+        <AnsichtUmschalter aktiv={ansicht} href={umschalterHref} />
+      </div>
+      <div className="flex items-center justify-between text-sm">
+        <Link href={zurueckHref} aria-label={zurueckLabel} className={PFEIL}>
+          <ChevronLeft className="size-5" aria-hidden="true" />
+        </Link>
+        <span className="font-bold" aria-live="polite">{titel}</span>
+        <Link href={vorHref} aria-label={vorLabel} className={PFEIL}>
+          <ChevronRight className="size-5" aria-hidden="true" />
+        </Link>
+      </div>
+    </div>
+  );
 }
