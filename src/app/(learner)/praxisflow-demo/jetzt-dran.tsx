@@ -6,6 +6,7 @@ import {
   ArrowRight,
   CalendarClock,
   Camera,
+  ClipboardCheck,
   Check,
   KeyRound,
   PartyPopper,
@@ -85,6 +86,7 @@ function alleSchritte(z: DemoZustand, unterSpannung: boolean): Schritt[] {
     ...s("entscheiden", ["rueckblick"]),
     ...s("durchfuehren", z.schritte.map((x) => `tun:${x.id}`)),
     ...s("kontrolle", [
+      "start-kontrolle",
       ...PRUEFLISTE_STANDARD.spannungsfrei.map((p) => `a:${p.id}`),
       ...(unterSpannung ? ["freigabe", ...PRUEFLISTE_STANDARD.unterSpannung.map((p) => `c:${p.id}`)] : []),
       "protokoll",
@@ -458,6 +460,43 @@ function SchrittKarte({
   }
 
   // ----- Kontrollieren
+  // Übergang Ausführen → Kontrollieren: was jetzt kommt, in drei Teilen.
+  if (art === "start-kontrolle") {
+    const teile = unterSpannung
+      ? [
+          { titel: "Prüfen ohne Spannung", text: "Das machst du allein." },
+          { titel: "Freigabe", text: "Deine Trainer:in prüft die Anlage." },
+          { titel: "Prüfen unter Spannung", text: "Mit Trainer:in, dann Prüfprotokoll." },
+        ]
+      : [
+          { titel: "Prüfen ohne Spannung", text: "Das machst du allein." },
+          { titel: "Prüfprotokoll", text: "Foto oder PDF hochladen." },
+        ];
+    return (
+      <Uebergabe
+        {...k}
+        ton="praxis"
+        icon={ClipboardCheck}
+        frage="Dein Aufbau ist fertig"
+        hinweis="Jetzt kontrollierst du deine Arbeit. Das passiert in diesen Teilen:"
+      >
+        <ol className="flex flex-col gap-2">
+          {teile.map((t, i) => (
+            <li key={t.titel} className="flex items-center gap-3 rounded-zeile bg-white/60 px-4 py-3">
+              <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-ink text-sm font-bold text-white">{i + 1}</span>
+              <span className="flex flex-col">
+                <span className="text-[15px] font-semibold">{t.titel}</span>
+                <span className="text-sm">{t.text}</span>
+              </span>
+            </li>
+          ))}
+        </ol>
+        <button type="button" onClick={() => weiter()} className={cn(GROSS, "mt-4")}>
+          Kontrolle beginnen <ArrowRight aria-hidden="true" />
+        </button>
+      </Uebergabe>
+    );
+  }
   if (art === "a" || art === "c") {
     const p = (art === "a" ? PRUEFLISTE_STANDARD.spannungsfrei : PRUEFLISTE_STANDARD.unterSpannung).find((x) => x.id === id);
     const feld = art === "a" ? "geprueftSpannungsfrei" : "geprueftUnterSpannung";
