@@ -36,12 +36,16 @@ export const DEMO_CODEWORT = "werkstatt";
 /**
  * Uploads nur dort, wo die Partner sie im Feedback vom 15.10. genannt haben
  * (Anna 2026-10-20): unterschriebener Auftrag, Pläne und Zeichnungen,
- * Prüfprotokoll. Formate laut Simon; die Liste der Partner steht noch aus.
+ * Prüfprotokoll. Formate laut Simon, dazu CSV und Excel.
  */
+// Tabellen (CSV, Excel) ergänzt (Anna 2026-10-20); die Partner schicken
+// keine eigene Formatliste, die Auswahl hier gilt.
+const TABELLEN = ".csv,.xls,.xlsx,text/csv,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
 export const UPLOAD_FORMATE = {
   auftrag: "image/*,application/pdf",
-  plaene: "image/*,application/pdf,.dwg,.dxf,.glb",
-  protokoll: "application/pdf,image/*",
+  plaene: `image/*,application/pdf,.dwg,.dxf,.glb,${TABELLEN}`,
+  protokoll: `application/pdf,image/*,${TABELLEN}`,
 };
 
 /** Diktat in Planen: aus (zwölf Personen in einem Raum, Schreiben übt Fachdeutsch; Anna 2026-10-20). */
