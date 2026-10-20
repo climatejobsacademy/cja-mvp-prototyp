@@ -6,6 +6,7 @@ import { datumKurz, datumLang, heuteInBerlin, jetztInBerlin, montagDerWoche, plu
 import { getEinstiegeJeTag } from "@/lib/queries/fachsprache";
 import { getModuleDerKohorte } from "@/lib/queries/modul";
 import { requireCurrentLearner } from "@/lib/queries/session";
+import { cn } from "@/lib/utils";
 import { getKohortenStart, getStundenplan } from "@/lib/queries/stundenplan";
 import {
   arbeitstage,
@@ -19,7 +20,18 @@ import {
   zeitraumText,
 } from "@/lib/stundenplan";
 
-import { inWochen, MobilAnsicht, MonatsAnsicht, Steuerleiste, TagesAnsicht, WochenAnsicht, type Ansicht } from "./ansichten";
+import {
+  inWochen,
+  MobilAnsicht,
+  MobilKopf,
+  MobilMonat,
+  MobilWoche,
+  MonatsAnsicht,
+  Steuerleiste,
+  TagesAnsicht,
+  WochenAnsicht,
+  type Ansicht,
+} from "./ansichten";
 import { AbweichungsLabel, WochenTypIcon } from "./plan-bausteine";
 import { planModell } from "./plan-modell";
 
@@ -50,6 +62,7 @@ export default async function SchedulePage({
   const ansicht: Ansicht | null =
     ansichtParam === "tag" || ansichtParam === "woche" || ansichtParam === "monat" ? ansichtParam : null;
   const desktopAnsicht: Ansicht = ansicht ?? "woche";
+  const mobilAnsicht: Ansicht = ansicht ?? "tag";
   // Wunsch Anna 2026-10-11: am Wochenende zeigt der Stundenplan ohne
   // ausgewähltes Datum schon die kommende Woche (die vergangene ist vorbei).
   const wochenende = !arbeitstage(heute).includes(heute);
@@ -189,8 +202,22 @@ export default async function SchedulePage({
         )}
       </div>
 
-      {/* Mobil (< 768 px): immer Tagesansicht (Brief 2.6) */}
-      <div className="md:hidden">
+      {/* Mobil (< 768 px): ohne Angabe Tag (Brief 2.6); Woche als Liste, Monat als kleiner Kalender (Vorschau Anna 2026-10-20). */}
+      <div className={cn("flex flex-col gap-4 md:hidden", mobilAnsicht === "tag" && "hidden")}>
+        <MobilKopf
+          ansicht={mobilAnsicht}
+          heuteHref={mobilAnsicht === "monat" ? (datum.startsWith(heute.slice(0, 7)) ? null : href("monat", heute)) : woche.includes(heute) ? null : href("woche", heute)}
+          umschalterHref={(a) => href(a, a === "tag" && woche.includes(heute) ? heute : datum)}
+          zurueckHref={mobilAnsicht === "monat" ? href("monat", plusMonate(datum, -1)) : href("woche", plusTage(datum, -7))}
+          vorHref={mobilAnsicht === "monat" ? href("monat", plusMonate(datum, 1)) : href("woche", plusTage(datum, 7))}
+          zurueckLabel={mobilAnsicht === "monat" ? "Vorheriger Monat" : "Vorherige Woche"}
+          vorLabel={mobilAnsicht === "monat" ? "Nächster Monat" : "Nächste Woche"}
+          titel={mobilAnsicht === "monat" ? monatText(datum) : wocheNr ? `Woche ${wocheNr} · ${zeitraumText(montag, true)}` : zeitraumText(montag, true)}
+        />
+        {mobilAnsicht === "woche" && <MobilWoche tage={wochenTage} tagHref={tagHref} />}
+        {mobilAnsicht === "monat" && <MobilMonat wochen={inWochen(modelle, monatsMontage)} monat={datum.slice(0, 7)} tagHref={tagHref} />}
+      </div>
+      <div className={cn("md:hidden", mobilAnsicht !== "tag" && "hidden")}>
         <MobilAnsicht
           tag={tag}
           tage={wochenTage}
@@ -202,6 +229,7 @@ export default async function SchedulePage({
           jetzt={jetzt}
           simuliert={!!simuliert}
           tagHref={tagHref}
+          umschalterHref={(a) => href(a, datum)}
         />
       </div>
     </div>
