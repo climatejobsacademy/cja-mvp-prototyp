@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { ArrowRight, BookOpen, Video } from "lucide-react";
 
+import { StaerktPills, type StaerktKompetenz } from "@/components/staerkt-pills";
 import { TrainerZeile } from "@/components/trainer-zeile";
 import { datumLang, tagRelativ } from "@/lib/date";
 import type { TrainerAnzeige } from "@/lib/queries/trainer";
@@ -41,6 +42,7 @@ export function TerminKarte({
   festigenHref,
   festigenTitel,
   trainer,
+  staerkt,
 }: {
   termin: Termin | null;
   heute: string;
@@ -49,6 +51,8 @@ export function TerminKarte({
   /** Titel der zugehörigen Selbstlern-Lektion, für Screenreader */
   festigenTitel?: string;
   trainer: TrainerAnzeige | null;
+  /** Kompetenzen, die die Lektion stärkt (wie auf Home, Anna 2026-10-20) */
+  staerkt?: StaerktKompetenz[];
 }) {
   if (!termin) {
     return (
@@ -91,6 +95,7 @@ export function TerminKarte({
         </p>
         {/* Wer unterrichtet (SR-78); ohne eingetragene Person nichts. */}
         {trainer && <TrainerZeile art="live" trainer={trainer} className="text-[15px] text-white/85" />}
+        <StaerktPills kompetenzen={staerkt} />
         {(beitretbar || festigenHref) && (
           <div className="mt-2 flex flex-wrap gap-2">
             {beitretbar && termin.joinLink && (
