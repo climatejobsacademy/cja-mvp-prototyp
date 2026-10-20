@@ -74,6 +74,14 @@ export default async function KompetenzenPage({
   }));
   const gewaehlt = waehleModul(reiterModule, reiterModule[aktuellIndex]?.id ?? null, modulParam, kompetenzParam);
   const gewaehltTab = tabs.find((t) => t.id === gewaehlt?.id) ?? null;
+  // Kommendes Modul ohne Kompetenzen (Anna 2026-10-20): statt "noch nicht
+  // hinterlegt" ein Ausblick, wann es so weit ist.
+  const davor = gewaehltTab ? (tabs[tabs.indexOf(gewaehltTab) - 1] ?? null) : null;
+  const leerHinweis = !gewaehltTab
+    ? undefined
+    : gewaehltTab.zukuenftig && davor
+      ? `${gewaehltTab.ueberzeile} startet nach ${davor.ueberzeile}. Sobald es losgeht, siehst du hier, welche Kompetenzen du darin aufbaust.`
+      : `Für ${gewaehltTab.ueberzeile} sind noch keine Kompetenzen hinterlegt.`;
   // Modul in allen Links der Seite mitnehmen (Liste, Panel schließen).
   const modulZusatz = `${gewaehlt ? `&modul=${gewaehlt.id}` : ""}${zusatz}`;
   // "Heute dran" (Brief 2.4): Teilschritte, auf die heutige Lektionen oder
@@ -126,7 +134,7 @@ export default async function KompetenzenPage({
       <KompetenzListe
         kompetenzen={liste}
         zusatz={modulZusatz}
-        leerText={gewaehltTab ? `Für ${gewaehltTab.ueberzeile} sind noch keine Kompetenzen hinterlegt.` : undefined}
+        leerText={leerHinweis}
         label={gewaehltTab ? `Kompetenzen in ${gewaehltTab.ueberzeile}` : undefined}
       />
       {detail && (
