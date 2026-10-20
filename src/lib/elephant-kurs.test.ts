@@ -10,6 +10,7 @@ import {
   eintragLesen,
   elephantZuLernkurs,
   htmlLesen,
+  markupBausteine,
   istElephantPaket,
   istErlaubtesMedium,
   medienPfad,
@@ -161,5 +162,14 @@ test("Formeln: Block bleibt $$…$$, Formel im Satz wird \\(…\\)", () => {
     { tag: "p", kinder: ["Spule: \\(X_L=2\\pi f L\\) gilt."] },
     "$$P=I^2R$$",
     { tag: "p", kinder: ["Preis: 5 $"] },
+  ]);
+});
+
+test("Bilder mitten im Text werden eigene Bausteine an derselben Stelle", () => {
+  const b = markupBausteine('<h1>Geschafft!</h1><img data-path="images/a.png"><p>Weiter</p><img data-giphy-id="x">');
+  assert.deepEqual(b, [
+    { art: "text", inhalt: [{ tag: "h1", kinder: ["Geschafft!"] }] },
+    { art: "bild", quelle: "assets/images/a.png", beschreibung: "" },
+    { art: "text", inhalt: [{ tag: "p", kinder: ["Weiter"] }] },
   ]);
 });

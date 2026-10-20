@@ -121,25 +121,44 @@ const bild = (quelle: string | null, beschreibung = ""): Baustein | null => (que
 const audio = (quelle: string | null): Baustein | null => (quelle ? { art: "audio", quelle } : null);
 const text = (inhalt: TextKnoten[]): Baustein | null => (inhalt.length ? { art: "text", inhalt } : null);
 
+// Bilder mitten im Text (Elephant: <img data-path="images/…"> im markupContent,
+// Anna 2026-10-20): der Text wird an diesen Stellen geteilt, das Bild steht als
+// eigener Baustein dazwischen. Bilder ohne data-path (z. B. Giphy) fallen weg.
+const BILD_IM_TEXT = /<img\b[^>]*\bdata-path=["']([^"']+)["'][^>]*>/gi;
+
+/** Elephant-HTML -> Text- und Bild-Bausteine in der Reihenfolge des Inhalts. */
+export function markupBausteine(html: string): Baustein[] {
+  const teile: (Baustein | null)[] = [];
+  let rest = 0;
+  for (const m of html.matchAll(BILD_IM_TEXT)) {
+    teile.push(text(htmlLesen(html.slice(rest, m.index))), bild(medienPfad(m[1])));
+    rest = m.index + m[0].length;
+  }
+  teile.push(text(htmlLesen(html.slice(rest))));
+  return nur(...teile);
+}
+
 /** Ein Elephant-Modul -> Schritte; null bei unbekannter Art. */
 function modulZuSchritten(modul: Obj, id: string): Schritt[] | null {
   const d = obj(modul.data);
   const l = lokal(d);
   switch (modul.module_type) {
     case "page":
-      return [{ id, bausteine: nur(audio(medienPfad(l.audioFilePath)), text(htmlLesen(str(l.markupContent)))) }];
+      return [{ id, bausteine: [...nur(audio(medienPfad(l.audioFilePath))), ...markupBausteine(str(l.markupContent))] }];
     case "flashcards":
       return sortiert(arr(d.cards).map(obj), (k) => Number(k.sortIndex) || 0).map((k, i) => {
         const kl = lokal(k);
         const titelKarte = k.type === "title";
         return {
           id: `${id}-${i}`,
-          bausteine: nur(
-            bild(medienPfad(kl.imageFilePath)),
-            titelKarte && !!str(kl.title) && { art: "ueberschrift", text: str(kl.title) },
-            !titelKarte && text(htmlLesen(str(kl.markupContent))),
-            audio(medienPfad(kl.audioFilePath))
-          ),
+          bausteine: [
+            ...nur(
+              bild(medienPfad(kl.imageFilePath)),
+              titelKarte && !!str(kl.title) && { art: "ueberschrift", text: str(kl.title) }
+            ),
+            ...(titelKarte ? [] : markupBausteine(str(kl.markupContent))),
+            ...nur(audio(medienPfad(kl.audioFilePath))),
+          ],
         };
       });
     case "multipleChoice":
