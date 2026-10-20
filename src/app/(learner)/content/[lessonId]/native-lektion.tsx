@@ -4,10 +4,21 @@
    Route aus dem privaten Paket (Session-Cookie); next/image würde sie über
    den Bild-Optimierer ohne Session laden. */
 
-import { useEffect, useImperativeHandle, useRef, useState, useTransition, type ReactNode, type RefObject } from "react";
+import {
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  useTransition,
+  type ReactNode,
+  type RefObject,
+} from "react";
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Check, Pause, PartyPopper, ThumbsDown, ThumbsUp, Volume2, X } from "lucide-react";
 
+import { jetztInBerlin } from "@/lib/date";
 import { schrittAufgabe, schrittBilder, type Baustein, type Lernkurs, type Schritt, type TextKnoten } from "@/lib/lernkurs";
+import { neuererStand, standPruefen, standSchluessel, type LernStand } from "@/lib/lernstand";
 import { cn } from "@/lib/utils";
 
 import { markLessonComplete } from "./actions";
@@ -17,10 +28,13 @@ import { markLessonComplete } from "./actions";
 // SCORM-Fenster. Farben wie die Fachsprache: Selbstlernen Eco Green, Lime
 // für "jetzt" und den Hauptknopf, Dunkelgrün für Fortschritt. Fragen:
 // auswählen, "Prüfen"; falsch -> neu wählen, richtig -> Erklärung, dann
-// weiter. Der Stand der Schritte lebt nur auf der Seite; gespeichert wird
-// nur der Abschluss der Lektion (markLessonComplete -> unit_progress), sobald
-// das letzte Kapitel abgeschlossen ist -- einmal je Seitenaufruf, nicht bei
-// schon abgeschlossener Lektion.
+// weiter. Der Stand (Kapitel, Schritt, gelöste Fragen) wird nach jedem
+// Schritt auf dem Gerät und in unit_progress.stand gespeichert (0056, Anna
+// 2026-10-20); beim Öffnen gilt der neuere, damit es auch auf einem anderen
+// Gerät dort weitergeht. Der Abschluss der Lektion (markLessonComplete ->
+// unit_progress) wird gespeichert, sobald das letzte Kapitel abgeschlossen
+// ist -- einmal je Seitenaufruf, nicht bei schon abgeschlossener Lektion.
+// Abgeschlossene Lektionen beginnen beim Öffnen wieder vorn.
 
 const FOKUS = "outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2";
 const PRIMAER = cn(
@@ -33,11 +47,60 @@ const FLAECHE = "flex flex-col gap-5 rounded-zeile bg-self-tint p-5 md:p-6";
 
 type Medium = (schluessel: string) => string;
 
-export function NativeLektion({ lessonId, kurs, done }: { lessonId: string; kurs: Lernkurs; done: boolean }) {
-  const [kap, setKap] = useState(0);
-  const [schritt, setSchritt] = useState(0);
-  const [geloest, setGeloest] = useState<Set<string>>(new Set());
-  const [geschafft, setGeschafft] = useState<Set<number>>(new Set());
+const nichts = () => () => {};
+
+function lokalLesen(lessonId: string): unknown {
+  try {
+    const roh = window.localStorage.getItem(standSchluessel(lessonId));
+    return roh ? JSON.parse(roh) : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Rendert die Lektion erst im Browser: der Stand auf dem Gerät liegt im
+ * localStorage, der Server kennt ihn nicht (sonst Hydration-Unterschied).
+ * Startpunkt ist der neuere von Gerät und Datenbank.
+ */
+export function NativeLektion({
+  lessonId,
+  kurs,
+  done,
+  gespeichert,
+}: {
+  lessonId: string;
+  kurs: Lernkurs;
+  done: boolean;
+  /** unit_progress.stand (ungeprüft) */
+  gespeichert: unknown;
+}) {
+  const imBrowser = useSyncExternalStore(
+    nichts,
+    () => true,
+    () => false
+  );
+  if (!imBrowser) return <p className="text-sm text-ink-muted">Lektion wird geladen …</p>;
+  const form = kurs.kapitel.map((k) => k.schritte.length);
+  const start = done ? null : neuererStand(standPruefen(gespeichert, form), standPruefen(lokalLesen(lessonId), form));
+  return <LektionAblauf lessonId={lessonId} kurs={kurs} done={done} start={start} />;
+}
+
+function LektionAblauf({
+  lessonId,
+  kurs,
+  done,
+  start,
+}: {
+  lessonId: string;
+  kurs: Lernkurs;
+  done: boolean;
+  start: LernStand | null;
+}) {
+  const [kap, setKap] = useState(start?.kap ?? 0);
+  const [schritt, setSchritt] = useState(start?.schritt ?? 0);
+  const [geloest, setGeloest] = useState<Set<string>>(() => new Set(start?.geloest ?? []));
+  const [geschafft, setGeschafft] = useState<Set<number>>(() => new Set(start?.geschafft ?? []));
   const [ansicht, setAnsicht] = useState<"schritt" | "kapitel-geschafft" | "geschafft">("schritt");
   const [abschlussFehler, setAbschlussFehler] = useState(false);
   const [speichert, startTransition] = useTransition();
@@ -109,6 +172,31 @@ export function NativeLektion({ lessonId, kurs, done }: { lessonId: string; kurs
   }
 
   const loesen = (id: string) => setGeloest((alt) => new Set(alt).add(id));
+
+  // Stand speichern (Anna 2026-10-20): sofort auf dem Gerät, kurz danach in
+  // der Datenbank. Nur wenn sich die Position geändert hat; nicht bei schon
+  // abgeschlossener Lektion. Ein neuer Schritt bricht ein noch laufendes Speichern ab.
+  const zuletzt = useRef(JSON.stringify([start?.kap ?? 0, start?.schritt ?? 0, start?.geschafft ?? [], start?.geloest ?? []]));
+  useEffect(() => {
+    if (done || ansicht === "geschafft") return;
+    const position = JSON.stringify([kap, schritt, [...geschafft], [...geloest]]);
+    if (position === zuletzt.current) return;
+    zuletzt.current = position;
+    const stand: LernStand = { kap, schritt, geschafft: [...geschafft], geloest: [...geloest], zeit: jetztInBerlin() };
+    const text = JSON.stringify(stand);
+    try {
+      window.localStorage.setItem(standSchluessel(lessonId), text);
+    } catch {
+      // Speicher gesperrt: dann nur in der Datenbank
+    }
+    // Sofort senden (Schritte kommen im Takt der Person, nicht im Millisekundentakt),
+    // damit auch der letzte Schritt vor dem Verlassen ankommt.
+    const abbruch = new AbortController();
+    fetch(`/content/${lessonId}/stand`, { method: "POST", body: text, signal: abbruch.signal }).catch(() => {
+      // offline oder abgebrochen: der Stand liegt auf dem Gerät, der nächste Schritt versucht es erneut
+    });
+    return () => abbruch.abort();
+  }, [lessonId, done, ansicht, kap, schritt, geschafft, geloest]);
 
   // Bilder der nächsten drei Schritte schon im Hintergrund laden; beim
   // Weiterblättern abbrechen (src leeren bricht den Ladevorgang ab).

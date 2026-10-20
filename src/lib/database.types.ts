@@ -27,7 +27,7 @@
  * der Typ ehrlich das ganze Schema abbildet.
  */
 
-type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 // ---- Wiederkehrende Statuswerte (Übersetzungsregeln: feste Werteliste) ----
 export type OrganisationTyp = "afcj" | "employer";
@@ -474,6 +474,8 @@ type UnitProgressRow = Flatten<
     lesson_id: string;
     status: UnitProgressStatus;
     abgeschlossen_am: string | null;
+    /** Stand in einer Selbstlern-Lektion (0056), Form: src/lib/lernstand.ts */
+    stand: Json | null;
   }
 >;
 
@@ -935,6 +937,7 @@ export type Database = {
             lesson_id: string;
             status?: UnitProgressStatus;
             abgeschlossen_am?: string | null;
+            stand?: Json | null;
           }
         >,
         Partial<UnitProgressRow>
