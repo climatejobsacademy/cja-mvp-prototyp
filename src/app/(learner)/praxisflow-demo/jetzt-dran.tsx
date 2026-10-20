@@ -7,6 +7,7 @@ import { CodewortGate } from "@/components/praxisflow/codewort-gate";
 import { DemoLeiste } from "@/components/praxisflow/demo-leiste";
 import { DateienBlock } from "@/components/praxisflow/instruktion-karte";
 import { ListenEditor } from "@/components/praxisflow/listen-editor";
+import { PhasenAnzeige } from "@/components/praxisflow/phasen-anzeige";
 import { PlanUebersicht } from "@/components/praxisflow/plan-uebersicht";
 import { FOKUS, PRIMAER, SEKUNDAER, TEXT } from "@/components/praxisflow/stile";
 import {
@@ -212,47 +213,14 @@ export function JetztDranFlow({ unterSpannung }: { unterSpannung: boolean }) {
 
 /** Schmale Leiste: sechs Punkte, Name der Phase, Frist. Erledigte Phasen antippbar. */
 /**
- * Sechs Phasen als schmale Leiste mit Namen (wofür die Punkte stehen):
- * erledigt dunkelgrün und antippbar, jetzt lila, kommend grau. Rechts die Frist.
+ * Kopf: dieselbe Phasen-Leiste wie in der bisherigen Ansicht (Stationen mit
+ * Symbol, Linie, "2/6"), hier auf weißer Karte wie die übrigen Karten
+ * (Anna 2026-10-20). Erledigte Stationen sind antippbar. Darunter die Frist.
  */
 function Kopf({ phasenIndex, fertig, onPhase }: { phasenIndex: number; fertig: boolean; onPhase: (p: PhaseId) => void }) {
   return (
-    <div className="flex flex-col gap-2">
-      <ol className="grid grid-cols-6 gap-1.5" aria-label="Phasen">
-        {PHASEN.map((p, i) => {
-          const erledigt = fertig || i < phasenIndex;
-          const jetzt = !fertig && i === phasenIndex;
-          return (
-            <li key={p.id}>
-              <button
-                type="button"
-                disabled={!erledigt && !jetzt}
-                onClick={() => onPhase(p.id)}
-                aria-current={jetzt ? "step" : undefined}
-                className={cn("flex w-full flex-col gap-1.5 rounded-sm text-left disabled:cursor-default", FOKUS)}
-              >
-                <span
-                  className={cn(
-                    "flex h-1.5 w-full items-center rounded-full transition-colors duration-300 motion-reduce:transition-none",
-                    jetzt ? "bg-brand" : erledigt ? "bg-progress" : "bg-line"
-                  )}
-                  aria-hidden="true"
-                />
-                <span
-                  className={cn(
-                    "truncate text-[11px] sm:text-xs",
-                    jetzt ? "font-bold text-ink" : erledigt ? "font-medium text-ink" : "text-ink-subtle"
-                  )}
-                >
-                  {erledigt && <Check className="mr-0.5 inline size-3 text-progress" strokeWidth={3} aria-hidden="true" />}
-                  {p.name}
-                  <span className="sr-only">{erledigt ? " (erledigt)" : jetzt ? " (jetzt)" : " (kommt noch)"}</span>
-                </span>
-              </button>
-            </li>
-          );
-        })}
-      </ol>
+    <div className="flex flex-col gap-3 rounded-karte bg-card px-4 pt-4 pb-3 text-ink shadow-card md:px-6">
+      <PhasenAnzeige phasen={PHASEN} aktuell={fertig ? PHASEN.length : phasenIndex} hell onPhase={(id) => onPhase(id as PhaseId)} />
       <span className="inline-flex items-center gap-1.5 self-end text-[13px] text-ink-muted">
         <CalendarClock className="size-4" aria-hidden="true" />
         Abgabe bis {DEMO_AUFTRAG.frist}
