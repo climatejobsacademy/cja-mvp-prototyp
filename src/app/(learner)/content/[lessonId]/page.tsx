@@ -9,7 +9,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { heuteInBerlin, jetztInBerlin } from "@/lib/date";
 import { cn } from "@/lib/utils";
 import { requireCurrentLearner } from "@/lib/queries/session";
+import { getKompetenzFortschritt } from "@/lib/queries/competencies";
 import { getLessonDetail } from "@/lib/queries/content";
+import { getHeutigeKompetenzen } from "@/lib/queries/home";
 import { getLektionThread } from "@/lib/queries/lektion-thread";
 import { getLessonMaterialien } from "@/lib/queries/materialien";
 import { getMeineTrainer } from "@/lib/queries/trainer";
@@ -73,6 +75,20 @@ export default async function LessonPage({
   // "Live mit …" (SR-78): Trainer:in des eigenen Termins, Name und Foto aus fn_meine_trainer().
   const trainerId = lesson.liveSession?.trainerId ?? null;
   const trainer = trainerId ? ((await getMeineTrainer()).get(trainerId) ?? null) : null;
+
+  // "Stärkt"-Pills wie auf Home (Anna 2026-10-20): Kompetenzen über
+  // content_competency_mapping, in Lehrplan-Reihenfolge. Ohne Zuordnung leer.
+  const staerkt =
+    lesson.contentType === "live"
+      ? await (async () => {
+          const [{ proLektion }, alle] = await Promise.all([
+            getHeutigeKompetenzen([lesson.id], []),
+            getKompetenzFortschritt(learner.personId, learner.programmeId),
+          ]);
+          const ids = new Set(proLektion.get(lesson.id) ?? []);
+          return alle.filter((k) => ids.has(k.id)).map((k) => ({ id: k.id, name: k.name }));
+        })()
+      : [];
 
   const done = lesson.status === "abgeschlossen";
   // Herkunft (Stundenplan/Home) an die verknüpfte Lektion weitergeben.
@@ -174,6 +190,7 @@ export default async function LessonPage({
           festigenHref={lesson.festigen ? lektionHref(lesson.festigen.id) : null}
           festigenTitel={lesson.festigen?.titel}
           trainer={trainer}
+          staerkt={staerkt}
         />
       )}
 
