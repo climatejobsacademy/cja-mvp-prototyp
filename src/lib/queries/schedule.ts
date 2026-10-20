@@ -84,10 +84,13 @@ export async function getAgendaZeitraum(
 ): Promise<TagesAgenda[]> {
   const supabase = await createClient();
 
+  // Kein Filter auf den Betrieb (Anna 2026-10-20): Kohorten-Termine hängen
+  // am Betrieb der Kohorte, Team-Testkonten sind in einem eigenen Betrieb
+  // eingeschrieben. Sichtbar ist ohnehin nur der eigene Plan (RLS
+  // schedule_entry_learner_select: eigene Kohorte oder Einschreibung).
   const { data: entries } = await supabase
     .from("schedule_entry")
     .select("id, datum, art, reihenfolge, cohort_id, enrolment_id, course_id, lesson_id, live_session_id, field_job_id")
-    .eq("organisation_id", organisationId)
     .gte("datum", von)
     .lte("datum", bis)
     .or(`cohort_id.eq.${cohortId},enrolment_id.eq.${enrolmentId}`)
@@ -320,7 +323,6 @@ export async function getNaechsterTermin(
   const { data: entry } = await supabase
     .from("schedule_entry")
     .select("datum, art, live_session_id")
-    .eq("organisation_id", organisationId)
     .gt("datum", nachDatum)
     .or(`cohort_id.eq.${cohortId},enrolment_id.eq.${enrolmentId}`)
     .order("datum", { ascending: true })
