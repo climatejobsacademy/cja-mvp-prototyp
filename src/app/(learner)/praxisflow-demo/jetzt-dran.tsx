@@ -462,7 +462,7 @@ function SchrittKarte({
           onClick={() => weiter((z) => ({ ...z, [feld]: z[feld].includes(id) ? z[feld] : [...z[feld], id] }))}
           className={GROSS}
         >
-          <Check aria-hidden="true" /> Geprüft
+          <Check aria-hidden="true" /> Erledigt
         </button>
       </Karte>
     );
