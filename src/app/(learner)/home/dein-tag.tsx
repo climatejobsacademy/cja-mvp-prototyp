@@ -135,8 +135,11 @@ export function DeinTag({
   const { fokus, leiste } = karten(zustand, heute, naechster, staerkt, gestaerkt, trainer, stil);
   // Home v13: steht sonst nichts unter der Fokus-Karte, eine dezente Zeile mit
   // dem nächsten Tag. Nicht in D und F -- dort nennt die Karte ihn schon.
+  // Nicht "Morgen: Praxistag" neben der großen Praxistag-Karte (Anna
+  // 2026-10-20: doppelt); die Karte nimmt dann die volle Breite.
+  const praxisDoppelt = zustand.zustand === "E" && naechster?.art === "feld";
   const naechsterZeile =
-    !leiste && naechster && zustand.zustand !== "D" && zustand.zustand !== "F"
+    !leiste && naechster && zustand.zustand !== "D" && zustand.zustand !== "F" && !praxisDoppelt
       ? naechsterTagZeile(naechster, heute)
       : null;
   const rechts = !!(leiste || naechsterZeile);
