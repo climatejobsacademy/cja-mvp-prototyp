@@ -250,7 +250,7 @@ test("Bereinigung: Haken nur bis zur ersten Lücke und nur für vorhandene Schri
 
 test("Gespeicherter Stand mit Lücke wird beim Laden bereinigt", () => {
   const z = { ...startZustand(), phase: "durchfuehren" as const, schritte: drei, erledigt: ["a", "c"] };
-  const s = fakeStorage({ "p:zustand-v6": JSON.stringify(z) });
+  const s = fakeStorage({ "p:zustand-v7": JSON.stringify(z) });
   assert.deepEqual(zustandLaden(s, "p:").erledigt, ["a"]);
 });
 
@@ -295,12 +295,12 @@ test("Abschluss erst mit Selbst- und Fremdeinschätzung und Freigabe per Codewor
 
 // ---------- Speichern ----------
 
-test("Speichern und Laden über den Fake-Speicher unter Schlüssel v6", () => {
+test("Speichern und Laden über den Fake-Speicher unter Schlüssel v7", () => {
   const s = fakeStorage();
   const z = { ...startZustand(), phase: "durchfuehren" as const, schritte: drei, erledigt: ["a"], selbst: { k1: 9 } };
   zustandSpeichern(s, "p:", z);
-  assert.deepEqual([...s.daten.keys()], ["p:zustand-v6"]);
-  assert.equal(speicherSchluessel("p:"), "p:zustand-v6");
+  assert.deepEqual([...s.daten.keys()], ["p:zustand-v7"]);
+  assert.equal(speicherSchluessel("p:"), "p:zustand-v7");
   assert.deepEqual(zustandLaden(s, "p:"), z);
 });
 
@@ -312,10 +312,10 @@ test("Alte Stände (v1, v2) und kaputter oder fremder Inhalt ergeben den Startzu
   const v2 = JSON.stringify(v2Zustand);
   assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v1": v1 }), "p:"), startZustand());
   assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v2": v2 }), "p:"), startZustand());
-  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v6": v1 }), "p:"), startZustand());
-  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v6": v2 }), "p:"), startZustand());
-  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v6": JSON.stringify({ ...startZustand(), planenSchritt: 3 }) }), "p:"), startZustand());
-  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v6": "{kaputt" }), "p:"), startZustand());
+  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v7": v1 }), "p:"), startZustand());
+  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v7": v2 }), "p:"), startZustand());
+  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v7": JSON.stringify({ ...startZustand(), planenSchritt: 3 }) }), "p:"), startZustand());
+  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v7": "{kaputt" }), "p:"), startZustand());
   assert.deepEqual(zustandLaden(null, "p:"), startZustand());
 });
 
@@ -342,7 +342,7 @@ test("Zurücksetzen löscht nur Schlüssel mit dem Demo-Präfix, auch alte Versi
   const s = fakeStorage({
     [`${SPEICHER_PRAEFIX}zustand-v1`]: "{}",
     [`${SPEICHER_PRAEFIX}zustand-v2`]: "{}",
-    [`${SPEICHER_PRAEFIX}zustand-v6`]: "{}",
+    [`${SPEICHER_PRAEFIX}zustand-v7`]: "{}",
     fremd: "bleibt",
   });
   demoZuruecksetzen(s, SPEICHER_PRAEFIX);

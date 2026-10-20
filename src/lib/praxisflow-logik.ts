@@ -35,15 +35,17 @@ export type DemoZustand = {
   auftragDateien: string[];
   planDateien: string[];
   protokollDateien: string[];
+  /** Verlauf für die Auftragsakte: wann was passiert ist (Berliner Zeit, "JJJJ-MM-TTTHH:MM:SS"). */
+  verlauf: { zeit: string; text: string }[];
 };
 
 /**
- * v6: Kontrollieren in drei Teilen, Uploads, Peer-Einschätzung (2026-10-20). Ältere Stände
+ * v7: Kontrollieren in drei Teilen, Uploads, Peer-Einschätzung, Verlauf (2026-10-20). Ältere Stände
  * werden nicht gelesen, das Demo startet dann neu; "Demo zurücksetzen" löscht
  * auch sie.
  */
 export function speicherSchluessel(praefix: string): string {
-  return `${praefix}zustand-v6`;
+  return `${praefix}zustand-v7`;
 }
 
 /** Planen startet leer. */
@@ -66,7 +68,18 @@ export function startZustand(): DemoZustand {
     auftragDateien: [],
     planDateien: [],
     protokollDateien: [],
+    verlauf: [],
   };
+}
+
+/** Eintrag im Verlauf der Auftragsakte anhängen. */
+export function mitVerlauf(z: DemoZustand, zeit: string, text: string): DemoZustand {
+  return { ...z, verlauf: [...z.verlauf, { zeit, text }] };
+}
+
+/** Abgabe nach der Frist? Beide als Berliner "JJJJ-MM-TTTHH:MM:SS". */
+export function nachFrist(abgabe: string | undefined, frist: string): boolean {
+  return !!abgabe && abgabe > frist;
 }
 
 /** Prüfung an- oder abhaken (Kontrollieren). */
@@ -331,7 +344,9 @@ function istZustand(x: unknown): x is DemoZustand {
     z.geprueftUnterSpannung.every((e) => typeof e === "string") &&
     istTexte(z.auftragDateien) &&
     istTexte(z.planDateien) &&
-    istTexte(z.protokollDateien)
+    istTexte(z.protokollDateien) &&
+    Array.isArray(z.verlauf) &&
+    z.verlauf.every((e) => e && typeof e === "object" && typeof (e as { zeit: unknown }).zeit === "string" && typeof (e as { text: unknown }).text === "string")
   );
 }
 

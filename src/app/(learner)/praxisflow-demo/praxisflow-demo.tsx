@@ -20,6 +20,7 @@ import {
   X,
 } from "lucide-react";
 
+import { Auftragsakte } from "@/components/praxisflow/auftragsakte";
 import { Einschaetzung } from "@/components/praxisflow/bewertung";
 import { CodewortGate } from "@/components/praxisflow/codewort-gate";
 import { DemoLeiste } from "@/components/praxisflow/demo-leiste";
@@ -76,6 +77,8 @@ import {
   planenWeiterMoeglich,
   planenZurueck,
   pruefungUmschalten,
+  mitVerlauf,
+  nachFrist,
   startZustand,
   zurNacharbeit,
   zustandLaden,
@@ -85,7 +88,22 @@ import {
 } from "@/lib/praxisflow-logik";
 import { Avatar } from "@/components/avatar";
 import { TRAINER_PRAXIS_DEMO } from "@/lib/demo-personen";
+import { jetztInBerlin } from "@/lib/date";
 import { cn } from "@/lib/utils";
+
+// Verlauf der Auftragsakte (Anna 2026-10-20): feste Texte, damit die Akte
+// Freigabe und Abgabe darin wiederfindet.
+const VERLAUF = {
+  angenommen: "Auftrag angenommen",
+  entschieden: "Planung vollständig, Ausführung begonnen",
+  aufbauFertig: "Aufbau fertig, Kontrolle begonnen",
+  freigabe: "Inbetriebnahme freigegeben (Codewort der Trainer:in)",
+  nacharbeit: "Zur Nacharbeit zurückgegeben",
+  abgeschlossen: "Auftrag abgeschlossen",
+};
+
+/** Zustand ändern und im Verlauf festhalten (Berliner Zeit). */
+const protokolliert = (text: string) => (z: DemoZustand) => mitVerlauf(z, jetztInBerlin(), text);
 
 function speicher(): Storage | null {
   try {
@@ -292,6 +310,7 @@ function Flow() {
             <AnalyseSchritte
               auftragDateien={zustand.auftragDateien}
               onAuftragDateien={(d) => setZustand((z) => ({ ...z, auftragDateien: d }))}
+              onAngenommen={() => setZustand(protokolliert(VERLAUF.angenommen))}
               onWeiter={() => geschafft("planen")}
             />
           </InstruktionKarte>
@@ -346,7 +365,13 @@ function Flow() {
               </div>
             )}
             {/* Kein Trainer-Gate: die Lernenden entscheiden selbst (Partner-Feedback 15.10., Anna 2026-10-20). */}
-            <EntscheidenBestaetigen onWeiter={() => geschafft("durchfuehren")} onZurueck={() => zuPhase("planen")} />
+            <EntscheidenBestaetigen
+              onWeiter={() => {
+                setZustand(protokolliert(VERLAUF.entschieden));
+                geschafft("durchfuehren");
+              }}
+              onZurueck={() => zuPhase("planen")}
+            />
           </InstruktionKarte>
         )}
 
@@ -366,7 +391,14 @@ function Flow() {
             />
             {alleErledigt(zustand.schritte, zustand.erledigt) && (
               <Einblenden>
-                <button type="button" onClick={() => geschafft("kontrolle")} className={cn(PRIMAER, "sm:self-start")}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setZustand(protokolliert(VERLAUF.aufbauFertig));
+                    geschafft("kontrolle");
+                  }}
+                  className={cn(PRIMAER, "sm:self-start")}
+                >
                   {TEXTE.ausfuehren.fertig}
                   <ArrowRight aria-hidden="true" />
                 </button>
@@ -400,6 +432,10 @@ function Flow() {
           >
             <AufgabeGeschafft kompetenzen={ABSCHLUSS_KOMPETENZEN} />
           </InstruktionKarte>
+        )}
+
+        {!etappe && zustand.phase === "bewerten" && zustand.bewertungAbgeschlossen && (
+          <AkteAusZustand zustand={zustand} />
         )}
 
         {!etappe && zustand.phase === "bewerten" && !zustand.bewertungAbgeschlossen && (
@@ -568,7 +604,7 @@ function BewertenSchritte({
             <button
               type="button"
               onClick={() => {
-                setZustand((z) => zurNacharbeit(z));
+                setZustand((z) => protokolliert(VERLAUF.nacharbeit)(zurNacharbeit(z)));
                 window.scrollTo({ top: 0, behavior: "smooth" });
               }}
               className={cn(PRIMAER, "sm:self-start")}
@@ -579,7 +615,7 @@ function BewertenSchritte({
         ) : (
           <button
             type="button"
-            onClick={() => setZustand((z) => ({ ...z, bewertungAbgeschlossen: true }))}
+            onClick={() => setZustand((z) => protokolliert(VERLAUF.abgeschlossen)({ ...z, bewertungAbgeschlossen: true }))}
             disabled={!(selbstKomplett && peerKomplett && fremdKomplett)}
             className={cn(PRIMAER, "sm:self-start")}
           >
@@ -600,10 +636,12 @@ function BewertenSchritte({
 function AnalyseSchritte({
   auftragDateien,
   onAuftragDateien,
+  onAngenommen,
   onWeiter,
 }: {
   auftragDateien: string[];
   onAuftragDateien: (dateien: string[]) => void;
+  onAngenommen: () => void;
   onWeiter: () => void;
 }) {
   const [angenommen, setAngenommen] = useState(auftragDateien.length > 0);
@@ -630,7 +668,14 @@ function AnalyseSchritte({
         <DateienListe id="auftrag" accept={UPLOAD_FORMATE.auftrag} dateien={auftragDateien} onDateien={onAuftragDateien} />
         {auftragDateien.length > 0 && (
           <Einblenden>
-            <button type="button" onClick={() => setAngenommen(true)} className={cn(PRIMAER, "sm:self-start")}>
+            <button
+              type="button"
+              onClick={() => {
+                setAngenommen(true);
+                onAngenommen();
+              }}
+              className={cn(PRIMAER, "sm:self-start")}
+            >
               {t.auftragWeiter} <Check aria-hidden="true" />
             </button>
           </Einblenden>
@@ -837,7 +882,7 @@ function KontrollierenSchritte({
             gesperrtText={t.freigabeGesperrt}
             fehlerText={TEXTE.codewort.falsch}
             pruefen={pruefen}
-            onFreigabe={() => setZustand((z) => ({ ...z, inbetriebnahmeFreigegeben: true }))}
+            onFreigabe={() => setZustand((z) => protokolliert(VERLAUF.freigabe)({ ...z, inbetriebnahmeFreigegeben: true }))}
           />
         </div>
       )}
@@ -941,5 +986,45 @@ function DateienListe({
         </label>
       )}
     </div>
+  );
+}
+
+/** Auftragsakte aus dem Demo-Stand (Anna 2026-10-20). */
+function AkteAusZustand({ zustand }: { zustand: DemoZustand }) {
+  const letzte = (text: string) => [...zustand.verlauf].reverse().find((v) => v.text === text)?.zeit ?? null;
+  const abgabe = letzte(VERLAUF.abgeschlossen);
+  return (
+    <Auftragsakte
+      auftrag={{
+        titel: DEMO_AUFTRAG.titel,
+        ausgabe: DEMO_AUFTRAG.ausgabe,
+        frist: DEMO_AUFTRAG.frist,
+        trainer: TRAINER_PRAXIS_DEMO.name,
+      }}
+      auftragDateien={zustand.auftragDateien}
+      werkzeuge={zustand.werkzeuge}
+      materialien={zustand.materialien}
+      schritte={zustand.schritte}
+      planDateien={zustand.planDateien}
+      pruefungenOhneSpannung={PRUEFLISTE_STANDARD.spannungsfrei.map((p) => ({
+        titel: p.titel,
+        erledigt: zustand.geprueftSpannungsfrei.includes(p.id),
+      }))}
+      pruefungenUnterSpannung={PRUEFLISTE_STANDARD.unterSpannung.map((p) => ({
+        titel: p.titel,
+        erledigt: zustand.geprueftUnterSpannung.includes(p.id),
+      }))}
+      protokollDateien={zustand.protokollDateien}
+      freigabe={letzte(VERLAUF.freigabe)}
+      kriterien={BOGEN}
+      einschaetzungen={[
+        { name: "Du", werte: zustand.selbst },
+        { name: "Peer", werte: zustand.peer },
+        { name: "Trainer:in", werte: zustand.fremd },
+      ]}
+      abgabe={abgabe}
+      verspaetet={nachFrist(abgabe ?? undefined, DEMO_AUFTRAG.fristZeitpunkt)}
+      verlauf={zustand.verlauf}
+    />
   );
 }

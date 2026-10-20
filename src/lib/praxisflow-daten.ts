@@ -89,6 +89,8 @@ export const DEMO_AUFTRAG = {
   /** Ausgabe und Abgabefrist des Papierauftrags (Partner: ein bis zwei Tage). */
   ausgabe: "Montag, 16.11.",
   frist: "Dienstag, 17.11., 16:00 Uhr",
+  /** Frist als Berliner Zeitpunkt, zum Vergleich mit der Abgabe in der Auftragsakte. */
+  fristZeitpunkt: "2026-11-17T16:00:00",
   banner:
     "Dies ist ein Demo mit Beispieldaten. Texte sind Platzhalter, nichts wird an den Server übertragen. Der Stand bleibt nur in diesem Browser.",
 };
