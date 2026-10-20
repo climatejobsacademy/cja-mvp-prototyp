@@ -62,17 +62,14 @@ export function tagErledigt(tag: TagModell): boolean {
   return alle.length > 0 && alle.every(Boolean);
 }
 
-/** Darstellung "begonnen" in der Wochenansicht (Varianten zum Vergleich, Anna 2026-10-20): ?flex=text */
-export type FlexStil = "symbol" | "text";
-
 /**
  * Selbstlern-Eintrag in "Flexibel" der Wochenansicht -- nie mit Uhrzeit
  * (Brief 5.5). Alle Einträge gleich hoch und gleich gerahmt wie
  * "Fachsprache", auch erledigte (Anna 2026-10-20: sonst "uneben"). Rechts
- * ein Zeichen: erledigt Häkchen, begonnen ein Weiter-Symbol bzw. (?flex=text)
- * "Weiter" in derselben Zeile; offen nichts.
+ * ein Zeichen: erledigt Häkchen, begonnen ein Weiter-Symbol (Anna 2026-10-20,
+ * statt Text); offen nichts.
  */
-export function FlexChip({ chip, stil = "symbol" }: { chip: Chip; stil?: FlexStil }) {
+export function FlexChip({ chip }: { chip: Chip }) {
   const status = chip.erledigt ? "erledigt" : chip.begonnen ? "weiterlernen" : "offen";
   return (
     <Link
@@ -90,15 +87,9 @@ export function FlexChip({ chip, stil = "symbol" }: { chip: Chip; stil?: FlexSti
       {chip.erledigt ? (
         <Check className="size-3.5 shrink-0 text-progress" strokeWidth={3} aria-hidden="true" />
       ) : chip.begonnen ? (
-        stil === "text" ? (
-          <span aria-hidden="true" className="inline-flex shrink-0 items-center gap-0.5 text-xs font-bold text-ink-muted">
-            Weiter <ArrowRight className="size-3" aria-hidden="true" />
-          </span>
-        ) : (
-          <span aria-hidden="true" title="Weiterlernen" className="flex size-5 shrink-0 items-center justify-center rounded-full bg-self-tint text-self">
-            <Play className="size-2.5 fill-current" />
-          </span>
-        )
+        <span aria-hidden="true" title="Weiterlernen" className="flex size-5 shrink-0 items-center justify-center rounded-full bg-self-tint text-self">
+          <Play className="size-2.5 fill-current" />
+        </span>
       ) : null}
     </Link>
   );
