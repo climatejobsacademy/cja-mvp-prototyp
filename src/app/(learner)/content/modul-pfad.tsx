@@ -91,7 +91,7 @@ export function ModulPfad({
                 href={href(m.id)}
                 scroll={false}
                 aria-current={gewaehlt ? "true" : undefined}
-                aria-label={`${m.ueberzeile}: ${m.name}, ${m.zeitraum ?? "noch nicht geplant"}, ${naechstes ? "als Nächstes" : STATUS_TEXT[m.status]}, Inhalte öffnen`}
+                aria-label={`${m.ueberzeile}: ${m.name}, ${m.zeitraum ?? "Termine folgen"}, ${naechstes ? "als Nächstes" : STATUS_TEXT[m.status]}, Inhalte öffnen`}
                 className={cn(
                   "group/karte relative flex flex-1 flex-col items-start gap-1.5 rounded-zeile px-4 py-3.5 outline-none transition-[box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 motion-reduce:transition-none",
                   // Anker der Seite: das aktuelle Modul (visuelles Update 2026-10-11).
@@ -106,7 +106,7 @@ export function ModulPfad({
                 {/* Wunsch Anna 2026-10-11: Zeitraum bei jedem Modul, direkt unter der
                     Überzeile -- so stehen alle Daten auf einer Linie. */}
                 <span className={cn("block min-h-4 text-xs whitespace-nowrap tabular-nums", aktuell ? "text-white/85" : "text-ink-subtle")}>
-                  {m.zeitraum ?? "noch nicht geplant"}
+                  {m.zeitraum ?? "Termine folgen"}
                 </span>
                 {/* Ruhiger (Anna 2026-10-12): etwas kleiner; lange Wörter trennen statt
                     über den Rahmen laufen (die Namen kommen aus der Datenbank, ohne
