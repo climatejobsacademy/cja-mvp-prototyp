@@ -142,7 +142,7 @@ export default async function LessonPage({
       {lesson.contentType === "scorm" && nativKurs && (
         // Kein Umschalt-Link für Lernende (Anna 2026-10-17); das Team erreicht
         // den SCORM-Player zum Vergleich über ?ansicht=scorm.
-        <NativeLektion lessonId={lesson.id} kurs={nativKurs} done={done} />
+        <NativeLektion lessonId={lesson.id} kurs={nativKurs} done={done} gespeichert={lesson.lernStand} />
       )}
 
       {lesson.contentType === "scorm" && !nativKurs && (

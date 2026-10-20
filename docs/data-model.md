@@ -128,7 +128,7 @@ Entschieden 2026-10-12 (Vera, SR-13, Migration 0026): Uhrzeit des Praxistags als
 
 | Entity | What it is | Attributes | Owner | Prototype? | Refers to |
 |---|---|---|---|---|---|
-| unit_progress | Fortschritt einer Person in einer Lektion | learner_id, lesson_id, status (offen/in Bearbeitung/abgeschlossen), abgeschlossen_am | Employer | Ja | person, lesson |
+| unit_progress | Fortschritt einer Person in einer Lektion | learner_id, lesson_id, status (offen/in Bearbeitung/abgeschlossen), abgeschlossen_am, stand (jsonb, Stand in einer Selbstlern-Lektion, seit 0056) | Employer | Ja | person, lesson |
 | attendance | Bestätigte Teilnahme an einer Live-Session | learner_id, live_session_id, status (anwesend / nicht anwesend), bestätigt_von | Employer | Ja | person, live_session |
 | field_capture | Eine Selbstauskunft zu einem oder mehreren praktischen Teilschritten, für die Phase Start oder Abschluss eines Field Jobs — bis zu zwei Zeilen pro Field Job (eine je Phase) | learner_id, field_job_id, phase (start / abschluss), text (frei, optional/Later), status (submitted/verified/rejected), eingereicht_am, Media-Felder (schema-bereit, inaktiv) | Employer | Ja | person, field_job |
 | field_capture_antwort | Eine einzelne Single-Choice-Antwort der Lernenden auf eine `field_job_type_frage`, Teil einer `field_capture` | field_capture_id, field_job_type_frage_id, gewählte_option | Employer | Ja | field_capture, field_job_type_frage |
@@ -136,6 +136,8 @@ Entschieden 2026-10-12 (Vera, SR-13, Migration 0026): Uhrzeit des Praxistags als
 | verification | Admin-Entscheidung über eine Selbstauskunft | field_capture_id, verifiziert_von, entscheidung (verified/rejected), verifiziert_am, kommentar | Employer | Ja | field_capture, person |
 | competency_evidence | "Diese Person hat diesen Teilschritt erfüllt, belegt durch diese Quelle" — vereinheitlicht theoretische und praktische Nachweise | learner_id, competency_step_id, quelltyp (lesson_completion/field_verification), quelle_id, erstellt_am | Employer | Ja | person, competency_step |
 | competency_fulfilment | "Diese Person hat diese Kompetenz vollständig erfüllt" — Erfüllungsstatus je Kompetenz mit AND-Logik über alle zugeordneten Teilschritte (berechnete View, SR-72) | learner_id, competency_id, teilschritte_gesamt, teilschritte_erfuellt, erfuellt | Employer | Ja | person, competency; berechnet aus competency_evidence und competency_competency_step |
+
+Entschieden 2026-10-20 (Anna, SR-85, Migration 0056): `unit_progress.stand` speichert, wo eine Person in einer Selbstlern-Lektion aufgehört hat (Kapitel, Schritt, abgeschlossene Kapitel, gelöste Fragen, Zeitpunkt), damit es auch auf einem anderen Gerät dort weitergeht. Zusätzlich liegt der Stand auf dem Gerät (localStorage); beim Öffnen gilt der neuere. Rechte wie bisher (eigene Zeile); der Stand ist kein Nachweis, Kompetenzen zählen weiter nur über `status = 'abgeschlossen'`.
 
 Entschieden 2026-09-04: `competency_evidence` ist der Knotenpunkt — ein abgeschlossenes `unit_progress` und eine bestätigte `verification` erzeugen je einen Eintrag hier; das Kompetenzprofil wird **ausschließlich** aus `competency_evidence` berechnet (siehe Open Decisions), nie direkt aus `unit_progress` oder `verification`. `field_capture_step_mapping` ist bewusst in dieser Gruppe, nicht in Group 2 — die Verknüpfung entsteht beim Ereignis, nicht beim Curriculum-Design.
 

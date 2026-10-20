@@ -225,6 +225,8 @@ export type LessonDetail = {
   contentType: ContentType;
   chatAktiv: boolean;
   status: UnitProgressStatus;
+  /** Gespeicherter Stand in der Selbstlern-Lektion (0056), ungeprüft; Prüfung: src/lib/lernstand.ts */
+  lernStand: unknown;
   liveSession: {
     datum: string;
     start: string;
@@ -281,7 +283,7 @@ export async function getLessonDetail(
 
   const { data: progress } = await supabase
     .from("unit_progress")
-    .select("status")
+    .select("status, stand")
     .eq("learner_id", learnerId)
     .eq("lesson_id", lessonId)
     .maybeSingle();
@@ -329,6 +331,7 @@ export async function getLessonDetail(
     contentType: lesson.content_type,
     chatAktiv: lesson.chat_aktiv,
     status: progress?.status ?? "offen",
+    lernStand: progress?.stand ?? null,
     liveSession,
     scorm,
     festigen: lesson.content_type === "live" ? verknuepfteLektion : null,
