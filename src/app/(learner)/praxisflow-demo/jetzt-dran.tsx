@@ -1,7 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowLeft, ArrowRight, CalendarClock, Camera, Check, KeyRound, PartyPopper, ShieldCheck, Users } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  CalendarClock,
+  Camera,
+  Check,
+  KeyRound,
+  PartyPopper,
+  ShieldCheck,
+  UserRound,
+  Users,
+} from "lucide-react";
 
 import { CodewortGate } from "@/components/praxisflow/codewort-gate";
 import { DemoLeiste } from "@/components/praxisflow/demo-leiste";
@@ -79,6 +90,7 @@ function alleSchritte(z: DemoZustand, unterSpannung: boolean): Schritt[] {
       "protokoll",
     ]),
     ...s("bewerten", [
+      "uebergabe-selbst",
       ...BOGEN.map((k) => `selbst:${k.id}`),
       "uebergabe-peer",
       ...BOGEN.map((k) => `peer:${k.id}`),
@@ -246,7 +258,7 @@ function Karte({
   frage: string;
   hinweis?: string;
   zurueck?: () => void;
-  ton?: "weiss" | "praxis" | "brand";
+  ton?: "weiss" | "praxis" | "brand" | "lime";
   children: React.ReactNode;
 }) {
   return (
@@ -255,7 +267,8 @@ function Karte({
         "flex flex-col gap-5 rounded-karte p-5 shadow-card md:p-7",
         ton === "weiss" && "bg-card text-ink",
         ton === "praxis" && "bg-praxis text-ink",
-        ton === "brand" && "bg-brand text-white"
+        ton === "brand" && "bg-brand text-white",
+        ton === "lime" && "bg-lime text-on-lime"
       )}
       aria-labelledby="frage"
     >
@@ -529,9 +542,16 @@ function SchrittKarte({
     const wert = zustand[art][kriterium.id];
     return (
       <Karte {...k} phase={`${phase} · ${rolle}`} frage={kriterium.titel} hinweis={wer} ton={ton}>
-        {kriterium.ko && (
-          <span className="w-fit rounded-full bg-white/70 px-2.5 py-0.5 text-xs font-semibold text-praxis-text">K.-o.-Kriterium</span>
-        )}
+        <div className="flex flex-wrap gap-2">
+          {art === "selbst" && (
+            <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-lime px-2.5 py-0.5 text-xs font-bold text-on-lime">
+              <UserRound className="size-3.5" aria-hidden="true" /> Du bist dran
+            </span>
+          )}
+          {kriterium.ko && (
+            <span className="w-fit rounded-full bg-white/70 px-2.5 py-0.5 text-xs font-semibold text-praxis-text">K.-o.-Kriterium</span>
+          )}
+        </div>
         {/* Jede Stufe mit ihrer Kurzerklärung (wie in der bisherigen Ansicht), Antippen geht weiter. */}
         <ul className="flex flex-col gap-2">
           {kriterium.skala.map((p) => (
@@ -556,6 +576,21 @@ function SchrittKarte({
           ))}
         </ul>
       </Karte>
+    );
+  }
+  if (art === "uebergabe-selbst") {
+    return (
+      <Uebergabe
+        {...k}
+        ton="lime"
+        icon={UserRound}
+        frage="Jetzt bist du dran"
+        hinweis="Schätze zuerst selbst ein, wie gut dir der Auftrag gelungen ist. Danach schätzen eine Person aus deiner Gruppe und deine Trainer:in ein."
+      >
+        <button type="button" onClick={() => weiter()} className={cn(GROSS, "bg-ink text-white hover:brightness-110")}>
+          Ich schätze mich ein <ArrowRight aria-hidden="true" />
+        </button>
+      </Uebergabe>
     );
   }
   if (art === "uebergabe-peer") {
@@ -703,7 +738,7 @@ function Uebergabe({
   icon: typeof Camera;
   frage: string;
   hinweis: string;
-  ton: "praxis" | "brand";
+  ton: "praxis" | "brand" | "lime";
   zurueck?: () => void;
   phase: string;
   nr?: number;
@@ -713,7 +748,10 @@ function Uebergabe({
   return (
     <Karte phase={phase} frage={frage} hinweis={hinweis} ton={ton} zurueck={zurueck}>
       <span
-        className={cn("flex size-14 items-center justify-center rounded-full", ton === "brand" ? "bg-white/15 text-white" : "bg-white/60 text-ink")}
+        className={cn(
+          "flex size-14 items-center justify-center rounded-full",
+          ton === "brand" ? "bg-white/15 text-white" : ton === "lime" ? "bg-white/50 text-on-lime" : "bg-white/60 text-ink"
+        )}
         aria-hidden="true"
       >
         <Icon className="size-7" />
