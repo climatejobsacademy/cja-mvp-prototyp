@@ -13,6 +13,8 @@ import {
   DATEIEN,
   DATEIEN_ORDNER,
   DEMO_AUFTRAG,
+  NOTEN_BESCHREIBUNGEN,
+  JA_NEIN_BESCHREIBUNGEN,
   PHASEN,
   PRUEFLISTE_STANDARD,
   SPEICHER_PRAEFIX,
@@ -209,10 +211,14 @@ export function JetztDranFlow({ unterSpannung }: { unterSpannung: boolean }) {
 }
 
 /** Schmale Leiste: sechs Punkte, Name der Phase, Frist. Erledigte Phasen antippbar. */
+/**
+ * Sechs Phasen als schmale Leiste mit Namen (wofür die Punkte stehen):
+ * erledigt dunkelgrün und antippbar, jetzt lila, kommend grau. Rechts die Frist.
+ */
 function Kopf({ phasenIndex, fertig, onPhase }: { phasenIndex: number; fertig: boolean; onPhase: (p: PhaseId) => void }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3">
-      <ol className="flex items-center gap-1.5" aria-label="Phasen">
+    <div className="flex flex-col gap-2">
+      <ol className="grid grid-cols-6 gap-1.5" aria-label="Phasen">
         {PHASEN.map((p, i) => {
           const erledigt = fertig || i < phasenIndex;
           const jetzt = !fertig && i === phasenIndex;
@@ -222,22 +228,34 @@ function Kopf({ phasenIndex, fertig, onPhase }: { phasenIndex: number; fertig: b
                 type="button"
                 disabled={!erledigt && !jetzt}
                 onClick={() => onPhase(p.id)}
-                aria-label={`${p.name}${erledigt ? ", erledigt" : jetzt ? ", jetzt" : ""}`}
                 aria-current={jetzt ? "step" : undefined}
-                className={cn(
-                  "flex h-2.5 rounded-full transition-[width,background-color] duration-300 motion-reduce:transition-none",
-                  jetzt ? "w-8 bg-brand" : "w-2.5",
-                  erledigt ? "bg-progress" : !jetzt && "bg-line",
-                  FOKUS
-                )}
-              />
+                className={cn("flex w-full flex-col gap-1.5 rounded-sm text-left disabled:cursor-default", FOKUS)}
+              >
+                <span
+                  className={cn(
+                    "flex h-1.5 w-full items-center rounded-full transition-colors duration-300 motion-reduce:transition-none",
+                    jetzt ? "bg-brand" : erledigt ? "bg-progress" : "bg-line"
+                  )}
+                  aria-hidden="true"
+                />
+                <span
+                  className={cn(
+                    "truncate text-[11px] sm:text-xs",
+                    jetzt ? "font-bold text-ink" : erledigt ? "font-medium text-ink" : "text-ink-subtle"
+                  )}
+                >
+                  {erledigt && <Check className="mr-0.5 inline size-3 text-progress" strokeWidth={3} aria-hidden="true" />}
+                  {p.name}
+                  <span className="sr-only">{erledigt ? " (erledigt)" : jetzt ? " (jetzt)" : " (kommt noch)"}</span>
+                </span>
+              </button>
             </li>
           );
         })}
       </ol>
-      <span className="inline-flex items-center gap-1.5 text-[13px] text-ink-muted">
+      <span className="inline-flex items-center gap-1.5 self-end text-[13px] text-ink-muted">
         <CalendarClock className="size-4" aria-hidden="true" />
-        Abgabe {DEMO_AUFTRAG.frist}
+        Abgabe bis {DEMO_AUFTRAG.frist}
       </span>
     </div>
   );
@@ -331,7 +349,13 @@ function SchrittKarte({
   // ----- Informieren
   if (art === "auftrag") {
     return (
-      <Karte {...k} frage="Hast du deinen Auftrag bekommen?" hinweis="Mach ein Foto von deinem unterschriebenen Auftrag.">
+      <Karte {...k} frage="Hast du deinen Auftrag bekommen?" hinweis={TEXTE.analyse.auftragText}>
+        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-[15px] text-ink">
+          <dt className="text-ink-muted">{TEXTE.analyse.ausgabe}</dt>
+          <dd>{DEMO_AUFTRAG.ausgabe}</dd>
+          <dt className="text-ink-muted">{TEXTE.analyse.frist}</dt>
+          <dd className="font-semibold">{DEMO_AUFTRAG.frist}</dd>
+        </dl>
         <DateienListe
           id="auftrag"
           accept={UPLOAD_FORMATE.auftrag}
@@ -352,7 +376,7 @@ function SchrittKarte({
   if (art === "lesen") {
     return (
       <Karte {...k} frage="Das ist dein Auftrag" hinweis={TEXTE.analyse.arbeitsauftrag}>
-        <DateienBlock titel="Deine Unterlagen" ordner={DATEIEN_ORDNER} dateien={DATEIEN} />
+        <UnterlagenAnsehen />
         <button type="button" onClick={() => weiter()} className={GROSS}>
           Verstanden <ArrowRight aria-hidden="true" />
         </button>
@@ -390,6 +414,7 @@ function SchrittKarte({
         <button type="button" disabled={gesperrt} onClick={() => weiter()} className={GROSS}>
           Weiter <ArrowRight aria-hidden="true" />
         </button>
+        {gesperrt && <p className="text-center text-sm text-ink-muted">{TEXTE.planen.gesperrt}</p>}
       </Karte>
     );
   }
@@ -412,9 +437,10 @@ function SchrittKarte({
   // ----- Entscheiden
   if (art === "rueckblick") {
     return (
-      <Karte {...k} frage="Hast du alles?" hinweis="Schau dir deinen Plan an. Wenn alles passt, kannst du anfangen.">
+      <Karte {...k} frage="Hast du alles?" hinweis={PHASEN_HINWEIS.entscheiden}>
         <PlanUebersicht werkzeuge={zustand.werkzeuge} materialien={zustand.materialien} schritte={zustand.schritte} />
         {zustand.planDateien.length > 0 && <DateienListe id="plaene-rueckblick" accept="" dateien={zustand.planDateien} />}
+        <p className="text-center text-sm text-ink-muted">{TEXTE.entscheiden.bestaetigen}</p>
         <button type="button" onClick={() => weiter(protokolliert(VERLAUF.entschieden))} className={GROSS}>
           Ich fange an <ArrowRight aria-hidden="true" />
         </button>
@@ -458,8 +484,11 @@ function SchrittKarte({
       <Karte
         {...k}
         frage={p?.titel ?? "Prüfung"}
-        hinweis={art === "a" ? "Ohne Spannung. Das prüfst du allein." : "Unter Spannung. Deine Trainer:in ist dabei."}
+        hinweis={art === "a" ? TEXTE.kontrolle.spannungsfreiText : TEXTE.kontrolle.unterSpannungText}
       >
+        {art === "a" && !unterSpannung && nr === 1 && (
+          <p className="rounded-zeile bg-subtle p-3 text-sm text-ink">{TEXTE.kontrolle.ohneSpannungHinweis}</p>
+        )}
         <button
           type="button"
           onClick={() => weiter((z) => ({ ...z, [feld]: z[feld].includes(id) ? z[feld] : [...z[feld], id] }))}
@@ -488,7 +517,7 @@ function SchrittKarte({
         ton="praxis"
         icon={KeyRound}
         frage="Hol deine Trainer:in"
-        hinweis={TEXTE.kontrolle.freigabeText}
+        hinweis={`${TEXTE.kontrolle.freigabeText} Gib das Gerät ${TRAINER_PRAXIS_DEMO.name}.`}
       >
         <CodewortGate
           id="gate-jetzt-dran"
@@ -507,7 +536,7 @@ function SchrittKarte({
   }
   if (art === "protokoll") {
     return (
-      <Karte {...k} frage="Fotografiere das Prüfprotokoll" hinweis="Oder lade das PDF aus dem Prüfgerät hoch.">
+      <Karte {...k} frage="Lade das Prüfprotokoll hoch" hinweis={TEXTE.kontrolle.protokollText}>
         <DateienListe
           id="protokoll"
           accept={UPLOAD_FORMATE.protokoll}
@@ -525,7 +554,8 @@ function SchrittKarte({
   if (art === "selbst" || art === "peer" || art === "fremd") {
     const kriterium = BOGEN.find((x) => x.id === id);
     if (!kriterium) return null;
-    const wer = { selbst: "Wie gut ist es dir gelungen?", peer: "Wie gut ist es gelungen?", fremd: "Wie gut ist es gelungen?" }[art];
+    const wer = { selbst: TEXTE.bewerten.selbstText, peer: TEXTE.bewerten.peerText, fremd: TEXTE.bewerten.fremdText }[art];
+    const beschreibung = kriterium.skala.length === 2 ? JA_NEIN_BESCHREIBUNGEN : NOTEN_BESCHREIBUNGEN;
     const ton = art === "selbst" ? "weiss" : art === "peer" ? "brand" : "praxis";
     const rolle = { selbst: "Deine Einschätzung", peer: "Einschätzung Peer", fremd: "Einschätzung Trainer:in" }[art];
     const wert = zustand[art][kriterium.id];
@@ -534,29 +564,29 @@ function SchrittKarte({
         {kriterium.ko && (
           <span className="w-fit rounded-full bg-white/70 px-2.5 py-0.5 text-xs font-semibold text-praxis-text">K.-o.-Kriterium</span>
         )}
-        <div className={cn("grid gap-2", kriterium.skala.length === 2 ? "grid-cols-2" : "grid-cols-3")}>
+        {/* Jede Stufe mit ihrer Kurzerklärung (wie in der bisherigen Ansicht), Antippen geht weiter. */}
+        <ul className="flex flex-col gap-2">
           {kriterium.skala.map((p) => (
-            <button
-              key={p}
-              type="button"
-              aria-pressed={wert === p}
-              onClick={() => {
-                setZustand((z) => ({ ...z, [art]: { ...z[art], [kriterium.id]: p } }));
-                setTimeout(() => weiter((z) => ({ ...z, [art]: { ...z[art], [kriterium.id]: p } })), 180);
-              }}
-              className={cn(
-                "flex min-h-16 flex-col items-center justify-center rounded-2xl text-ink",
-                wert === p ? "bg-ink font-bold text-white" : "bg-white hover:bg-subtle",
-                FOKUS
-              )}
-            >
-              <span className="text-[22px] tabular-nums">{p}</span>
-              <span className={cn("text-xs", wert === p ? "text-white/80" : "text-ink-subtle")}>
-                {kriterium.skala.length === 2 ? (p > 0 ? "erfüllt" : "nicht erfüllt") : "Punkte"}
-              </span>
-            </button>
+            <li key={p}>
+              <button
+                type="button"
+                aria-pressed={wert === p}
+                onClick={() => {
+                  setZustand((z) => ({ ...z, [art]: { ...z[art], [kriterium.id]: p } }));
+                  setTimeout(() => weiter((z) => ({ ...z, [art]: { ...z[art], [kriterium.id]: p } })), 180);
+                }}
+                className={cn(
+                  "flex min-h-14 w-full items-center gap-4 rounded-2xl px-4 py-2.5 text-left text-ink",
+                  wert === p ? "bg-ink text-white" : "bg-white hover:bg-subtle",
+                  FOKUS
+                )}
+              >
+                <span className="w-10 shrink-0 text-center text-[22px] font-bold tabular-nums">{p}</span>
+                <span className={cn("text-[15px]", wert === p ? "text-white" : "text-ink")}>{beschreibung[p]}</span>
+              </button>
+            </li>
           ))}
-        </div>
+        </ul>
       </Karte>
     );
   }
@@ -626,6 +656,29 @@ function SchrittKarte({
             ))}
           </ul>
         )}
+        <details className="rounded-zeile bg-subtle px-4 py-3">
+          <summary className={cn("cursor-pointer rounded-sm text-[15px] font-semibold", FOKUS)}>Alle Punkte ansehen</summary>
+          <ul className="mt-3 flex flex-col gap-2">
+            {BOGEN.map((x) => (
+              <li key={x.id} className="flex flex-col gap-0.5 border-b border-line pb-2 last:border-b-0">
+                <span className="text-[15px]">{x.titel}</span>
+                <span className="flex gap-4 text-sm text-ink-muted tabular-nums">
+                  <span>Du: {zustand.selbst[x.id] ?? "–"}</span>
+                  <span>Peer: {zustand.peer[x.id] ?? "–"}</span>
+                  <span className="font-semibold text-ink">Trainer:in: {zustand.fremd[x.id] ?? "–"}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </details>
+        <label className="flex flex-col gap-2">
+          <span className="text-[15px] font-semibold">Was machst du nächstes Mal anders?</span>
+          <textarea
+            rows={3}
+            placeholder="Ein, zwei Sätze für dich – bleibt nur in diesem Browser."
+            className={cn("rounded-zeile border border-line bg-white px-4 py-3 text-[15px] text-ink placeholder:text-ink-subtle", FOKUS)}
+          />
+        </label>
         {nacharbeit ? (
           <button
             type="button"
@@ -727,5 +780,23 @@ function Moment({
         {knopf} <ArrowRight aria-hidden="true" />
       </button>
     </section>
+  );
+}
+
+const PHASEN_HINWEIS = {
+  entscheiden: "Schau dir deinen Plan an. Wenn alles passt, entscheidest du selbst, dass du anfangen kannst.",
+};
+
+/** Unterlagen zum Ansehen; geöffnete bekommen ein Häkchen (kein Zwang, alle zu öffnen). */
+function UnterlagenAnsehen() {
+  const [angesehen, setAngesehen] = useState<Set<string>>(new Set());
+  return (
+    <DateienBlock
+      titel="Deine Unterlagen"
+      ordner={DATEIEN_ORDNER}
+      dateien={DATEIEN}
+      angesehen={angesehen}
+      onOeffnen={(name) => setAngesehen((alt) => new Set(alt).add(name))}
+    />
   );
 }
