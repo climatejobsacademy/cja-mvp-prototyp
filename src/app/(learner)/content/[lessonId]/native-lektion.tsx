@@ -16,6 +16,7 @@ import {
 } from "react";
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Check, Pause, PartyPopper, ThumbsDown, ThumbsUp, Volume2, X } from "lucide-react";
 
+import { FormelText } from "@/components/formel-text";
 import { jetztInBerlin } from "@/lib/date";
 import { schrittAufgabe, schrittBilder, type Baustein, type Lernkurs, type Schritt, type TextKnoten } from "@/lib/lernkurs";
 import { neuererStand, standPruefen, standSchluessel, type LernStand } from "@/lib/lernstand";
@@ -361,7 +362,7 @@ function Frage({ b, schrittId, ...fp }: { b: Extract<Baustein, { art: "frage" }>
       <>
         {a.symbol === "daumen-hoch" && <ThumbsUp className="size-5" aria-hidden="true" />}
         {a.symbol === "daumen-runter" && <ThumbsDown className="size-5" aria-hidden="true" />}
-        {a.text}
+        <FormelText text={a.text} />
       </>
     ),
   }));
@@ -429,7 +430,9 @@ function Quiz({
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
         {(hinweis || mehrfach) && <span className="text-sm font-semibold text-ink-muted">{mehrfach ? "Mehrere Antworten sind richtig." : hinweis}</span>}
-        <h2 className="text-[20px] leading-snug font-semibold md:text-[22px]">{frage}</h2>
+        <h2 className="text-[20px] leading-snug font-semibold md:text-[22px]">
+          <FormelText text={frage} />
+        </h2>
       </div>
       <div
         role="group"
@@ -568,7 +571,11 @@ function Sortieren({ b, schrittId, geloest, onGeloest, pruefRef }: { b: Extract<
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
         <span className="text-sm font-semibold text-ink-muted">Bring die Einträge in die richtige Reihenfolge.</span>
-        {b.frage && <h2 className="text-[20px] leading-snug font-semibold md:text-[22px]">{b.frage}</h2>}
+        {b.frage && (
+          <h2 className="text-[20px] leading-snug font-semibold md:text-[22px]">
+            <FormelText text={b.frage} />
+          </h2>
+        )}
       </div>
       <ol className="flex flex-col gap-2" aria-label={b.frage || "Reihenfolge"}>
         {reihe.map((x, pos) => (
@@ -829,7 +836,7 @@ function HtmlInhalt({ knoten, klein }: { knoten: TextKnoten[]; klein?: boolean }
 
 function knotenZeigen(knoten: TextKnoten[]): ReactNode[] {
   return knoten.map((k, i) => {
-    if (typeof k === "string") return k;
+    if (typeof k === "string") return <FormelText key={i} text={k} />;
     if (k.tag === "br") return <br key={i} />;
     const Tag = k.tag;
     return (

@@ -152,3 +152,14 @@ test("elephantZuLernkurs: Audio-Baustein und Sortieren (Aufbau wie im Elephant-E
   assert.ok(kursMedien(k).has("assets/audio/x/x.wav"));
   assert.equal(istErlaubtesMedium("assets/audio/x/x.wav"), true);
 });
+
+test("Formeln: Block bleibt $$…$$, Formel im Satz wird \\(…\\)", () => {
+  const knoten = htmlLesen(
+    '<p>Spule: <span data-latex="X_L=2\\pi f L" data-type="inline-math">$X_L=2\\pi f L$</span> gilt.</p><div data-type="block-math">$$P=I^2R$$</div><p>Preis: 5 $</p>'
+  );
+  assert.deepEqual(knoten, [
+    { tag: "p", kinder: ["Spule: \\(X_L=2\\pi f L\\) gilt."] },
+    "$$P=I^2R$$",
+    { tag: "p", kinder: ["Preis: 5 $"] },
+  ]);
+});
