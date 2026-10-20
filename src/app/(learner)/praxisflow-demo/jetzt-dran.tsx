@@ -73,6 +73,13 @@ import {
 // Ansicht; neu ist nur die Führung. Rückmeldung klein auf der Karte bzw. als
 // kurze Meldung, ein großer Moment nur bei der Freigabe und am Ende.
 // Übergaben (Freigabe, Peer, Trainer:in) haben ein eigenes, gleiches Muster.
+//
+// Farben, je eine Bedeutung (Anna 2026-10-20):
+//   Weiß       – du arbeitest (alle Schritte, auch Übergänge zwischen Phasen)
+//   Lime       – du bist dran (Beginn der eigenen Einschätzung)
+//   Lila       – eine Person aus deiner Gruppe ist dran
+//   Coral      – deine Trainer:in ist dran (Freigabe, Einschätzung)
+//   Dunkelgrün – geschafft (Freigabe erteilt, Auftrag fertig)
 // ---------------------------------------------------------------------------
 
 type Schritt = { id: string; phase: PhaseId };
@@ -475,14 +482,14 @@ function SchrittKarte({
     return (
       <Uebergabe
         {...k}
-        ton="praxis"
+        ton="weiss"
         icon={ClipboardCheck}
         frage="Dein Aufbau ist fertig"
         hinweis="Jetzt kontrollierst du deine Arbeit. Das passiert in diesen Teilen:"
       >
         <ol className="flex flex-col gap-2">
           {teile.map((t, i) => (
-            <li key={t.titel} className="flex items-center gap-3 rounded-zeile bg-white/60 px-4 py-3">
+            <li key={t.titel} className="flex items-center gap-3 rounded-zeile bg-subtle px-4 py-3">
               <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-ink text-sm font-bold text-white">{i + 1}</span>
               <span className="flex flex-col">
                 <span className="text-[15px] font-semibold">{t.titel}</span>
@@ -750,7 +757,7 @@ function SchrittKarte({
   if (art === "fertig") {
     return (
       <div className="flex flex-col gap-4">
-        <div className="flex items-center gap-4 rounded-karte bg-lime p-5 text-on-lime shadow-card md:p-6">
+        <div className="flex items-center gap-4 rounded-karte bg-progress p-5 text-white shadow-card md:p-6">
           <PartyPopper className="size-8 shrink-0" aria-hidden="true" />
           <div className="flex flex-col">
             <h2 className="font-heading text-[26px] leading-tight md:text-[32px]">Auftrag fertig!</h2>
@@ -777,7 +784,7 @@ function Uebergabe({
   icon: typeof Camera;
   frage: string;
   hinweis: string;
-  ton: "praxis" | "brand" | "lime";
+  ton: "weiss" | "praxis" | "brand" | "lime";
   zurueck?: () => void;
   phase: string;
   nr?: number;
@@ -789,7 +796,13 @@ function Uebergabe({
       <span
         className={cn(
           "flex size-14 items-center justify-center rounded-full",
-          ton === "brand" ? "bg-white/15 text-white" : ton === "lime" ? "bg-white/50 text-on-lime" : "bg-white/60 text-ink"
+          ton === "brand"
+            ? "bg-white/15 text-white"
+            : ton === "lime"
+              ? "bg-white/50 text-on-lime"
+              : ton === "weiss"
+                ? "bg-subtle text-ink"
+                : "bg-white/60 text-ink"
         )}
         aria-hidden="true"
       >
