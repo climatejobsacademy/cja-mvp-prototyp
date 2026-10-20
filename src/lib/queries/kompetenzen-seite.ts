@@ -57,7 +57,6 @@ export async function getLernaktivitaeten(
         ? supabase
             .from("schedule_entry")
             .select("lesson_id, datum")
-            .eq("organisation_id", ctx.organisationId)
             .in("lesson_id", lessonIds)
             .or(meinPlan)
         : leer,
@@ -79,7 +78,6 @@ export async function getLernaktivitaeten(
     ? await supabase
         .from("schedule_entry")
         .select("live_session_id")
-        .eq("organisation_id", ctx.organisationId)
         .in("live_session_id", liveIds)
         .or(meinPlan)
     : { data: [] as { live_session_id: string | null }[] };
