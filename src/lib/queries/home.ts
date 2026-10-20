@@ -94,7 +94,6 @@ export async function getNachholLektion(
   const { data: entries } = await supabase
     .from("schedule_entry")
     .select("datum, lesson_id")
-    .eq("organisation_id", organisationId)
     .eq("art", "asynchron")
     .not("lesson_id", "is", null)
     .lt("datum", vorDatum)
