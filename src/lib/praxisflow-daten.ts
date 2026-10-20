@@ -170,6 +170,33 @@ export const BEWERTUNGSKRITERIEN: { id: string; titel: string }[] = [
 // Beschreibung je Punktestufe, erscheint bei Hover, Antippen und
 // Tastatur-Fokus (Selbst- und Fremdeinschätzung). Für jede Stufe aus
 // PUNKTE_SKALA ein Text.
+/**
+ * Bewertungsbogen (Anna 2026-10-20, nach dem Plan und dem Beispielbogen der
+ * Partner): ein Standard für alle Aufträge, ein Auftrag kann ihn ersetzen
+ * oder ergänzen. Jedes Kriterium hat seine eigene Skala; K.-o.-Kriterien
+ * (Funktion, Schutzmaßnahmen) entscheiden allein, ob der Auftrag zur
+ * Nacharbeit zurückgeht. Texte sind Platzhalter, bis Simon und Slawa sie
+ * festlegen.
+ */
+export type BogenKriterium = { id: string; titel: string; skala: readonly number[]; ko?: boolean };
+
+const GESTUFT = [10, 9, 7, 5, 3, 0] as const;
+const JA_NEIN = [10, 0] as const;
+
+export const BEWERTUNGSBOGEN_STANDARD: BogenKriterium[] = [
+  { id: "funktion", titel: "Funktion: Die Anlage funktioniert wie vorgesehen", skala: JA_NEIN, ko: true },
+  { id: "ausfuehrung", titel: "Fachgerechte Ausführung: Bauteile richtig montiert und angeschlossen", skala: GESTUFT },
+  { id: "schutz", titel: "Schutzmaßnahmen sind erfüllt", skala: JA_NEIN, ko: true },
+  { id: "protokoll", titel: "Prüfprotokoll: Messungen dokumentiert, Werte plausibel", skala: GESTUFT },
+  { id: "unterlagen", titel: "Unterlagen vollständig: Pläne, Protokolle, Materialliste", skala: GESTUFT },
+];
+
+/** Texte der Stufen bei Ja/Nein-Kriterien. */
+export const JA_NEIN_BESCHREIBUNGEN: Record<number, string> = {
+  10: "Erfüllt.",
+  0: "Nicht erfüllt.",
+};
+
 export const NOTEN_BESCHREIBUNGEN: Record<number, string> = {
   10: "Vollständig und fehlerfrei, ohne Hilfe. (Platzhalter)",
   9: "Fast vollständig, kleine Ungenauigkeiten. (Platzhalter)",
@@ -240,10 +267,18 @@ export const TEXTE = {
     fertig: "Aufbau fertig – Kontrolle beginnen",
   },
   bewerten: {
-    selbstTitel: "Selbsteinschätzung",
-    selbstText: "Wähle je Kriterium, wie viele Punkte du dir selbst gibst.",
-    fremdTitel: "Fremdeinschätzung durch die Trainer:in",
-    fremdText: "Die Trainer:in wählt je Kriterium die Punkte.",
+    selbstTitel: "Deine Einschätzung",
+    selbstText: "Prüfe dein Ergebnis und wähle je Kriterium die Punkte.",
+    peerTitel: "Einschätzung durch eine:n Mitlernende:n",
+    peerText: "Gib das Gerät einer Person aus deiner Gruppe. Sie prüft dein Ergebnis und wählt je Kriterium die Punkte.",
+    peerWeiter: "Weiter zur Trainer:in",
+    fremdTitel: "Einschätzung durch die Trainer:in",
+    fremdText: "Die Trainer:in prüft dein Ergebnis und wählt je Kriterium die Punkte.",
+    ko: "K.-o.-Kriterium",
+    nacharbeitTitel: "Zurück zur Nacharbeit",
+    nacharbeitText:
+      "Bei einem K.-o.-Kriterium hat die Trainer:in 0 Punkte gegeben. Der Auftrag ist noch nicht abgeschlossen: Bessere nach und prüfe danach noch einmal.",
+    nacharbeitButton: "Zur Nacharbeit",
     status: "Verifizierung durch AfCJ läuft",
   },
   // Hinweis direkt am jeweiligen Codewort-Feld

@@ -37,12 +37,13 @@ import {
 import { FOKUS, PRIMAER, SEKUNDAER, TEXT, UEBERSCHRIFT } from "@/components/praxisflow/stile";
 import {
   ABSCHLUSS_KOMPETENZEN,
-  BEWERTUNGSKRITERIEN,
+  BEWERTUNGSBOGEN_STANDARD,
   DATEIEN,
   DATEIEN_ORDNER,
   DEMO_AUFTRAG,
   DEMO_CODEWORT,
   ETAPPEN_TEXTE,
+  JA_NEIN_BESCHREIBUNGEN,
   NOTEN_BESCHREIBUNGEN,
   PHASEN,
   PHASEN_TEXTE,
@@ -59,7 +60,7 @@ import {
 import {
   alleErledigt,
   allesGeprueft,
-  bewertungAbschliessbar,
+  bogenVollstaendig,
   codewortKorrekt,
   demoZuruecksetzen,
   eintragBearbeiten,
@@ -69,13 +70,14 @@ import {
   erledigtBereinigen,
   schrittStatus,
   schrittUmschalten,
-  fremdFreigabeMoeglich,
+  nacharbeitNoetig,
   planBereit,
   planenWeiter,
   planenWeiterMoeglich,
   planenZurueck,
   pruefungUmschalten,
   startZustand,
+  zurNacharbeit,
   zustandLaden,
   zustandSpeichern,
   type DemoZustand,
@@ -428,11 +430,17 @@ function ErledigtZeile({ text, onAendern }: { text: string; onAendern?: () => vo
   );
 }
 
+// Bogen mit den Stufentexten je Skala (Ja/Nein oder gestuft).
+const BOGEN = BEWERTUNGSBOGEN_STANDARD.map((k) => ({
+  ...k,
+  beschreibungen: k.skala.length === 2 ? JA_NEIN_BESCHREIBUNGEN : NOTEN_BESCHREIBUNGEN,
+}));
+
 /**
- * Bewerten eins nach dem anderen (Anna 2026-10-12): Selbsteinschätzung →
- * Freigabe per Codewort → Fremdeinschätzung → Vergleich und Abschluss.
- * Erledigte Schritte klappen zu einer Zeile mit Häkchen zusammen. Regeln
- * und gespeicherter Stand wie bisher (praxisflow-logik.ts).
+ * Bewerten eins nach dem anderen (Anna 2026-10-20): eigene Einschätzung →
+ * Mitlernende:r am selben Gerät → Trainer:in nach Codewort → Vergleich der
+ * drei. Gibt die Trainer:in bei einem K.-o.-Kriterium 0 Punkte, geht der
+ * Auftrag zur Nacharbeit zurück, sonst wird er abgeschlossen.
  */
 function BewertenSchritte({
   zustand,
@@ -441,83 +449,66 @@ function BewertenSchritte({
   zustand: DemoZustand;
   setZustand: React.Dispatch<React.SetStateAction<DemoZustand>>;
 }) {
-  const selbstKomplett = fremdFreigabeMoeglich(BEWERTUNGSKRITERIEN, zustand.selbst, PUNKTE_SKALA);
-  const fremdKomplett = fremdFreigabeMoeglich(BEWERTUNGSKRITERIEN, zustand.fremd, PUNKTE_SKALA);
-  const [selbstFertig, setSelbstFertig] = useState(zustand.fremdFreigegeben);
-  const [fremdFertig, setFremdFertig] = useState(zustand.fremdFreigegeben && fremdKomplett);
+  const t = TEXTE.bewerten;
+  const selbstKomplett = bogenVollstaendig(BOGEN, zustand.selbst);
+  const peerKomplett = bogenVollstaendig(BOGEN, zustand.peer);
+  const fremdKomplett = bogenVollstaendig(BOGEN, zustand.fremd);
+  const [schritt, setSchritt] = useState<"selbst" | "peer" | "trainer" | "vergleich">(() =>
+    zustand.fremdFreigegeben ? (fremdKomplett ? "vergleich" : "trainer") : "selbst"
+  );
 
-  if (!selbstFertig) {
+  const bogen = (id: "selbst" | "peer" | "fremd", titel: string, text: string, gesperrt = false) => (
+    <Einschaetzung
+      id={id}
+      titel={titel}
+      text={text}
+      kriterien={BOGEN}
+      skala={PUNKTE_SKALA}
+      beschreibungen={NOTEN_BESCHREIBUNGEN}
+      werte={zustand[id]}
+      onWert={(k, p) => setZustand((z) => ({ ...z, [id]: { ...z[id], [k]: p } }))}
+      gesperrt={gesperrt}
+    />
+  );
+
+  const erledigt = (
+    <>
+      {schritt !== "selbst" && (
+        <ErledigtZeile text={t.selbstTitel} onAendern={zustand.fremdFreigegeben ? undefined : () => setSchritt("selbst")} />
+      )}
+      {(schritt === "trainer" || schritt === "vergleich") && (
+        <ErledigtZeile text={t.peerTitel} onAendern={zustand.fremdFreigegeben ? undefined : () => setSchritt("peer")} />
+      )}
+      {schritt === "vergleich" && <ErledigtZeile text={t.fremdTitel} onAendern={() => setSchritt("trainer")} />}
+    </>
+  );
+
+  if (schritt === "selbst") {
     return (
       <>
-        <Einschaetzung
-          id="selbst"
-          titel={TEXTE.bewerten.selbstTitel}
-          text={TEXTE.bewerten.selbstText}
-          kriterien={BEWERTUNGSKRITERIEN}
-          skala={PUNKTE_SKALA}
-          beschreibungen={NOTEN_BESCHREIBUNGEN}
-          werte={zustand.selbst}
-          onWert={(k, p) => setZustand((z) => ({ ...z, selbst: { ...z.selbst, [k]: p } }))}
-          gesperrt={zustand.fremdFreigegeben}
-        />
+        {bogen("selbst", t.selbstTitel, t.selbstText, zustand.fremdFreigegeben)}
         {selbstKomplett ? (
           <Einblenden>
-            <button type="button" onClick={() => setSelbstFertig(true)} className={cn(PRIMAER, "sm:self-start")}>
+            <button type="button" onClick={() => setSchritt("peer")} className={cn(PRIMAER, "sm:self-start")}>
               Weiter <ArrowRight aria-hidden="true" />
             </button>
           </Einblenden>
         ) : (
-          <p className="text-[13px] text-ink-muted">{TEXTE.codewort.gesperrtBewerten}</p>
+          <p className="text-[13px] text-ink-muted">Wähle für jedes Kriterium die Punkte, dann geht es weiter.</p>
         )}
       </>
     );
   }
 
-  const selbstZeile = (
-    <ErledigtZeile
-      text={TEXTE.bewerten.selbstTitel}
-      onAendern={zustand.fremdFreigegeben ? undefined : () => setSelbstFertig(false)}
-    />
-  );
-
-  if (!zustand.fremdFreigegeben) {
+  if (schritt === "peer") {
     return (
       <>
-        {selbstZeile}
+        {erledigt}
         <Einblenden>
-          <CodewortGate
-            id="gate-bewerten"
-            hinweis={TEXTE.gates.bewerten}
-            label={TEXTE.codewort.label}
-            buttonText="Fremdeinschätzung freischalten"
-            fehlerText={TEXTE.codewort.falsch}
-            pruefen={pruefen}
-            onFreigabe={() => setZustand((z) => ({ ...z, fremdFreigegeben: true }))}
-          />
-        </Einblenden>
-      </>
-    );
-  }
-
-  if (!fremdFertig) {
-    return (
-      <>
-        {selbstZeile}
-        <Einblenden>
-          <Einschaetzung
-            id="fremd"
-            titel={TEXTE.bewerten.fremdTitel}
-            text={TEXTE.bewerten.fremdText}
-            kriterien={BEWERTUNGSKRITERIEN}
-            skala={PUNKTE_SKALA}
-            beschreibungen={NOTEN_BESCHREIBUNGEN}
-            werte={zustand.fremd}
-            onWert={(k, p) => setZustand((z) => ({ ...z, fremd: { ...z.fremd, [k]: p } }))}
-            gesperrt={zustand.bewertungAbgeschlossen}
-          />
-          {fremdKomplett && (
-            <button type="button" onClick={() => setFremdFertig(true)} className={cn(PRIMAER, "sm:self-start")}>
-              Weiter zum Vergleich <ArrowRight aria-hidden="true" />
+          {bogen("peer", t.peerTitel, t.peerText, zustand.fremdFreigegeben)}
+          {peerKomplett && (
+            <button type="button" onClick={() => setSchritt("trainer")} className={cn(PRIMAER, "sm:self-start")}>
+              {t.peerWeiter} <ArrowRight aria-hidden="true" />
             </button>
           )}
         </Einblenden>
@@ -525,20 +516,76 @@ function BewertenSchritte({
     );
   }
 
+  if (schritt === "trainer") {
+    return (
+      <>
+        {erledigt}
+        <Einblenden>
+          {!zustand.fremdFreigegeben ? (
+            <CodewortGate
+              id="gate-bewerten"
+              hinweis={TEXTE.gates.bewerten}
+              label={TEXTE.codewort.label}
+              buttonText="Einschätzung der Trainer:in öffnen"
+              fehlerText={TEXTE.codewort.falsch}
+              pruefen={pruefen}
+              onFreigabe={() => setZustand((z) => ({ ...z, fremdFreigegeben: true }))}
+            />
+          ) : (
+            <>
+              {bogen("fremd", t.fremdTitel, t.fremdText, zustand.bewertungAbgeschlossen)}
+              {fremdKomplett && (
+                <button type="button" onClick={() => setSchritt("vergleich")} className={cn(PRIMAER, "sm:self-start")}>
+                  Weiter zum Vergleich <ArrowRight aria-hidden="true" />
+                </button>
+              )}
+            </>
+          )}
+        </Einblenden>
+      </>
+    );
+  }
+
+  const nacharbeit = nacharbeitNoetig(BOGEN, zustand.fremd);
   return (
     <>
-      {selbstZeile}
-      <ErledigtZeile text={TEXTE.bewerten.fremdTitel} onAendern={() => setFremdFertig(false)} />
-      <BewertungVergleich kriterien={BEWERTUNGSKRITERIEN} selbst={zustand.selbst} fremd={zustand.fremd} />
+      {erledigt}
+      <BewertungVergleich
+        kriterien={BOGEN}
+        spalten={[
+          { name: "Du", werte: zustand.selbst },
+          { name: "Peer", werte: zustand.peer },
+          { name: "Trainer:in", werte: zustand.fremd },
+        ]}
+      />
       <Einblenden>
-        <button
-          type="button"
-          onClick={() => setZustand((z) => ({ ...z, bewertungAbgeschlossen: true }))}
-          disabled={!bewertungAbschliessbar(zustand, BEWERTUNGSKRITERIEN, PUNKTE_SKALA)}
-          className={cn(PRIMAER, "sm:self-start")}
-        >
-          Bewertung abschließen <Check aria-hidden="true" />
-        </button>
+        {nacharbeit ? (
+          <div className="flex flex-col gap-3">
+            <Hinweis icon={Info}>
+              <strong className="block">{t.nacharbeitTitel}</strong>
+              {t.nacharbeitText}
+            </Hinweis>
+            <button
+              type="button"
+              onClick={() => {
+                setZustand((z) => zurNacharbeit(z));
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              className={cn(PRIMAER, "sm:self-start")}
+            >
+              {t.nacharbeitButton} <ArrowLeft aria-hidden="true" />
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setZustand((z) => ({ ...z, bewertungAbgeschlossen: true }))}
+            disabled={!(selbstKomplett && peerKomplett && fremdKomplett)}
+            className={cn(PRIMAER, "sm:self-start")}
+          >
+            Bewertung abschließen <Check aria-hidden="true" />
+          </button>
+        )}
       </Einblenden>
     </>
   );

@@ -5,7 +5,9 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  BEWERTUNGSBOGEN_STANDARD,
   BEWERTUNGSKRITERIEN,
+  PRUEFLISTE_STANDARD,
   DATEIEN,
   DEMO_CODEWORT,
   NOTEN_BESCHREIBUNGEN,
@@ -17,6 +19,11 @@ import {
   // @ts-expect-error TS5097: .ts-Endung für node:test nötig
 } from "./praxisflow-daten.ts";
 import {
+  allesGeprueft,
+  bogenVollstaendig,
+  nacharbeitNoetig,
+  pruefungUmschalten,
+  zurNacharbeit,
   alleErledigt,
   bewertungAbschliessbar,
   codewortKorrekt,
@@ -243,7 +250,7 @@ test("Bereinigung: Haken nur bis zur ersten Lücke und nur für vorhandene Schri
 
 test("Gespeicherter Stand mit Lücke wird beim Laden bereinigt", () => {
   const z = { ...startZustand(), phase: "durchfuehren" as const, schritte: drei, erledigt: ["a", "c"] };
-  const s = fakeStorage({ "p:zustand-v5": JSON.stringify(z) });
+  const s = fakeStorage({ "p:zustand-v6": JSON.stringify(z) });
   assert.deepEqual(zustandLaden(s, "p:").erledigt, ["a"]);
 });
 
@@ -288,12 +295,12 @@ test("Abschluss erst mit Selbst- und Fremdeinschätzung und Freigabe per Codewor
 
 // ---------- Speichern ----------
 
-test("Speichern und Laden über den Fake-Speicher unter Schlüssel v5", () => {
+test("Speichern und Laden über den Fake-Speicher unter Schlüssel v6", () => {
   const s = fakeStorage();
   const z = { ...startZustand(), phase: "durchfuehren" as const, schritte: drei, erledigt: ["a"], selbst: { k1: 9 } };
   zustandSpeichern(s, "p:", z);
-  assert.deepEqual([...s.daten.keys()], ["p:zustand-v5"]);
-  assert.equal(speicherSchluessel("p:"), "p:zustand-v5");
+  assert.deepEqual([...s.daten.keys()], ["p:zustand-v6"]);
+  assert.equal(speicherSchluessel("p:"), "p:zustand-v6");
   assert.deepEqual(zustandLaden(s, "p:"), z);
 });
 
@@ -305,10 +312,10 @@ test("Alte Stände (v1, v2) und kaputter oder fremder Inhalt ergeben den Startzu
   const v2 = JSON.stringify(v2Zustand);
   assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v1": v1 }), "p:"), startZustand());
   assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v2": v2 }), "p:"), startZustand());
-  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v5": v1 }), "p:"), startZustand());
-  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v5": v2 }), "p:"), startZustand());
-  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v5": JSON.stringify({ ...startZustand(), planenSchritt: 3 }) }), "p:"), startZustand());
-  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v5": "{kaputt" }), "p:"), startZustand());
+  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v6": v1 }), "p:"), startZustand());
+  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v6": v2 }), "p:"), startZustand());
+  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v6": JSON.stringify({ ...startZustand(), planenSchritt: 3 }) }), "p:"), startZustand());
+  assert.deepEqual(zustandLaden(fakeStorage({ "p:zustand-v6": "{kaputt" }), "p:"), startZustand());
   assert.deepEqual(zustandLaden(null, "p:"), startZustand());
 });
 
@@ -335,9 +342,37 @@ test("Zurücksetzen löscht nur Schlüssel mit dem Demo-Präfix, auch alte Versi
   const s = fakeStorage({
     [`${SPEICHER_PRAEFIX}zustand-v1`]: "{}",
     [`${SPEICHER_PRAEFIX}zustand-v2`]: "{}",
-    [`${SPEICHER_PRAEFIX}zustand-v5`]: "{}",
+    [`${SPEICHER_PRAEFIX}zustand-v6`]: "{}",
     fremd: "bleibt",
   });
   demoZuruecksetzen(s, SPEICHER_PRAEFIX);
   assert.deepEqual([...s.daten.keys()], ["fremd"]);
+});
+
+test("Kontrollieren: Prüfungen abhaken und vollständig erkennen", () => {
+  const a = PRUEFLISTE_STANDARD.spannungsfrei;
+  let erledigt: string[] = [];
+  for (const p of a) erledigt = pruefungUmschalten(erledigt, p.id);
+  assert.ok(allesGeprueft(a, erledigt));
+  assert.ok(!allesGeprueft(a, pruefungUmschalten(erledigt, a[0].id)));
+});
+
+test("Bewertungsbogen: jede Skala je Kriterium, K.-o. führt zur Nacharbeit", () => {
+  const voll = Object.fromEntries(BEWERTUNGSBOGEN_STANDARD.map((k) => [k.id, k.skala[0]]));
+  assert.ok(bogenVollstaendig(BEWERTUNGSBOGEN_STANDARD, voll));
+  assert.ok(!bogenVollstaendig(BEWERTUNGSBOGEN_STANDARD, { ...voll, funktion: 7 }), "7 gibt es bei Ja/Nein nicht");
+  assert.ok(!nacharbeitNoetig(BEWERTUNGSBOGEN_STANDARD, voll));
+  assert.ok(nacharbeitNoetig(BEWERTUNGSBOGEN_STANDARD, { ...voll, funktion: 0 }));
+  assert.ok(!nacharbeitNoetig(BEWERTUNGSBOGEN_STANDARD, { ...voll, ausfuehrung: 0 }), "kein K.-o.-Kriterium");
+});
+
+test("Nacharbeit: zurück zu Ausführen, Plan und Dateien bleiben", () => {
+  const z = { ...startZustand(), phase: "bewerten" as const, schritte: [{ id: "s1", text: "A" }], erledigt: ["s1"], planDateien: ["plan.pdf"], inbetriebnahmeFreigegeben: true, fremd: { funktion: 0 }, fremdFreigegeben: true };
+  const n = zurNacharbeit(z);
+  assert.equal(n.phase, "durchfuehren");
+  assert.deepEqual(n.erledigt, ["s1"]);
+  assert.deepEqual(n.planDateien, ["plan.pdf"]);
+  assert.equal(n.inbetriebnahmeFreigegeben, false);
+  assert.deepEqual(n.fremd, {});
+  assert.equal(n.fremdFreigegeben, false);
 });

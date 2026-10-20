@@ -18,6 +18,8 @@ export type DemoZustand = {
   /** Punkte je Kriterium-ID. */
   selbst: Record<string, number>;
   fremd: Record<string, number>;
+  /** Einschätzung durch eine:n Mitlernende:n (Punkte je Kriterium-ID). */
+  peer: Record<string, number>;
   /** Fremdeinschätzung per Codewort freigeschaltet. */
   fremdFreigegeben: boolean;
   bewertungAbgeschlossen: boolean;
@@ -36,12 +38,12 @@ export type DemoZustand = {
 };
 
 /**
- * v5: Kontrollieren in drei Teilen und Uploads (2026-10-20). Ältere Stände
+ * v6: Kontrollieren in drei Teilen, Uploads, Peer-Einschätzung (2026-10-20). Ältere Stände
  * werden nicht gelesen, das Demo startet dann neu; "Demo zurücksetzen" löscht
  * auch sie.
  */
 export function speicherSchluessel(praefix: string): string {
-  return `${praefix}zustand-v5`;
+  return `${praefix}zustand-v6`;
 }
 
 /** Planen startet leer. */
@@ -54,6 +56,7 @@ export function startZustand(): DemoZustand {
     erledigt: [],
     selbst: {},
     fremd: {},
+    peer: {},
     fremdFreigegeben: false,
     bewertungAbgeschlossen: false,
     planenSchritt: 0,
@@ -253,6 +256,34 @@ export function bewertungAbschliessbar(
   );
 }
 
+// ---------- Bewertungsbogen mit Skala je Kriterium ----------
+
+/** Jedes Kriterium hat einen Wert aus seiner eigenen Skala. */
+export function bogenVollstaendig(kriterien: { id: string; skala: readonly number[] }[], werte: Record<string, number>): boolean {
+  return kriterien.every((k) => k.skala.includes(werte[k.id]));
+}
+
+/** Nacharbeit nötig: die Trainer:in hat bei einem K.-o.-Kriterium 0 Punkte gegeben. */
+export function nacharbeitNoetig(kriterien: { id: string; ko?: boolean }[], fremd: Record<string, number>): boolean {
+  return kriterien.some((k) => k.ko && fremd[k.id] === 0);
+}
+
+/** Zurück zur Nacharbeit: Ausführen erneut, Kontrolle und Bewertung von vorn; Plan, Haken und Dateien bleiben. */
+export function zurNacharbeit(z: DemoZustand): DemoZustand {
+  return {
+    ...z,
+    phase: "durchfuehren",
+    geprueftSpannungsfrei: [],
+    inbetriebnahmeFreigegeben: false,
+    geprueftUnterSpannung: [],
+    selbst: {},
+    peer: {},
+    fremd: {},
+    fremdFreigegeben: false,
+    bewertungAbgeschlossen: false,
+  };
+}
+
 // ---------- Speichern im Browser ----------
 
 type SpeicherLike = Pick<Storage, "getItem" | "setItem" | "removeItem" | "key" | "length">;
@@ -287,6 +318,7 @@ function istZustand(x: unknown): x is DemoZustand {
     z.erledigt.every((e) => typeof e === "string") &&
     istPunkte(z.selbst) &&
     istPunkte(z.fremd) &&
+    istPunkte(z.peer) &&
     typeof z.fremdFreigegeben === "boolean" &&
     typeof z.bewertungAbgeschlossen === "boolean" &&
     Number.isInteger(z.planenSchritt) &&

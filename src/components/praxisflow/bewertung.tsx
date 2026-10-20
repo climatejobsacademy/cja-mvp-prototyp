@@ -8,7 +8,16 @@ import { cn } from "@/lib/utils";
 
 import { FOKUS } from "./stile";
 
-type Kriterium = { id: string; titel: string };
+type Kriterium = {
+  id: string;
+  titel: string;
+  /** Eigene Skala des Kriteriums (z. B. Funktion 10/0); sonst die gemeinsame. */
+  skala?: readonly number[];
+  /** Eigene Stufentexte; sonst die gemeinsamen. */
+  beschreibungen?: Record<number, string>;
+  /** K.-o.-Kriterium: wird in der Überschrift gekennzeichnet. */
+  ko?: boolean;
+};
 
 /**
  * Einschätzung je Kriterium mit fester Punkteskala (Buttons). Wird für die
@@ -50,8 +59,9 @@ export function Einschaetzung({
           key={k.id}
           id={`${id}-${k.id}`}
           titel={k.titel}
-          skala={skala}
-          beschreibungen={beschreibungen}
+          ko={k.ko}
+          skala={k.skala ?? skala}
+          beschreibungen={k.beschreibungen ?? beschreibungen}
           wert={werte[k.id]}
           onWert={(p) => onWert(k.id, p)}
           gesperrt={gesperrt}
@@ -64,6 +74,7 @@ export function Einschaetzung({
 function KriteriumSkala({
   id,
   titel,
+  ko,
   skala,
   beschreibungen,
   wert,
@@ -72,6 +83,7 @@ function KriteriumSkala({
 }: {
   id: string;
   titel: string;
+  ko?: boolean;
   skala: readonly number[];
   beschreibungen: Record<number, string>;
   wert: number | undefined;
@@ -85,8 +97,18 @@ function KriteriumSkala({
 
   return (
     <fieldset disabled={gesperrt} className="flex flex-col gap-2 disabled:opacity-60">
-      <legend className="mb-2 text-[15px] font-medium text-ink">{titel}</legend>
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-6" onPointerLeave={() => setHover(null)}>
+      <legend className="mb-2 text-[15px] font-medium text-ink">
+        {titel}
+        {ko && (
+          <span className="ml-2 inline-flex rounded-full bg-praxis-tint px-2 py-0.5 align-middle text-xs font-semibold text-praxis-text">
+            K.-o.-Kriterium
+          </span>
+        )}
+      </legend>
+      <div
+        className={cn("grid gap-2", skala.length === 2 ? "grid-cols-2" : "grid-cols-3 sm:grid-cols-6")}
+        onPointerLeave={() => setHover(null)}
+      >
         {skala.map((p) => {
           const gewaehlt = wert === p;
           return (

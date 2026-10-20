@@ -110,41 +110,61 @@ export function FokusDurchfuehren({
 // ---------------------------------------------------------------------------
 // Bewerten: Du vs. Trainer nebeneinander + Reflexion
 
+/**
+ * Vergleich der Einschätzungen je Kriterium (selbst, Mitlernende:r,
+ * Trainer:in; Anna 2026-10-20). Hervorgehoben, wo die eigene Einschätzung
+ * von der Trainer:in (letzte Spalte) abweicht.
+ */
 export function BewertungVergleich({
   kriterien,
-  selbst,
-  fremd,
+  spalten,
 }: {
   kriterien: { id: string; titel: string }[];
-  selbst: Record<string, number>;
-  fremd: Record<string, number>;
+  spalten: { name: string; werte: Record<string, number> }[];
 }) {
   const [reflexion, setReflexion] = useState("");
+  const raster = { gridTemplateColumns: `1fr repeat(${spalten.length}, 4.5rem)` };
+  const du = spalten[0];
+  const trainer = spalten[spalten.length - 1];
   return (
     <div className="flex flex-col gap-4 animate-in fade-in-0 slide-in-from-bottom-2 duration-300 motion-reduce:animate-none">
-      <h3 className={UEBERSCHRIFT}>Du und die Trainer:in im Vergleich</h3>
+      <h3 className={UEBERSCHRIFT}>Die Einschätzungen im Vergleich</h3>
       <ul className="flex flex-col gap-2">
-        <li className="grid grid-cols-[1fr_auto_auto] gap-x-4 px-4 text-xs font-semibold text-ink-muted" aria-hidden="true">
+        <li className="grid gap-x-2 px-4 text-xs font-semibold text-ink-muted" style={raster} aria-hidden="true">
           <span>Kriterium</span>
-          <span className="w-12 text-center">Du</span>
-          <span className="w-16 text-center">Trainer:in</span>
+          {spalten.map((sp) => (
+            <span key={sp.name} className="text-center">
+              {sp.name}
+            </span>
+          ))}
         </li>
         {kriterien.map((k) => {
-          const s = selbst[k.id];
-          const f = fremd[k.id];
+          const s = du.werte[k.id];
+          const f = trainer.werte[k.id];
           const gleich = s === f;
           return (
-            <li key={k.id} className={cn("grid grid-cols-[1fr_auto_auto] items-center gap-x-4 rounded-zeile px-4 py-2.5", gleich ? "bg-subtle" : "bg-praxis-tint")}>
+            <li
+              key={k.id}
+              className={cn("grid items-center gap-x-2 rounded-zeile px-4 py-2.5", gleich ? "bg-subtle" : "bg-praxis-tint")}
+              style={raster}
+            >
               <span className="min-w-0 text-[15px] text-ink">
                 {k.titel}
-                {!gleich && <span className="block text-xs font-semibold text-praxis-text">Unterschied: {Math.abs((s ?? 0) - (f ?? 0))} Punkte</span>}
+                {!gleich && (
+                  <span className="block text-xs font-semibold text-praxis-text">
+                    Du und die Trainer:in: {Math.abs((s ?? 0) - (f ?? 0))} Punkte Unterschied
+                  </span>
+                )}
               </span>
-              <span className="w-12 text-center text-[17px] font-bold tabular-nums" aria-label={`Du: ${s ?? "–"} Punkte`}>
-                {s ?? "–"}
-              </span>
-              <span className="w-16 text-center text-[17px] font-bold tabular-nums" aria-label={`Trainer:in: ${f ?? "–"} Punkte`}>
-                {f ?? "–"}
-              </span>
+              {spalten.map((sp) => (
+                <span
+                  key={sp.name}
+                  className="text-center text-[17px] font-bold tabular-nums"
+                  aria-label={`${sp.name}: ${sp.werte[k.id] ?? "–"} Punkte`}
+                >
+                  {sp.werte[k.id] ?? "–"}
+                </span>
+              ))}
             </li>
           );
         })}
