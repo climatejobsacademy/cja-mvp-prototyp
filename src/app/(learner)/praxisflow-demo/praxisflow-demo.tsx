@@ -7,6 +7,7 @@ import {
   ArrowRight,
   Check,
   ClipboardCheck,
+  CalendarClock,
   FileUp,
   Hammer,
   Info,
@@ -16,6 +17,7 @@ import {
   Star,
   UserCheck,
   Wrench,
+  X,
 } from "lucide-react";
 
 import { Einschaetzung } from "@/components/praxisflow/bewertung";
@@ -49,6 +51,7 @@ import {
   PUNKTE_SKALA,
   SPEICHER_PRAEFIX,
   TEXTE,
+  UPLOAD_FORMATE,
   ZEIGE_CHECKLISTE,
   ZEIGE_INSTRUKTION,
   type PhaseId,
@@ -284,7 +287,11 @@ function Flow() {
 
         {!etappe && zustand.phase === "analyse" && (
           <InstruktionKarte icon={Search} titel={phasenName("analyse")} {...karte}>
-            <AnalyseSchritte onWeiter={() => geschafft("planen")} />
+            <AnalyseSchritte
+              auftragDateien={zustand.auftragDateien}
+              onAuftragDateien={(d) => setZustand((z) => ({ ...z, auftragDateien: d }))}
+              onWeiter={() => geschafft("planen")}
+            />
           </InstruktionKarte>
         )}
 
@@ -306,6 +313,18 @@ function Flow() {
                 }
               />
             )}
+            plaene={
+              <div className="flex flex-col gap-2">
+                <h3 className={UEBERSCHRIFT}>{TEXTE.planen.plaeneTitel}</h3>
+                <p className={TEXT}>{TEXTE.planen.plaeneText}</p>
+                <DateienListe
+                  id="plaene"
+                  accept={UPLOAD_FORMATE.plaene}
+                  dateien={zustand.planDateien}
+                  onDateien={(d) => setZustand((z) => ({ ...z, planDateien: d }))}
+                />
+              </div>
+            }
             onWeiter={() => planenGehen("weiter")}
             onZurueck={() => planenGehen("zurueck")}
           />
@@ -318,6 +337,12 @@ function Flow() {
               materialien={zustand.materialien}
               schritte={zustand.schritte}
             />
+            {zustand.planDateien.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <h3 className={UEBERSCHRIFT}>Pläne und Zeichnungen</h3>
+                <DateienListe id="plaene-uebersicht" accept="" dateien={zustand.planDateien} />
+              </div>
+            )}
             {/* Kein Trainer-Gate: die Lernenden entscheiden selbst (Partner-Feedback 15.10., Anna 2026-10-20). */}
             <EntscheidenBestaetigen onWeiter={() => geschafft("durchfuehren")} onZurueck={() => zuPhase("planen")} />
           </InstruktionKarte>
@@ -525,12 +550,51 @@ function BewertenSchritte({
  * ist -- Arbeitsauftrag lesen → Unterlagen ansehen → Weiter zu Planen. Der
  * Stand gilt nur, solange die Phase offen ist.
  */
-function AnalyseSchritte({ onWeiter }: { onWeiter: () => void }) {
+function AnalyseSchritte({
+  auftragDateien,
+  onAuftragDateien,
+  onWeiter,
+}: {
+  auftragDateien: string[];
+  onAuftragDateien: (dateien: string[]) => void;
+  onWeiter: () => void;
+}) {
+  const [angenommen, setAngenommen] = useState(auftragDateien.length > 0);
   const [gelesen, setGelesen] = useState(false);
   const [angesehen, setAngesehen] = useState<Set<string>>(new Set());
   const alleAngesehen = DATEIEN.every((d) => angesehen.has(d.dateiname));
+  const t = TEXTE.analyse;
+
+  // Zuerst: Auftrag erhalten (Papier, unterschrieben) und hochladen (Plan Anna 2026-10-20).
+  if (!angenommen) {
+    return (
+      <div className="flex flex-col gap-3">
+        <h3 className={UEBERSCHRIFT}>{t.auftragTitel}</h3>
+        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-[15px] text-ink">
+          <dt className="text-ink-muted">{t.ausgabe}</dt>
+          <dd>{DEMO_AUFTRAG.ausgabe}</dd>
+          <dt className="inline-flex items-center gap-1.5 text-ink-muted">
+            <CalendarClock className="size-4" aria-hidden="true" />
+            {t.frist}
+          </dt>
+          <dd className="font-semibold">{DEMO_AUFTRAG.frist}</dd>
+        </dl>
+        <p className={TEXT}>{t.auftragText}</p>
+        <DateienListe id="auftrag" accept={UPLOAD_FORMATE.auftrag} dateien={auftragDateien} onDateien={onAuftragDateien} />
+        {auftragDateien.length > 0 && (
+          <Einblenden>
+            <button type="button" onClick={() => setAngenommen(true)} className={cn(PRIMAER, "sm:self-start")}>
+              {t.auftragWeiter} <Check aria-hidden="true" />
+            </button>
+          </Einblenden>
+        )}
+      </div>
+    );
+  }
+
   return (
     <>
+      <ErledigtZeile text={`${t.auftragTitel} · Abgabe bis ${DEMO_AUFTRAG.frist}`} onAendern={() => setAngenommen(false)} />
       <div className="flex flex-col gap-3">
         <h3 className={UEBERSCHRIFT}>Arbeitsauftrag</h3>
         {/* Ohne Fachbegriffe zum Antippen: der Vokabelklick kommt erst nach dem Start (Anna 2026-10-20). */}
@@ -586,6 +650,7 @@ function PlanenAbfolge({
   nr,
   schritte,
   editor,
+  plaene,
   onWeiter,
   onZurueck,
 }: {
@@ -593,6 +658,8 @@ function PlanenAbfolge({
   nr: number;
   schritte: Eintrag[];
   editor: (name: Liste) => React.ReactNode;
+  /** Upload der Pläne, nur im letzten Unterschritt (Arbeitsschritte). */
+  plaene?: React.ReactNode;
   onWeiter: () => void;
   onZurueck: () => void;
 }) {
@@ -606,6 +673,7 @@ function PlanenAbfolge({
         {TEXTE.planen.unterschritt(nr + 1, gesamt)}: {unterschritt.titel}
       </p>
       {editor(unterschritt.id)}
+      {letzter && plaene}
       <div className="flex flex-col gap-2">
         <div className="flex flex-col-reverse gap-2 sm:flex-row">
           <button type="button" onClick={onZurueck} className={SEKUNDAER}>
@@ -747,14 +815,14 @@ function KontrollierenSchritte({
           <div className="flex flex-col gap-2">
             <h3 className={UEBERSCHRIFT}>{t.protokollTitel}</h3>
             <p className={TEXT}>{t.protokollText}</p>
-            <DateiWahl
+            <DateienListe
               id="pruefprotokoll"
-              accept="application/pdf"
-              datei={zustand.protokoll}
-              onDatei={(name) => setZustand((z) => ({ ...z, protokoll: name }))}
+              accept={UPLOAD_FORMATE.protokoll}
+              dateien={zustand.protokollDateien}
+              onDateien={(d) => setZustand((z) => ({ ...z, protokollDateien: d }))}
             />
           </div>
-          {cFertig && zustand.protokoll && (
+          {cFertig && zustand.protokollDateien.length > 0 && (
             <button type="button" onClick={onWeiter} className={cn(PRIMAER, "sm:self-start")}>
               {t.weiter}
               <ArrowRight aria-hidden="true" />
@@ -767,42 +835,63 @@ function KontrollierenSchritte({
 }
 
 /**
- * Datei auswählen (Demo: nur der Dateiname wird im Browser gemerkt, nichts
- * wird hochgeladen).
+ * Dateien hochladen (Demo: nur die Dateinamen werden im Browser gemerkt,
+ * nichts wird übertragen). Mehrere Dateien, jede wieder entfernbar. Ohne
+ * `onDateien` nur die Liste zum Ansehen.
  */
-function DateiWahl({
+function DateienListe({
   id,
   accept,
-  datei,
-  onDatei,
+  dateien,
+  onDateien,
 }: {
   id: string;
   accept: string;
-  datei: string | null;
-  onDatei: (name: string | null) => void;
+  dateien: string[];
+  onDateien?: (dateien: string[]) => void;
 }) {
   return (
     <div className="flex flex-col gap-2">
-      <label
-        htmlFor={id}
-        className={cn(
-          "inline-flex min-h-11 w-fit cursor-pointer items-center gap-2 rounded-full bg-subtle px-5 text-[15px] font-semibold text-ink hover:bg-praxis-tint has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand has-[:focus-visible]:ring-offset-2"
-        )}
-      >
-        <FileUp className="size-[18px]" aria-hidden="true" />
-        {datei ? "Andere Datei wählen" : "Datei hochladen"}
-        <input
-          id={id}
-          type="file"
-          accept={accept}
-          className="sr-only"
-          onChange={(e) => onDatei(e.target.files?.[0]?.name ?? null)}
-        />
-      </label>
-      {datei && (
-        <p className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink-muted">
-          <Check className="size-4 text-brand" strokeWidth={3} aria-hidden="true" /> {datei}
-        </p>
+      {dateien.length > 0 && (
+        <ul className="flex flex-col gap-2">
+          {dateien.map((name, i) => (
+            <li key={`${name}-${i}`} className="flex items-center gap-3 rounded-zeile bg-subtle px-4 py-2.5 text-[15px] text-ink">
+              <Check className="size-4 shrink-0 text-brand" strokeWidth={3} aria-hidden="true" />
+              <span className="min-w-0 flex-1 truncate">{name}</span>
+              {onDateien && (
+                <button
+                  type="button"
+                  onClick={() => onDateien(dateien.filter((_, j) => j !== i))}
+                  aria-label={`${name} entfernen`}
+                  className={cn("rounded-sm text-ink-muted hover:text-ink", FOKUS)}
+                >
+                  <X className="size-4" aria-hidden="true" />
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+      {onDateien && (
+        <label
+          htmlFor={id}
+          className="inline-flex min-h-11 w-fit cursor-pointer items-center gap-2 rounded-full bg-subtle px-5 text-[15px] font-semibold text-ink hover:bg-praxis-tint has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand has-[:focus-visible]:ring-offset-2"
+        >
+          <FileUp className="size-[18px]" aria-hidden="true" />
+          {dateien.length > 0 ? "Weitere Datei hochladen" : "Foto oder Datei hochladen"}
+          <input
+            id={id}
+            type="file"
+            multiple
+            accept={accept}
+            className="sr-only"
+            onChange={(e) => {
+              const neu = Array.from(e.target.files ?? []).map((f) => f.name);
+              if (neu.length > 0) onDateien([...dateien, ...neu]);
+              e.target.value = "";
+            }}
+          />
+        </label>
       )}
     </div>
   );

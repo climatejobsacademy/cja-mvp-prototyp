@@ -33,6 +33,17 @@ export const ZEIGE_PRUEFPROTOKOLL_HINWEIS = false;
 // Nur für das Demo, clientseitig, nicht für den Piloten. Im Piloten prüft der Server das Codewort.
 export const DEMO_CODEWORT = "werkstatt";
 
+/**
+ * Uploads nur dort, wo die Partner sie im Feedback vom 15.10. genannt haben
+ * (Anna 2026-10-20): unterschriebener Auftrag, Pläne und Zeichnungen,
+ * Prüfprotokoll. Formate laut Simon; die Liste der Partner steht noch aus.
+ */
+export const UPLOAD_FORMATE = {
+  auftrag: "image/*,application/pdf",
+  plaene: "image/*,application/pdf,.dwg,.dxf,.glb",
+  protokoll: "application/pdf,image/*",
+};
+
 /** Diktat in Planen: aus (zwölf Personen in einem Raum, Schreiben übt Fachdeutsch; Anna 2026-10-20). */
 export const DIKTAT_AN = false;
 
@@ -75,6 +86,9 @@ export const SPEICHER_PRAEFIX = "cja-praxisflow-demo:";
 export const DEMO_AUFTRAG = {
   kennzeichnung: "Demo",
   titel: "Demo-Auftrag: Übungsaufbau in der Werkstatt",
+  /** Ausgabe und Abgabefrist des Papierauftrags (Partner: ein bis zwei Tage). */
+  ausgabe: "Montag, 16.11.",
+  frist: "Dienstag, 17.11., 16:00 Uhr",
   banner:
     "Dies ist ein Demo mit Beispieldaten. Texte sind Platzhalter, nichts wird an den Server übertragen. Der Stand bleibt nur in diesem Browser.",
 };
@@ -170,12 +184,20 @@ export const NOTEN_BESCHREIBUNGEN: Record<number, string> = {
 export const TEXTE = {
   hastDuAllesTitel: "Hast du alles?",
   analyse: {
+    auftragTitel: "Auftrag erhalten",
+    auftragText:
+      "Du hast den Arbeitsauftrag auf Papier bekommen und unterschrieben. Mach ein Foto davon oder lade den Scan hoch.",
+    ausgabe: "Ausgegeben",
+    frist: "Abgabe bis",
+    auftragWeiter: "Auftrag angenommen",
     arbeitsauftrag:
       "Baue den Übungsaufbau auf dem Werkstattbrett nach der Vorlage auf. Arbeite sauber und so, dass eine zweite Person jeden Schritt nachvollziehen kann. (Platzhalter)",
   },
   planen: {
     unterschritt: (nr: number, gesamt: number) => `Schritt ${nr} von ${gesamt}`,
     gesperrt: "Trage mindestens einen Arbeitsschritt ein, dann geht es weiter zu Entscheiden.",
+    plaeneTitel: "Pläne und Zeichnungen (wenn du welche hast)",
+    plaeneText: "Hast du auf Papier gezeichnet oder mit einem Programm geplant? Lade Fotos oder Dateien hier hoch.",
   },
   // Eingabezeile in Planen (Tippen oder Diktat)
   eingabe: {
@@ -206,7 +228,7 @@ export const TEXTE = {
     unterSpannungTitel: "Prüfen unter Spannung",
     unterSpannungText: "Deine Trainer:in ist dabei. Hake jede Prüfung ab und lade danach das Prüfprotokoll hoch.",
     protokollTitel: "Prüfprotokoll",
-    protokollText: "Lade das Prüfprotokoll als PDF hoch (zum Beispiel aus dem Prüfgerät).",
+    protokollText: "Lade das Prüfprotokoll aus dem Prüfgerät als PDF hoch. Gibt es nur ein Papierprotokoll, mach ein Foto davon.",
     weiter: "Weiter zu Bewerten",
   },
   entscheiden: {

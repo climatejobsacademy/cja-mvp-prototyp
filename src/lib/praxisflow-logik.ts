@@ -29,17 +29,19 @@ export type DemoZustand = {
   inbetriebnahmeFreigegeben: boolean;
   /** Kontrollieren: abgehakte Prüfungen unter Spannung (IDs). */
   geprueftUnterSpannung: string[];
-  /** Kontrollieren: Name der hochgeladenen Protokoll-Datei (nur im Browser). */
-  protokoll: string | null;
+  /** Dateinamen (nur im Browser gemerkt, nichts wird hochgeladen). */
+  auftragDateien: string[];
+  planDateien: string[];
+  protokollDateien: string[];
 };
 
 /**
- * v4: zusätzlich Kontrollieren in drei Teilen (2026-10-20). Ältere Stände
+ * v5: Kontrollieren in drei Teilen und Uploads (2026-10-20). Ältere Stände
  * werden nicht gelesen, das Demo startet dann neu; "Demo zurücksetzen" löscht
  * auch sie.
  */
 export function speicherSchluessel(praefix: string): string {
-  return `${praefix}zustand-v4`;
+  return `${praefix}zustand-v5`;
 }
 
 /** Planen startet leer. */
@@ -58,7 +60,9 @@ export function startZustand(): DemoZustand {
     geprueftSpannungsfrei: [],
     inbetriebnahmeFreigegeben: false,
     geprueftUnterSpannung: [],
-    protokoll: null,
+    auftragDateien: [],
+    planDateien: [],
+    protokollDateien: [],
   };
 }
 
@@ -262,6 +266,10 @@ function istListe(x: unknown): x is Eintrag[] {
   );
 }
 
+function istTexte(x: unknown): x is string[] {
+  return Array.isArray(x) && x.every((e) => typeof e === "string");
+}
+
 function istPunkte(x: unknown): x is Record<string, number> {
   return !!x && typeof x === "object" && !Array.isArray(x) && Object.values(x).every((v) => typeof v === "number");
 }
@@ -289,7 +297,9 @@ function istZustand(x: unknown): x is DemoZustand {
     typeof z.inbetriebnahmeFreigegeben === "boolean" &&
     Array.isArray(z.geprueftUnterSpannung) &&
     z.geprueftUnterSpannung.every((e) => typeof e === "string") &&
-    (z.protokoll === null || typeof z.protokoll === "string")
+    istTexte(z.auftragDateien) &&
+    istTexte(z.planDateien) &&
+    istTexte(z.protokollDateien)
   );
 }
 
