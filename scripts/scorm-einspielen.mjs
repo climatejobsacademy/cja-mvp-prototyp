@@ -47,7 +47,7 @@ process.on("warning", (w) => {
   if (w.code !== "MODULE_TYPELESS_PACKAGE_JSON") console.error(`${w.name}: ${w.message}`);
 });
 
-const { leseListe, loeseKennungenAuf, pruefeDateiZiel } = await import("./scorm-einspielen/eingabe.mjs");
+const { leseListe, loeseKennungenAuf, pruefeDateiZiel, setzeEingabe } = await import("./scorm-einspielen/eingabe.mjs");
 const { BUCKET, entpacktPfad, groesseText, objektNameGueltig, planeUploads, zipPfad } = await import("./scorm-einspielen/paket.mjs");
 const { afconvertVorhanden, analysierePaket, packeMedienAus } = await import("./scorm-einspielen/zip.mjs");
 
@@ -300,7 +300,7 @@ const leseSql = `
 \\set VERBOSITY terse
 set client_min_messages = warning;
 begin read only;
-${readFileSync(join(HIER, "scorm-einspielen", "lesen.sql"), "utf8").replace("__EINGABE__", () => jsonLiteral(leseEingabe, "lesen"))}
+${setzeEingabe(readFileSync(join(HIER, "scorm-einspielen", "lesen.sql"), "utf8"), () => jsonLiteral(leseEingabe, "lesen"))}
 rollback;
 `;
 const gelesen = psql(leseSql, { ausgabeFangen: true });
