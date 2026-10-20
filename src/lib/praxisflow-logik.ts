@@ -23,14 +23,23 @@ export type DemoZustand = {
   bewertungAbgeschlossen: boolean;
   /** Unterschritt in Planen: 0 Werkzeuge, 1 Materialien, 2 Arbeitsschritte. */
   planenSchritt: number;
+  /** Kontrollieren: abgehakte Prüfungen ohne Spannung (IDs). */
+  geprueftSpannungsfrei: string[];
+  /** Kontrollieren: Inbetriebnahme per Codewort freigegeben. */
+  inbetriebnahmeFreigegeben: boolean;
+  /** Kontrollieren: abgehakte Prüfungen unter Spannung (IDs). */
+  geprueftUnterSpannung: string[];
+  /** Kontrollieren: Name der hochgeladenen Protokoll-Datei (nur im Browser). */
+  protokoll: string | null;
 };
 
 /**
- * v3: zusätzlich der Planen-Unterschritt. Ältere Stände (v1, v2) werden nicht
- * gelesen, das Demo startet dann neu; "Demo zurücksetzen" löscht auch sie.
+ * v4: zusätzlich Kontrollieren in drei Teilen (2026-10-20). Ältere Stände
+ * werden nicht gelesen, das Demo startet dann neu; "Demo zurücksetzen" löscht
+ * auch sie.
  */
 export function speicherSchluessel(praefix: string): string {
-  return `${praefix}zustand-v3`;
+  return `${praefix}zustand-v4`;
 }
 
 /** Planen startet leer. */
@@ -46,7 +55,21 @@ export function startZustand(): DemoZustand {
     fremdFreigegeben: false,
     bewertungAbgeschlossen: false,
     planenSchritt: 0,
+    geprueftSpannungsfrei: [],
+    inbetriebnahmeFreigegeben: false,
+    geprueftUnterSpannung: [],
+    protokoll: null,
   };
+}
+
+/** Prüfung an- oder abhaken (Kontrollieren). */
+export function pruefungUmschalten(liste: string[], id: string): string[] {
+  return liste.includes(id) ? liste.filter((x) => x !== id) : [...liste, id];
+}
+
+/** Alle IDs der Prüfliste abgehakt? */
+export function allesGeprueft(liste: { id: string }[], erledigt: string[]): boolean {
+  return liste.every((p) => erledigt.includes(p.id));
 }
 
 // ---------- Listen (Planen) ----------
@@ -260,7 +283,13 @@ function istZustand(x: unknown): x is DemoZustand {
     typeof z.bewertungAbgeschlossen === "boolean" &&
     Number.isInteger(z.planenSchritt) &&
     (z.planenSchritt as number) >= 0 &&
-    (z.planenSchritt as number) <= 2
+    (z.planenSchritt as number) <= 2 &&
+    Array.isArray(z.geprueftSpannungsfrei) &&
+    z.geprueftSpannungsfrei.every((e) => typeof e === "string") &&
+    typeof z.inbetriebnahmeFreigegeben === "boolean" &&
+    Array.isArray(z.geprueftUnterSpannung) &&
+    z.geprueftUnterSpannung.every((e) => typeof e === "string") &&
+    (z.protokoll === null || typeof z.protokoll === "string")
   );
 }
 

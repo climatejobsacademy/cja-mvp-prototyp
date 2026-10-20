@@ -10,6 +10,8 @@ import { zeilenZuTexten } from "@/lib/praxisflow-logik";
 import { cn } from "@/lib/utils";
 
 import { FOKUS, SEKUNDAER } from "./stile";
+import { DIKTAT_AN } from "@/lib/praxisflow-daten";
+
 import { useDiktat } from "./use-diktat";
 
 export type EingabeTexte = {
@@ -45,6 +47,7 @@ export function EingabeZeile({
   const [text, setText] = useState("");
   const diktat = useDiktat(onTexte, texte);
   const getippt = text.trim().length > 0;
+  const diktatMoeglich = DIKTAT_AN && diktat.verfuegbar;
 
   function hinzufuegen() {
     const neu = zeilenZuTexten(text);
@@ -91,7 +94,7 @@ export function EingabeZeile({
             <span aria-hidden="true">{texte.hoertZu}</span>
             <Square aria-hidden="true" />
           </button>
-        ) : getippt || !diktat.verfuegbar ? (
+        ) : getippt || !diktatMoeglich ? (
           <button type="submit" disabled={!getippt} className={rund}>
             <Plus aria-hidden="true" />
             {texte.hinzufuegen}

@@ -7,6 +7,7 @@ import {
   ArrowRight,
   Check,
   ClipboardCheck,
+  FileUp,
   Hammer,
   Info,
   ListOrdered,
@@ -20,7 +21,6 @@ import {
 import { Einschaetzung } from "@/components/praxisflow/bewertung";
 import { CodewortGate } from "@/components/praxisflow/codewort-gate";
 import { DemoLeiste } from "@/components/praxisflow/demo-leiste";
-import { FotoVorschau } from "@/components/praxisflow/foto-vorschau";
 import { Einblenden } from "@/components/praxisflow/einblenden";
 import { DateienBlock, Hinweis, InstruktionKarte } from "@/components/praxisflow/instruktion-karte";
 import { ListenEditor } from "@/components/praxisflow/listen-editor";
@@ -45,16 +45,17 @@ import {
   PHASEN,
   PHASEN_TEXTE,
   PLANEN_UNTERSCHRITTE,
+  PRUEFLISTE_STANDARD,
   PUNKTE_SKALA,
   SPEICHER_PRAEFIX,
   TEXTE,
   ZEIGE_CHECKLISTE,
   ZEIGE_INSTRUKTION,
-  ZEIGE_PRUEFPROTOKOLL_HINWEIS,
   type PhaseId,
 } from "@/lib/praxisflow-daten";
 import {
   alleErledigt,
+  allesGeprueft,
   bewertungAbschliessbar,
   codewortKorrekt,
   demoZuruecksetzen,
@@ -70,13 +71,13 @@ import {
   planenWeiter,
   planenWeiterMoeglich,
   planenZurueck,
+  pruefungUmschalten,
   startZustand,
   zustandLaden,
   zustandSpeichern,
   type DemoZustand,
   type Eintrag,
 } from "@/lib/praxisflow-logik";
-import { FachText } from "@/components/sprachtraining/fach-text";
 import { Avatar } from "@/components/avatar";
 import { TRAINER_PRAXIS_DEMO } from "@/lib/demo-personen";
 import { cn } from "@/lib/utils";
@@ -282,7 +283,7 @@ function Flow() {
         )}
 
         {!etappe && zustand.phase === "analyse" && (
-          <InstruktionKarte icon={Search} titel="Analyse" {...karte}>
+          <InstruktionKarte icon={Search} titel={phasenName("analyse")} {...karte}>
             <AnalyseSchritte onWeiter={() => geschafft("planen")} />
           </InstruktionKarte>
         )}
@@ -311,26 +312,19 @@ function Flow() {
         )}
 
         {!etappe && zustand.phase === "entscheiden" && (
-          <InstruktionKarte icon={UserCheck} titel="Entscheiden" {...karte}>
+          <InstruktionKarte icon={UserCheck} titel={phasenName("entscheiden")} {...karte}>
             <PlanUebersicht
               werkzeuge={zustand.werkzeuge}
               materialien={zustand.materialien}
               schritte={zustand.schritte}
             />
-            <CodewortGate
-              id="gate-entscheiden"
-              hinweis={TEXTE.gates.entscheiden}
-              label={TEXTE.codewort.label}
-              buttonText="Plan freigeben"
-              fehlerText={TEXTE.codewort.falsch}
-              pruefen={pruefen}
-              onFreigabe={() => geschafft("durchfuehren")}
-            />
+            {/* Kein Trainer-Gate: die Lernenden entscheiden selbst (Partner-Feedback 15.10., Anna 2026-10-20). */}
+            <EntscheidenBestaetigen onWeiter={() => geschafft("durchfuehren")} onZurueck={() => zuPhase("planen")} />
           </InstruktionKarte>
         )}
 
         {!etappe && zustand.phase === "durchfuehren" && (
-          <InstruktionKarte icon={Hammer} titel="Durchführen" {...karte}>
+          <InstruktionKarte icon={Hammer} titel={phasenName("durchfuehren")} {...karte}>
             {/* Fokus-Modus (Vorschau 2026-10-12): immer ein Schritt groß. Die
                 bisherige Checkliste liegt in schritte-checkliste.tsx. */}
             <FokusDurchfuehren
@@ -345,17 +339,10 @@ function Flow() {
             />
             {alleErledigt(zustand.schritte, zustand.erledigt) && (
               <Einblenden>
-                <CodewortGate
-                  id="gate-durchfuehren"
-                  hinweis={TEXTE.gates.durchfuehren}
-                  label={TEXTE.codewort.label}
-                  buttonText="Durchführung freigeben"
-                  aktiv={alleErledigt(zustand.schritte, zustand.erledigt)}
-                  gesperrtText={TEXTE.codewort.gesperrtDurchfuehren}
-                  fehlerText={TEXTE.codewort.falsch}
-                  pruefen={pruefen}
-                  onFreigabe={() => geschafft("kontrolle")}
-                />
+                <button type="button" onClick={() => geschafft("kontrolle")} className={cn(PRIMAER, "sm:self-start")}>
+                  {TEXTE.ausfuehren.fertig}
+                  <ArrowRight aria-hidden="true" />
+                </button>
               </Einblenden>
             )}
             <button type="button" onClick={() => zuPhase("planen")} className={cn(SEKUNDAER, "sm:self-start")}>
@@ -366,27 +353,11 @@ function Flow() {
         )}
 
         {!etappe && zustand.phase === "kontrolle" && (
-          <InstruktionKarte icon={ClipboardCheck} titel="Kontrolle" {...karte}>
-            <div className="flex flex-col gap-1.5">
-              <h3 className={UEBERSCHRIFT}>Dokumentation</h3>
-              <p className={TEXT}>{TEXTE.kontrolle.dokumentation}</p>
-            </div>
-            {ZEIGE_PRUEFPROTOKOLL_HINWEIS && (
-              <Hinweis icon={ClipboardCheck}>{TEXTE.kontrolle.hinweisProtokoll}</Hinweis>
-            )}
-            <FotoVorschau />
-            <CodewortGate
-              id="gate-kontrolle"
-              hinweis={TEXTE.gates.kontrolle}
-              label={TEXTE.codewort.label}
-              buttonText="Kontrolle freigeben"
-              fehlerText={TEXTE.codewort.falsch}
-              pruefen={pruefen}
-              onFreigabe={() => geschafft("bewerten")}
-            />
+          <InstruktionKarte icon={ClipboardCheck} titel={phasenName("kontrolle")} {...karte}>
+            <KontrollierenSchritte zustand={zustand} setZustand={setZustand} onWeiter={() => geschafft("bewerten")} />
             <button type="button" onClick={() => zuPhase("durchfuehren")} className={cn(SEKUNDAER, "sm:self-start")}>
               <ArrowLeft aria-hidden="true" />
-              Zurück zu Durchführen
+              Zurück zu {phasenName("durchfuehren")}
             </button>
           </InstruktionKarte>
         )}
@@ -405,7 +376,7 @@ function Flow() {
         )}
 
         {!etappe && zustand.phase === "bewerten" && !zustand.bewertungAbgeschlossen && (
-          <InstruktionKarte icon={Star} titel="Bewerten" {...karte}>
+          <InstruktionKarte icon={Star} titel={phasenName("bewerten")} {...karte}>
             <BewertenSchritte zustand={zustand} setZustand={setZustand} />
           </InstruktionKarte>
         )}
@@ -562,10 +533,8 @@ function AnalyseSchritte({ onWeiter }: { onWeiter: () => void }) {
     <>
       <div className="flex flex-col gap-3">
         <h3 className={UEBERSCHRIFT}>Arbeitsauftrag</h3>
-        {/* Fachbegriffe zum Antippen (SR-24, Sprachtraining-Demo, nur demo) */}
-        <p className={TEXT}>
-          <FachText text={TEXTE.analyse.arbeitsauftrag} />
-        </p>
+        {/* Ohne Fachbegriffe zum Antippen: der Vokabelklick kommt erst nach dem Start (Anna 2026-10-20). */}
+        <p className={TEXT}>{TEXTE.analyse.arbeitsauftrag}</p>
         {gelesen ? (
           <p className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink-muted">
             <Check className="size-4 text-brand" strokeWidth={3} aria-hidden="true" /> Gelesen
@@ -662,5 +631,179 @@ function PlanenAbfolge({
         )}
       </div>
     </InstruktionKarte>
+  );
+}
+
+/** Entscheiden: die Lernenden bestätigen selbst, dass ihr Plan vollständig ist. */
+function EntscheidenBestaetigen({ onWeiter, onZurueck }: { onWeiter: () => void; onZurueck: () => void }) {
+  const [sicher, setSicher] = useState(false);
+  return (
+    <div className="flex flex-col gap-3">
+      <label className="flex cursor-pointer items-start gap-3 rounded-zeile bg-subtle px-4 py-3 text-[15px] text-ink">
+        <input
+          type="checkbox"
+          checked={sicher}
+          onChange={(e) => setSicher(e.target.checked)}
+          className="mt-0.5 size-5 shrink-0 accent-brand"
+        />
+        <span>{TEXTE.entscheiden.bestaetigen}</span>
+      </label>
+      <div className="flex flex-col-reverse gap-2 sm:flex-row">
+        <button type="button" onClick={onZurueck} className={SEKUNDAER}>
+          <ArrowLeft aria-hidden="true" />
+          Plan ändern
+        </button>
+        <button type="button" onClick={onWeiter} disabled={!sicher} className={PRIMAER}>
+          {TEXTE.entscheiden.button}
+          <ArrowRight aria-hidden="true" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/** Eine Prüfung zum Abhaken. */
+function PruefZeile({ titel, an, onUmschalten }: { titel: string; an: boolean; onUmschalten: () => void }) {
+  return (
+    <label className="flex cursor-pointer items-center gap-3 rounded-zeile bg-subtle px-4 py-3 text-[15px] text-ink">
+      <input type="checkbox" checked={an} onChange={onUmschalten} className="size-5 shrink-0 accent-brand" />
+      <span className={an ? "font-semibold" : undefined}>{titel}</span>
+    </label>
+  );
+}
+
+/**
+ * Kontrollieren in drei Teilen (Partner-Feedback 15.10., Anna 2026-10-20):
+ * A Prüfen ohne Spannung (allein) → B Freigabe zur Inbetriebnahme durch die
+ * Trainer:in (Codewort) → C Prüfen unter Spannung und Prüfprotokoll (PDF).
+ */
+function KontrollierenSchritte({
+  zustand,
+  setZustand,
+  onWeiter,
+}: {
+  zustand: DemoZustand;
+  setZustand: React.Dispatch<React.SetStateAction<DemoZustand>>;
+  onWeiter: () => void;
+}) {
+  const liste = PRUEFLISTE_STANDARD;
+  const aFertig = allesGeprueft(liste.spannungsfrei, zustand.geprueftSpannungsfrei);
+  const cFertig = allesGeprueft(liste.unterSpannung, zustand.geprueftUnterSpannung);
+  const t = TEXTE.kontrolle;
+
+  return (
+    <>
+      <div className="flex flex-col gap-2">
+        <h3 className={UEBERSCHRIFT}>{t.spannungsfreiTitel}</h3>
+        <p className={TEXT}>{t.spannungsfreiText}</p>
+        {liste.spannungsfrei.map((p) => (
+          <PruefZeile
+            key={p.id}
+            titel={p.titel}
+            an={zustand.geprueftSpannungsfrei.includes(p.id)}
+            onUmschalten={() =>
+              !zustand.inbetriebnahmeFreigegeben &&
+              setZustand((z) => ({ ...z, geprueftSpannungsfrei: pruefungUmschalten(z.geprueftSpannungsfrei, p.id) }))
+            }
+          />
+        ))}
+      </div>
+
+      {!zustand.inbetriebnahmeFreigegeben && (
+        <div className="flex flex-col gap-2">
+          <h3 className={UEBERSCHRIFT}>{t.freigabeTitel}</h3>
+          <Hinweis icon={UserCheck}>{t.freigabeText}</Hinweis>
+          <CodewortGate
+            id="gate-kontrolle"
+            hinweis={TEXTE.gates.kontrolle}
+            label={TEXTE.codewort.label}
+            buttonText="Inbetriebnahme freigeben"
+            aktiv={aFertig}
+            gesperrtText={t.freigabeGesperrt}
+            fehlerText={TEXTE.codewort.falsch}
+            pruefen={pruefen}
+            onFreigabe={() => setZustand((z) => ({ ...z, inbetriebnahmeFreigegeben: true }))}
+          />
+        </div>
+      )}
+
+      {zustand.inbetriebnahmeFreigegeben && (
+        <Einblenden>
+          <ErledigtZeile text={`${t.freigabeTitel}: erteilt`} />
+          <div className="flex flex-col gap-2">
+            <h3 className={UEBERSCHRIFT}>{t.unterSpannungTitel}</h3>
+            <p className={TEXT}>{t.unterSpannungText}</p>
+            {liste.unterSpannung.map((p) => (
+              <PruefZeile
+                key={p.id}
+                titel={p.titel}
+                an={zustand.geprueftUnterSpannung.includes(p.id)}
+                onUmschalten={() =>
+                  setZustand((z) => ({ ...z, geprueftUnterSpannung: pruefungUmschalten(z.geprueftUnterSpannung, p.id) }))
+                }
+              />
+            ))}
+          </div>
+          <div className="flex flex-col gap-2">
+            <h3 className={UEBERSCHRIFT}>{t.protokollTitel}</h3>
+            <p className={TEXT}>{t.protokollText}</p>
+            <DateiWahl
+              id="pruefprotokoll"
+              accept="application/pdf"
+              datei={zustand.protokoll}
+              onDatei={(name) => setZustand((z) => ({ ...z, protokoll: name }))}
+            />
+          </div>
+          {cFertig && zustand.protokoll && (
+            <button type="button" onClick={onWeiter} className={cn(PRIMAER, "sm:self-start")}>
+              {t.weiter}
+              <ArrowRight aria-hidden="true" />
+            </button>
+          )}
+        </Einblenden>
+      )}
+    </>
+  );
+}
+
+/**
+ * Datei auswählen (Demo: nur der Dateiname wird im Browser gemerkt, nichts
+ * wird hochgeladen).
+ */
+function DateiWahl({
+  id,
+  accept,
+  datei,
+  onDatei,
+}: {
+  id: string;
+  accept: string;
+  datei: string | null;
+  onDatei: (name: string | null) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-2">
+      <label
+        htmlFor={id}
+        className={cn(
+          "inline-flex min-h-11 w-fit cursor-pointer items-center gap-2 rounded-full bg-subtle px-5 text-[15px] font-semibold text-ink hover:bg-praxis-tint has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand has-[:focus-visible]:ring-offset-2"
+        )}
+      >
+        <FileUp className="size-[18px]" aria-hidden="true" />
+        {datei ? "Andere Datei wählen" : "Datei hochladen"}
+        <input
+          id={id}
+          type="file"
+          accept={accept}
+          className="sr-only"
+          onChange={(e) => onDatei(e.target.files?.[0]?.name ?? null)}
+        />
+      </label>
+      {datei && (
+        <p className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink-muted">
+          <Check className="size-4 text-brand" strokeWidth={3} aria-hidden="true" /> {datei}
+        </p>
+      )}
+    </div>
   );
 }

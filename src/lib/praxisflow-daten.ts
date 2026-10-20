@@ -11,11 +11,13 @@
 export type PhaseId = "analyse" | "planen" | "entscheiden" | "durchfuehren" | "kontrolle" | "bewerten";
 
 export const PHASEN: { id: PhaseId; name: string }[] = [
-  { id: "analyse", name: "Analyse" },
+  // Begriffe der vollständigen Handlung, wie im Unterricht (Partner-Feedback
+  // 15.10., Anna 2026-10-20). Die ids bleiben, nur die Namen ändern sich.
+  { id: "analyse", name: "Informieren" },
   { id: "planen", name: "Planen" },
   { id: "entscheiden", name: "Entscheiden" },
-  { id: "durchfuehren", name: "Durchführen" },
-  { id: "kontrolle", name: "Kontrolle" },
+  { id: "durchfuehren", name: "Ausführen" },
+  { id: "kontrolle", name: "Kontrollieren" },
   { id: "bewerten", name: "Bewerten" },
 ];
 
@@ -30,6 +32,32 @@ export const ZEIGE_PRUEFPROTOKOLL_HINWEIS = false;
 
 // Nur für das Demo, clientseitig, nicht für den Piloten. Im Piloten prüft der Server das Codewort.
 export const DEMO_CODEWORT = "werkstatt";
+
+/** Diktat in Planen: aus (zwölf Personen in einem Raum, Schreiben übt Fachdeutsch; Anna 2026-10-20). */
+export const DIKTAT_AN = false;
+
+/**
+ * Prüflisten in Kontrollieren (Anna 2026-10-20): ein Standard für alle
+ * Aufträge, ein Auftrag kann ihn später ersetzen oder ergänzen. Inhalte sind
+ * Platzhalter, bis Simon und Slawa sie festlegen.
+ * A: spannungsfrei, selbstständig. Danach Freigabe zur Inbetriebnahme (Codewort).
+ * C: unter Aufsicht, unter Spannung.
+ */
+export const PRUEFLISTE_STANDARD: {
+  spannungsfrei: { id: string; titel: string }[];
+  unterSpannung: { id: string; titel: string }[];
+} = {
+  spannungsfrei: [
+    { id: "a1", titel: "Sichtprüfung gemacht und dokumentiert" },
+    { id: "a2", titel: "Schutzleiter durchgängig geprüft" },
+    { id: "a3", titel: "Isolationswiderstand gemessen" },
+    { id: "a4", titel: "Messwerte eingetragen" },
+  ],
+  unterSpannung: [
+    { id: "c1", titel: "Funktion geprüft (Platzhalter)" },
+    { id: "c2", titel: "Messungen unter Spannung gemacht (Platzhalter)" },
+  ],
+};
 
 /** Feste Punkteskala der Bewertung (keine Schulnoten). */
 export const PUNKTE_SKALA = [10, 9, 7, 5, 3, 0] as const;
@@ -76,7 +104,7 @@ export const PHASEN_TEXTE: Record<PhaseId, { instruktion: string; hastDuAlles: s
     ],
   },
   entscheiden: {
-    instruktion: "Geh deinen Plan mit der Trainer:in durch. Wenn der Plan passt, gibt sie ihn frei. (Platzhalter)",
+    instruktion: "Prüfe deinen Plan selbst: Hast du alles? Dann entscheidest du, dass du anfangen kannst. (Platzhalter)",
     hastDuAlles: ["Du kannst jeden Schritt deines Plans begründen. (Platzhalter)"],
   },
   durchfuehren: {
@@ -169,6 +197,24 @@ export const TEXTE = {
   kontrolle: {
     dokumentation: "Der Aufbau ist nach Vorlage fertig. Die Trainer:in geht mit dir das Prüfprotokoll durch. (Platzhalter)",
     hinweisProtokoll: "Das Prüfprotokoll wird auf Papier gemeinsam mit der Trainer:in durchgegangen.",
+    spannungsfreiTitel: "Prüfen ohne Spannung",
+    spannungsfreiText: "Diese Prüfungen machst du allein. Hake jede ab, wenn sie erledigt ist.",
+    freigabeTitel: "Freigabe zur Inbetriebnahme",
+    freigabeText:
+      "Jetzt kommt Spannung auf die Anlage. Das darfst du nur, wenn deine Trainer:in dabei ist und die Anlage geprüft hat.",
+    freigabeGesperrt: "Erst alle Prüfungen ohne Spannung abhaken.",
+    unterSpannungTitel: "Prüfen unter Spannung",
+    unterSpannungText: "Deine Trainer:in ist dabei. Hake jede Prüfung ab und lade danach das Prüfprotokoll hoch.",
+    protokollTitel: "Prüfprotokoll",
+    protokollText: "Lade das Prüfprotokoll als PDF hoch (zum Beispiel aus dem Prüfgerät).",
+    weiter: "Weiter zu Bewerten",
+  },
+  entscheiden: {
+    bestaetigen: "Meine Planung ist vollständig. Ich bin bereit, mit der Ausführung zu beginnen.",
+    button: "Ich fange an",
+  },
+  ausfuehren: {
+    fertig: "Aufbau fertig – Kontrolle beginnen",
   },
   bewerten: {
     selbstTitel: "Selbsteinschätzung",
@@ -181,7 +227,7 @@ export const TEXTE = {
   gates: {
     entscheiden: "Die Trainer:in nimmt deinen Plan ab und gibt ihn mit dem Codewort frei.",
     durchfuehren: "Wenn alle Schritte abgehakt sind, gibt die Trainer:in die Durchführung mit dem Codewort frei.",
-    kontrolle: "Die Trainer:in prüft mit dir das Ergebnis und gibt die Kontrolle mit dem Codewort frei.",
+    kontrolle: "Die Trainer:in prüft die Anlage und gibt die Inbetriebnahme mit dem Codewort frei.",
     bewerten: "Die Trainer:in schaltet ihre Einschätzung mit dem Codewort frei.",
   },
   codewort: {
@@ -204,9 +250,9 @@ export const ABSCHLUSS_KOMPETENZEN: { name: string; prozent: number }[] = [
 // "Etappe geschafft" je Phase mit eigenem Text statt immer gleich (Anna 2026-10-12).
 export const ETAPPEN_TEXTE: Record<PhaseId, { titel: string; text: string }> = {
   analyse: { titel: "Auftrag verstanden!", text: "Du weißt, worum es geht. Jetzt planst du deine Arbeit." },
-  planen: { titel: "Dein Plan steht!", text: "Zeig ihn deiner Trainer:in – gemeinsam entscheidet ihr, ob es so losgeht." },
-  entscheiden: { titel: "Plan freigegeben!", text: "Los geht’s – jetzt setzt du ihn Schritt für Schritt um." },
+  planen: { titel: "Dein Plan steht!", text: "Jetzt prüfst du ihn und entscheidest, ob du anfangen kannst." },
+  entscheiden: { titel: "Entschieden!", text: "Los geht’s – jetzt setzt du deinen Plan Schritt für Schritt um." },
   durchfuehren: { titel: "Stark gearbeitet!", text: "Alle Schritte sind erledigt. Jetzt prüfst du dein Ergebnis." },
-  kontrolle: { titel: "Ergebnis geprüft!", text: "Fast geschafft – zum Schluss schätzt du deine Arbeit ein." },
+  kontrolle: { titel: "Alles geprüft!", text: "Fast geschafft – zum Schluss bewertest du deine Arbeit." },
   bewerten: { titel: "Aufgabe geschafft!", text: "Alle sechs Phasen sind abgeschlossen." },
 };
