@@ -30,14 +30,12 @@ import { ListenEditor } from "@/components/praxisflow/listen-editor";
 import { PhasenAnzeige } from "@/components/praxisflow/phasen-anzeige";
 import { PlanUebersicht } from "@/components/praxisflow/plan-uebersicht";
 import {
-  AufgabeGeschafft,
   BewertungVergleich,
   EtappeGeschafft,
   FokusDurchfuehren,
 } from "@/components/praxisflow/spiel-elemente";
 import { FOKUS, PRIMAER, SEKUNDAER, TEXT, UEBERSCHRIFT } from "@/components/praxisflow/stile";
 import {
-  ABSCHLUSS_KOMPETENZEN,
   BEWERTUNGSBOGEN_STANDARD,
   DATEIEN,
   DATEIEN_ORDNER,
@@ -421,19 +419,7 @@ function Flow() {
           </InstruktionKarte>
         )}
 
-        {!etappe && zustand.phase === "bewerten" && zustand.bewertungAbgeschlossen && (
-          <InstruktionKarte
-            icon={Star}
-            titel="Geschafft"
-            {...karte}
-            instruktion={undefined}
-            hastDuAlles={[]}
-            fortschritt={<PhasenAnzeige phasen={PHASEN} aktuell={PHASEN.length} />}
-          >
-            <AufgabeGeschafft kompetenzen={ABSCHLUSS_KOMPETENZEN} />
-          </InstruktionKarte>
-        )}
-
+        {/* Nach dem Abschluss nur die Auftragsakte, ohne "Aufgabe geschafft" (Anna 2026-10-20). */}
         {!etappe && zustand.phase === "bewerten" && zustand.bewertungAbgeschlossen && (
           <AkteAusZustand zustand={zustand} />
         )}
