@@ -91,6 +91,13 @@ export const DEMO_AUFTRAG = {
   frist: "Dienstag, 17.11., 16:00 Uhr",
   /** Frist als Berliner Zeitpunkt, zum Vergleich mit der Abgabe in der Auftragsakte. */
   fristZeitpunkt: "2026-11-17T16:00:00",
+  /**
+   * Wird der Aufbau unter Spannung in Betrieb genommen? Nur dann gibt es in
+   * Kontrollieren die Freigabe zur Inbetriebnahme und die Prüfungen unter
+   * Spannung (je Auftrag einstellbar, Anna 2026-10-20). In der Demo
+   * umschaltbar mit ?spannung=aus.
+   */
+  unterSpannung: true,
   banner:
     "Dies ist ein Demo mit Beispieldaten. Texte sind Platzhalter, nichts wird an den Server übertragen. Der Stand bleibt nur in diesem Browser.",
 };
@@ -259,6 +266,7 @@ export const TEXTE = {
     unterSpannungText: "Deine Trainer:in ist dabei. Hake jede Prüfung ab und lade danach das Prüfprotokoll hoch.",
     protokollTitel: "Prüfprotokoll",
     protokollText: "Lade das Prüfprotokoll aus dem Prüfgerät als PDF hoch. Gibt es nur ein Papierprotokoll, mach ein Foto davon.",
+    ohneSpannungHinweis: "Bei diesem Auftrag kommt keine Spannung auf die Anlage. Eine Freigabe durch die Trainer:in ist nicht nötig.",
     weiter: "Weiter zu Bewerten",
   },
   entscheiden: {

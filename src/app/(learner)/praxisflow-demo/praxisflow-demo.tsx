@@ -128,7 +128,7 @@ type Zurueck = { href: string; label: string };
  * Rendert den Flow erst im Browser: der Stand liegt im localStorage, der
  * Server kennt ihn nicht. So gibt es keinen Hydration-Unterschied.
  */
-export function PraxisflowDemo({ zurueck }: { zurueck: Zurueck }) {
+export function PraxisflowDemo({ zurueck, unterSpannung = true }: { zurueck: Zurueck; unterSpannung?: boolean }) {
   const imBrowser = useSyncExternalStore(
     nichts,
     () => true,
@@ -154,7 +154,7 @@ export function PraxisflowDemo({ zurueck }: { zurueck: Zurueck }) {
           mit {TRAINER_PRAXIS_DEMO.name}
         </span>
       </div>
-      {imBrowser ? <Flow /> : <p className="text-sm text-ink-muted">Demo wird geladen …</p>}
+      {imBrowser ? <Flow unterSpannung={unterSpannung} /> : <p className="text-sm text-ink-muted">Demo wird geladen …</p>}
     </div>
   );
 }
@@ -191,7 +191,7 @@ const EDITOR: Record<Liste, { icon: typeof Wrench; einzahl: string; leerText: st
   },
 };
 
-function Flow() {
+function Flow({ unterSpannung }: { unterSpannung: boolean }) {
   const [zustand, setZustand] = useState<DemoZustand>(() => zustandLaden(speicher(), SPEICHER_PRAEFIX));
   // Erhöht sich beim Zurücksetzen, damit Eingabefelder und Foto neu starten.
   const [durchlauf, setDurchlauf] = useState(0);
@@ -411,7 +411,12 @@ function Flow() {
 
         {!etappe && zustand.phase === "kontrolle" && (
           <InstruktionKarte icon={ClipboardCheck} titel={phasenName("kontrolle")} {...karte}>
-            <KontrollierenSchritte zustand={zustand} setZustand={setZustand} onWeiter={() => geschafft("bewerten")} />
+            <KontrollierenSchritte
+              zustand={zustand}
+              setZustand={setZustand}
+              unterSpannung={unterSpannung}
+              onWeiter={() => geschafft("bewerten")}
+            />
             <button type="button" onClick={() => zuPhase("durchfuehren")} className={cn(SEKUNDAER, "sm:self-start")}>
               <ArrowLeft aria-hidden="true" />
               Zurück zu {phasenName("durchfuehren")}
@@ -421,7 +426,7 @@ function Flow() {
 
         {/* Nach dem Abschluss nur die Auftragsakte, ohne "Aufgabe geschafft" (Anna 2026-10-20). */}
         {!etappe && zustand.phase === "bewerten" && zustand.bewertungAbgeschlossen && (
-          <AkteAusZustand zustand={zustand} />
+          <AkteAusZustand zustand={zustand} unterSpannung={unterSpannung} />
         )}
 
         {!etappe && zustand.phase === "bewerten" && !zustand.bewertungAbgeschlossen && (
@@ -826,16 +831,62 @@ function PruefZeile({ titel, an, onUmschalten }: { titel: string; an: boolean; o
 function KontrollierenSchritte({
   zustand,
   setZustand,
+  unterSpannung,
   onWeiter,
 }: {
   zustand: DemoZustand;
   setZustand: React.Dispatch<React.SetStateAction<DemoZustand>>;
+  /** Ohne Spannung (je Auftrag): keine Freigabe, keine Prüfungen unter Spannung. */
+  unterSpannung: boolean;
   onWeiter: () => void;
 }) {
   const liste = PRUEFLISTE_STANDARD;
   const aFertig = allesGeprueft(liste.spannungsfrei, zustand.geprueftSpannungsfrei);
   const cFertig = allesGeprueft(liste.unterSpannung, zustand.geprueftUnterSpannung);
   const t = TEXTE.kontrolle;
+
+  const protokoll = (
+    <div className="flex flex-col gap-2">
+      <h3 className={UEBERSCHRIFT}>{t.protokollTitel}</h3>
+      <p className={TEXT}>{t.protokollText}</p>
+      <DateienListe
+        id="pruefprotokoll"
+        accept={UPLOAD_FORMATE.protokoll}
+        dateien={zustand.protokollDateien}
+        onDateien={(d) => setZustand((z) => ({ ...z, protokollDateien: d }))}
+      />
+    </div>
+  );
+
+  // Auftrag ohne Spannung: nur Prüfen ohne Spannung und Protokoll, kein Gate.
+  if (!unterSpannung) {
+    return (
+      <>
+        <Hinweis icon={Info}>{t.ohneSpannungHinweis}</Hinweis>
+        <div className="flex flex-col gap-2">
+          <h3 className={UEBERSCHRIFT}>{t.spannungsfreiTitel}</h3>
+          <p className={TEXT}>{t.spannungsfreiText}</p>
+          {liste.spannungsfrei.map((p) => (
+            <PruefZeile
+              key={p.id}
+              titel={p.titel}
+              an={zustand.geprueftSpannungsfrei.includes(p.id)}
+              onUmschalten={() =>
+                setZustand((z) => ({ ...z, geprueftSpannungsfrei: pruefungUmschalten(z.geprueftSpannungsfrei, p.id) }))
+              }
+            />
+          ))}
+        </div>
+        {aFertig && <Einblenden>{protokoll}</Einblenden>}
+        {aFertig && zustand.protokollDateien.length > 0 && (
+          <button type="button" onClick={onWeiter} className={cn(PRIMAER, "sm:self-start")}>
+            {t.weiter}
+            <ArrowRight aria-hidden="true" />
+          </button>
+        )}
+      </>
+    );
+  }
 
   return (
     <>
@@ -890,16 +941,7 @@ function KontrollierenSchritte({
               />
             ))}
           </div>
-          <div className="flex flex-col gap-2">
-            <h3 className={UEBERSCHRIFT}>{t.protokollTitel}</h3>
-            <p className={TEXT}>{t.protokollText}</p>
-            <DateienListe
-              id="pruefprotokoll"
-              accept={UPLOAD_FORMATE.protokoll}
-              dateien={zustand.protokollDateien}
-              onDateien={(d) => setZustand((z) => ({ ...z, protokollDateien: d }))}
-            />
-          </div>
+          {protokoll}
           {cFertig && zustand.protokollDateien.length > 0 && (
             <button type="button" onClick={onWeiter} className={cn(PRIMAER, "sm:self-start")}>
               {t.weiter}
@@ -976,7 +1018,7 @@ function DateienListe({
 }
 
 /** Auftragsakte aus dem Demo-Stand (Anna 2026-10-20). */
-function AkteAusZustand({ zustand }: { zustand: DemoZustand }) {
+function AkteAusZustand({ zustand, unterSpannung }: { zustand: DemoZustand; unterSpannung: boolean }) {
   const letzte = (text: string) => [...zustand.verlauf].reverse().find((v) => v.text === text)?.zeit ?? null;
   const abgabe = letzte(VERLAUF.abgeschlossen);
   return (
@@ -996,6 +1038,7 @@ function AkteAusZustand({ zustand }: { zustand: DemoZustand }) {
         titel: p.titel,
         erledigt: zustand.geprueftSpannungsfrei.includes(p.id),
       }))}
+      unterSpannung={unterSpannung}
       pruefungenUnterSpannung={PRUEFLISTE_STANDARD.unterSpannung.map((p) => ({
         titel: p.titel,
         erledigt: zustand.geprueftUnterSpannung.includes(p.id),

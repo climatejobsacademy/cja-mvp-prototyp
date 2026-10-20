@@ -64,6 +64,7 @@ export function Auftragsakte({
   schritte,
   planDateien,
   pruefungenOhneSpannung,
+  unterSpannung,
   pruefungenUnterSpannung,
   protokollDateien,
   freigabe,
@@ -80,6 +81,8 @@ export function Auftragsakte({
   schritte: Eintrag[];
   planDateien: string[];
   pruefungenOhneSpannung: { titel: string; erledigt: boolean }[];
+  /** Auftrag mit Inbetriebnahme unter Spannung (sonst ohne Freigabe). */
+  unterSpannung: boolean;
   pruefungenUnterSpannung: { titel: string; erledigt: boolean }[];
   protokollDateien: string[];
   freigabe: string | null;
@@ -135,12 +138,20 @@ export function Auftragsakte({
       <Abschnitt icon={ClipboardCheck} titel="Kontrolle und Prüfprotokoll">
         <span className="text-sm font-semibold text-ink-muted">Ohne Spannung</span>
         {pruefListe(pruefungenOhneSpannung)}
-        <p className="inline-flex items-center gap-2 text-[15px] text-ink">
-          <UserCheck className="size-4 text-praxis-text" aria-hidden="true" />
-          {freigabe ? `Inbetriebnahme freigegeben durch ${auftrag.trainer} am ${zeitAnzeige(freigabe)}` : "Keine Freigabe zur Inbetriebnahme"}
-        </p>
-        <span className="text-sm font-semibold text-ink-muted">Unter Spannung</span>
-        {pruefListe(pruefungenUnterSpannung)}
+        {unterSpannung ? (
+          <>
+            <p className="inline-flex items-center gap-2 text-[15px] text-ink">
+              <UserCheck className="size-4 text-praxis-text" aria-hidden="true" />
+              {freigabe
+                ? `Inbetriebnahme freigegeben durch ${auftrag.trainer} am ${zeitAnzeige(freigabe)}`
+                : "Keine Freigabe zur Inbetriebnahme"}
+            </p>
+            <span className="text-sm font-semibold text-ink-muted">Unter Spannung</span>
+            {pruefListe(pruefungenUnterSpannung)}
+          </>
+        ) : (
+          <p className="text-[15px] text-ink-muted">Auftrag ohne Spannung: keine Freigabe zur Inbetriebnahme nötig.</p>
+        )}
         <DateiNamen dateien={protokollDateien} leer="Kein Prüfprotokoll hochgeladen." />
       </Abschnitt>
 
