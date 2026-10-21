@@ -22,6 +22,13 @@ import { aktivitaeten } from "./home-hilfen";
 import { ModulFortschritt, type RingKompetenz } from "./kompetenz-bereich";
 import type { GestaerkteKompetenz } from "./tages-karten";
 
+// NUR DEMO: Theorietag-Stichwort -> Kompetenz, auf die er vorbereitet (siehe unten).
+const DEMO_VORBEREITET: [string, string[]][] = [
+  ["Verschaltungen der Bauelemente", ["Grundgrößen und Schaltungen anwenden"]],
+  ["Löttechnik", ["Sicher löten"]],
+  ["Umgang mit Multimeter", ["Mit dem Multimeter messen"]],
+];
+
 // Home v6 (docs/design_handoff_home_v6, SR folgt): lädt die Daten und setzt
 // Begrüßung, "Dein Tag" und Kompetenzbereich zusammen.
 
@@ -77,6 +84,16 @@ export default async function HomePage({
       heuteAktiv.praxis.map((p) => p.fieldJobId),
     ),
   ]);
+  // NUR DEMO (Anna 2026-10-21, vor dev entfernen): Live-Lektionen, die eine
+  // Praxis vorbereiten, haben nach SR-71 keine Zuordnung (ihre Teilschritte
+  // sind praktisch). Für die Demo zeigt Home trotzdem die Kompetenz, auf die
+  // der Theorietag laut Notion vorbereitet. Keine Daten, nur Anzeige.
+  for (const l of heuteAktiv.live) {
+    if (!l.lessonId || (heutige.proLektion.get(l.lessonId)?.length ?? 0) > 0) continue;
+    const namen = DEMO_VORBEREITET.find(([stichwort]) => l.titel.includes(stichwort))?.[1] ?? [];
+    const ids = alleKompetenzen.filter((k) => namen.includes(k.name)).map((k) => k.id);
+    if (ids.length > 0) heutige.proLektion.set(l.lessonId, ids);
+  }
   // Alle Kompetenzen, die eine heutige Aktivität stärkt (Glow, Brief 2.4).
   const heuteIds = new Set([...heutige.proLektion.values(), ...heutige.proFieldJob.values()].flat());
 
