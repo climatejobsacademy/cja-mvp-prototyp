@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 import { FOTO_LINK_SEKUNDEN, PROFILFOTO_BUCKET } from "@/lib/profilfoto";
 import { createClient } from "@/lib/supabase/server";
 
@@ -27,8 +29,12 @@ export async function signierteFotoLinks(supabase: SupabaseServer, pfade: string
   );
 }
 
-/** Trainer:innen im eigenen Plan, nach person_id. Leer, wenn keine eingetragen sind. */
-export async function getMeineTrainer(): Promise<Map<string, TrainerAnzeige>> {
+/**
+ * Trainer:innen im eigenen Plan, nach person_id. Leer, wenn keine eingetragen sind.
+ * Mit React cache(): Seite und Stundenplan rufen sie im selben Request auf,
+ * geladen wird einmal (Ladezeit, Anna 2026-10-21).
+ */
+export const getMeineTrainer = cache(async (): Promise<Map<string, TrainerAnzeige>> => {
   const supabase = await createClient();
   const { data } = await supabase.rpc("fn_meine_trainer");
   const trainer = data ?? [];
@@ -47,4 +53,4 @@ export async function getMeineTrainer(): Promise<Map<string, TrainerAnzeige>> {
       },
     ])
   );
-}
+});
