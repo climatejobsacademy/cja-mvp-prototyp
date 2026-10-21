@@ -49,27 +49,49 @@ export type CompetencyView = {
 export async function getKompetenzFortschritt(learnerId: string, programmeId?: string): Promise<CompetencyView[]> {
   const supabase = await createClient();
 
-  // SR-70: mit programmeId nur die Kompetenzen dieses Programms
-  // (competency_programme, 0020); ohne alle (bisheriges Verhalten).
-  const { data: programmZuordnung } = programmeId
-    ? await supabase.from("competency_programme").select("competency_id").eq("programme_id", programmeId)
-    : { data: null };
+  // Ladezeit (Anna 2026-10-21): alles, was nur an Programm und lernender
+  // Person hängt, in einer Welle statt nacheinander; danach die Zuordnungen,
+  // zuletzt die Lektions-Reihenfolge. 11 -> 3 Wartezeiten.
+  const [
+    { data: programmZuordnung },
+    { data: competencies },
+    { data: steps },
+    { data: competencySteps },
+    { data: fulfilment },
+    { data: myCaptures },
+    { data: myJobs },
+    completedLessonIds,
+  ] = await Promise.all([
+    // SR-70: mit programmeId nur die Kompetenzen dieses Programms
+    // (competency_programme, 0020); ohne alle (bisheriges Verhalten).
+    programmeId
+      ? supabase.from("competency_programme").select("competency_id").eq("programme_id", programmeId)
+      : Promise.resolve({ data: null as { competency_id: string }[] | null }),
+    supabase.from("competency").select("id, name, kompetenzbereich"),
+    supabase.from("competency_step").select("id, name, typ"),
+    // N:M seit SR-69 (0019): ein Teilschritt kann an mehreren Kompetenzen
+    // hängen und zählt dann in jeder davon mit. Reihenfolge je Kompetenz aus
+    // competency_competency_step.reihenfolge (0027).
+    supabase
+      .from("competency_competency_step")
+      .select("competency_id, competency_step_id, reihenfolge")
+      .order("reihenfolge", { ascending: true }),
+    // SR-72 (0021): Erfüllungsstand je Kompetenz mit AND-Logik aus der DB. Die
+    // View liefert erst eine Zeile, wenn mindestens ein Teilschritt erfüllt ist.
+    supabase
+      .from("competency_fulfilment")
+      .select("competency_id, teilschritte_gesamt, teilschritte_erfuellt, erfuellt")
+      .eq("learner_id", learnerId),
+    // Verifizierungs-Zwischenstände (pending/abgelehnt) — nur relevant, wenn
+    // administrativ bereits field_capture_step_mapping-Zeilen angelegt wurden
+    // (die Learner-App legt sie nicht an, siehe praxistag/actions.ts).
+    supabase.from("field_capture").select("id, status, field_job_id").eq("learner_id", learnerId),
+    supabase.from("field_job").select("id, field_job_type_id").eq("learner_id", learnerId),
+    // abgeschlossen oder (Live) bestätigte Anwesenheit -- wie competency_fulfilment (0052)
+    erledigteLektionIds(supabase, learnerId),
+  ]);
+
   const imProgramm = programmZuordnung ? new Set(programmZuordnung.map((z) => z.competency_id)) : null;
-
-  const { data: competencies } = await supabase
-    .from("competency")
-    .select("id, name, kompetenzbereich");
-  const { data: steps } = await supabase
-    .from("competency_step")
-    .select("id, name, typ");
-  // N:M seit SR-69 (0019): ein Teilschritt kann an mehreren Kompetenzen
-  // hängen und zählt dann in jeder davon mit. Reihenfolge je Kompetenz aus
-  // competency_competency_step.reihenfolge (0027).
-  const { data: competencySteps } = await supabase
-    .from("competency_competency_step")
-    .select("competency_id, competency_step_id, reihenfolge")
-    .order("reihenfolge", { ascending: true });
-
   if (!competencies || !steps || !competencySteps) return [];
   const kompetenzListe = imProgramm ? competencies.filter((c) => imProgramm.has(c.id)) : competencies;
 
@@ -85,49 +107,30 @@ export async function getKompetenzFortschritt(learnerId: string, programmeId?: s
   }
 
   const stepIds = steps.map((s) => s.id);
-
-  // SR-72 (0021): Erfüllungsstand je Kompetenz mit AND-Logik aus der DB. Die
-  // View liefert erst eine Zeile, wenn mindestens ein Teilschritt erfüllt ist.
-  const { data: fulfilment } = await supabase
-    .from("competency_fulfilment")
-    .select("competency_id, teilschritte_gesamt, teilschritte_erfuellt, erfuellt")
-    .eq("learner_id", learnerId);
   const fulfilmentByCompetency = new Map((fulfilment ?? []).map((f) => [f.competency_id, f]));
-
-  const [{ data: mappings }, { data: praxisMappings }, completedLessonIds] =
-    await Promise.all([
-      stepIds.length
-        ? supabase
-            .from("content_competency_mapping")
-            .select("competency_step_id, lesson_id")
-            .in("competency_step_id", stepIds)
-        : Promise.resolve({ data: [] as { competency_step_id: string; lesson_id: string }[] }),
-      stepIds.length
-        ? supabase
-            .from("field_job_type_competency_mapping")
-            .select("competency_step_id, field_job_type_id")
-            .in("competency_step_id", stepIds)
-        : Promise.resolve({ data: [] as { competency_step_id: string; field_job_type_id: string }[] }),
-      // abgeschlossen oder (Live) bestätigte Anwesenheit -- wie competency_fulfilment (0052)
-      erledigteLektionIds(supabase, learnerId),
-    ]);
-
-  // Verifizierungs-Zwischenstände (pending/abgelehnt) — nur relevant, wenn
-  // administrativ bereits field_capture_step_mapping-Zeilen angelegt wurden
-  // (die Learner-App legt sie nicht an, siehe praxistag/actions.ts).
-  const { data: myCaptures } = await supabase
-    .from("field_capture")
-    .select("id, status, field_job_id")
-    .eq("learner_id", learnerId);
   const captureStatusById = new Map((myCaptures ?? []).map((c) => [c.id, c.status]));
   const captureIds = (myCaptures ?? []).map((c) => c.id);
 
-  const { data: captureStepMappings } = captureIds.length
-    ? await supabase
-        .from("field_capture_step_mapping")
-        .select("competency_step_id, field_capture_id")
-        .in("field_capture_id", captureIds)
-    : { data: [] as { competency_step_id: string; field_capture_id: string }[] };
+  const [{ data: mappings }, { data: praxisMappings }, { data: captureStepMappings }] = await Promise.all([
+    stepIds.length
+      ? supabase
+          .from("content_competency_mapping")
+          .select("competency_step_id, lesson_id")
+          .in("competency_step_id", stepIds)
+      : Promise.resolve({ data: [] as { competency_step_id: string; lesson_id: string }[] }),
+    stepIds.length
+      ? supabase
+          .from("field_job_type_competency_mapping")
+          .select("competency_step_id, field_job_type_id")
+          .in("competency_step_id", stepIds)
+      : Promise.resolve({ data: [] as { competency_step_id: string; field_job_type_id: string }[] }),
+    captureIds.length
+      ? supabase
+          .from("field_capture_step_mapping")
+          .select("competency_step_id, field_capture_id")
+          .in("field_capture_id", captureIds)
+      : Promise.resolve({ data: [] as { competency_step_id: string; field_capture_id: string }[] }),
+  ]);
 
   const statusesByStep = new Map<string, ("submitted" | "verified" | "rejected")[]>();
   for (const m of captureStepMappings ?? []) {
@@ -173,9 +176,6 @@ export async function getKompetenzFortschritt(learnerId: string, programmeId?: s
   const verifiedJobIds = new Set(
     (myCaptures ?? []).filter((c) => c.status === "verified").map((c) => c.field_job_id)
   );
-  const { data: myJobs } = verifiedJobIds.size
-    ? await supabase.from("field_job").select("id, field_job_type_id").eq("learner_id", learnerId)
-    : { data: [] as { id: string; field_job_type_id: string }[] };
   const verifiedJobTypeIds = new Set(
     (myJobs ?? []).filter((j) => verifiedJobIds.has(j.id)).map((j) => j.field_job_type_id)
   );
