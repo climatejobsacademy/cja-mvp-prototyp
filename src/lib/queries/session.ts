@@ -41,37 +41,39 @@ export type CurrentLearner = {
 export const requireCurrentLearner = cache(async (): Promise<CurrentLearner> => {
   const supabase = await createClient();
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getClaims prüft das Anmelde-Token lokal über den öffentlichen Schlüssel
+  // (asymmetrische Signier-Schlüssel), ohne Rundreise zu Supabase Auth --
+  // die Middleware hat die Sitzung im selben Request schon aufgefrischt.
+  // Rechte entscheidet weiterhin RLS (auth.uid() aus demselben Token).
+  const { data: anmeldung } = await supabase.auth.getClaims();
+  const userId = anmeldung?.claims.sub;
 
-  if (!user) {
+  if (!userId) {
     redirect("/login");
   }
 
-  const { data: person, error: personError } = await supabase
-    .from("person")
-    .select("id, name, rufname, foto_pfad")
-    .eq("id", user.id)
-    .single();
+  // Person und Einschreibung hängen beide nur an der Nutzer-ID: gleichzeitig
+  // laden statt nacheinander (Ladezeit, Anna 2026-10-21).
+  // Bewusst als einfache Abfragen statt eines verschachtelten Selects:
+  // hält die Typinferenz robust, ohne von den (hier von Hand geschriebenen,
+  // nicht generierten) Relationships-Metadaten abhängig zu sein.
+  const [{ data: person, error: personError }, { data: enrolment, error: enrolmentError }] = await Promise.all([
+    supabase.from("person").select("id, name, rufname, foto_pfad").eq("id", userId).single(),
+    supabase
+      .from("enrolment")
+      .select("id, organisation_id, cohort_id")
+      .eq("learner_id", userId)
+      .eq("status", "aktiv")
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle(),
+  ]);
 
   if (personError || !person) {
     // Person existiert in auth.users, aber (noch) nicht in public.person —
     // Prototyp legt Accounts händisch an (data-model.md, 4d).
     redirect("/login?error=kein-profil");
   }
-
-  // Bewusst als einfache Abfragen statt eines verschachtelten Selects:
-  // hält die Typinferenz robust, ohne von den (hier von Hand geschriebenen,
-  // nicht generierten) Relationships-Metadaten abhängig zu sein.
-  const { data: enrolment, error: enrolmentError } = await supabase
-    .from("enrolment")
-    .select("id, organisation_id, cohort_id")
-    .eq("learner_id", person.id)
-    .eq("status", "aktiv")
-    .order("created_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
 
   if (enrolmentError || !enrolment) {
     // Trainer:innen ohne Einschreibung haben ihren eigenen Bereich (SR-81, Paket G2).
@@ -84,20 +86,19 @@ export const requireCurrentLearner = cache(async (): Promise<CurrentLearner> => 
     redirect(zielOhneEinschreibung((rollen ?? []).length > 0));
   }
 
-  // Organisation parallel zur Kohorte: kein zusätzlicher Roundtrip. Lesbar nur
-  // bei Mitgliedschaft (organisation_learner_select, 0009). Fehler oder keine
-  // Zeile (auch: Spalte logo_pfad noch nicht migriert) -> kein Logo, die Seite
-  // bricht daran nicht.
-  const [{ data: cohort, error: cohortError }, { data: organisation }] = await Promise.all([
+  // Organisation und Profilfoto parallel zur Kohorte: kein zusätzlicher
+  // Roundtrip. Organisation lesbar nur bei Mitgliedschaft
+  // (organisation_learner_select, 0009). Fehler oder keine Zeile -> kein
+  // Logo, die Seite bricht daran nicht.
+  const [{ data: cohort, error: cohortError }, { data: organisation }, fotoLinks] = await Promise.all([
     supabase.from("cohort").select("programme_id, name").eq("id", enrolment.cohort_id).single(),
     supabase.from("organisation").select("name, logo_pfad").eq("id", enrolment.organisation_id).maybeSingle(),
+    signierteFotoLinks(supabase, person.foto_pfad ? [person.foto_pfad] : []),
   ]);
 
   if (cohortError || !cohort) {
     redirect("/login?error=keine-einschreibung");
   }
-
-  const fotoLinks = await signierteFotoLinks(supabase, person.foto_pfad ? [person.foto_pfad] : []);
 
   const { data: programme, error: programmeError } = await supabase
     .from("programme")
@@ -114,7 +115,7 @@ export const requireCurrentLearner = cache(async (): Promise<CurrentLearner> => 
     name: person.name,
     rufname: person.rufname,
     fotoUrl: person.foto_pfad ? (fotoLinks.get(person.foto_pfad) ?? null) : null,
-    email: user.email ?? "",
+    email: typeof anmeldung?.claims.email === "string" ? anmeldung.claims.email : "",
     enrolmentId: enrolment.id,
     cohortId: enrolment.cohort_id,
     organisationId: enrolment.organisation_id,

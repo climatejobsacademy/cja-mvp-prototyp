@@ -14,16 +14,16 @@ export type CurrentTrainer = { personId: string; name: string; rufname: string; 
 
 export const requireCurrentTrainer = cache(async (): Promise<CurrentTrainer> => {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/login");
+  // Wie requireCurrentLearner: Token lokal prüfen statt Rundreise (getClaims).
+  const { data: anmeldung } = await supabase.auth.getClaims();
+  const userId = anmeldung?.claims.sub;
+  if (!userId) redirect("/login");
 
   const [{ data: person }, { data: rollen }, { data: einschreibung }] = await Promise.all([
-    supabase.from("person").select("id, name, rufname").eq("id", user.id).maybeSingle(),
-    supabase.from("role_assignment").select("rolle").eq("person_id", user.id).eq("rolle", "trainer").limit(1),
+    supabase.from("person").select("id, name, rufname").eq("id", userId).maybeSingle(),
+    supabase.from("role_assignment").select("rolle").eq("person_id", userId).eq("rolle", "trainer").limit(1),
     // nur eigene Einschreibungen: Trainer:innen lesen per Policy auch die der Kohorte
-    supabase.from("enrolment").select("id").eq("learner_id", user.id).eq("status", "aktiv").limit(1),
+    supabase.from("enrolment").select("id").eq("learner_id", userId).eq("status", "aktiv").limit(1),
   ]);
   if (!person) redirect("/login?error=kein-profil");
 
@@ -33,7 +33,8 @@ export const requireCurrentTrainer = cache(async (): Promise<CurrentTrainer> => 
   });
   if (!zugang.erlaubt) redirect(zugang.ziel);
 
-  return { personId: person.id, name: person.name, rufname: person.rufname, email: user.email ?? "" };
+  const email = anmeldung?.claims.email;
+  return { personId: person.id, name: person.name, rufname: person.rufname, email: typeof email === "string" ? email : "" };
 });
 
 export type Teilnehmende = { personId: string; name: string; anwesenheit: AktuelleAnwesenheit };

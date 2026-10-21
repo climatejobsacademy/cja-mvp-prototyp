@@ -40,16 +40,17 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  // getUser() macht einen Netzwerk-Request an Supabase Auth — ohne (oder mit
-  // unerreichbarem) Supabase-Projekt soll das nicht die ganze Seite (auch
-  // /login) mit einem 500er lahmlegen, sondern wie "nicht eingeloggt" behandelt
-  // werden.
-  let user = null;
+  // getClaims() frischt eine abgelaufene Sitzung auf (dann ein Request an
+  // Supabase Auth) und prüft das Token sonst lokal über den öffentlichen
+  // Schlüssel (asymmetrische Signier-Schlüssel, ECC P-256) -- spart bei jedem
+  // Seitenwechsel die Rundreise, die getUser() machte (Ladezeit, Anna
+  // 2026-10-21). Fehler (z. B. Supabase nicht erreichbar) legen nicht die
+  // ganze Seite (auch /login) mit einem 500er lahm, sondern gelten als "nicht
+  // eingeloggt".
+  let user: string | null = null;
   try {
-    const {
-      data: { user: fetchedUser },
-    } = await supabase.auth.getUser();
-    user = fetchedUser;
+    const { data } = await supabase.auth.getClaims();
+    user = data?.claims.sub ?? null;
   } catch {
     user = null;
   }
