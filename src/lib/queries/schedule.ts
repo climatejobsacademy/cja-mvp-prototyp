@@ -102,185 +102,188 @@ export async function getAgendaZeitraum(
   const feldEntries = rows.filter((r) => r.art === "feld" && r.field_job_id);
   const theorieEntries = rows.filter((r) => r.art !== "feld");
 
-  const feld: (FeldEintrag & { datum: string })[] = [];
-  if (feldEntries.length > 0) {
-    const fieldJobIds = feldEntries.map((r) => r.field_job_id!) as string[];
-    const { data: fieldJobs } = await supabase
-      .from("field_job")
-      .select("id, status, standort, start, ende, field_job_type_id, instructor_id")
-      .in("id", fieldJobIds);
+  // Ladezeit (Anna 2026-10-21): Praxis- und Theorie-Zweig hängen nicht
+  // voneinander ab und laufen gleichzeitig.
+  const ladeFeld = async () => {
+    const feld: (FeldEintrag & { datum: string })[] = [];
+    if (feldEntries.length > 0) {
+      const fieldJobIds = feldEntries.map((r) => r.field_job_id!) as string[];
+      const { data: fieldJobs } = await supabase
+        .from("field_job")
+        .select("id, status, standort, start, ende, field_job_type_id, instructor_id")
+        .in("id", fieldJobIds);
 
-    const typeIds = [...new Set((fieldJobs ?? []).map((j) => j.field_job_type_id))];
-    const { data: fieldJobTypes } = await supabase
-      .from("field_job_type")
-      .select("id, titel, beschreibung, bild_oder_icon")
-      .in("id", typeIds.length > 0 ? typeIds : ["00000000-0000-0000-0000-000000000000"]);
+      const typeIds = [...new Set((fieldJobs ?? []).map((j) => j.field_job_type_id))];
+      const { data: fieldJobTypes } = await supabase
+        .from("field_job_type")
+        .select("id, titel, beschreibung, bild_oder_icon")
+        .in("id", typeIds.length > 0 ? typeIds : ["00000000-0000-0000-0000-000000000000"]);
 
-    for (const entry of feldEntries) {
-      const job = fieldJobs?.find((j) => j.id === entry.field_job_id);
-      const type = fieldJobTypes?.find((t) => t.id === job?.field_job_type_id);
-      if (job && type) {
-        feld.push({
-          datum: entry.datum,
-          kind: "feld",
-          scheduleEntryId: entry.id,
-          fieldJobId: job.id,
-          titel: type.titel,
-          beschreibung: type.beschreibung,
-          bildOderIcon: type.bild_oder_icon,
-          standort: job.standort,
-          start: job.start,
-          ende: job.ende,
-          status: job.status,
-          trainerId: job.instructor_id,
-        });
+      for (const entry of feldEntries) {
+        const job = fieldJobs?.find((j) => j.id === entry.field_job_id);
+        const type = fieldJobTypes?.find((t) => t.id === job?.field_job_type_id);
+        if (job && type) {
+          feld.push({
+            datum: entry.datum,
+            kind: "feld",
+            scheduleEntryId: entry.id,
+            fieldJobId: job.id,
+            titel: type.titel,
+            beschreibung: type.beschreibung,
+            bildOderIcon: type.bild_oder_icon,
+            standort: job.standort,
+            start: job.start,
+            ende: job.ende,
+            status: job.status,
+            trainerId: job.instructor_id,
+          });
+        }
       }
     }
-  }
+    return feld;
+  };
+  const ladeTheorie = async () => {
+    const theorie: (TheorieEintrag & { datum: string })[] = [];
+    if (theorieEntries.length > 0) {
+      const lessonIds = [...new Set(theorieEntries.map((r) => r.lesson_id).filter(Boolean))] as string[];
+      const courseIds = [...new Set(theorieEntries.map((r) => r.course_id).filter(Boolean))] as string[];
+      const liveSessionIds = [...new Set(theorieEntries.map((r) => r.live_session_id).filter(Boolean))] as string[];
 
-  const theorie: (TheorieEintrag & { datum: string })[] = [];
-  if (theorieEntries.length > 0) {
-    const lessonIds = [...new Set(theorieEntries.map((r) => r.lesson_id).filter(Boolean))] as string[];
-    const courseIds = [...new Set(theorieEntries.map((r) => r.course_id).filter(Boolean))] as string[];
-    const liveSessionIds = [...new Set(theorieEntries.map((r) => r.live_session_id).filter(Boolean))] as string[];
+      const [{ data: lessons }, { data: courses }, { data: liveSessions }] = await Promise.all([
+        lessonIds.length
+          ? supabase.from("lesson").select("id, name, thema, content_type, live_lektion_id").in("id", lessonIds)
+          : Promise.resolve({
+              data: [] as {
+                id: string;
+                name: string;
+                thema: string | null;
+                content_type: ContentType;
+                live_lektion_id: string | null;
+              }[],
+            }),
+        courseIds.length
+          ? supabase.from("course").select("id, name").in("id", courseIds)
+          : Promise.resolve({ data: [] as { id: string; name: string }[] }),
+        liveSessionIds.length
+          ? supabase
+              .from("live_session")
+              .select("id, lesson_id, course_id, datum, start, ende, join_link, trainer_id")
+              .in("id", liveSessionIds)
+          : Promise.resolve({
+              data: [] as {
+                id: string;
+                lesson_id: string | null;
+                course_id: string | null;
+                datum: string;
+                start: string;
+                ende: string;
+                join_link: string | null;
+                trainer_id: string | null;
+              }[],
+            }),
+      ]);
 
-    const [{ data: lessons }, { data: courses }, { data: liveSessions }] = await Promise.all([
-      lessonIds.length
-        ? supabase.from("lesson").select("id, name, thema, content_type, live_lektion_id").in("id", lessonIds)
-        : Promise.resolve({
-            data: [] as {
-              id: string;
-              name: string;
-              thema: string | null;
-              content_type: ContentType;
-              live_lektion_id: string | null;
-            }[],
-          }),
-      courseIds.length
-        ? supabase.from("course").select("id, name").in("id", courseIds)
-        : Promise.resolve({ data: [] as { id: string; name: string }[] }),
-      liveSessionIds.length
-        ? supabase
-            .from("live_session")
-            .select("id, lesson_id, course_id, datum, start, ende, join_link, trainer_id")
-            .in("id", liveSessionIds)
-        : Promise.resolve({
-            data: [] as {
-              id: string;
-              lesson_id: string | null;
-              course_id: string | null;
-              datum: string;
-              start: string;
-              ende: string;
-              join_link: string | null;
-              trainer_id: string | null;
-            }[],
-          }),
-    ]);
+      // Live-Sessions können eigene lesson_id haben, die nicht auf dem
+      // schedule_entry steht. Diese Lessons nachladen, falls noch nicht dabei.
+      const liveSessionLessonIds = (liveSessions ?? [])
+        .map((s) => s.lesson_id)
+        .filter((id): id is string => !!id && !lessonIds.includes(id));
+      // Live-Termine, die an einem Kurs statt an einer Lektion hängen: Kursnamen
+      // nachladen, sonst stünde dort nur "Live-Termin" (Anna 2026-10-17).
+      const sessionCourseIds = [
+        ...new Set(
+          (liveSessions ?? [])
+            .map((s) => s.course_id)
+            .filter((id): id is string => !!id && !(courses ?? []).some((c) => c.id === id))
+        ),
+      ];
+      const allLessonIdsForProgress = [...lessonIds, ...liveSessionLessonIds];
+      // Ladezeit (Anna 2026-10-21): die drei Nachlade-Abfragen gleichzeitig.
+      const [{ data: extraLessons }, { data: extraCourses }, { data: progress }] = await Promise.all([
+        liveSessionLessonIds.length > 0
+          ? supabase.from("lesson").select("id, name, thema, content_type, live_lektion_id").in("id", liveSessionLessonIds)
+          : Promise.resolve({ data: [] as NonNullable<typeof lessons> }),
+        sessionCourseIds.length > 0
+          ? supabase.from("course").select("id, name").in("id", sessionCourseIds)
+          : Promise.resolve({ data: [] as { id: string; name: string }[] }),
+        allLessonIdsForProgress.length > 0
+          ? supabase
+              .from("unit_progress")
+              .select("lesson_id, status")
+              .eq("learner_id", learnerId)
+              .in("lesson_id", allLessonIdsForProgress)
+          : Promise.resolve({ data: [] as { lesson_id: string; status: UnitProgressStatus }[] }),
+      ]);
+      const allLessons = [...(lessons ?? []), ...(extraLessons ?? [])];
+      const allCourses = [...(courses ?? []), ...(extraCourses ?? [])];
+      const progressByLesson = new Map<string, UnitProgressStatus>((progress ?? []).map((p) => [p.lesson_id, p.status]));
 
-    // Live-Sessions können eigene lesson_id haben, die nicht auf dem
-    // schedule_entry steht. Diese Lessons nachladen, falls noch nicht dabei.
-    const liveSessionLessonIds = (liveSessions ?? [])
-      .map((s) => s.lesson_id)
-      .filter((id): id is string => !!id && !lessonIds.includes(id));
-    let allLessons = [...(lessons ?? [])];
-    if (liveSessionLessonIds.length > 0) {
-      const { data: extraLessons } = await supabase
-        .from("lesson")
-        .select("id, name, thema, content_type, live_lektion_id")
-        .in("id", liveSessionLessonIds);
-      allLessons = [...allLessons, ...(extraLessons ?? [])];
-    }
-
-    // Live-Termine, die an einem Kurs statt an einer Lektion hängen: Kursnamen
-    // nachladen, sonst stünde dort nur "Live-Termin" (Anna 2026-10-17).
-    let allCourses = [...(courses ?? [])];
-    const sessionCourseIds = [
-      ...new Set(
-        (liveSessions ?? [])
-          .map((s) => s.course_id)
-          .filter((id): id is string => !!id && !allCourses.some((c) => c.id === id))
-      ),
-    ];
-    if (sessionCourseIds.length > 0) {
-      const { data: extraCourses } = await supabase.from("course").select("id, name").in("id", sessionCourseIds);
-      allCourses = [...allCourses, ...(extraCourses ?? [])];
-    }
-
-    let progressByLesson = new Map<string, UnitProgressStatus>();
-    const allLessonIdsForProgress = [...lessonIds, ...liveSessionLessonIds];
-    if (allLessonIdsForProgress.length > 0) {
-      const { data: progress } = await supabase
-        .from("unit_progress")
-        .select("lesson_id, status")
-        .eq("learner_id", learnerId)
-        .in("lesson_id", allLessonIdsForProgress);
-      progressByLesson = new Map((progress ?? []).map((p) => [p.lesson_id, p.status]));
-    }
-
-    for (const entry of theorieEntries) {
-      if (entry.live_session_id) {
-        const session = liveSessions?.find((s) => s.id === entry.live_session_id);
-        if (!session) continue;
-        const lesson = session.lesson_id ? allLessons.find((l) => l.id === session.lesson_id) : null;
-        const course = session.course_id ? allCourses.find((c) => c.id === session.course_id) : null;
-        const titel = lesson ? lektionTitel(lesson.name, lesson.thema) : null;
-        theorie.push({
-          datum: entry.datum,
-          kind: "theorie",
-          scheduleEntryId: entry.id,
-          lessonId: lesson?.id ?? null,
-          art: "live",
-          titel: titel?.titel ?? course?.name ?? "Live-Termin",
-          thema: titel?.thema ?? null,
-          liveLektionId: null,
-          contentType: "live",
-          unitProgressStatus: lesson ? progressByLesson.get(lesson.id) ?? "offen" : null,
-          liveSession: {
-            id: session.id,
-            datum: session.datum,
-            start: session.start,
-            ende: session.ende,
-            joinLink: session.join_link,
-            trainerId: session.trainer_id,
-          },
-        });
-      } else if (entry.lesson_id) {
-        const lesson = allLessons.find((l) => l.id === entry.lesson_id);
-        if (!lesson) continue;
-        const titel = lektionTitel(lesson.name, lesson.thema);
-        theorie.push({
-          datum: entry.datum,
-          kind: "theorie",
-          scheduleEntryId: entry.id,
-          lessonId: lesson.id,
-          art: "asynchron",
-          titel: titel.titel,
-          thema: titel.thema,
-          liveLektionId: lesson.live_lektion_id,
-          contentType: lesson.content_type,
-          unitProgressStatus: progressByLesson.get(lesson.id) ?? "offen",
-          liveSession: null,
-        });
-      } else if (entry.course_id) {
-        const course = courses?.find((c) => c.id === entry.course_id);
-        if (!course) continue;
-        theorie.push({
-          datum: entry.datum,
-          kind: "theorie",
-          scheduleEntryId: entry.id,
-          lessonId: null,
-          art: "asynchron",
-          titel: course.name,
-          thema: null,
-          liveLektionId: null,
-          contentType: "kurs",
-          unitProgressStatus: null,
-          liveSession: null,
-        });
+      for (const entry of theorieEntries) {
+        if (entry.live_session_id) {
+          const session = liveSessions?.find((s) => s.id === entry.live_session_id);
+          if (!session) continue;
+          const lesson = session.lesson_id ? allLessons.find((l) => l.id === session.lesson_id) : null;
+          const course = session.course_id ? allCourses.find((c) => c.id === session.course_id) : null;
+          const titel = lesson ? lektionTitel(lesson.name, lesson.thema) : null;
+          theorie.push({
+            datum: entry.datum,
+            kind: "theorie",
+            scheduleEntryId: entry.id,
+            lessonId: lesson?.id ?? null,
+            art: "live",
+            titel: titel?.titel ?? course?.name ?? "Live-Termin",
+            thema: titel?.thema ?? null,
+            liveLektionId: null,
+            contentType: "live",
+            unitProgressStatus: lesson ? progressByLesson.get(lesson.id) ?? "offen" : null,
+            liveSession: {
+              id: session.id,
+              datum: session.datum,
+              start: session.start,
+              ende: session.ende,
+              joinLink: session.join_link,
+              trainerId: session.trainer_id,
+            },
+          });
+        } else if (entry.lesson_id) {
+          const lesson = allLessons.find((l) => l.id === entry.lesson_id);
+          if (!lesson) continue;
+          const titel = lektionTitel(lesson.name, lesson.thema);
+          theorie.push({
+            datum: entry.datum,
+            kind: "theorie",
+            scheduleEntryId: entry.id,
+            lessonId: lesson.id,
+            art: "asynchron",
+            titel: titel.titel,
+            thema: titel.thema,
+            liveLektionId: lesson.live_lektion_id,
+            contentType: lesson.content_type,
+            unitProgressStatus: progressByLesson.get(lesson.id) ?? "offen",
+            liveSession: null,
+          });
+        } else if (entry.course_id) {
+          const course = courses?.find((c) => c.id === entry.course_id);
+          if (!course) continue;
+          theorie.push({
+            datum: entry.datum,
+            kind: "theorie",
+            scheduleEntryId: entry.id,
+            lessonId: null,
+            art: "asynchron",
+            titel: course.name,
+            thema: null,
+            liveLektionId: null,
+            contentType: "kurs",
+            unitProgressStatus: null,
+            liveSession: null,
+          });
+        }
       }
     }
-  }
+    return theorie;
+  };
+  const [feld, theorie] = await Promise.all([ladeFeld(), ladeTheorie()]);
 
   const ohneDatum = <T extends { datum: string }>(eintrag: T): Omit<T, "datum"> => {
     const kopie: Partial<T> = { ...eintrag };

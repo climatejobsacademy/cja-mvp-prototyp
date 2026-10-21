@@ -74,30 +74,30 @@ export async function getContentLibrary(
   ]);
 
   const moduleIds = (modules ?? []).map((m) => m.id);
-  const { data: coursesViaModule } = moduleIds.length
-    ? await supabase
-        .from("course")
-        .select("id, name, reihenfolge, module_id")
-        .in("module_id", moduleIds)
-        .order("reihenfolge", { ascending: true })
-    : { data: [] as { id: string; name: string; reihenfolge: number; module_id: string | null }[] };
-
-  const { data: fieldJobTypesViaModule } = moduleIds.length
-    ? await supabase
-        .from("field_job_type")
-        .select("id, titel, beschreibung, vorbereitung_text, reihenfolge, module_id")
-        .in("module_id", moduleIds)
-        .order("reihenfolge", { ascending: true })
-    : {
-        data: [] as {
-          id: string;
-          titel: string;
-          beschreibung: string | null;
-          vorbereitung_text: string | null;
-          reihenfolge: number;
-          module_id: string | null;
-        }[],
-      };
+  // Ladezeit (Anna 2026-10-21): beide Abfragen über die Wochen gleichzeitig.
+  type KursZeile = { id: string; name: string; reihenfolge: number; module_id: string | null };
+  type AuftragZeile = {
+    id: string;
+    titel: string;
+    beschreibung: string | null;
+    vorbereitung_text: string | null;
+    reihenfolge: number;
+    module_id: string | null;
+  };
+  const [{ data: coursesViaModule }, { data: fieldJobTypesViaModule }] = moduleIds.length
+    ? await Promise.all([
+        supabase
+          .from("course")
+          .select("id, name, reihenfolge, module_id")
+          .in("module_id", moduleIds)
+          .order("reihenfolge", { ascending: true }),
+        supabase
+          .from("field_job_type")
+          .select("id, titel, beschreibung, vorbereitung_text, reihenfolge, module_id")
+          .in("module_id", moduleIds)
+          .order("reihenfolge", { ascending: true }),
+      ])
+    : [{ data: [] as KursZeile[] }, { data: [] as AuftragZeile[] }];
 
   const allCourses = [...(coursesViaProgramme ?? []), ...(coursesViaModule ?? [])];
   const allFieldJobTypes = [...(fieldJobTypesViaProgramme ?? []), ...(fieldJobTypesViaModule ?? [])];

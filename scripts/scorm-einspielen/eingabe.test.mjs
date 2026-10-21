@@ -2,9 +2,10 @@
 // echten Inhalte). Ausführen: node --test scripts/scorm-einspielen/*.test.mjs
 
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
-import { leseListe, loeseKennungenAuf, pruefeDateiZiel, zerlegeCsv } from "./eingabe.mjs";
+import { leseListe, loeseKennungenAuf, pruefeDateiZiel, setzeEingabe, zerlegeCsv } from "./eingabe.mjs";
 
 const L1 = "0b6f2c1e-3a4d-4e5f-8a9b-0c1d2e3f4a5b";
 const L2 = "1c7a3d2f-4b5e-4f6a-9b0c-1d2e3f4a5b6c";
@@ -111,4 +112,21 @@ test("Kennungen: Fehler für unbekannten Termin, Termin ohne Lektion, fehlenden 
   assert.match(fehler, /M02-S001\): Der Termin hat keine Lektion \(Art „begleit“\)/);
   assert.match(fehler, /M02-S020\): Kurs „II\|Fehlt“/);
   assert.match(fehler, /M09-S001\): Modul IX steht nicht im Plan/);
+});
+
+test("Eingabe ins SQL: jede Stelle des Platzhalters, auch nach einem Kommentar mit demselben Wort", () => {
+  const sql = "-- der Platzhalter __EINGABE__ wird ersetzt\nselect (__EINGABE__) -> 'a', (__EINGABE__) -> 'b';";
+  const ergebnis = setzeEingabe(sql, () => "$t$[1]$t$::jsonb");
+  assert.equal(ergebnis, "-- der Platzhalter $t$[1]$t$::jsonb wird ersetzt\nselect ($t$[1]$t$::jsonb) -> 'a', ($t$[1]$t$::jsonb) -> 'b';");
+  // "$&", "$'" im Ersatz bleiben wörtlich (kein Ersetzungsmuster)
+  assert.equal(setzeEingabe("x __EINGABE__ y", () => "$&$'"), "x $&$' y");
+  assert.throws(() => setzeEingabe("select 1;", () => "x"), /Platzhalter __EINGABE__ fehlt/);
+});
+
+test("Eingabe ins SQL: lesen.sql hat danach keinen Platzhalter mehr, die Abfrage bekommt das Literal", () => {
+  const lesen = readFileSync(new URL("./lesen.sql", import.meta.url), "utf8");
+  assert.ok(lesen.split("__EINGABE__").length > 2, "lesen.sql nennt den Platzhalter mehrfach (Kommentar und Abfrage)");
+  const ergebnis = setzeEingabe(lesen, () => "$e$[]$e$::jsonb");
+  assert.ok(!ergebnis.includes("__EINGABE__"));
+  assert.match(ergebnis, /jsonb_to_recordset\(\(\$e\$\[\]\$e\$::jsonb\) -> 'eintraege'\)/);
 });
