@@ -202,3 +202,18 @@ export function loeseKennungenAuf(eintraege, plan) {
   if (fehler.length) throw new Error(`${fehler.length} Fehler beim Auflösen der Kennungen:\n  - ${fehler.join("\n  - ")}`);
   return { eintraege: [...nachKurs.values()], meldungen };
 }
+
+export const EINGABE_PLATZHALTER = "__EINGABE__";
+
+/**
+ * Setzt die Eingabe (jsonb-Literal) an JEDER Stelle des Platzhalters ins SQL
+ * (lesen.sql). replaceAll statt replace: Der Platzhalter steht auch im
+ * Kopfkommentar; mit replace traf es nur diese erste Stelle, die Abfrage
+ * blieb mit __EINGABE__ stehen ("column __eingabe__ does not exist").
+ * ersatz ist eine Funktion, damit "$" im Literal nicht als Ersetzungsmuster
+ * gilt. Ohne Platzhalter ein Fehler.
+ */
+export function setzeEingabe(sql, ersatz) {
+  if (!sql.includes(EINGABE_PLATZHALTER)) throw new Error(`Platzhalter ${EINGABE_PLATZHALTER} fehlt im SQL.`);
+  return sql.replaceAll(EINGABE_PLATZHALTER, () => ersatz());
+}
