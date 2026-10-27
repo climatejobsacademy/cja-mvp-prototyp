@@ -16,6 +16,7 @@ import {
 } from "react";
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Check, Pause, PartyPopper, ThumbsDown, ThumbsUp, Volume2, X } from "lucide-react";
 
+import { ZoomFenster } from "@/components/bild-zoom";
 import { FormelText } from "@/components/formel-text";
 import { jetztInBerlin } from "@/lib/date";
 import { schrittAufgabe, schrittBilder, type Baustein, type Lernkurs, type Schritt, type TextKnoten } from "@/lib/lernkurs";
@@ -813,10 +814,13 @@ function Geschafft({
 
 /** Einheitlicher Bildrahmen: gleiche Höhe, kleine Bilder werden vergrößert. */
 function Bild({ src, alt }: { src: string; alt: string }) {
+  // Klick öffnet das Bild groß mit Zoom (Anna 2026-10-27).
   return (
-    <div className="flex aspect-[16/9] w-full items-center justify-center overflow-hidden rounded-xl bg-white p-2 ring-1 ring-line">
-      <img src={src} alt={alt} className="h-full w-full object-contain" />
-    </div>
+    <ZoomFenster src={src} alt={alt}>
+      <div className="flex aspect-[16/9] w-full items-center justify-center overflow-hidden rounded-xl bg-white p-2 ring-1 ring-line">
+        <img src={src} alt={alt} className="h-full w-full object-contain" />
+      </div>
+    </ZoomFenster>
   );
 }
 
