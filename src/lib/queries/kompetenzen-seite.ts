@@ -23,6 +23,8 @@ export type Lernaktivitaet = {
   erledigt: boolean;
   /** Praxis: eigener Praxistag dieses Typs (Link auf /praxistag/[id]), sonst null */
   fieldJobId: string | null;
+  /** Teilschritte, auf die die Aktivität einzahlt (Selbstlernen: die der zugehörigen Live-Lektion) */
+  stepIds: string[];
 };
 
 /**
@@ -40,9 +42,19 @@ export async function getLernaktivitaeten(
   const meinPlan = `cohort_id.eq.${ctx.cohortId},enrolment_id.eq.${ctx.enrolmentId}`;
 
   const [{ data: theorie }, { data: praxis }] = await Promise.all([
-    supabase.from("content_competency_mapping").select("lesson_id").in("competency_step_id", stepIds),
-    supabase.from("field_job_type_competency_mapping").select("field_job_type_id").in("competency_step_id", stepIds),
+    supabase.from("content_competency_mapping").select("lesson_id, competency_step_id").in("competency_step_id", stepIds),
+    supabase
+      .from("field_job_type_competency_mapping")
+      .select("field_job_type_id, competency_step_id")
+      .in("competency_step_id", stepIds),
   ]);
+  const stepsJe = (paare: { key: string; step: string }[]) => {
+    const map = new Map<string, string[]>();
+    for (const { key, step } of paare) map.set(key, [...(map.get(key) ?? []), step]);
+    return map;
+  };
+  const stepsJeLektion = stepsJe((theorie ?? []).map((m) => ({ key: m.lesson_id, step: m.competency_step_id })));
+  const stepsJeTyp = stepsJe((praxis ?? []).map((m) => ({ key: m.field_job_type_id, step: m.competency_step_id })));
   const lessonIds = [...new Set((theorie ?? []).map((m) => m.lesson_id))];
   const typIds = [...new Set((praxis ?? []).map((m) => m.field_job_type_id))];
 
@@ -72,15 +84,28 @@ export async function getLernaktivitaeten(
         : leer,
     ]);
 
-  // Live-Termine nur, wenn sie im eigenen Stundenplan stehen.
+  // Live-Termine nur, wenn sie im eigenen Stundenplan stehen. Gleichzeitig
+  // die Selbstlern-Lektionen, die zu den Live-Lektionen gehören (Wissen
+  // festigen, live_lektion_id 0029) -- sie zahlen auf dieselben Teilschritte
+  // ein (Anna 2026-10-27: je Kompetenzschritt die Links zu Live, Selbstlernen,
+  // Praxis).
   const liveIds = (liveSessions ?? []).map((s) => s.id);
-  const { data: livePlan } = liveIds.length
-    ? await supabase
-        .from("schedule_entry")
-        .select("live_session_id")
-        .in("live_session_id", liveIds)
-        .or(meinPlan)
-    : { data: [] as { live_session_id: string | null }[] };
+  const liveLektionIds = (lessons ?? []).filter((l) => l.content_type === "live").map((l) => l.id);
+  const [{ data: livePlan }, { data: festigen }] = await Promise.all([
+    liveIds.length
+      ? supabase.from("schedule_entry").select("live_session_id").in("live_session_id", liveIds).or(meinPlan)
+      : Promise.resolve({ data: [] as { live_session_id: string | null }[] }),
+    liveLektionIds.length
+      ? supabase.from("lesson").select("id, name, thema, live_lektion_id").in("live_lektion_id", liveLektionIds)
+      : Promise.resolve({ data: [] as { id: string; name: string; thema: string | null; live_lektion_id: string | null }[] }),
+  ]);
+  const festigenIds = (festigen ?? []).map((f) => f.id).filter((id) => !lessonIds.includes(id));
+  const [{ data: festigenPlan }, festigenErledigt] = festigenIds.length
+    ? await Promise.all([
+        supabase.from("schedule_entry").select("lesson_id, datum").in("lesson_id", festigenIds).or(meinPlan),
+        erledigteLektionIds(supabase, ctx.learnerId, festigenIds),
+      ])
+    : [{ data: [] as { lesson_id: string | null; datum: string }[] }, new Set<string>()];
   const geplanteLive = new Set((livePlan ?? []).map((e) => e.live_session_id));
   const liveJeLektion = new Map<string, { datum: string; start: string }>();
   for (const s of liveSessions ?? []) {
@@ -89,7 +114,7 @@ export async function getLernaktivitaeten(
     if (!bisher || s.datum < bisher.datum) liveJeLektion.set(s.lesson_id, { datum: s.datum, start: s.start });
   }
   const datumJeLektion = new Map<string, string>();
-  for (const e of asyncPlan ?? []) {
+  for (const e of [...(asyncPlan ?? []), ...(festigenPlan ?? [])]) {
     if (!e.lesson_id) continue;
     const bisher = datumJeLektion.get(e.lesson_id);
     if (!bisher || e.datum < bisher) datumJeLektion.set(e.lesson_id, e.datum);
@@ -106,8 +131,24 @@ export async function getLernaktivitaeten(
       start: live?.start ?? null,
       erledigt: erledigteLektionen.has(l.id),
       fieldJobId: null,
+      stepIds: stepsJeLektion.get(l.id) ?? [],
     };
   });
+  for (const f of festigen ?? []) {
+    if (!festigenIds.includes(f.id)) continue;
+    const titel = lektionTitel(f.name, f.thema);
+    ergebnis.push({
+      art: "selbst",
+      id: f.id,
+      titel: titel.titel,
+      thema: titel.thema,
+      datum: datumJeLektion.get(f.id) ?? null,
+      start: null,
+      erledigt: festigenErledigt.has(f.id),
+      fieldJobId: null,
+      stepIds: f.live_lektion_id ? (stepsJeLektion.get(f.live_lektion_id) ?? []) : [],
+    });
+  }
   for (const t of typen ?? []) {
     // Der eigene Praxistag dieses Typs: der nächste offene, sonst der letzte.
     const eigene = (jobs ?? []).filter((j) => j.field_job_type_id === t.id).sort((a, b) => a.datum.localeCompare(b.datum));
@@ -121,6 +162,7 @@ export async function getLernaktivitaeten(
       start: null,
       erledigt: job?.status === "durchgeführt",
       fieldJobId: job?.id ?? null,
+      stepIds: stepsJeTyp.get(t.id) ?? [],
     });
   }
   // Geplante zuerst, nach Datum; ungeplante danach.
