@@ -35,10 +35,10 @@ import { TrackingKarte, type Kachel } from "./tracking-karte";
 export default async function ProgrammPage({
   searchParams,
 }: {
-  searchParams: Promise<{ modul?: string; inhalte?: string; now?: string }>;
+  searchParams: Promise<{ modul?: string; inhalte?: string; now?: string; ansicht?: string }>;
 }) {
   const learner = await requireCurrentLearner();
-  const { modul: modulParam, inhalte, now } = await searchParams;
+  const { modul: modulParam, inhalte, now, ansicht } = await searchParams;
 
   // Wie Home, Kompetenzen und Stundenplan: simuliertes "jetzt" zum Testen,
   // nur lokal und in Previews, nie auf Production.
@@ -123,6 +123,11 @@ export default async function ProgrammPage({
     anzahl ? `${anzahl} ${anzahl === 1 ? "Modul" : "Module"}` : null,
   ].filter(Boolean);
 
+  // Varianten der Inhalte-Ansicht zum Vergleich (Anna 2026-10-27): ?ansicht=zeilen | liste,
+  // ohne Angabe die bisherige Ansicht mit drei Ebenen.
+  const inhalteAnsicht = ansicht === "zeilen" || ansicht === "liste" ? ansicht : "stufen";
+  const ansichtZusatz = inhalteAnsicht !== "stufen" ? `&ansicht=${inhalteAnsicht}` : "";
+
   const wochen = gewaehltesModul ? groups.filter((g) => g.modulId === gewaehltesModul.id) : [];
 
   return (
@@ -141,7 +146,7 @@ export default async function ProgrammPage({
       </section>
 
       {pfad.length > 0 ? (
-        <ModulPfad module={pfad} gewaehltId={gewaehlt?.id ?? null} href={(id) => `/content?modul=${id}&inhalte=1${nowZusatz}`} />
+        <ModulPfad module={pfad} gewaehltId={gewaehlt?.id ?? null} href={(id) => `/content?modul=${id}&inhalte=1${nowZusatz}${ansichtZusatz}`} />
       ) : (
         <p className="text-sm text-ink-muted">Die Module deines Programms werden gerade eingerichtet.</p>
       )}
@@ -162,6 +167,7 @@ export default async function ProgrammPage({
                 zeitraum={gewaehlt.zeitraum}
                 name={gewaehlt.name}
                 status={gewaehlt.status}
+                ansicht={inhalteAnsicht}
                 wochen={panelWochen(wochen, plan, heute, jetzt, gewaehlt.status === "aktuell")}
                 // Neue Kennung je Aufruf mit &inhalte=1 (Klick auf eine Modulkarte).
                 oeffnen={inhalte === "1" ? randomUUID() : null}

@@ -7,7 +7,7 @@ import { Check, ChevronDown, ChevronRight, X } from "lucide-react";
 
 import { SegmentProgress } from "@/components/segment-progress";
 import { TypIcon, type Typ } from "@/components/typ-icon";
-import type { LektionsStatus, LektionsTyp, PanelLektion, PanelWoche } from "@/lib/programm-inhalte";
+import type { LektionsStatus, LektionsTyp, PanelLektion, PanelThema, PanelWoche } from "@/lib/programm-inhalte";
 import type { ModulStatus } from "@/lib/programm";
 import { cn } from "@/lib/utils";
 
@@ -72,6 +72,77 @@ function Lektion({ l }: { l: PanelLektion }) {
   );
 }
 
+const KURZ: Record<LektionsTyp, string> = { live: "Live", selbstlern: "Selbstlernen", dokument: "Material", praxis: "Praxis" };
+
+/**
+ * Varianten „zeilen“ und „liste“ (Anna 2026-10-27, zu viel Aufklappen): je
+ * Thema eine Zeile mit Datum, die Lektionen als kleine Knöpfe rechts --
+ * keine dritte Ebene mehr. Erledigt mit Häkchen, heute in Lime.
+ */
+function LektionKnopf({ l }: { l: PanelLektion }) {
+  const klasse = cn(
+    "inline-flex min-h-9 items-center gap-1.5 rounded-full border py-1 pr-3 pl-1 text-[13px] font-semibold outline-none focus-visible:ring-2 focus-visible:ring-brand",
+    l.status === "heute" ? "border-lime bg-lime text-on-lime" : "border-line bg-white text-ink",
+    l.href && "hover:bg-subtle"
+  );
+  const status = LEKTION_STATUS[l.status].text;
+  const inhalt = (
+    <>
+      <TypIcon typ={TYP[l.typ]} groesse="klein" />
+      {KURZ[l.typ]}
+      {l.status === "erledigt" && <Check className="size-3.5 text-progress" strokeWidth={3} aria-hidden="true" />}
+    </>
+  );
+  const name = `${l.label}, ${status}`;
+  if (!l.href) return <span className={klasse} aria-label={name}>{inhalt}</span>;
+  return l.extern ? (
+    <a href={l.href} target="_blank" rel="noopener noreferrer" className={klasse} aria-label={`${name}, Live-Raum (öffnet in neuem Tab)`}>
+      {inhalt}
+    </a>
+  ) : (
+    <Link href={l.href} className={klasse} aria-label={name}>
+      {inhalt}
+    </Link>
+  );
+}
+
+function ThemaZeile({ t }: { t: PanelThema }) {
+  const meta = t.lektionen.find((l) => l.meta)?.meta ?? null;
+  const fertig = t.lektionen.length > 0 && t.erledigt === t.lektionen.length;
+  return (
+    <li className="flex flex-col gap-2.5 px-5 py-3.5 sm:flex-row sm:items-center sm:gap-4">
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="flex items-center gap-2 text-[15px] leading-snug font-medium">
+          {t.titel}
+          {fertig && <Check className="size-4 shrink-0 text-progress" strokeWidth={3} aria-label="erledigt" />}
+        </span>
+        {meta && <span className="text-xs text-ink-muted">{meta}</span>}
+      </span>
+      <span className="flex flex-wrap gap-2 sm:justify-end">
+        {t.lektionen.map((l) => (
+          <LektionKnopf key={l.id} l={l} />
+        ))}
+      </span>
+    </li>
+  );
+}
+
+function WochenKopf({ w }: { w: PanelWoche }) {
+  const fertig = w.lektionen > 0 && w.erledigt === w.lektionen;
+  return (
+    <>
+      <span className="flex min-w-0 flex-1 flex-col gap-1">
+        <span className="text-base font-bold">{w.titel}</span>
+        <span className="text-[13px] text-ink-muted tabular-nums">
+          {w.erledigt}/{w.lektionen} Lektionen
+        </span>
+      </span>
+      {w.aktuell && <span className="shrink-0 rounded-full bg-lime px-[9px] py-[3px] text-xs font-bold text-on-lime">Diese Woche</span>}
+      {fertig && <Check className="size-[18px] shrink-0 text-progress" strokeWidth={3} aria-label="Woche erledigt" />}
+    </>
+  );
+}
+
 export function InhaltePanel({
   ueberzeile,
   zeitraum,
@@ -79,6 +150,7 @@ export function InhaltePanel({
   status,
   wochen,
   oeffnen,
+  ansicht = "stufen",
 }: {
   ueberzeile: string;
   zeitraum: string | null;
@@ -91,6 +163,8 @@ export function InhaltePanel({
    * dieselbe Karte nach dem Schließen noch einmal.
    */
   oeffnen: string | null;
+  /** stufen = Woche, Thema, Lektion je aufklappbar; zeilen = Woche aufklappbar, Themen als Zeilen; liste = alles offen, Themen als Zeilen */
+  ansicht?: "stufen" | "zeilen" | "liste";
 }) {
   // Knopf, X, Esc und Klick daneben steuern den Zustand direkt; eine neue
   // Kennung öffnet ihn. Abgleich während des Renderns statt im Effekt
@@ -136,6 +210,40 @@ export function InhaltePanel({
 
           {wochen.length === 0 ? (
             <p className="text-sm text-ink-muted">Für dieses Modul sind noch keine Inhalte freigeschaltet.</p>
+          ) : ansicht === "liste" ? (
+            <div className="flex flex-col gap-6">
+              {wochen.map((w) => (
+                <section key={w.id} aria-label={w.titel} className="flex flex-col gap-2">
+                  <div className="flex items-center gap-3 px-1">
+                    <WochenKopf w={w} />
+                  </div>
+                  <ul className="divide-y divide-line overflow-hidden rounded-zeile bg-card shadow-card">
+                    {w.themen.map((t) => (
+                      <ThemaZeile key={t.id} t={t} />
+                    ))}
+                  </ul>
+                </section>
+              ))}
+            </div>
+          ) : ansicht === "zeilen" ? (
+            <div className="flex flex-col gap-3">
+              {wochen.map((w) => (
+                <details key={w.id} open={w.offen} className="group/woche overflow-hidden rounded-zeile bg-card shadow-card">
+                  <summary className={cn(AUFKLAPP, "px-5 py-[18px]")}>
+                    <WochenKopf w={w} />
+                    <ChevronDown
+                      className="size-[18px] shrink-0 transition-transform group-open/woche:rotate-180 motion-reduce:transition-none"
+                      aria-hidden="true"
+                    />
+                  </summary>
+                  <ul className="divide-y divide-line border-t border-line">
+                    {w.themen.map((t) => (
+                      <ThemaZeile key={t.id} t={t} />
+                    ))}
+                  </ul>
+                </details>
+              ))}
+            </div>
           ) : (
             <div className="flex flex-col gap-3">
               {wochen.map((w) => {
