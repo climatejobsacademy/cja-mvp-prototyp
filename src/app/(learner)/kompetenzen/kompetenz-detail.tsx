@@ -5,7 +5,6 @@ import { BookOpen, Check, ChevronDown, ChevronRight, Clock, ThumbsDown, Video, W
 
 import { ModulZeichen } from "@/components/modul-zeichen";
 import { Ring } from "@/components/fortschritts-ring";
-import { TypIcon } from "@/components/typ-icon";
 import { AKTIVITAET_ART, aktivitaetMeta } from "@/lib/kompetenz-aktivitaet";
 import type { CompetencyStepView, CompetencyView } from "@/lib/queries/competencies";
 import type { Lernaktivitaet } from "@/lib/queries/kompetenzen-seite";
@@ -65,21 +64,32 @@ const HEUTE_DRAN = {
   symbol: <span className="size-6 flex-none rounded-full border-[3px] border-lime shadow-glow-charge-sm" />,
 };
 
-function TeilschrittZeile({ step, heute }: { step: CompetencyStepView; heute: boolean }) {
+/**
+ * Kompetenzschritt (Anna 2026-10-27): nur Beschreibung und Status, ohne
+ * Typ-Symbol -- das grüne Buch las sich wie „Selbstlernen“, obwohl ein
+ * theoretischer Schritt auch über den Live-Unterricht erreicht wird. Gibt es
+ * Lernaktivitäten dazu, klappt der Schritt auf und zeigt sie als Links
+ * (Live, Selbstlernen, Praxis).
+ */
+function TeilschrittZeile({
+  step,
+  heute,
+  aktivitaeten,
+  heuteDatum,
+  module,
+}: {
+  step: CompetencyStepView;
+  heute: boolean;
+  aktivitaeten: Lernaktivitaet[];
+  heuteDatum: string;
+  module: ModulZeitraum[];
+}) {
   const { text, symbol } = heute && step.status === "offen" ? HEUTE_DRAN : STATUS[step.status];
   const typ = step.typ === "praktisch" ? "Praxis" : "Theorie";
-  return (
-    <li className="flex items-center gap-3.5 border-b border-line py-2.5 last:border-b-0">
-      {/* Rückmeldung Anna 2026-10-11: Typ-Symbol wie in der früheren Version --
-          Buch = Theorie, Schraubenschlüssel = Praxis; Status rechts. */}
-      <TypIcon typ={step.typ === "praktisch" ? "praxis" : "theorie"} />
+  const kopf = (
+    <>
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span
-          className={cn(
-            "text-[15px]",
-            step.status === "offen" && !heute ? "text-ink-muted" : "text-ink"
-          )}
-        >
+        <span className={cn("text-[15px]", step.status === "offen" && !heute ? "text-ink-muted" : "text-ink")}>
           {step.name}
           <span className="sr-only">
             {" "}
@@ -99,6 +109,31 @@ function TeilschrittZeile({ step, heute }: { step: CompetencyStepView; heute: bo
         </span>
       )}
       <span aria-hidden="true">{symbol}</span>
+    </>
+  );
+  if (aktivitaeten.length === 0) {
+    return <li className="flex items-center gap-3.5 border-b border-line py-2.5 last:border-b-0">{kopf}</li>;
+  }
+  return (
+    <li className="border-b border-line last:border-b-0">
+      <details className="group/schritt">
+        <summary className="flex cursor-pointer list-none items-center gap-3.5 rounded-lg py-2.5 outline-none focus-visible:ring-2 focus-visible:ring-brand [&::-webkit-details-marker]:hidden">
+          {kopf}
+          <ChevronDown
+            className="size-[18px] shrink-0 text-ink-muted transition-transform group-open/schritt:rotate-180 motion-reduce:transition-none"
+            aria-hidden="true"
+          />
+        </summary>
+        {/* Dezente Überschrift, damit klar ist, was die Links sind (Anna 2026-10-27). */}
+        <p className="pb-2 text-[13px] font-semibold text-ink">Hier lernst du das</p>
+        <ul className="flex flex-col gap-2 pb-3">
+          {aktivitaeten.map((a) => (
+            <li key={`${a.art}-${a.id}`}>
+              <AktivitaetZeile a={a} heute={heuteDatum} modul={modulZu(module, a.datum)} />
+            </li>
+          ))}
+        </ul>
+      </details>
     </li>
   );
 }
@@ -112,13 +147,10 @@ const TYP: Record<Lernaktivitaet["art"], { Icon: typeof Video; kachel: string }>
 };
 
 /**
- * Brief 2.4 "Hier lernst du das": Lernaktivitäten, die auf die Teilschritte
- * einzahlen -- die USP Lernaktivität → Teilschritt → Kompetenz. Lektionen
- * öffnen die Lektionsseite, Praxis den eigenen Praxistag dieses Typs
- * (/praxistag/[fieldJobId]); ohne eigenen Praxistag nur Text ohne Link.
- * Ohne Zuordnung: Bereich ausgeblendet. Wunsch Anna 2026-10-11: aufklappbar,
- * beim Öffnen einer Kompetenz zu. Groß das Thema (lesson.thema, sonst der
- * Titel), klein das Modul aus der Modul-Ebene (Anna 2026-10-12, 0028).
+ * Lernaktivitäten je Kompetenzschritt (Brief 2.4, seit Anna 2026-10-27 im
+ * aufgeklappten Schritt statt in „Hier lernst du das“): Lektionen öffnen die
+ * Lektionsseite, Praxis den eigenen Praxistag dieses Typs; ohne eigenen
+ * Praxistag nur Text ohne Link. Groß das Thema, klein das Modul (0028).
  */
 /** Module mit Zeitraum im eigenen Stundenplan (fn_modul_zeitraum, 0028) -- für "Modul klein". */
 export type ModulZeitraum = { ueberzeile: string; name: string; von: string | null; bis: string | null };
@@ -127,40 +159,6 @@ export type ModulZeitraum = { ueberzeile: string; name: string; von: string | nu
 function modulZu(module: ModulZeitraum[], datum: string | null): ModulZeitraum | null {
   if (!datum) return null;
   return module.find((m) => m.von && m.bis && m.von <= datum && datum <= m.bis) ?? null;
-}
-
-function HierLernstDu({
-  aktivitaeten,
-  heute,
-  module,
-}: {
-  aktivitaeten: Lernaktivitaet[];
-  heute: string;
-  module: ModulZeitraum[];
-}) {
-  if (aktivitaeten.length === 0) return null;
-  return (
-    // Beim Öffnen des Panels zu (Anna 2026-10-12, wie schon 2026-10-11).
-    <details className="group/lernen flex flex-col">
-      <summary className="flex cursor-pointer list-none items-center gap-2 rounded-lg py-1 outline-none focus-visible:ring-2 focus-visible:ring-brand [&::-webkit-details-marker]:hidden">
-        <h3 className="text-[15px] font-bold">Hier lernst du das</h3>
-        <span className="text-[13px] text-ink-muted tabular-nums">· {aktivitaeten.length}</span>
-        <ChevronDown
-          className="ml-auto size-[18px] shrink-0 text-ink-muted transition-transform group-open/lernen:rotate-180 motion-reduce:transition-none"
-          aria-hidden="true"
-        />
-      </summary>
-      <ul className="mt-2.5 flex flex-col gap-2.5">
-        {aktivitaeten.map((a) => {
-          return (
-            <li key={`${a.art}-${a.id}`}>
-              <AktivitaetZeile a={a} heute={heute} modul={modulZu(module, a.datum)} />
-            </li>
-          );
-        })}
-      </ul>
-    </details>
-  );
 }
 
 /** Eine Lernaktivität: Link, wenn es ein Ziel gibt, sonst dieselbe Zeile ohne Link. */
@@ -250,7 +248,14 @@ export function KompetenzDetail({
         {steps.length > 0 ? (
           <ul>
             {steps.map((s) => (
-              <TeilschrittZeile key={s.id} step={s} heute={heuteStepIds.has(s.id)} />
+              <TeilschrittZeile
+                key={`${kompetenz.id}-${s.id}`}
+                step={s}
+                heute={heuteStepIds.has(s.id)}
+                aktivitaeten={aktivitaeten.filter((a) => a.stepIds.includes(s.id))}
+                heuteDatum={heute}
+                module={module}
+              />
             ))}
           </ul>
         ) : (
@@ -258,8 +263,6 @@ export function KompetenzDetail({
         )}
       </div>
 
-      {/* key: beim Wechsel der Kompetenz wieder zugeklappt */}
-      <HierLernstDu key={kompetenz.id} aktivitaeten={aktivitaeten} heute={heute} module={module} />
     </section>
   );
 }
