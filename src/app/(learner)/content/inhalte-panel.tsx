@@ -3,9 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Dialog } from "@base-ui/react/dialog";
-import { Check, ChevronDown, ChevronRight, X } from "lucide-react";
+import { Check, ChevronDown, X } from "lucide-react";
 
-import { SegmentProgress } from "@/components/segment-progress";
 import { TypIcon, type Typ } from "@/components/typ-icon";
 import type { LektionsStatus, LektionsTyp, PanelLektion, PanelThema, PanelWoche } from "@/lib/programm-inhalte";
 import type { ModulStatus } from "@/lib/programm";
@@ -17,8 +16,8 @@ import { cn } from "@/lib/utils";
 // Klick daneben oder Esc (base-ui Dialog: Fokus ins Panel, beim Schließen
 // zurück zum Knopf). &inhalte=1 in der Adresse öffnet es -- so öffnet ein
 // Klick auf eine Modulkarte im Pfad direkt die Inhalte dieses Moduls
-// (Wunsch Anna 2026-10-11) und man kann es verlinken. Darin Woche → Thema (= Kurs) → Lektion wie bisher
-// auf der Programmseite, jeweils aufklappbar.
+// (Wunsch Anna 2026-10-11) und man kann es verlinken. Darin je Woche (aufklappbar)
+// eine Zeile je Thema (= Kurs) mit den Lektionen als Knöpfe (Anna 2026-10-27).
 
 const STATUS: Record<ModulStatus, { text: string; klasse: string }> = {
   abgeschlossen: { text: "Abgeschlossen", klasse: "bg-subtle text-progress" },
@@ -45,37 +44,10 @@ function adresseMerken(offen: boolean) {
 const AUFKLAPP =
   "flex w-full cursor-pointer list-none items-center gap-3 text-left outline-none transition-[background-color] duration-150 hover:bg-subtle focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand motion-reduce:transition-none [&::-webkit-details-marker]:hidden";
 
-function Lektion({ l }: { l: PanelLektion }) {
-  const status = LEKTION_STATUS[l.status];
-  const inhalt = (
-    <>
-      <TypIcon typ={TYP[l.typ]} groesse="gross" />
-      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="text-[15px]">{l.label}</span>
-        {l.meta && <span className="text-xs text-ink-muted">{l.meta}</span>}
-      </span>
-      <span className={cn("shrink-0 rounded-full border px-[11px] py-[5px] text-[13px] font-semibold", status.klasse)}>{status.text}</span>
-      {l.href && <ChevronRight className="size-4 shrink-0 text-ink-muted" aria-hidden="true" />}
-    </>
-  );
-  const klasse = "flex items-center gap-3.5 rounded-xl p-2 text-ink";
-  const fokus = "outline-none hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand";
-  if (!l.href) return <div className={klasse}>{inhalt}</div>;
-  return l.extern ? (
-    <a href={l.href} target="_blank" rel="noopener noreferrer" className={cn(klasse, fokus)} aria-label={`${l.label}, ${status.text}, Live-Raum (öffnet in neuem Tab)`}>
-      {inhalt}
-    </a>
-  ) : (
-    <Link href={l.href} className={cn(klasse, fokus)}>
-      {inhalt}
-    </Link>
-  );
-}
-
 const KURZ: Record<LektionsTyp, string> = { live: "Live", selbstlern: "Selbstlernen", dokument: "Material", praxis: "Praxis" };
 
 /**
- * Varianten „zeilen“ und „liste“ (Anna 2026-10-27, zu viel Aufklappen): je
+ * Entscheidung Anna 2026-10-27 (zu viel Aufklappen): Woche aufklappbar, je
  * Thema eine Zeile mit Datum, die Lektionen als kleine Knöpfe rechts --
  * keine dritte Ebene mehr. Erledigt mit Häkchen, heute in Lime.
  */
@@ -127,6 +99,25 @@ function ThemaZeile({ t }: { t: PanelThema }) {
   );
 }
 
+/**
+ * Zeilen: das Sammel-Thema „Praxistag“ wird in eine Zeile je
+ * Auftrag aufgeteilt -- sonst stünden dort nur Knöpfe „Praxis“ ohne Namen
+ * (Anna 2026-10-27).
+ */
+function zeilenThemen(themen: PanelThema[]): PanelThema[] {
+  return themen.flatMap((t) =>
+    t.lektionen.length > 0 && t.lektionen.every((l) => l.typ === "praxis")
+      ? t.lektionen.map((l) => ({
+          id: `${t.id}-${l.id}`,
+          titel: l.label,
+          lektionen: [l],
+          erledigt: l.status === "erledigt" ? 1 : 0,
+          offen: false,
+        }))
+      : [t]
+  );
+}
+
 function WochenKopf({ w }: { w: PanelWoche }) {
   const fertig = w.lektionen > 0 && w.erledigt === w.lektionen;
   return (
@@ -150,7 +141,6 @@ export function InhaltePanel({
   status,
   wochen,
   oeffnen,
-  ansicht = "stufen",
 }: {
   ueberzeile: string;
   zeitraum: string | null;
@@ -163,8 +153,6 @@ export function InhaltePanel({
    * dieselbe Karte nach dem Schließen noch einmal.
    */
   oeffnen: string | null;
-  /** stufen = Woche, Thema, Lektion je aufklappbar; zeilen = Woche aufklappbar, Themen als Zeilen; liste = alles offen, Themen als Zeilen */
-  ansicht?: "stufen" | "zeilen" | "liste";
 }) {
   // Knopf, X, Esc und Klick daneben steuern den Zustand direkt; eine neue
   // Kennung öffnet ihn. Abgleich während des Renderns statt im Effekt
@@ -210,22 +198,7 @@ export function InhaltePanel({
 
           {wochen.length === 0 ? (
             <p className="text-sm text-ink-muted">Für dieses Modul sind noch keine Inhalte freigeschaltet.</p>
-          ) : ansicht === "liste" ? (
-            <div className="flex flex-col gap-6">
-              {wochen.map((w) => (
-                <section key={w.id} aria-label={w.titel} className="flex flex-col gap-2">
-                  <div className="flex items-center gap-3 px-1">
-                    <WochenKopf w={w} />
-                  </div>
-                  <ul className="divide-y divide-line overflow-hidden rounded-zeile bg-card shadow-card">
-                    {w.themen.map((t) => (
-                      <ThemaZeile key={t.id} t={t} />
-                    ))}
-                  </ul>
-                </section>
-              ))}
-            </div>
-          ) : ansicht === "zeilen" ? (
+          ) : (
             <div className="flex flex-col gap-3">
               {wochen.map((w) => (
                 <details key={w.id} open={w.offen} className="group/woche overflow-hidden rounded-zeile bg-card shadow-card">
@@ -237,70 +210,12 @@ export function InhaltePanel({
                     />
                   </summary>
                   <ul className="divide-y divide-line border-t border-line">
-                    {w.themen.map((t) => (
+                    {zeilenThemen(w.themen).map((t) => (
                       <ThemaZeile key={t.id} t={t} />
                     ))}
                   </ul>
                 </details>
               ))}
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {wochen.map((w) => {
-                const fertig = w.lektionen > 0 && w.erledigt === w.lektionen;
-                return (
-                  <details key={w.id} open={w.offen} className="group/woche overflow-hidden rounded-zeile bg-card shadow-card">
-                    <summary className={cn(AUFKLAPP, "px-5 py-[18px]")}>
-                      <span className="flex min-w-0 flex-1 flex-col gap-1">
-                        <span className="text-base font-bold">{w.titel}</span>
-                        <span className="text-[13px] text-ink-muted tabular-nums">
-                          {w.erledigt}/{w.lektionen} Lektionen
-                        </span>
-                      </span>
-                      {w.aktuell && (
-                        <span className="shrink-0 rounded-full bg-lime px-[9px] py-[3px] text-xs font-bold text-on-lime">Diese Woche</span>
-                      )}
-                      {fertig && (
-                        <Check className="size-[18px] shrink-0 text-progress" strokeWidth={3} aria-label="Woche erledigt" />
-                      )}
-                      <ChevronDown
-                        className="size-[18px] shrink-0 transition-transform group-open/woche:rotate-180 motion-reduce:transition-none"
-                        aria-hidden="true"
-                      />
-                    </summary>
-                    <div className="border-t border-line">
-                      {w.themen.map((t) => (
-                        <details key={t.id} open={t.offen} className="group/thema border-b border-line last:border-b-0">
-                          <summary className={cn(AUFKLAPP, "px-5 py-3.5")}>
-                            <span className="flex min-w-0 flex-1 flex-col gap-2">
-                              <span className="text-[15px] leading-snug font-medium">{t.titel}</span>
-                              <SegmentProgress
-                                value={t.erledigt}
-                                max={t.lektionen.length}
-                                label={`${t.erledigt} von ${t.lektionen.length} Lektionen erledigt`}
-                              />
-                              <span className="text-[13px] text-ink-muted tabular-nums" aria-hidden="true">
-                                {t.erledigt}/{t.lektionen.length} Lektionen
-                              </span>
-                            </span>
-                            <ChevronDown
-                              className="size-[18px] shrink-0 transition-transform group-open/thema:rotate-180 motion-reduce:transition-none"
-                              aria-hidden="true"
-                            />
-                          </summary>
-                          <ul className="flex flex-col pr-3 pb-2.5 pl-6 md:pl-9">
-                            {t.lektionen.map((l) => (
-                              <li key={l.id}>
-                                <Lektion l={l} />
-                              </li>
-                            ))}
-                          </ul>
-                        </details>
-                      ))}
-                    </div>
-                  </details>
-                );
-              })}
             </div>
           )}
         </Dialog.Popup>
