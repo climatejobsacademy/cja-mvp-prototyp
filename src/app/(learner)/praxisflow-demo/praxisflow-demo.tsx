@@ -77,7 +77,6 @@ import {
   planenZurueck,
   pruefungUmschalten,
   mitVerlauf,
-  nachFrist,
   startZustand,
   zurNacharbeit,
   zustandLaden,
@@ -1044,10 +1043,10 @@ export function AkteAusZustand({ zustand, unterSpannung }: { zustand: DemoZustan
       auftrag={{
         titel: DEMO_AUFTRAG.titel,
         ausgabe: DEMO_AUFTRAG.ausgabe,
-        frist: DEMO_AUFTRAG.frist,
         trainer: TRAINER_PRAXIS_DEMO.name,
       }}
       auftragDateien={zustand.auftragDateien}
+      hilfeDateien={zustand.hilfeDateien}
       werkzeuge={zustand.werkzeuge}
       materialien={zustand.materialien}
       schritte={zustand.schritte}
@@ -1070,7 +1069,6 @@ export function AkteAusZustand({ zustand, unterSpannung }: { zustand: DemoZustan
         { name: "Trainer:in", werte: zustand.fremd },
       ]}
       abgabe={abgabe}
-      verspaetet={nachFrist(abgabe ?? undefined, DEMO_AUFTRAG.fristZeitpunkt)}
       verlauf={zustand.verlauf}
     />
   );

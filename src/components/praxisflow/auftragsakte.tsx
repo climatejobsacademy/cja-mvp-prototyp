@@ -59,6 +59,7 @@ function DateiNamen({ dateien, leer }: { dateien: string[]; leer: string }) {
 export function Auftragsakte({
   auftrag,
   auftragDateien,
+  hilfeDateien,
   werkzeuge,
   materialien,
   schritte,
@@ -71,11 +72,12 @@ export function Auftragsakte({
   kriterien,
   einschaetzungen,
   abgabe,
-  verspaetet,
   verlauf,
 }: {
-  auftrag: { titel: string; ausgabe: string; frist: string; trainer: string };
+  /** Abgabefrist entfällt (Malte 2026-10-28: Lernende schätzen die Dauer selbst ein). */
+  auftrag: { titel: string; ausgabe: string; trainer: string };
   auftragDateien: string[];
+  hilfeDateien?: string[];
   werkzeuge: Eintrag[];
   materialien: Eintrag[];
   schritte: Eintrag[];
@@ -89,7 +91,6 @@ export function Auftragsakte({
   kriterien: Kriterium[];
   einschaetzungen: { name: string; werte: Record<string, number> }[];
   abgabe: string | null;
-  verspaetet: boolean;
   verlauf: { zeit: string; text: string }[];
 }) {
   const raster = { gridTemplateColumns: `1fr repeat(${einschaetzungen.length}, 4.5rem)` };
@@ -121,10 +122,15 @@ export function Auftragsakte({
       <Abschnitt icon={CalendarClock} titel="Auftrag und Annahme">
         <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-[15px]">
           <Zeile name="Ausgegeben" wert={auftrag.ausgabe} />
-          <Zeile name="Abgabe bis" wert={auftrag.frist} />
           <Zeile name="Trainer:in" wert={auftrag.trainer} />
         </dl>
         <DateiNamen dateien={auftragDateien} leer="Kein unterschriebener Auftrag hochgeladen." />
+        {hilfeDateien && hilfeDateien.length > 0 && (
+          <>
+            <span className="text-sm font-semibold text-ink-muted">Eigene Hilfsunterlagen</span>
+            <DateiNamen dateien={hilfeDateien} leer="" />
+          </>
+        )}
       </Abschnitt>
 
       <Abschnitt icon={FileText} titel="Planung und Materialliste">
@@ -184,7 +190,6 @@ export function Auftragsakte({
       <Abschnitt icon={CalendarClock} titel="Abgabe und Status">
         <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-[15px]">
           <Zeile name="Abgegeben" wert={abgabe ? zeitAnzeige(abgabe) : "–"} />
-          <Zeile name="Frist" wert={verspaetet ? "nach der Frist" : "eingehalten"} />
           <Zeile name="Status" wert="Abgeschlossen, Bestätigung durch die Akademie läuft" />
         </dl>
       </Abschnitt>

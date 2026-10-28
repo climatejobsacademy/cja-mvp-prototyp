@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
-  CalendarClock,
   Camera,
   ClipboardCheck,
   Check,
@@ -232,20 +231,16 @@ export function JetztDranFlow({ unterSpannung }: { unterSpannung: boolean }) {
   );
 }
 
-/** Schmale Leiste: sechs Punkte, Name der Phase, Frist. Erledigte Phasen antippbar. */
 /**
  * Kopf: dieselbe Phasen-Leiste wie in der bisherigen Ansicht (Stationen mit
  * Symbol, Linie, "2/6"), hier auf weißer Karte wie die übrigen Karten
- * (Anna 2026-10-20). Erledigte Stationen sind antippbar. Darunter die Frist.
+ * (Anna 2026-10-20). Erledigte Stationen sind antippbar. Keine Abgabefrist
+ * (Malte 2026-10-28: die Dauer schätzen die Lernenden mit dem Plan selbst ein).
  */
 function Kopf({ phasenIndex, fertig, onPhase }: { phasenIndex: number; fertig: boolean; onPhase: (p: PhaseId) => void }) {
   return (
     <div className="flex flex-col gap-3 rounded-karte bg-card px-4 pt-4 pb-3 text-ink shadow-card md:px-6">
       <PhasenAnzeige phasen={PHASEN} aktuell={fertig ? PHASEN.length : phasenIndex} hell onPhase={(id) => onPhase(id as PhaseId)} />
-      <span className="inline-flex items-center gap-1.5 self-end text-[13px] text-ink-muted">
-        <CalendarClock className="size-4" aria-hidden="true" />
-        Abgabe bis {DEMO_AUFTRAG.frist}
-      </span>
     </div>
   );
 }
@@ -343,8 +338,6 @@ function SchrittKarte({
         <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-[15px] text-ink">
           <dt className="text-ink-muted">{TEXTE.analyse.ausgabe}</dt>
           <dd>{DEMO_AUFTRAG.ausgabe}</dd>
-          <dt className="text-ink-muted">{TEXTE.analyse.frist}</dt>
-          <dd className="font-semibold">{DEMO_AUFTRAG.frist}</dd>
         </dl>
         <DateienListe
           id="auftrag"
@@ -365,10 +358,26 @@ function SchrittKarte({
   }
   if (art === "lesen") {
     return (
-      <Karte {...k} frage="Das ist dein Auftrag" hinweis={TEXTE.analyse.arbeitsauftrag}>
+      // Nur noch die Hilfsunterlagen (Anna 2026-10-28): der Auftrag selbst kam im Schritt davor.
+      <Karte
+        {...k}
+        frage="Deine Hilfsunterlagen"
+        hinweis="Damit planst du dein Material und deine Arbeit, zum Beispiel mit Stromlaufplan oder technischer Zeichnung."
+      >
         <UnterlagenAnsehen />
+        {/* Malte 2026-10-28: eigene Hilfen dazulegen, z. B. ein Handbuch. */}
+        <div className="flex flex-col gap-2">
+          <span className="text-[15px] font-semibold text-ink">Hast du noch etwas, das dir hilft?</span>
+          <span className="text-sm text-ink-muted">Lade es hier dazu, zum Beispiel das Handbuch eines Schalters. Das ist freiwillig.</span>
+          <DateienListe
+            id="hilfen"
+            accept={UPLOAD_FORMATE.hilfen}
+            dateien={zustand.hilfeDateien}
+            onDateien={(d) => setZustand((z) => ({ ...z, hilfeDateien: d }))}
+          />
+        </div>
         <button type="button" onClick={() => weiter()} className={GROSS}>
-          Verstanden <ArrowRight aria-hidden="true" />
+          Weiter zum Planen <ArrowRight aria-hidden="true" />
         </button>
       </Karte>
     );
@@ -473,11 +482,11 @@ function SchrittKarte({
       ? [
           { titel: "Prüfen ohne Spannung", text: "Das machst du allein." },
           { titel: "Freigabe", text: "Deine Trainer:in prüft die Anlage." },
-          { titel: "Prüfen unter Spannung", text: "Mit Trainer:in, dann Prüfprotokoll." },
+          { titel: "Prüfen unter Spannung", text: "Mit Trainer:in: erst messen, dann die Funktion. Am Ende das Prüfprotokoll." },
         ]
       : [
           { titel: "Prüfen ohne Spannung", text: "Das machst du allein." },
-          { titel: "Prüfprotokoll", text: "Foto oder PDF hochladen." },
+          { titel: "Prüfprotokoll", text: "PDF aus dem Prüfgerät oder Foto hochladen." },
         ];
     return (
       <Uebergabe
@@ -511,8 +520,18 @@ function SchrittKarte({
       <Karte
         {...k}
         frage={p?.titel ?? "Prüfung"}
-        hinweis={art === "a" ? TEXTE.kontrolle.spannungsfreiText : TEXTE.kontrolle.unterSpannungText}
+        hinweis={p?.text ?? (art === "a" ? TEXTE.kontrolle.spannungsfreiText : TEXTE.kontrolle.unterSpannungText)}
       >
+        {/* Prüfinhalte nach DIN VDE 0100-600 (Malte 2026-10-28). */}
+        {p?.punkte && (
+          <ul className="flex list-disc flex-col gap-1 pl-5 text-[15px] text-ink">
+            {p.punkte.map((punkt) => (
+              <li key={punkt}>{punkt}</li>
+            ))}
+          </ul>
+        )}
+        {p?.hinweis && <p className="rounded-zeile bg-subtle p-3 text-sm text-ink">{p.hinweis}</p>}
+        <p className="text-sm text-ink-muted">{art === "a" ? TEXTE.kontrolle.spannungsfreiText : TEXTE.kontrolle.unterSpannungText}</p>
         {art === "a" && !unterSpannung && nr === 1 && (
           <p className="rounded-zeile bg-subtle p-3 text-sm text-ink">{TEXTE.kontrolle.ohneSpannungHinweis}</p>
         )}
@@ -845,12 +864,19 @@ const PHASEN_HINWEIS = {
   entscheiden: "Schau dir deinen Plan an. Wenn alles passt, entscheidest du selbst, dass du anfangen kannst.",
 };
 
-/** Unterlagen zum Ansehen; geöffnete bekommen ein Häkchen (kein Zwang, alle zu öffnen). */
+/**
+ * Hilfsunterlagen von Energiehelden zum Auftrag (Malte 2026-10-28): z. B.
+ * Stromlaufplan, technische Zeichnung, Materialhinweise -- das Nachschlagewerk
+ * zum Planen. Nicht zu jedem Auftrag; bei späteren Aufträgen weniger, dann
+ * recherchieren und zeichnen die Lernenden selbst (Planen). Geöffnete
+ * bekommen ein Häkchen, kein Zwang, alle zu öffnen.
+ */
 function UnterlagenAnsehen() {
   const [angesehen, setAngesehen] = useState<Set<string>>(new Set());
+  if (DATEIEN.length === 0) return null;
   return (
     <DateienBlock
-      titel="Deine Unterlagen"
+      titel=""
       ordner={DATEIEN_ORDNER}
       dateien={DATEIEN}
       angesehen={angesehen}

@@ -99,7 +99,7 @@ export function DateienBlock({
   if (dateien.length === 0) return null;
   return (
     <div className="flex flex-col gap-3">
-      <h3 className={UEBERSCHRIFT}>{titel}</h3>
+      {titel && <h3 className={UEBERSCHRIFT}>{titel}</h3>}
       {/* Gleichmäßige Reihen: drei Spalten nur, wenn die Zahl aufgeht. */}
       <ul className={cn("grid grid-cols-1 gap-3 sm:grid-cols-2", dateien.length % 3 === 0 && "lg:grid-cols-3")}>
         {dateien.map((d) => {

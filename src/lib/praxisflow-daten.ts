@@ -44,6 +44,8 @@ const TABELLEN = ".csv,.xls,.xlsx,text/csv,application/vnd.ms-excel,application/
 
 export const UPLOAD_FORMATE = {
   auftrag: "image/*,application/pdf",
+  /** Informieren: weitere Hilfen, z. B. Handbuch eines Schalters (Malte 2026-10-28). */
+  hilfen: `image/*,application/pdf,${TABELLEN}`,
   plaene: `image/*,application/pdf,.dwg,.dxf,.glb,${TABELLEN}`,
   protokoll: `application/pdf,image/*,${TABELLEN}`,
 };
@@ -58,19 +60,80 @@ export const DIKTAT_AN = false;
  * A: spannungsfrei, selbstständig. Danach Freigabe zur Inbetriebnahme (Codewort).
  * C: unter Aufsicht, unter Spannung.
  */
-export const PRUEFLISTE_STANDARD: {
-  spannungsfrei: { id: string; titel: string }[];
-  unterSpannung: { id: string; titel: string }[];
-} = {
+/**
+ * Kontrollieren nach DIN VDE 0100-600:2017-06 (Vorschlag Malte 2026-10-28):
+ * drei Teile wie bisher, Titel und Prüfinhalte technisch korrekt. Reihenfolge
+ * unter Spannung: erst messen, dann Funktion erproben. Das Prüfprotokoll aus
+ * dem Prüfgerät (PDF) wird am Ende hochgeladen; die Schritte hier sind die
+ * Checkliste dafür, ohne Messwerte einzutragen.
+ */
+export type Pruefpunkt = { id: string; titel: string; text: string; punkte?: string[]; hinweis?: string };
+
+export const PRUEFLISTE_STANDARD: { spannungsfrei: Pruefpunkt[]; unterSpannung: Pruefpunkt[] } = {
   spannungsfrei: [
-    { id: "a1", titel: "Sichtprüfung gemacht und dokumentiert" },
-    { id: "a2", titel: "Schutzleiter durchgängig geprüft" },
-    { id: "a3", titel: "Isolationswiderstand gemessen" },
-    { id: "a4", titel: "Messwerte eingetragen" },
+    {
+      id: "a1",
+      titel: "Übungswand vom Netz getrennt",
+      text: "Die Zuleitung ist nicht angeschlossen (Stecker gezogen) und gegen versehentliches Einstecken gesichert.",
+      hinweis: "Später auf der Baustelle gelten an dieser Stelle die 5 Sicherheitsregeln, inklusive Spannungsfreiheit feststellen.",
+    },
+    {
+      id: "a2",
+      titel: "Besichtigung durchgeführt",
+      text: "Prüfe die Anlage mit den Augen. Trage jeden Punkt im Prüfprotokoll mit i.O. oder n.i.O. ein:",
+      punkte: [
+        "Betriebsmittel richtig ausgewählt und unbeschädigt",
+        "Leiterverbindungen fest",
+        "N und PE richtig gekennzeichnet",
+        "Stromkreise beschriftet",
+        "Schutz gegen direktes Berühren vorhanden",
+      ],
+    },
+    {
+      id: "a3",
+      titel: "Durchgängigkeit des Schutzleiters gemessen (R_PE)",
+      text: "Von der PE-Schiene bis zu jedem Schutzkontakt und Körper.",
+      punkte: [
+        "Messstrom mindestens 200 mA",
+        "Der Wert muss zur Leitungslänge und zum Querschnitt passen: Cu 1,5 mm² hat etwa 0,012 Ω je Meter",
+        "Ein fester Grenzwert ist dafür nicht festgelegt",
+      ],
+    },
+    {
+      id: "a4",
+      titel: "Isolationswiderstand gemessen (R_iso)",
+      text: "Die Verbraucher sind abgeklemmt.",
+      punkte: [
+        "Messspannung 500 V DC",
+        "Grenzwert mindestens 1 MΩ",
+        "Messen zwischen allen aktiven Leitern und PE",
+        "Messen zwischen den aktiven Leitern untereinander (L–N)",
+      ],
+    },
   ],
   unterSpannung: [
-    { id: "c1", titel: "Funktion geprüft (Platzhalter)" },
-    { id: "c2", titel: "Messungen unter Spannung gemacht (Platzhalter)" },
+    {
+      id: "c1",
+      titel: "Schleifenimpedanz und RCD gemessen (Z_s, I_k, I_Δ, t_A)",
+      text: "Erst messen, dann die Funktion erproben.",
+      punkte: [
+        "Schleifenimpedanz: Z_s × I_a ≤ U_0. Beispiel B16: I_a = 80 A, also Z_s ≤ 2,87 Ω",
+        "RCD 30 mA: löst zwischen 15 und 30 mA aus",
+        "Auslösezeit bei I_Δn höchstens 300 ms",
+        "Berührungsspannung U_B höchstens 50 V",
+      ],
+    },
+    {
+      id: "c2",
+      titel: "Funktion erprobt",
+      text: "Die gesamte Messung ist bestanden. Jetzt prüfst du die Funktion:",
+      punkte: [
+        "Die Anlage schaltet wie geplant",
+        "Der RCD löst über die Prüftaste aus",
+        "Steckdosen sind richtig gepolt",
+        "Drehstromsteckdosen haben ein Rechtsdrehfeld",
+      ],
+    },
   ],
 };
 
@@ -267,9 +330,10 @@ export const TEXTE = {
       "Jetzt kommt Spannung auf die Anlage. Das darfst du nur, wenn deine Trainer:in dabei ist und die Anlage geprüft hat.",
     freigabeGesperrt: "Erst alle Prüfungen ohne Spannung abhaken.",
     unterSpannungTitel: "Prüfen unter Spannung",
-    unterSpannungText: "Deine Trainer:in ist dabei. Hake jede Prüfung ab und lade danach das Prüfprotokoll hoch.",
+    unterSpannungText: "Deine Trainer:in ist dabei. Hake jede Prüfung ab. Das Prüfprotokoll lädst du am Ende hoch.",
     protokollTitel: "Prüfprotokoll",
-    protokollText: "Lade das Prüfprotokoll aus dem Prüfgerät als PDF hoch. Gibt es nur ein Papierprotokoll, mach ein Foto davon.",
+    protokollText:
+      "Lade das Prüfprotokoll aus dem Prüfgerät (Installationsprüfer) als PDF hoch. Gibt es nur ein Papierprotokoll, mach ein Foto davon. Ausgefüllt sein müssen: Ergebnis „Mängel ja/nein“, Prüfer:in, Datum und Unterschrift.",
     ohneSpannungHinweis: "Bei diesem Auftrag kommt keine Spannung auf die Anlage. Eine Freigabe durch die Trainer:in ist nicht nötig.",
     weiter: "Weiter zu Bewerten",
   },

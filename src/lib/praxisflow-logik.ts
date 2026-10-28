@@ -33,6 +33,8 @@ export type DemoZustand = {
   geprueftUnterSpannung: string[];
   /** Dateinamen (nur im Browser gemerkt, nichts wird hochgeladen). */
   auftragDateien: string[];
+  /** Informieren: selbst hochgeladene Hilfsunterlagen, z. B. Handbuch (Malte 2026-10-28). */
+  hilfeDateien: string[];
   planDateien: string[];
   protokollDateien: string[];
   /** Verlauf für die Auftragsakte: wann was passiert ist (Berliner Zeit, "JJJJ-MM-TTTHH:MM:SS"). */
@@ -66,6 +68,7 @@ export function startZustand(): DemoZustand {
     inbetriebnahmeFreigegeben: false,
     geprueftUnterSpannung: [],
     auftragDateien: [],
+    hilfeDateien: [],
     planDateien: [],
     protokollDateien: [],
     verlauf: [],
@@ -343,6 +346,7 @@ function istZustand(x: unknown): x is DemoZustand {
     Array.isArray(z.geprueftUnterSpannung) &&
     z.geprueftUnterSpannung.every((e) => typeof e === "string") &&
     istTexte(z.auftragDateien) &&
+    (z.hilfeDateien === undefined || istTexte(z.hilfeDateien)) &&
     istTexte(z.planDateien) &&
     istTexte(z.protokollDateien) &&
     Array.isArray(z.verlauf) &&
@@ -357,7 +361,8 @@ export function zustandLaden(speicher: SpeicherLike | null, praefix: string): De
     if (!roh) return startZustand();
     const z: unknown = JSON.parse(roh);
     if (!istZustand(z)) return startZustand();
-    return { ...z, erledigt: erledigtBereinigen(z.erledigt, z.schritte) };
+    // hilfeDateien kam am 2026-10-28 dazu; ältere Stände ohne das Feld bleiben gültig.
+    return { ...z, hilfeDateien: z.hilfeDateien ?? [], erledigt: erledigtBereinigen(z.erledigt, z.schritte) };
   } catch {
     return startZustand();
   }
