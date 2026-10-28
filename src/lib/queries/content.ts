@@ -29,6 +29,8 @@ export type FieldJobTypeListItem = {
   vorbereitungText: string | null;
   /** Praxistag des Learners zu dieser Aufgabe (nächster offener, sonst letzter) -- null, wenn keiner existiert. */
   fieldJobId: string | null;
+  /** Alle eigenen Praxistage zu dieser Aufgabe, nach Datum (mehrtägige Aufträge, Anna 2026-10-28). */
+  praxistage: { datum: string; durchgefuehrt: boolean }[];
 };
 
 export type ModuleGroup = {
@@ -184,6 +186,9 @@ export async function getContentLibrary(
       beschreibung: fieldJobType.beschreibung,
       vorbereitungText: fieldJobType.vorbereitung_text,
       fieldJobId: einsatzFuer(fieldJobType.id),
+      praxistage: (meineEinsaetze ?? [])
+        .filter((j) => j.field_job_type_id === fieldJobType.id)
+        .map((j) => ({ datum: j.datum, durchgefuehrt: j.status === "durchgeführt" })),
     };
   }
 
