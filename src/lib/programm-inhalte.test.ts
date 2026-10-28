@@ -102,3 +102,28 @@ test("Praxisaufgabe ohne Link, wenn der Schalter aus ist", () => {
   const praxis = w2.themen.find((t) => t.titel === "Praxistag");
   assert.equal(praxis?.lektionen[0].href, null);
 });
+
+test("Mehrtägiger Praxisauftrag: eine Zeile mit allen Tagen, erledigt erst nach dem letzten Tag", () => {
+  const tage = ["2026-10-19", "2026-10-20", "2026-10-21", "2026-10-22", "2026-10-23"];
+  const woche = {
+    ...gruppen[0],
+    id: "w4",
+    courses: [],
+    praxisTypen: [
+      {
+        id: "pA4",
+        titel: "Große Messplatine",
+        beschreibung: null,
+        vorbereitungText: null,
+        fieldJobId: "j3",
+        praxistage: tage.map((datum, i) => ({ datum, durchgefuehrt: i < 2 })),
+      },
+    ],
+  };
+  const [w] = panelWochen([woche] as never, [] as never, "2026-10-21", "2026-10-21T10:00:00", true, true);
+  const zeile = w.themen[0].lektionen[0];
+  assert.equal(zeile.meta, "5 Praxistage, 19.10. – 23.10. · 2 von 5 erledigt");
+  assert.equal(zeile.status, "heute");
+  assert.equal(w.aktuell, true);
+  assert.equal(zeile.href, "/praxistag/j3?von=programm");
+});

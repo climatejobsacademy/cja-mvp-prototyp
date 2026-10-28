@@ -120,12 +120,26 @@ export function panelWochen(
       const lektionen = gruppe.praxisTypen.map((p): PanelLektion => {
         const t = p.fieldJobId ? praxis.get(p.fieldJobId) : undefined;
         if (t) daten.push(t.datum);
+        // Mehrtägiger Auftrag (Anna 2026-10-28, Variante b): eine Zeile mit
+        // allen Tagen, "5 Praxistage, 19.10. – 23.10. · 2 von 5 erledigt";
+        // erledigt erst, wenn alle Tage durchgeführt sind.
+        const tage = p.praxistage ?? [];
+        for (const d of tage) daten.push(d.datum);
+        const mehrtaegig = tage.length > 1;
+        const fertigTage = tage.filter((d) => d.durchgefuehrt).length;
+        const meta = mehrtaegig
+          ? `${tage.length} Praxistage, ${datumKurz(tage[0].datum).slice(4)} – ${datumKurz(tage[tage.length - 1].datum).slice(4)} · ${fertigTage} von ${tage.length} erledigt`
+          : t
+            ? metaText(t.datum, null)
+            : null;
+        const erledigt = mehrtaegig ? fertigTage === tage.length : !!t?.erledigt;
+        const heuteDran = mehrtaegig ? tage.some((d) => d.datum === heute) : t?.datum === heute;
         return {
           id: p.id,
           typ: "praxis",
           label: p.titel,
-          meta: t ? metaText(t.datum, null) : null,
-          status: t?.erledigt ? "erledigt" : t?.datum === heute ? "heute" : "offen",
+          meta,
+          status: erledigt ? "erledigt" : heuteDran ? "heute" : "offen",
           href: p.fieldJobId ? praxisaufgabeHref(p.fieldJobId, "programm", praxisLink) : null,
           extern: false,
         };
