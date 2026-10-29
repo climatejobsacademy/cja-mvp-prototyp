@@ -1,16 +1,23 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Dialog } from "@base-ui/react/dialog";
 import {
   ArrowLeft,
   ArrowRight,
   Camera,
   ClipboardCheck,
   Check,
+  ClipboardList,
+  FileCheck2,
+  FileText,
+  Library,
+  PencilRuler,
   KeyRound,
   PartyPopper,
   ShieldCheck,
   UserRound,
+  X,
   Users,
 } from "lucide-react";
 
@@ -55,6 +62,7 @@ import { cn } from "@/lib/utils";
 import {
   AkteAusZustand,
   BOGEN,
+  DATEI_LINKS,
   DateienListe,
   EDITOR,
   VERLAUF,
@@ -212,19 +220,24 @@ export function JetztDranFlow({ unterSpannung }: { unterSpannung: boolean }) {
           </span>
         )}
       </p>
-      <div key={aktuell.id} className="animate-in fade-in-0 slide-in-from-bottom-2 duration-300 motion-reduce:animate-none">
-        <SchrittKarte
-          schritt={aktuell}
-          nr={nrInPhase}
-          von={inPhase.length}
-          zustand={zustand}
-          setZustand={setZustand}
-          liste={liste}
-          weiter={weiter}
-          zurueck={index > 0 && aktuell.id !== "fertig" ? zurueck : undefined}
-          onPosition={setPosition}
-          unterSpannung={unterSpannung}
-        />
+      {/* Unterlagen-Leiste neben der Schritt-Karte, oben auf gleicher Höhe und
+          mitlaufend; mobil als Reihe über der Karte (Anna 2026-10-29). */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-start">
+        <UnterlagenLeiste zustand={zustand} />
+        <div key={aktuell.id} className="min-w-0 flex-1 animate-in fade-in-0 slide-in-from-bottom-2 duration-300 motion-reduce:animate-none md:order-first">
+          <SchrittKarte
+            schritt={aktuell}
+            nr={nrInPhase}
+            von={inPhase.length}
+            zustand={zustand}
+            setZustand={setZustand}
+            liste={liste}
+            weiter={weiter}
+            zurueck={index > 0 && aktuell.id !== "fertig" ? zurueck : undefined}
+            onPosition={setPosition}
+            unterSpannung={unterSpannung}
+          />
+        </div>
       </div>
       <DemoLeiste onZuruecksetzen={zuruecksetzen} />
     </div>
@@ -242,6 +255,137 @@ function Kopf({ phasenIndex, fertig, onPhase }: { phasenIndex: number; fertig: b
     <div className="flex flex-col gap-3 rounded-karte bg-card px-4 pt-4 pb-3 text-ink shadow-card md:px-6">
       <PhasenAnzeige phasen={PHASEN} aktuell={fertig ? PHASEN.length : phasenIndex} hell onPhase={(id) => onPhase(id as PhaseId)} />
     </div>
+  );
+}
+
+/**
+ * Unterlagen-Leiste (Anna 2026-10-29): je Art von Unterlage ein Symbol mit
+ * kurzem Namen, von jedem Schritt aus. Ein Klick öffnet ein Fenster mit der
+ * Vorschau (kein neuer Tab). Es erscheinen nur Arten mit Dokumenten -- so
+ * passt die Leiste zu Aufträgen mit unterschiedlichen Unterlagen. Eigene
+ * Dateien lassen sich öffnen, solange die Seite offen ist (Demo, gespeichert
+ * wird nur der Name).
+ */
+type Unterlage = { name: string; href: string | null; quelle: string };
+type UnterlagenArt = { id: string; titel: string; kurz: string; Icon: typeof FileText; dateien: Unterlage[]; leer: string };
+
+function unterlagenArten(z: DemoZustand): UnterlagenArt[] {
+  const eigen = (namen: string[], quelle: string): Unterlage[] => namen.map((name) => ({ name, href: DATEI_LINKS.get(name) ?? null, quelle }));
+  const arten: UnterlagenArt[] = [
+    { id: "auftrag", titel: "Dein Auftrag", kurz: "Auftrag", Icon: ClipboardList, dateien: eigen(z.auftragDateien, "von dir hochgeladen"), leer: "Lade deinen Auftrag im ersten Schritt hoch, dann findest du ihn hier." },
+    {
+      id: "hilfen",
+      titel: "Hilfsunterlagen",
+      kurz: "Hilfen",
+      Icon: Library,
+      dateien: [
+        ...DATEIEN.map((d) => ({ name: d.titel, href: `${DATEIEN_ORDNER}/${encodeURIComponent(d.dateiname)}`, quelle: "von Energiehelden" })),
+        ...eigen(z.hilfeDateien, "von dir hochgeladen"),
+      ],
+      leer: "Zu diesem Auftrag gibt es keine Hilfsunterlagen. Eigene kannst du im zweiten Schritt hochladen.",
+    },
+    { id: "plaene", titel: "Pläne und Skizzen", kurz: "Pläne", Icon: PencilRuler, dateien: eigen(z.planDateien, "von dir hochgeladen"), leer: "Deine Pläne und Skizzen lädst du beim Planen hoch." },
+    { id: "protokoll", titel: "Prüfprotokoll", kurz: "Protokoll", Icon: FileCheck2, dateien: eigen(z.protokollDateien, "von dir hochgeladen"), leer: "Das Prüfprotokoll lädst du am Ende der Kontrolle hoch." },
+  ];
+  // Alle Arten immer sichtbar (Anna 2026-10-29); leere blasser, im Fenster steht, wann sie dazukommen.
+  return arten;
+}
+
+function UnterlagenLeiste({ zustand }: { zustand: DemoZustand }) {
+  const arten = unterlagenArten(zustand);
+  return (
+    <nav
+      aria-label="Deine Unterlagen"
+      className="flex gap-2 overflow-x-auto md:sticky md:top-6 md:flex-col md:overflow-visible md:rounded-karte md:bg-card md:p-2 md:shadow-card"
+    >
+      {arten.map((art) => (
+        <UnterlagenFenster key={art.id} art={art} />
+      ))}
+    </nav>
+  );
+}
+
+function istBild(name: string) {
+  return /\.(png|jpe?g|webp|gif|heic|heif)$/i.test(name);
+}
+
+function UnterlagenFenster({ art }: { art: UnterlagenArt }) {
+  const [gewaehlt, setGewaehlt] = useState(0);
+  const datei = art.dateien.length > 0 ? art.dateien[Math.min(gewaehlt, art.dateien.length - 1)] : null;
+  return (
+    <Dialog.Root onOpenChange={(offen) => offen && setGewaehlt(0)}>
+      <Dialog.Trigger
+        className={cn(
+          "relative flex min-h-14 min-w-16 shrink-0 flex-col items-center justify-center gap-1 rounded-zeile bg-card px-2 py-1.5 text-[12px] font-semibold shadow-card hover:bg-subtle md:shadow-none",
+          art.dateien.length === 0 ? "text-ink-muted" : "text-ink",
+          FOKUS
+        )}
+      >
+        <art.Icon className={cn("size-5", art.dateien.length === 0 ? "text-ink-muted opacity-60" : "text-praxis-text")} aria-hidden="true" />
+        {art.kurz}
+        <span className="sr-only">, {art.dateien.length} {art.dateien.length === 1 ? "Dokument" : "Dokumente"}</span>
+        {art.dateien.length > 1 && (
+          <span aria-hidden="true" className="absolute top-1 right-1 rounded-full bg-praxis-tint px-1.5 text-[11px] tabular-nums">
+            {art.dateien.length}
+          </span>
+        )}
+      </Dialog.Trigger>
+      <Dialog.Portal>
+        <Dialog.Backdrop className="fixed inset-0 z-50 bg-ink/40 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 motion-reduce:animate-none" />
+        <Dialog.Popup className="fixed inset-2 z-50 mx-auto flex max-w-5xl flex-col overflow-hidden rounded-karte bg-page text-ink shadow-card outline-none data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95 motion-reduce:animate-none md:inset-8">
+          <div className="flex items-center gap-3 border-b border-line px-4 py-3 md:px-6">
+            <art.Icon className="size-5 shrink-0 text-praxis-text" aria-hidden="true" />
+            <Dialog.Title className="min-w-0 flex-1 truncate text-base font-bold">{art.titel}</Dialog.Title>
+            <Dialog.Close aria-label="Schließen" className={cn("flex size-10 shrink-0 items-center justify-center rounded-full bg-white shadow-card hover:bg-subtle", FOKUS)}>
+              <X className="size-[18px]" aria-hidden="true" />
+            </Dialog.Close>
+          </div>
+          {art.dateien.length > 1 && (
+            <div className="flex gap-2 overflow-x-auto border-b border-line px-4 py-2 md:px-6" role="tablist" aria-label={art.titel}>
+              {art.dateien.map((d, i) => (
+                <button
+                  key={`${d.name}-${i}`}
+                  type="button"
+                  role="tab"
+                  aria-selected={i === gewaehlt}
+                  onClick={() => setGewaehlt(i)}
+                  className={cn(
+                    "max-w-[16rem] shrink-0 truncate rounded-full px-3 py-1.5 text-[13px] font-semibold",
+                    i === gewaehlt ? "bg-ink text-white" : "bg-subtle text-ink hover:bg-line",
+                    FOKUS
+                  )}
+                >
+                  {d.name}
+                </button>
+              ))}
+            </div>
+          )}
+          {datei && (
+            <p className="px-4 pt-2 text-xs text-ink-muted md:px-6">
+              {datei.name} · {datei.quelle}
+            </p>
+          )}
+          <div className="flex min-h-0 flex-1 p-4 md:px-6">
+            {!datei ? (
+              <p className="m-auto max-w-sm text-center text-[15px] text-ink-muted">{art.leer}</p>
+            ) : !datei.href ? (
+              <p className="m-auto max-w-sm text-center text-sm text-ink-muted">
+                Diese Datei lässt sich in der Demo nur öffnen, solange die Seite offen ist. Gespeichert wird nur der Name.
+              </p>
+            ) : istBild(datei.name) ? (
+              // eslint-disable-next-line @next/next/no-img-element -- lokale Datei bzw. Demo-Datei, kein Bildoptimierer
+              <img src={datei.href} alt={datei.name} className="m-auto max-h-full max-w-full object-contain" />
+            ) : /\.pdf$/i.test(datei.name) || datei.quelle === "von Energiehelden" ? (
+              <iframe src={datei.href} title={`Vorschau: ${datei.name}`} className="h-full w-full rounded-zeile bg-white" />
+            ) : (
+              <a href={datei.href} download={datei.name} className={cn("m-auto inline-flex min-h-11 items-center gap-2 rounded-full bg-subtle px-5 text-[15px] font-semibold hover:bg-line", FOKUS)}>
+                Datei herunterladen
+              </a>
+            )}
+          </div>
+        </Dialog.Popup>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
 

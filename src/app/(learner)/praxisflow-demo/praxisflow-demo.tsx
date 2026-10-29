@@ -976,6 +976,13 @@ function KontrollierenSchritte({
  * nichts wird übertragen). Mehrere Dateien, jede wieder entfernbar. Ohne
  * `onDateien` nur die Liste zum Ansehen.
  */
+/**
+ * Hochgeladene Dateien dieser Sitzung (Name -> Browser-Link), damit sie sich
+ * in „Meine Unterlagen“ öffnen lassen (Anna 2026-10-29). Nur im Speicher des
+ * Browsers; nach dem Neuladen bleibt nur der Name (Demo, nichts wird übertragen).
+ */
+export const DATEI_LINKS = new Map<string, string>();
+
 export function DateienListe({
   id,
   accept,
@@ -994,7 +1001,14 @@ export function DateienListe({
           {dateien.map((name, i) => (
             <li key={`${name}-${i}`} className="flex items-center gap-3 rounded-zeile bg-subtle px-4 py-2.5 text-[15px] text-ink">
               <Check className="size-4 shrink-0 text-brand" strokeWidth={3} aria-hidden="true" />
-              <span className="min-w-0 flex-1 truncate">{name}</span>
+              {DATEI_LINKS.has(name) ? (
+                <a href={DATEI_LINKS.get(name)} target="_blank" rel="noopener noreferrer" className={cn("min-w-0 flex-1 truncate underline-offset-2 hover:underline", FOKUS)}>
+                  {name}
+                  <span className="sr-only"> (öffnet in neuem Tab)</span>
+                </a>
+              ) : (
+                <span className="min-w-0 flex-1 truncate">{name}</span>
+              )}
               {onDateien && (
                 <button
                   type="button"
@@ -1023,7 +1037,9 @@ export function DateienListe({
             accept={accept}
             className="sr-only"
             onChange={(e) => {
-              const neu = Array.from(e.target.files ?? []).map((f) => f.name);
+              const dateienNeu = Array.from(e.target.files ?? []);
+              for (const f of dateienNeu) DATEI_LINKS.set(f.name, URL.createObjectURL(f));
+              const neu = dateienNeu.map((f) => f.name);
               if (neu.length > 0) onDateien([...dateien, ...neu]);
               e.target.value = "";
             }}
