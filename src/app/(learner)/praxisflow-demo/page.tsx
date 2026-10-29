@@ -16,11 +16,13 @@ export default async function PraxisflowDemoPage({
   const zurueck = von === "programm" ? { href: "/content", label: "Programm" } : { href: "/schedule", label: "Stundenplan" };
 
   // Auftrag ohne Spannung zum Ausprobieren: ?spannung=aus (Anna 2026-10-20).
+  // Standard ist die neue Ansicht „Jetzt dran“ (Anna 2026-10-29); die alte
+  // bleibt zum Vergleich unter ?ansicht=alt.
   return (
     <PraxisflowDemo
       zurueck={zurueck}
       unterSpannung={DEMO_AUFTRAG.unterSpannung && spannung !== "aus"}
-      ansicht={ansicht === "neu" ? "neu" : "alt"}
+      ansicht={ansicht === "alt" ? "alt" : "neu"}
     />
   );
 }
