@@ -43,7 +43,9 @@ export function TerminBlock({ block, gross, style }: { block: Block; gross: bool
   const klickflaeche =
     "outline-none after:absolute after:inset-0 after:rounded-block after:content-[''] focus-visible:after:ring-2 focus-visible:after:ring-brand";
   const titel = (
-    <span title={block.volltitel} className={cn("leading-snug font-semibold", gross ? "text-base" : "line-clamp-3 text-[13px]")}>
+    // Platz für zwei Titelzeilen, damit „Live mit …“ und „Praxis mit …“ in
+    // allen Blöcken einer Reihe auf derselben Höhe stehen (Anna 2026-10-29).
+    <span title={block.volltitel} className={cn("min-h-[2lh] leading-snug font-semibold", gross ? "block text-base" : "line-clamp-3 text-[13px]")}>
       {block.titel}
     </span>
   );
