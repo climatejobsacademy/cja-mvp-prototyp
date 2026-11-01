@@ -351,8 +351,8 @@ export const HILFE: HilfeGruppe[] = [
           <>
             <p>
               Melde dich bei <b>Malte</b>:{" "}
-              <a href="mailto:malte@climatejobsacademy.com" className="font-semibold text-brand hover:underline">
-                malte@climatejobsacademy.com
+              <a href="mailto:m.schmiedinghoff@climatejobsacademy.com" className="font-semibold text-brand hover:underline">
+                m.schmiedinghoff@climatejobsacademy.com
               </a>
             </p>
             <p>
