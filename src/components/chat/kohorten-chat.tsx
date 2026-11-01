@@ -6,6 +6,7 @@ import { ArrowLeft, Coffee, Flag, Megaphone, MessageCircle, Send, Trash2, X } fr
 import { nachrichtLoeschen, nachrichtMelden, nachrichtSenden } from "@/app/(learner)/chat-actions";
 import { meldungenErledigt, nachrichtLoeschenTrainer, nachrichtSendenTrainer } from "@/app/(trainer)/trainer/chat-actions";
 import { ChatRegelnLink } from "@/components/chat/chat-regeln";
+import { HilfeLink } from "@/components/hilfe-link";
 import type { ChatKanal } from "@/lib/database.types";
 import { zeitpunktKurzInBerlin } from "@/lib/date";
 import { ABFRAGE_OFFEN_MS, ABFRAGE_ZU_MS, kuerzel, NACHRICHT_MAX, vorschau } from "@/lib/kohorten-chat";
@@ -305,7 +306,7 @@ export function KohortenChat({
           )}
           {!kanal && !trainer && (
             <p className="border-t border-border px-4 py-3 text-xs text-muted-foreground">
-              Bitte beachte unsere <ChatRegelnLink />.
+              Bitte beachte unsere <ChatRegelnLink />. Fragen zur Plattform? <HilfeLink className="rounded underline underline-offset-2 outline-none hover:text-ink focus-visible:ring-2 focus-visible:ring-brand" />
             </p>
           )}
 
@@ -415,7 +416,7 @@ export function KohortenChat({
               ) : null}
               {aktiv?.darfSchreiben && !trainer && (
                 <p className="-mt-1 px-4 pb-3 text-xs text-muted-foreground">
-                  Bitte beachte unsere <ChatRegelnLink />.
+                  Bitte beachte unsere <ChatRegelnLink />. Fragen zur Plattform? <HilfeLink className="rounded underline underline-offset-2 outline-none hover:text-ink focus-visible:ring-2 focus-visible:ring-brand" />
                 </p>
               )}
               {aktiv?.darfSchreiben ? null : (

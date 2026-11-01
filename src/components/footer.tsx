@@ -1,12 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { HilfeLink } from "@/components/hilfe-link";
+
 /**
  * App-weiter Footer mit den rechtlichen Pflichtseiten (SR-60) -- wird im
  * Root-Layout nach {children} gerendert und erscheint damit auf allen Seiten
  * (Login, rechtliche Seiten, Learner-Bereich). Aufteilung Logo links / Links
  * mittig / Copyright rechts angelehnt an climatejobsacademy.com, optisch
- * bewusst zurückhaltender (dünne graue Linie, weißer Hintergrund).
+ * bewusst zurückhaltender (dünne graue Linie, weißer Hintergrund). Dazu der
+ * Link „Hilfe“ (nur im Lernenden-Bereich, Anna 2026-11-01).
  */
 export function Footer() {
   return (
@@ -34,6 +37,7 @@ export function Footer() {
               {label}
             </Link>
           ))}
+          <HilfeLink className="inline-flex min-h-11 items-center rounded-lg px-2.5 text-[13px] text-muted-foreground outline-none hover:bg-subtle hover:text-ink focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2" />
         </nav>
         <p className="text-center text-[13px] text-muted-foreground md:justify-self-end md:text-right">
           © {new Date().getFullYear()} The Academy for Climate Jobs

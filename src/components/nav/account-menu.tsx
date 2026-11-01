@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { GraduationCap, LogOut, UserRound, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { CircleHelp, GraduationCap, LogOut, UserRound, Users } from "lucide-react";
 
 import { signOut } from "@/app/(learner)/actions";
 import { PersonAvatar } from "@/components/person-avatar";
@@ -39,7 +40,8 @@ function InfoZeile({
 /**
  * Account-/Profil-Menü (Handoff 2a, "Avatar-Menü"): Kopf mit Foto, Name +
  * E-Mail, Info-Zeilen Programm/Kohorte (nicht klickbar, kein Hover),
- * Menüpunkte "Profil bearbeiten" (Foto und Rufname, SR-77) und "Abmelden".
+ * Menüpunkte "Profil bearbeiten" (Foto und Rufname, SR-77), "Hilfe" und
+ * "Abmelden".
  */
 export function AccountMenu({
   name,
@@ -57,6 +59,7 @@ export function AccountMenu({
   cohortName: string;
 }) {
   const [profilOffen, setProfilOffen] = useState(false);
+  const router = useRouter();
   const anzeigeName = name.trim() || email;
 
   return (
@@ -109,6 +112,14 @@ export function AccountMenu({
             >
               <UserRound className="size-[18px]" aria-hidden="true" />
               Profil bearbeiten
+            </DropdownMenuItem>
+            {/* Hilfe-Seite (Anna 2026-11-01, SR folgt) */}
+            <DropdownMenuItem
+              onClick={() => router.push("/hilfe")}
+              className="min-h-11 gap-2 rounded-lg px-3 text-sm text-ink focus:bg-subtle focus:text-ink"
+            >
+              <CircleHelp className="size-[18px]" aria-hidden="true" />
+              Hilfe
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => signOut()}
