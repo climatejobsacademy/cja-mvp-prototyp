@@ -134,7 +134,7 @@ frage("Wo ändere ich mein Profil oder melde mich ab?",
       bild("14_konto_menue", (730, 0, 1010, 330), [(745, 240, 990, 272, 1), (745, 278, 990, 310, 2)], max_breite="40%"), gruppe=G4)
 
 frage("Wer hilft mir, wenn etwas nicht klappt?",
-      """<p>Melde dich bei <b>Malte</b>: <b>malte@climatejobsacademy.com</b></p>
+      """<p>Melde dich bei <b>Malte</b>: <b>m.schmiedinghoff@climatejobsacademy.com</b></p>
 <p>Bei Fragen zum Inhalt einer Lektion hilft dir <b>Fragen zur Lektion</b>. Bei allem anderen kannst du auch im <b>Chat</b> fragen.</p>
 <p><b>Seite leer oder etwas fehlt?</b> Lade die Seite einmal neu. Hilft das nicht, melde dich ab und wieder an.</p>""", gruppe=G4)
 
