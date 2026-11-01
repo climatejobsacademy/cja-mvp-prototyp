@@ -1,7 +1,8 @@
 "use client";
 
 import { useRef, useSyncExternalStore } from "react";
-import { Camera, GraduationCap, LogOut, Trash2, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Camera, CircleHelp, GraduationCap, LogOut, Trash2, Users } from "lucide-react";
 
 import { signOut } from "@/app/(learner)/actions";
 import { Avatar } from "@/components/avatar";
@@ -29,8 +30,8 @@ function InfoZeile({ icon: Icon, label, wert }: { icon: typeof GraduationCap; la
 
 /**
  * Account-/Profil-Menü (Handoff 2a, "Avatar-Menü"): Kopf mit Name + E-Mail,
- * Info-Zeilen Programm/Kohorte (nicht klickbar, kein Hover), einziger
- * Menüpunkt "Abmelden".
+ * Info-Zeilen Programm/Kohorte (nicht klickbar, kein Hover), Menüpunkte
+ * Profilfoto, Hilfe und Abmelden.
  */
 export function AccountMenu({
   name,
@@ -44,6 +45,7 @@ export function AccountMenu({
   cohortName: string;
 }) {
   const eingabe = useRef<HTMLInputElement>(null);
+  const router = useRouter();
   const foto = useSyncExternalStore(fotoAbonnieren, fotoLesen, () => null);
 
   return (
@@ -109,6 +111,14 @@ export function AccountMenu({
                 Profilfoto entfernen
               </DropdownMenuItem>
             )}
+            {/* Hilfe-Seite (Anna 2026-11-01, SR folgt) */}
+            <DropdownMenuItem
+              onClick={() => router.push("/hilfe")}
+              className="min-h-11 gap-2 rounded-lg px-3 text-sm text-ink focus:bg-subtle focus:text-ink"
+            >
+              <CircleHelp className="size-[18px]" aria-hidden="true" />
+              Hilfe
+            </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => signOut()}
               className="min-h-11 gap-2 rounded-lg px-3 text-sm text-ink focus:bg-subtle focus:text-ink"
