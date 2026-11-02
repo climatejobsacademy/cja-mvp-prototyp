@@ -355,8 +355,8 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 
 ### 2026-10-14 – Zeitpunkt des Praxisflow-Baus
 
-- **Entscheidung:** Der Praxisflow wird nicht vor der Abwesenheit des Produkt-Leads gebaut, sondern danach und vor dem Praxisblock des Piloten; Struktur (Datenmodell, Ablauf, Rechte) und Inhalte (Unterlagen, Kriterien, Gate-Texte) entstehen gemeinsam, der Zeitplan steht in Asana. Auflage für den Bau: Die Fremdeinschätzung und die Freigaben dürfen für Lernende vor Abschluss des Praxistags nicht lesbar sein, entweder über eigene Spalten mit Spaltenrechten oder über Lesen nur per RPC, mit einem pgTAP-Test als Beleg.
-- **Begründung:** Ein Praxisflow-Schnitt hätte in den vorherigen Release nichts sicher hineingebracht; die Inhalte fehlten, und ein langlebiger Branch in der Abwesenheit des Produkt-Leads erhöht das Risiko für Production.
+- **Entscheidung:** Der Praxisflow wird nach dem Release 2 und vor dem Praxisblock des Piloten gebaut; Struktur (Datenmodell, Ablauf, Rechte) und Inhalte (Unterlagen, Kriterien, Gate-Texte) entstehen gemeinsam, der Zeitplan steht in Asana. Auflage für den Bau: Die Fremdeinschätzung und die Freigaben dürfen für Lernende vor Abschluss des Praxistags nicht lesbar sein, entweder über eigene Spalten mit Spaltenrechten oder über Lesen nur per RPC, mit einem pgTAP-Test als Beleg.
+- **Begründung:** Ein Praxisflow-Schnitt hätte in Release 2 nichts sicher hineingebracht, weil die Inhalte fehlten. Ein langlebiger Branch erhöht das Risiko für Production, wenn das Team ihn nicht gemeinsam prüfen kann.
 - **Folgen:** Bis zum Bau bleibt der einfache Praxistag aus Migration `0011`; der Link dorthin hängt am Schalter `PRAXISAUFGABE_LINK` (siehe 2026-10-17). Migrationen für den Bau kommen als kleine, additive Pull Requests zuerst nach `dev`.
 - **Status:** gültig
 - **Belegt:** `praxisflow-realbau.md` (Abschnitt 4.0 und Rechte-Tabelle); der Beschluss selbst ist **aus Projektdoku übernommen**.
