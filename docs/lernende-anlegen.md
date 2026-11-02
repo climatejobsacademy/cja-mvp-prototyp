@@ -60,7 +60,7 @@ Kohorte „Energiehelden 28.09.26“ und Betrieb Energiehelden gibt es auf Produ
 
 ### Warum der zweite Plan-Import nötig ist
 
-Praxistage gehören nicht der Kohorte, sondern jeder einzelnen Einschreibung: Der Plan-Import legt je aktiver Einschreibung eigene `field_job`- und `schedule_entry`-Zeilen (mit `enrolment_id`) an (Entscheidung 18.10., „Variante B“). Beim ersten Import gibt es noch keine Lernenden, also auch keine Praxistage. Erst ein Import **nach** dem Anlegen der Lernenden gibt ihnen ihre Praxistage. Er ist idempotent: Live-Termine, Kompetenzen usw. bleiben unverändert, neu sind nur die Praxistage der neuen Lernenden.
+Praxistage gehören nicht der Kohorte, sondern jeder einzelnen Einschreibung: Der Plan-Import legt je aktiver Einschreibung eine `field_job`-Zeile an, die an `learner_id` hängt und nicht an der Einschreibung, und dazu eine `schedule_entry`-Zeile, die allein die `enrolment_id` trägt (Entscheidung 18.10., „Variante B“). Nur `schedule_entry` kaskadiert mit der Einschreibung (Migration 0005); die `field_job`-Zeile bleibt bestehen, wenn die Einschreibung wegfällt. Beim ersten Import gibt es noch keine Lernenden, also auch keine Praxistage. Erst ein Import **nach** dem Anlegen der Lernenden gibt ihnen ihre Praxistage. Er ist idempotent: Live-Termine, Kompetenzen usw. bleiben unverändert, neu sind nur die Praxistage der neuen Lernenden.
 
 ### Was passiert, wenn man ihn vergisst
 
@@ -191,7 +191,7 @@ Team-Mitglieder bekommen eigene **Lernenden**-Test-Konten über dasselbe Skript,
 
 ## Regeln
 
-- Ein Konto hat genau eine aktive Einschreibung. Gibt es schon eine aktive Einschreibung in einer anderen Kohorte oder bei einem anderen Betrieb, meldet das Skript „Konflikt“ und hängt **nicht** um. Umhängen heißt: neue Einschreibung anlegen und die alte beenden, nie die bestehende ändern; das passiert händisch.
+- Ein Konto hat genau eine aktive Einschreibung. Gibt es schon eine aktive Einschreibung in einer anderen Kohorte oder bei einem anderen Betrieb, meldet das Skript „Konflikt“ und hängt **nicht** um. Umhängen heißt: neue Einschreibung anlegen und die alte beenden, nie die bestehende ändern; das passiert händisch. Hat ein Konto trotzdem mehrere aktive Einschreibungen, nimmt die App die älteste (`created_at` aufsteigend, `src/lib/queries/session.ts`). Demo-Konten werden nicht von Hand umgehängt.
 - Eine beendete Einschreibung (abgeschlossen, abgebrochen) in derselben Kohorte wird nicht wieder aktiviert: Konflikt.
 - Konten mit der Rolle Trainer:in oder Admin werden nicht als Lernende verknüpft (getrennte Konten): Konflikt.
 - Gehört die E-Mail schon einer anderen Person (anderes Auth-Konto): Konflikt.
