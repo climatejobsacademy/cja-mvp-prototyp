@@ -336,3 +336,37 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Folgen:** Kein neues Attribut, keine neue Tabelle; ausgepackte Dateien haben keine `file_asset`-Zeile. Der Rückfall auf die Zip bleibt nötig (nicht ausgepackte Pakete, einzelne fehlende Dateien). Je Server-Instanz merkt sich die Route 3 Minuten, ob ein Paket ausgepackt ist; signiert wird trotzdem bei jeder Anfrage mit der Session. Neue Paketversion = neuer Zip-Name, überschrieben wird nie. Das Präfix gehört allein zum Paket: ein `storage_pfad`, der selbst `.entpackt/` enthält, wäre zu vermeiden. Admins können unveröffentlichte Pakete weiterhin nicht über die App signieren (wie bei der Zip, 0017).
 - **Status:** gültig (Entscheidung Anna); Migration 0055 noch nicht auf Staging angewendet, noch nicht mit einem echten ausgepackten Paket im Browser geprüft
 - **Belegt:** `supabase/migrations/0055_scorm_entpackt.sql`, `supabase/tests/database/028_scorm_entpackt_access.test.sql`, `src/lib/scorm-entpackt.ts` mit Tests, `src/lib/queries/scorm-paket.ts`, `src/app/(learner)/content/[lessonId]/medium/route.ts`; `data-model.md` Abschnitt SCORM; SR-50, SR-85
+
+### 2026-10-05 – Consent neu bewertet: im Pilot kein Cookie-Banner
+
+- **Entscheidung:** Im Pilot gibt es kein Cookie-Banner und keine gesonderte Einwilligung. Die Plattform setzt nur technisch notwendige Cookies für die Anmeldung; Tracking- und Analysedienste laufen nicht. Beim Onboarding gibt es eine Datenschutzinformation in einfacher Sprache als Information, nicht als Einwilligung. Banner und Einwilligung kommen erst, wenn Analytics eingeführt wird.
+- **Begründung:** Der frühere Beschluss im Playbook (Banner Pflicht) beruhte auf geplantem Tracking, das es nicht gibt. Das ist eine eigene Einschätzung des Teams und **nicht rechtlich bestätigt**; eine Prüfinstanz gibt es noch nicht.
+- **Folgen:** Wer einen Dienst mit Tracking oder Analyse einbaut (auch einen, der Cookies setzt), muss diese Entscheidung vorher neu bewerten; siehe auch die Grundsätze in `design-specifications.md` und die Regel 11 in `CLAUDE.md`.
+- **Status:** gültig; ersetzt den früheren Banner-Beschluss im Playbook (Notion)
+- **Belegt:** `src/app/(rechtliches)/datenschutz/page.tsx` (Abschnitt „Cookies und Session-Management“: nur technisch notwendige Cookies); `package.json` enthält keinen Analytics-Dienst; `src/lib/fachsprache-lesend.test.ts` prüft für die Fachsprache auf Tracking. Der Beschluss selbst ist **aus Projektdoku übernommen** (Planungsstand 05.10.).
+
+### 2026-10-05 – Scope für den Piloten: Datei-Upload und Fragen-Thread an Lektionen
+
+- **Entscheidung:** Im Pilot werden zwei Funktionen mit Personenbezug eingesetzt, jeweils an Lektionen gebunden und bewusst schlank: Lernmaterialien, die das Team an Lektionen hängt (Lernende laden nichts hoch), und der Fragen-Thread je Lektion (siehe 2026-10-07). Der Kohorten-Chat kam später dazu (siehe 2026-10-16).
+- **Begründung:** Beides wurde im Pilot getestet; schlanke Varianten halten den Aufwand und die neuen Datenkategorien klein. Beides macht eine Ergänzung der Datenschutzerklärung nötig (neue Datenkategorien, Sichtbarkeit, Fristen, Löschweg) und berührt das Backup-Konzept, weil Dateien im Storage nicht in der Datenbanksicherung stehen.
+- **Folgen:** Neue Funktionen mit Personendaten oder Dateien brauchen vor dem Livegang eine Ergänzung der Datenschutzerklärung (`datenschutz-offene-punkte.md`) und eine Prüfung des Löschwegs (`loeschweg.md`). Der Aufwand je Funktion war eine Annahme, nicht gemessen.
+- **Status:** gültig
+- **Belegt:** `lernmaterialien-upload.md` (nur AfCJ lädt hoch), `fragen-thread.md`, Migrationen `0023`, `0024`, `0050`; `runbook.md` Abschnitt Backup (Storage nicht gesichert). Der Beschluss selbst ist **aus Projektdoku übernommen** (Planungsstand 05.10.).
+
+### 2026-10-14 – Zeitpunkt des Praxisflow-Baus
+
+- **Entscheidung:** Der Praxisflow wird nicht vor der Abwesenheit des Produkt-Leads gebaut, sondern danach und vor dem Praxisblock des Piloten; Struktur (Datenmodell, Ablauf, Rechte) und Inhalte (Unterlagen, Kriterien, Gate-Texte) entstehen gemeinsam, der Zeitplan steht in Asana. Auflage für den Bau: Die Fremdeinschätzung und die Freigaben dürfen für Lernende vor Abschluss des Praxistags nicht lesbar sein, entweder über eigene Spalten mit Spaltenrechten oder über Lesen nur per RPC, mit einem pgTAP-Test als Beleg.
+- **Begründung:** Ein Praxisflow-Schnitt hätte in den vorherigen Release nichts sicher hineingebracht; die Inhalte fehlten, und ein langlebiger Branch in der Abwesenheit des Produkt-Leads erhöht das Risiko für Production.
+- **Folgen:** Bis zum Bau bleibt der einfache Praxistag aus Migration `0011`; der Link dorthin hängt am Schalter `PRAXISAUFGABE_LINK` (siehe 2026-10-17). Migrationen für den Bau kommen als kleine, additive Pull Requests zuerst nach `dev`.
+- **Status:** gültig
+- **Belegt:** `praxisflow-realbau.md` (Abschnitt 4.0 und Rechte-Tabelle); der Beschluss selbst ist **aus Projektdoku übernommen**.
+
+## Offene technische Schulden
+
+Diese Punkte sind keine Entscheidungen, sondern bekannte Lücken; was daraus wird, steht in Asana.
+
+**Nachweise sind nicht durchgehend unveränderlich.** Belegt ist: `attendance` und `verification` haben seit Migration `0032` einen `BEFORE UPDATE`-Trigger (`unveraenderlich`), der jedes Update ablehnt, auch für AfCJ admin; Korrekturen laufen als Storno-Zeile mit `korrigiert_id`. Löschen ist dort nicht gesperrt: `attendance_admin_all` und `verification_admin_all` (Migration `0009`) bleiben bestehen, und der Kommentar zu `fn_unveraenderlich` in `0032` sagt, dass das Löschen für AfCJ admin bleibt, bis der Löschweg entschieden ist. Für `unit_progress`, `field_capture` und `field_capture_antwort` findet sich in den Migrationen kein Schutz-Trigger; sie sind veränderbar.
+
+**Löschweg.** Löschen einer Person ist ein manuelles Verfahren, beschrieben in `loeschweg.md`. Die Abwägung zwischen Löschanspruch, Unveränderlichkeit der Nachweise und Aufbewahrungspflicht ist nicht rechtlich geprüft.
+
+**`field_job` ohne Verweis auf die Einschreibung.** Ein Praxistag verweist auf die lernende Person (`learner_id`, Löschweitergabe) und auf den Auftragstyp, aber nicht auf die Einschreibung (Migration `0005`, keine spätere Migration ergänzt einen Verweis). Wird eine Einschreibung beendet oder gelöscht, bleiben ihre Praxistage deshalb bestehen; das ist die Folge des fehlenden Verweises, im Betrieb nicht geprüft.
