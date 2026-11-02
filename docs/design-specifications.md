@@ -56,6 +56,28 @@ Nicht Teil dieser Festlegung: Login (Formular `max-w-[380px]`) und die
 statischen Seiten Datenschutz, Impressum und Barrierefreiheit (`prose`,
 Lesebreite).
 
+## 1.2 Dienste mit Personendaten
+
+Diese Grundsätze gelten für jede Funktion, die einen externen Dienst einbindet.
+Die Bewertung der heutigen Dienste (Hosting, Datenbank, Mailversand) steht in
+`decisions.md`, die Regeln für den Code in `CLAUDE.md`.
+
+- Jeder Dienst, der Personendaten verarbeitet, braucht einen
+  Auftragsverarbeitungsvertrag, bevor er produktiv genutzt wird.
+- Personendaten verlassen die Datenbank in Frankfurt nur für den Mailversand
+  und für die Darstellung der App. Der Hosting-Dienst rendert die Seiten und
+  soll selbst keine Personendaten der Lernenden speichern; das ist eine
+  eigene Einschätzung des Teams, rechtlich nicht geprüft.
+- Analytics- und Tracking-Dienste, insbesondere US-amerikanische, werden nicht
+  ohne ausdrückliche Entscheidung eingebaut. Das Vorgehen ohne Banner im Pilot
+  gilt nur, solange keiner läuft (`decisions.md`, Eintrag zur Consent-Bewertung).
+- Neue Dienste mit Personenbezug, etwa ein Speicher für hochgeladene Dateien,
+  Sprachdienste oder ein KI-Assistent, werden erst nach einer Bewertung
+  eingebunden, die Vertrag, Verarbeitungsort, Aufbewahrung, Löschweg und die
+  Ergänzung der Datenschutzerklärung klärt.
+- Es werden keine proprietären Dienste des Hosting-Anbieters genutzt (Regel 11 in
+  `CLAUDE.md`), damit ein Wechsel des Hosters möglich bleibt.
+
 ## 2. Kritische Flows
 
 Priorisierung entschieden am 2026-09-09: 1. Praxistag-Flow — 2. Learner Day
