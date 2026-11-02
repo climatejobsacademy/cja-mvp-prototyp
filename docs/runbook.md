@@ -37,6 +37,8 @@ Wo ein Vorgehen noch nicht geklärt ist, steht **offen**.
 
 Zugänge (Stand 18.10.2026): GitHub – Anna, Malte, Vera (alle Admin). Supabase-Dashboard – Anna, Malte, Vera mit eigenen Konten, Malte und Vera als Administratoren. Vercel – ein Konto (Annas), das das Team gemeinsam nutzt. Brevo – ein gemeinsames Konto für das Team.
 
+**Was nur im Supabase-Dashboard oder per Skript geht.** Die App hat keinen Admin-Bereich (`decisions.md`, Eintrag zum Design-Fundament); Admin-Arbeit läuft im Dashboard oder über die Skripte in `scripts/`. Auth-Konten für Lernende und Trainer:innen legt man im Dashboard an (Authentication → Users → Add user), die Skripte schreiben nie in `auth.users`. Profil, Mitgliedschaft, Rolle und Einschreibung der Lernenden legt `scripts/lernende-anlegen.mjs` an (`lernende-anlegen.md`), die Person mit Rolle `trainer` der Plan-Import (`import-plan.md`, Abschnitt Trainer-Konten). Inhalte und Termine kommen per Plan-Import, SCORM-Pakete und Teams-Links per eigenem Skript (`scorm-einspielen.md`, `live-links.md`). Status und Freigaben ändert man von Hand im Table Editor, zum Beispiel eine Fachsprache-Einheit auf `veroeffentlicht` (`fachsprache.md`); auch das Organisations-Logo lädt man im Dashboard hoch (`organisations-logo.md`). Das Schema ändert sich nie im Dashboard, sondern nur über eine Migration (`CLAUDE.md`, Regel 4).
+
 ## Wen informieren
 
 | Thema | Person | Erreichbar über |
