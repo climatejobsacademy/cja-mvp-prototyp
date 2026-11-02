@@ -2,7 +2,7 @@
 
 Stand 13.10.2026. **Nur Analyse und Entwurf.** Es gibt dazu keine Migration im Repo, kein Branch mit Code und keinen Datenbankzugriff. Grundlage sind der Stand von `origin/demo` (4c6a64d) und `dev` (6264168) sowie die Migrationen bis 0030. Der SQL-Teil unten ist ein Text-Entwurf, nicht ausgeführt und nicht getestet.
 
-Zweck: Grundlage für den Realbau (Zeitfenster 03.–12.11.2026) und für die Übergabe an Anna und Malte.
+Zweck: Grundlage für den Realbau (der Bauzeitraum steht in Asana, nicht hier) und für die Übergabe an Anna und Malte.
 
 **Aktualisiert 14.10.2026** (Entscheidungen Vera): Login der Rolle `trainer` seit 0032; Migrationsnummern und Regeln für den Langzeit-Branch (Abschnitt 4.0); Auftragsnummer als neue Spalte `nummer`; Neu-Einreichen über `field_capture_fassung`; Freigaben nach E3 über `fn_trainer_kohorten_ids()`; Foto nur als Vorschau im ersten Schnitt; neue Abschnitte 9 (Aufwand je Phase und Gate) und 10 (Schnitte, Inhalte).
 
