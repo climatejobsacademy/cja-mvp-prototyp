@@ -6,7 +6,6 @@ einem Symptom und führt in dieser Reihenfolge durch:
 **Abbrechen und informieren**.
 
 Wo ein Vorgehen noch nicht geklärt ist, steht **offen**.
-Stand: 30.09.2026, Zuständigkeiten ergänzt am 18.10.2026 (Anna).
 
 ---
 
