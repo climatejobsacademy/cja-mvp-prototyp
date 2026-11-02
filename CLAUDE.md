@@ -4,9 +4,9 @@
 A qualification platform for climate-trade employers. Learners in a programme
 learn in three contexts — live sessions, self-paced units, app-guided field jobs —
 and all three produce competency evidence in one profile per learner.
-Spec: /docs/requirements.md (SR-xx), /docs/data-model.md, /docs/access-matrix.md,
-/docs/design-specifications.md. Every feature traces to an SR-xx. No SR → ask
-before building.
+Start with /docs/README.md (what lives where). Spec: /docs/requirements.md (SR-xx),
+/docs/data-model.md, /docs/access-matrix.md, /docs/design-specifications.md.
+Every feature traces to an SR-xx. No SR → ask before building.
 SR numbers are assigned only in Notion (database "System Requirements"). If no
 matching SR exists, it is created there; until then the repo says "SR folgt",
 and the PR replaces it as soon as the number is known. Never assign SR numbers
@@ -34,10 +34,13 @@ in the repo. Add every new Notion SR to /docs/sr-registry.json in the same PR.
 6. The competency profile is a view over competency_evidence. No table stores it,
    no UI edits it. Evidence rows are written only by: unit completion, confirmed
    attendance, approved verification.
-7. Confirmed attendance and verification rows must be treated as immutable. No
-   trigger enforces this yet (AfCJ admins can update/delete them via
-   `*_admin_all` policies) — never write code that updates or deletes them, and
-   don't assume the database will stop it.
+7. Confirmed attendance and verification rows must be treated as immutable.
+   Migration 0032 blocks every UPDATE on both tables (trigger `unveraenderlich`,
+   also for AfCJ admins); a correction is a new storno row with `korrigiert_id`.
+   DELETE is not blocked: AfCJ admins can still delete via the `*_admin_all`
+   policies, so never write code that deletes them. `unit_progress`,
+   `field_capture` and `field_capture_antwort` have no such trigger; treat them
+   with the same care and don't assume the database will stop a change.
 8. Field guidance answers only from knowledge_chunk rows of verified sources and
    returns the source ids with every answer. Nothing found → fixed fallback message.
    Never answer installation questions from general model knowledge.
@@ -75,10 +78,12 @@ in the repo. Add every new Notion SR to /docs/sr-registry.json in the same PR.
   post-merge state is correct, and retargeting a PR's base does not by itself
   trigger a new CI run.
 
-## First build task (Schritt 4e Handover)
-Read /docs/data-model.md and /docs/access-matrix.md. Produce (1) an ER diagram in
-Mermaid, (2) migration files creating every entity marked "Prototype: yes" with the
-listed attributes, and (3) RLS policies implementing the access matrix exactly. Do
-not add entities, roles or access beyond what's listed; if you believe something is
-missing, list it as a question instead of building it. Apply the translation rules
-in /docs/data-model.md.
+## Documentation
+- /docs holds technical state, procedures and technical decisions, no status.
+  No "done", "open" or "in progress" and no calendar dates for planned work in
+  /docs. Tasks, status, priorities and dates live only in Asana.
+- SR numbers come only from the Notion SR database (see above); the repo never
+  assigns them.
+- The repo is public: no personal data in it (no names, e-mail addresses, lists
+  of trainers or learners, phone numbers) and no credentials. Name roles
+  instead of people. Import data stays outside the repo.
