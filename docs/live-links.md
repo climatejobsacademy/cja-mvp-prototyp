@@ -88,6 +88,10 @@ Für beide gilt:
 - **Meldungen:** ausgelassene Begleitkurs-Termine; Termine, die auch zu einer anderen Kohorte gehören (dort gilt der Link dann mit).
 - **Zweiter Durchgang:** Das Skript läuft in derselben Transaktion ein zweites Mal. Ändert es dabei etwas, bricht es ab, und es wird nichts gespeichert. Ein zweiter echter Lauf mit derselben Datei meldet überall „unverändert“.
 
+## Klicktest nach dem Einspielen
+
+Nach dem echten Lauf prüft eine Person mit einem Lernenden-Testkonto der Kohorte, dass der Link im richtigen Meeting landet; der Lauf selbst gibt den Link nie aus. Auf Home trägt die Karte des Live-Termins den Knopf „Zum Live-Unterricht“, bei laufendem Termin „Jetzt beitreten“; ist ein Link hinterlegt, ist das Ziel extern (`src/app/(learner)/home/tages-karten.tsx`). Im Stundenplan führt der Termin ab 15 Minuten vor Beginn bis zum Ende direkt in den Live-Raum, davor in die Lektion (`src/app/(learner)/schedule/plan-modell.ts`). In der Lektion steht „Beitreten“ bis zum Ende des Termins, sofern ein Link da ist (`src/app/(learner)/content/[lessonId]/termin-karte.tsx`).
+
 ## Was das Skript nicht tut
 
 - Es ändert nur `join_link`, sonst nichts. Es legt keine Termine an und löscht nichts.
