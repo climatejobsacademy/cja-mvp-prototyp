@@ -319,6 +319,57 @@ Row-Level-Security in `supabase/migrations`, die Tests in
 
 ---
 
+## 7. Variablen, Redirect-URLs, Storage und Restore-Probe
+
+Dieser Abschnitt ergänzt das, was für den Betrieb außerhalb eines Fehlers gebraucht wird. Werte von Variablen, Schlüsseln und Projekt-Referenzen stehen hier nicht. Das Zurückrollen eines Deployments (Instant Rollback) steht in Abschnitt 2, die Sicherung in Abschnitt 5.
+
+### Variablen und Schalter
+
+Die App liest die folgenden Variablen. Sie werden in Vercel gesetzt (Projekt, Settings, Environment Variables, getrennt für Production, Preview und Development) und lokal in `.env.local`, die nie committet wird. Eine Änderung in Vercel wirkt erst nach einem neuen Deployment.
+
+| Name | Bedeutung | Wo gesetzt | Umgebung |
+|---|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Adresse und öffentlicher Schlüssel des Supabase-Projekts; ohne sie startet die App nicht, auch `/login` nicht (`.env.example`). Wegen des Präfixes im Browser sichtbar. | Vercel, lokal `.env.local` | Production zeigt auf das Projekt in Frankfurt, Preview und Development auf Staging (`CLAUDE.md`) |
+| `NEXT_PUBLIC_SITE_URL` | Basis-Adresse für den Magic-Link-Redirect in Production; ohne Wert gilt die Production-Domain (`src/app/login/actions.ts`) | Vercel (Production), lokal `.env.local` | Production, lokal |
+| `VERCEL_ENV`, `VERCEL_BRANCH_URL` | Systemvariablen von Vercel: Umgebung und Adresse der Vorschau-Version; nicht selbst setzen (`decisions.md`, Eintrag 2026-09-21) | Vercel, automatisch | alle |
+| `FACHSPRACHE_EINHEIT`, `PRAXISAUFGABE_LINK` | Funktionsschalter: nur der Wert `an` schaltet ein, ohne Variable ist die Funktion aus (`src/lib/schalter.ts`, `fachsprache.md`) | Vercel | je Umgebung ein eigener Wert |
+| `NATIVE_SELBSTLERNEN` | Schalter mit umgekehrtem Standard: ohne Variable ist die native Selbstlern-Ansicht an, nur der Wert `aus` schaltet sie ab (Notbremse) | Vercel | je Umgebung ein eigener Wert |
+| `SUPABASE_SERVICE_ROLE_KEY` | nur für `scripts/invite-learner.mjs`, nie im App-Code; für Production liest das Skript den Schlüssel nur aus dem Schlüsselbund (`.env.example`) | lokal `.env.local` | lokal |
+| `PGPASSWORD`, `PSQL` | für die Skripte: Datenbank-Passwort (sonst ein Schlüsselbund-Eintrag je Ziel) und Pfad zu `psql` (`import-plan.md`, `lernende-anlegen.md`) | eigene Shell | lokal |
+
+### Redirect-URLs
+
+Der Magic-Link führt zu `<Basis>/auth/callback`. Die Basis bestimmt `src/app/login/actions.ts`: In Production `NEXT_PUBLIC_SITE_URL` (sonst die Production-Domain), in Vorschau-Versionen `https://<VERCEL_BRANCH_URL>`, sonst `http://localhost:3000`. Supabase leitet nur auf Adressen aus der Liste unter Authentication, URL Configuration weiter; die Liste steht im Dashboard und nicht im Repository, und jedes Projekt hat seine eigene. Als Muster gilt: Das Production-Projekt erlaubt nur `https://<production-domain>/**`, das Staging-Projekt zusätzlich `http://localhost:3000/**` und das Muster der Vorschau-Adressen `https://*-<vercel-team>.vercel.app/**`. Das Muster stammt aus der Projektdoku und ist im Dashboard nicht geprüft. Landet ein Link auf der falschen Adresse, fehlt vermutlich der passende Eintrag in dieser Liste.
+
+### Stolpersteine
+
+- **Sensitive-Variablen in Vercel.** Eine als „Sensitive“ gespeicherte Variable lässt sich danach nicht mehr anzeigen, nur ersetzen (Verhalten des Anbieters, im Repository nicht geprüft). Wer einen Wert braucht, setzt ihn neu und deployt neu.
+- **Magic-Link im selben Browser.** Der Rückkehrpunkt tauscht einen Code gegen die Sitzung (`exchangeCodeForSession` in `src/app/auth/callback/route.ts`); bei Misserfolg leitet er auf `/login?error=login-fehlgeschlagen`. Dieses Verfahren (PKCE) braucht vermutlich denselben Browser, in dem der Link angefordert wurde; ein Link, der in einem anderen Browser oder einer Mail-App geöffnet wird, schlägt dann fehl (im Browser nicht geprüft).
+- **Einladungslinks von Supabase funktionieren nicht.** Der Rückkehrpunkt liest nur den Parameter `code`; ein Einladungslink trägt sein Token vermutlich hinter einem `#`, den der Server nicht sieht (abgeleitet aus dem Code). Konten werden deshalb im Dashboard mit „Create new user“ und „Auto Confirm“ angelegt, ohne Einladung (`lernende-anlegen.md`), und auch `scripts/invite-learner.mjs` wird nicht benutzt.
+- **Schlüssel nie auf der Befehlszeile.** Passwörter und Schlüssel werden nie als Argument eines Befehls übergeben, weil sie sonst im Verlauf der Shell und in der Prozessliste stehen. Die Skripte lesen sie aus der Umgebung der eigenen Shell oder aus dem Schlüsselbund und geben sie nie aus (`import-plan.md`, `lernende-anlegen.md`).
+
+### Storage
+
+Buckets entstehen nur über Migrationen. Die Angaben stammen aus den Migrationen und den genannten Dokumenten.
+
+| Bucket | Zugriff | Grenze je Datei | Formate | Pfad und Dateiname |
+|---|---|---|---|---|
+| `scorm-packages` | privat | keine am Bucket, nur die Upload-Grenze des Projekts (Dashboard, Storage, Settings; `scorm-einspielen.md`) | Zip und ausgepackte Medien | ausgepackt unter `<storage_pfad>.entpackt/`; eine neue Paketversion bekommt einen neuen Dateinamen, überschrieben wird nie (`scorm-einspielen.md`, `decisions.md`) |
+| `lesson-resources` | privat | 50 MB | PDF, PNG, JPEG, WebP, DOCX, PPTX, XLSX | nur Kleinbuchstaben a bis z, Ziffern und Bindestriche, eine Endung, keine Umlaute, keine Leerzeichen, keine Ordner (`lernmaterialien-upload.md`) |
+| `fachsprache-bilder` | privat | 2 MB | PNG, JPEG, WebP (kein SVG) | `<lesson_id>/<dateiname>`, Dateiname aus Buchstaben, Ziffern, Punkt, Unterstrich und Bindestrich, höchstens 100 Zeichen, mit Endung (`0051`, `fachsprache.md`) |
+| `profilfotos` | privat | 1 MB | nur JPEG | Ordner `<person_id>/` (`loeschweg.md`) |
+| `org-logos` | öffentlich | 512000 Byte | PNG, WebP, JPEG | direkt im Wurzelverzeichnis, Dateiname eine neue UUID in Kleinbuchstaben mit Endung, keine Ordner (`organisations-logo.md`) |
+
+Storage ist nicht im Backup: Die Sicherung enthält nur die Einträge in der Datenbank, nicht die Dateien (Abschnitt 5). Eine gelöschte Datei kommt durch eine Wiederherstellung nicht zurück.
+
+### Restore-Probe
+
+Der folgende Ablauf ist aus den Angaben zur Sicherung in Abschnitt 5 abgeleitet und noch nicht als Ganzes erprobt (Vermutung). Er soll zeigen, dass der Rückweg funktioniert, bevor er gebraucht wird.
+
+- **Vorher:** Festlegen, wer entscheidet und wer im Dashboard auslöst (Abschnitt 5). Im Dashboard unter Database, Backups die Sicherung der letzten Nacht ansehen. Zählstände festhalten, nur Zahlen und keine Inhalte, zum Beispiel Zeilen in `person`, `enrolment`, `attendance` und `unit_progress` sowie die Zahl der Dateien je Bucket. Das Team informieren: Alles seit der Sicherung geht verloren, und das Projekt ist während der Wiederherstellung vermutlich kurz nicht erreichbar.
+- **Danach prüfen:** Anmelden per Magic Link mit einem Testkonto und den Smoke-Test aus `release.md` durchgehen. Die Zählstände mit den festgehaltenen vergleichen; Unterschiede müssen sich aus den Änderungen seit der Sicherung erklären lassen. Den Migrationsstand mit `migration list` ansehen: Eine Migration, die erst nach der Sicherung eingespielt wurde, fehlt nach der Wiederherstellung und müsste neu eingespielt werden. Prüfen, dass Seiten mit Dateien (Lernmaterialien, Fachsprache-Bilder, Profilfotos) noch laden.
+- **Nicht im Backup:** die Dateien im Storage (Tabelle oben). Die Einstellungen des Projekts (Auth, SMTP, Redirect-URLs) und die Variablen in Vercel sind keine Datenbankinhalte; dass sie die Wiederherstellung unverändert überstehen, ist eine Vermutung und nach der Probe zu bestätigen.
+
 ## Anhang für die Technik: lesend auf die Datenbank zugreifen
 
 Gilt für beide Projekte. Jede Abfrage nennt das Ziel ausdrücklich (Ref bzw.
