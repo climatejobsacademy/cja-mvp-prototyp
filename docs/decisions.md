@@ -361,6 +361,30 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Status:** gültig
 - **Belegt:** `praxisflow-realbau.md` (Abschnitt 4.0 und Rechte-Tabelle); der Beschluss selbst ist **aus Projektdoku übernommen**.
 
+### 2026-10-12 – Uhrzeit des Praxistags (SR-13)
+
+- **Entscheidung:** Die Uhrzeit eines Praxistags steht als `field_job.start` und `field_job.ende` (`time`, Berliner Ortszeit, Namen wie bei `live_session`). Beide Werte oder keiner, `ende` nach `start`; ohne Werte zeigt die Oberfläche den Praxistag ganztägig ohne Uhrzeit. Der Ort bleibt `standort` (Freitext).
+- **Begründung:** `field_job` ist schon pro lernender Person, und ein Praxistag kann auch im eigenen Betrieb mit eigener Zeit stattfinden. Ein Praxistag, der für die ganze Kohorte gleich ist, bekommt in jeder Zeile dieselben Werte, wie schon das Datum. Keine eigene Kohorten-Tabelle und nicht an `field_job_type`, denn der Typ ist die Aufgabe, nicht der Termin.
+- **Folgen:** Lernende lesen die neuen Spalten mit der eigenen Zeile und schreiben weiter nur die drei Felder aus dem Eintrag vom 2026-09-11. Die Zeiten setzt AfCJ im Dashboard oder per SQL wie die übrigen Praxistag-Daten.
+- **Status:** gültig; Migration 0026
+- **Belegt:** `0026_field_job_uhrzeit.sql`; `015_field_job_uhrzeit.test.sql`; `data-model.md` (Eintrag 2026-10-12 zu `field_job`); `access-matrix.md` (Zeile „Field job“, Eintrag 2026-10-12); SR-13
+
+### 2026-10-12 – Reihenfolge der Kompetenzschritte und Programmfilter der Kompetenzseite (SR-69, SR-70)
+
+- **Entscheidung:** Die Reihenfolge der Kompetenzschritte steht als `competency_competency_step.reihenfolge`, nicht an `competency_step`. Sie ist Pflichtfeld, größer als 0 und je Kompetenz eindeutig; die Eindeutigkeit wird erst am Ende der Transaktion geprüft (deferrable), damit sich Positionen tauschen lassen. Neue Zuordnungen brauchen deshalb immer eine Position. Die Kompetenzseite zeigt nur Kompetenzen des Programms der aktiven Einschreibung, über `competency_programme`.
+- **Begründung:** Derselbe Schritt kann in verschiedenen Kompetenzen an verschiedener Stelle stehen. Die Programmzuordnung ist die N:M-Tabelle aus dem Eintrag vom 2026-09-23.
+- **Folgen:** Der Backfill bei der Migration ordnete nach Lehrplan: (Modul, Kurs, Lektion) der frühesten zugeordneten Lektion, Praxisschritte nach den Theorieschritten ihres Moduls und dann nach `field_job_type.reihenfolge`, Schritte ohne Zuordnung ans Ende, dann nach Name. Die Anzeige sortiert danach (`src/lib/queries/competencies.ts`).
+- **Status:** gültig; Migration 0027
+- **Belegt:** `0027_competency_step_reihenfolge.sql`; `016_competency_step_reihenfolge.test.sql`; `data-model.md` (Eintrag 2026-10-12 zu `reihenfolge`); für den Programmfilter `src/app/(learner)/kompetenzen/page.tsx`. Im Repo gibt es für den Programmfilter keine eigene datierte Entscheidung, nur den Code; das Datum gilt für `reihenfolge`.
+
+### 2026-10-13 – Import-Regeln: Typ-Regel SR-71, eine Trainer:in je Termin, Trainer-Konten im Dashboard
+
+- **Entscheidung:** (1) Die Typ-Regel SR-71 gilt auch für den Plan-Import: Die Analyse der Excel meldet Zuordnungen, die sie ausschließt (theoretische Teilschritte an Aufträgen, praktische an Theorietagen). (2) Je Termin gilt genau eine Trainer:in; ein Team-Eintrag mit zwei Trainer:innen wird nicht als Person angelegt, es gilt die erste, und die betroffenen Termine stehen in der Ausgabe unter `trainer-team`. (3) Der Import legt keine Trainer-Konten an: Das Auth-Konto entsteht im Dashboard, das Skript verknüpft nur die `person` mit der Rolle `trainer`.
+- **Begründung:** (1) Typ-Homogenität, siehe 2026-09-23. (2) Je Termin ist nur eine Person gespeichert, Vertretungen kommen vor (Eintrag 2026-10-13, E3). (3) Es gibt keine Admin-Oberfläche, Admin-Arbeit läuft in Supabase (Eintrag 2026-09-09), und das Skript schreibt nie in `auth.users`.
+- **Folgen:** Fehlt ein Konto oder eine Zeile in der Trainer-Datei, entstehen die Termine ohne Trainer:in und werden gemeldet; ein späterer Lauf trägt sie nach. `import-plan.md` und `paket-g-plan.md` führen die Regel zu Team-Einträgen mit dem Datum 14.10.
+- **Status:** gültig
+- **Belegt:** `scripts/import-plan/plan.mjs` (Typ-Regel SR-71, Meldung `trainer-team`); `import-plan.md` (Abschnitt Trainer-Konten, Abschnitt Was der Lauf ausgibt); `paket-g-plan.md`
+
 ## Offene technische Schulden
 
 Diese Punkte sind keine Entscheidungen, sondern bekannte Lücken; was daraus wird, steht in Asana.
