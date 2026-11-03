@@ -25,6 +25,8 @@ Wo ein Vorgehen noch nicht geklärt ist, steht **offen**.
 4. **Uhrzeit notieren.** Die Logs in Vercel und Supabase lassen sich nach Zeit
    filtern. Wann ist der Fehler aufgetreten, auf welcher Seite, bei wem?
 
+**Zusatz: Nachweise nicht anfassen.** Anwesenheit (`attendance`) und Verifizierung (`verification`) sind seit Migration 0032 per Trigger gegen Änderungen geschützt (Korrektur nur per Storno-Zeile); Löschen sperrt der Trigger nicht. `unit_progress`, `field_capture` und `field_capture_antwort` haben keinen solchen Schutz. Diese Daten werden von Hand weder geändert noch gelöscht, bis der Löschweg entschieden ist (`loeschweg.md`).
+
 ## Wo man nachsieht
 
 | Was | Wo | Wofür |
