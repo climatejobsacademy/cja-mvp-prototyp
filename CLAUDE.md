@@ -6,11 +6,22 @@ learn in three contexts — live sessions, self-paced units, app-guided field jo
 and all three produce competency evidence in one profile per learner.
 Start with /docs/README.md (what lives where). Spec: /docs/requirements.md (SR-xx),
 /docs/data-model.md, /docs/access-matrix.md, /docs/design-specifications.md.
-Every feature traces to an SR-xx. No SR → ask before building.
+Every new or changed behaviour traces to an SR-xx. No SR → ask before building.
+Bug fixes (they restore existing behaviour), refactorings, operations topics and
+pure documentation need no SR; a bug fix names the existing SR whose behaviour it
+restores.
 SR numbers are assigned only in Notion (database "System Requirements"). If no
 matching SR exists, it is created there; until then the repo says "SR folgt",
 and the PR replaces it as soon as the number is known. Never assign SR numbers
 in the repo. Add every new Notion SR to /docs/sr-registry.json in the same PR.
+SRs are changed only in Notion as well: read them from there, never write them,
+and never edit /docs/requirements.md by hand, it is an extract of Notion. On a
+task with an SR, read the SR from Notion before building, before a PR that
+references it and before every release, compare the extract with it and
+regenerate the extract on deviation. Build against the Acceptance Check and name
+the SR in the tests and the PR title. If the Acceptance Check has to change while
+building, change it in Notion first, then regenerate the extract. Where what is
+maintained: Notion page "Quellen und Arbeitsteilung: was wo lebt".
 
 ## Stack
 - Next.js (App Router), TypeScript strict, one responsive app;
@@ -84,11 +95,6 @@ in the repo. Add every new Notion SR to /docs/sr-registry.json in the same PR.
   /docs. Tasks, status, priorities and dates live only in Asana.
 - SR numbers come only from the Notion SR database (see above); the repo never
   assigns them.
-- SRs are created and changed only in the Notion database "System Requirements";
-  Notion assigns the number. Read SRs from there, never write them, and never
-  edit /docs/requirements.md by hand: it is an extract of Notion. Before building
-  on an SR, before a PR that references one, and before every release, compare
-  the extract with Notion and regenerate it if it differs.
 - The repo is public: no personal data in it (no names, e-mail addresses, lists
   of trainers or learners, phone numbers) and no credentials. Name roles
   instead of people. Import data stays outside the repo.
