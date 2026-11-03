@@ -364,11 +364,18 @@ Storage ist nicht im Backup: Die Sicherung enthält nur die Einträge in der Dat
 
 ### Restore-Probe
 
-Der folgende Ablauf ist aus den Angaben zur Sicherung in Abschnitt 5 abgeleitet und noch nicht als Ganzes erprobt (Vermutung). Er soll zeigen, dass der Rückweg funktioniert, bevor er gebraucht wird.
+Eine Restore-Probe am 07.10.2026 mit dem Backup vom selben Tag hat den Rückweg erprobt. Belegt ist:
 
-- **Vorher:** Festlegen, wer entscheidet und wer im Dashboard auslöst (Abschnitt 5). Im Dashboard unter Database, Backups die Sicherung der letzten Nacht ansehen. Zählstände festhalten, nur Zahlen und keine Inhalte, zum Beispiel Zeilen in `person`, `enrolment`, `attendance` und `unit_progress` sowie die Zahl der Dateien je Bucket. Das Team informieren: Alles seit der Sicherung geht verloren, und das Projekt ist während der Wiederherstellung vermutlich kurz nicht erreichbar.
+- **Dauer:** Start und Ende lagen in derselben Minute. Bei der kleinen Testdatenmenge sagt das nichts über die Dauer mit echten Daten; sie ist nicht belegt (Vermutung).
+- **Danach intakt:** Der vor dem Restore gesetzte Marker war weg, die Datenbank stand also auf dem Stand der Sicherung. Die Testzeilen, der Magic-Link-Login, eine SCORM-Lektion und die Dateien im Storage waren vorhanden, und das globale Upload-Limit stand weiter bei 200 MB.
+- **Nach jedem Restore zu prüfen:** Konten und Daten, die nach dem Backup entstanden sind, fehlen und müssen neu angelegt werden (in der Probe betraf das ein Testkonto). Das Passwort der Datenbankverbindung, mit der das Terminal arbeitet, ist nicht Teil der Sicherung: Zuerst kam „password authentication failed“, nach Aktualisierung des Zugangs ging die Verbindung wieder. Alle Sitzungen sind danach ungültig, alle müssen sich neu anmelden.
+- **Während des Restore:** Das Projekt ist nicht erreichbar, und alles seit dem Backup wird überschrieben. Ein Restore läuft nur nach Absprache (Abschnitt 5, wer entscheidet).
+
+Ablauf für eine weitere Probe oder einen echten Restore:
+
+- **Vorher:** Festlegen, wer entscheidet und wer im Dashboard auslöst (Abschnitt 5). Im Dashboard unter Database, Backups die Sicherung der letzten Nacht ansehen. Zählstände festhalten, nur Zahlen und keine Inhalte, zum Beispiel Zeilen in `person`, `enrolment`, `attendance` und `unit_progress` sowie die Zahl der Dateien je Bucket. Das Team informieren: Alles seit der Sicherung geht verloren, und das Projekt ist während der Wiederherstellung nicht erreichbar.
 - **Danach prüfen:** Anmelden per Magic Link mit einem Testkonto und den Smoke-Test aus `release.md` durchgehen. Die Zählstände mit den festgehaltenen vergleichen; Unterschiede müssen sich aus den Änderungen seit der Sicherung erklären lassen. Den Migrationsstand mit `migration list` ansehen: Eine Migration, die erst nach der Sicherung eingespielt wurde, fehlt nach der Wiederherstellung und müsste neu eingespielt werden. Prüfen, dass Seiten mit Dateien (Lernmaterialien, Fachsprache-Bilder, Profilfotos) noch laden.
-- **Nicht im Backup:** die Dateien im Storage (Tabelle oben). Die Einstellungen des Projekts (Auth, SMTP, Redirect-URLs) und die Variablen in Vercel sind keine Datenbankinhalte; dass sie die Wiederherstellung unverändert überstehen, ist eine Vermutung und nach der Probe zu bestätigen.
+- **Nicht im Backup:** die Dateien im Storage (Tabelle oben). Die Einstellungen des Projekts (Auth, SMTP, Redirect-URLs) und die Variablen in Vercel sind keine Datenbankinhalte; ob sie eine Wiederherstellung unverändert überstehen, ist nicht belegt (Vermutung).
 
 ## Anhang für die Technik: lesend auf die Datenbank zugreifen
 
