@@ -6,7 +6,7 @@ Update 2026-09-15: Die ursprüngliche Aussage "Kein PR ist bisher gemergt" ist s
 
 Update 2026-09-22: Vier Zeilen ergänzt (SR-58, SR-59, SR-60, SR-49) im Zuge der Vorbereitung des ersten `dev`→`main`-Merges. Bewusst nicht vollständig retroaktiv aktualisiert — PR #17–#27 (u. a. SCORM, Kompetenz-Mapping, diverse Fixes) sind seit dem letzten Update (2026-09-15) ebenfalls gemergt, aber noch nicht hier verzeichnet. Das wöchentliche Ritual (siehe unten) ist seit 2026-09-15 nicht mehr durchgelaufen.
 
-## Bereits mit einem PR verknüpft (Build now)
+## Bereits mit einem PR verknüpft
 
 | SR | Kurzform | PR | Status | Beleg |
 |---|---|---|---|---|
