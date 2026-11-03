@@ -311,7 +311,7 @@ Stand Excel 14.10. (gewusst):
 - **Gate-Texte und Etappen-Texte** (demo hat Vorschläge, Freigabe durch Malte oder Anna).
 - **Prüfprotokoll auf Papier** ja/nein je Auftrag oder je Kohorte (Frage 8).
 - **Welche Aufträge im Pilot den neuen Ablauf nutzen** (alle 13 im Block 16.–24.11. oder nur einzelne).
-- **Tagesplanung des Praxisblocks** und Trainer:in je Praxistag (Übergabe: `field_job.bis_datum`, Simon für „Simon & Tom“).
+- **Tagesplanung des Praxisblocks** und Trainer:in je Praxistag (Übergabe: `field_job.bis_datum`, Trainer:in A für „Trainer:in A & Trainer:in C“).
 - **Entscheidungen:** zwei oder vier Gates (Frage 2), Fremdeinschätzung = Verifizierung (Frage 5), Diktat an oder aus (Frage 3).
 
 Ohne Unterlagen und Kriterien ist auch Schnitt S nur als Hülle nutzbar; mit den Unterlagen E-02 ist S für **einen** Auftrag sinnvoll testbar.

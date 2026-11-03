@@ -103,7 +103,7 @@ begin
       perform pg_temp.zaehle(p_lauf, 'person (Trainer:in)', 'unverändert');
     else
       -- Name: Spalte Anzeigename der Trainer-Datei, sonst Excel. Ein Team-Name
-      -- ("Simon & Tom") wird nicht als Person angelegt (ein Trainer je Termin).
+      -- ("Trainer:in A & Trainer:in C") wird nicht als Person angelegt (ein Trainer je Termin).
       select nullif(btrim(tk->>'anzeigename'), '') into v_name
         from jsonb_array_elements(coalesce(p->'trainerKonten', '[]')) tk
        where tk->>'kennung' = r->>'kennung';
