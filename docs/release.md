@@ -1,6 +1,6 @@
 # Release: dev nach Production
 
-Stand 18.10.2026 (Anna mit Claude). Ergänzt `docs/runbook.md` (was tun, wenn etwas bricht). Diese Seite beschreibt den **geplanten** Weg von `dev` nach Production: was vorher feststehen muss, in welcher Reihenfolge es läuft, wie man prüft und wie man zurückkommt.
+Zuletzt gegen den Release vom 20.10.2026 geprüft (Abschnitte 1 bis 5). Ergänzt `docs/runbook.md` (was tun, wenn etwas bricht). Diese Seite beschreibt den Weg von `dev` nach Production: was vorher feststehen muss, in welcher Reihenfolge es läuft, wie man prüft und wie man zurückkommt.
 
 ## Kurz
 
