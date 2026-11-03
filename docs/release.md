@@ -62,6 +62,7 @@ Mit einem eigenen Testkonto auf learn.climatejobsacademy.com, nicht mit Konten v
 - [ ] Was aus sein soll, ist nicht sichtbar (Fachsprache, Link zur Praxisaufgabe, Chat).
 - [ ] Datenschutzerklärung, Impressum und Barrierefreiheit öffnen sich, „Zurück“ funktioniert.
 - [ ] Trainer-Konto landet in `/trainer`.
+- [ ] Haben Live-Termine einen Teams-Link, führen „Zum Live-Unterricht“ auf Home und der Termin im Stundenplan ins richtige Meeting (`docs/live-links.md`, Klicktest).
 - [ ] Vercel → Logs: keine roten Fehler seit dem Deployment.
 
 ## 6. Inhalte
