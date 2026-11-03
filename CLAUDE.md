@@ -84,6 +84,11 @@ in the repo. Add every new Notion SR to /docs/sr-registry.json in the same PR.
   /docs. Tasks, status, priorities and dates live only in Asana.
 - SR numbers come only from the Notion SR database (see above); the repo never
   assigns them.
+- SRs are created and changed only in the Notion database "System Requirements";
+  Notion assigns the number. Read SRs from there, never write them, and never
+  edit /docs/requirements.md by hand: it is an extract of Notion. Before building
+  on an SR, before a PR that references one, and before every release, compare
+  the extract with Notion and regenerate it if it differs.
 - The repo is public: no personal data in it (no names, e-mail addresses, lists
   of trainers or learners, phone numbers) and no credentials. Name roles
   instead of people. Import data stays outside the repo.

@@ -18,7 +18,7 @@ Statusdokumente („Stand vom …“, „offen“, „erledigt“) gehören nich
 
 ## Index
 
-**Spezifikation und Datenmodell.** `requirements.md` enthält die System Requirements mit ihrer Beschreibung; die Nummern vergibt ausschließlich die Notion-SR-Datenbank, und `sr-registry.json` führt die dort vergebenen Nummern, gegen die ein Test den Code prüft. `traceability.md` ordnet SR-Nummern den Pull Requests zu und enthält die Tabelle der alten, im Repo vergebenen Nummern. `data-model.md` beschreibt die Entitäten und Attribute, `er-diagram.md` stellt sie als Mermaid-Diagramm dar, und `access-matrix.md` legt fest, welche Rolle welche Daten lesen und schreiben darf.
+**Spezifikation und Datenmodell.** `requirements.md` ist der Auszug der System Requirements aus Notion (Nummer, Titel, Typ, Acceptance Check) und wird nicht von Hand geändert; die Nummern vergibt ausschließlich die Notion-SR-Datenbank, und `sr-registry.json` führt die dort vergebenen Nummern, gegen die ein Test den Code prüft. `traceability.md` ordnet SR-Nummern den Pull Requests zu und enthält die Tabelle der alten, im Repo vergebenen Nummern. `data-model.md` beschreibt die Entitäten und Attribute, `er-diagram.md` stellt sie als Mermaid-Diagramm dar, und `access-matrix.md` legt fest, welche Rolle welche Daten lesen und schreiben darf.
 
 **Entscheidungen und offene Fragen.** `decisions.md` ist das Entscheidungslog (neue Einträge unten anhängen, alte nicht umschreiben). `open-questions.md` sammelt Annahmen aus dem ersten Datenbankbau, die eine Antwort brauchten, und `review-checklist-notes.md` hält die Nachweise zur damaligen Review-Checkliste fest.
 
