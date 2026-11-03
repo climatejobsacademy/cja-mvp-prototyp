@@ -38,13 +38,14 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 ### 2026-09-07 – Praxisphase als nachgelagerte Selbstauskunft
 - **Entscheidung:** Kein begleitetes Live-Erfassen; Lernende bestätigen nach dem Einsatz.
 - **Begründung:** Kein Kamera-Live-Zugriff und keine Offline-Fähigkeit nötig, PWA reicht.
-- **Status:** gültig (MVP-Gestaltung offen)
+- **Status:** gültig
 - **Belegt:** `data-model.md`, Open decisions
 
 ### 2026-09-09 – Stundenplan kohortenweit, Praxistage je Learner
 - **Entscheidung:** `schedule_entry` hängt an der Kohorte (`cohort_id`) oder, für Praxistage, am einzelnen Learner (`enrolment_id`).
 - **Begründung:** Live-Sessions und Deadlines sind für alle gleich, Praxiseinsätze nicht.
-- **Status:** gültig. Ergänzung 2026-09-15: Einträge mit `art = 'live'` immer mit `cohort_id`, sonst sind sie unsichtbar (PR #9).
+- **Folgen:** Einträge mit `art = 'live'` tragen immer `cohort_id`, sonst sind sie unsichtbar (Ergänzung 2026-09-15, PR #9).
+- **Status:** gültig
 - **Belegt:** `data-model.md` Group 3; `0005_delivery.sql`
 
 ### 2026-09-09 – Design-Fundament und Admin-Oberfläche zurückgestellt
@@ -122,13 +123,15 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 ### 2026-09-23 – Teilschritt ↔ Kompetenz ist N:M (SR-69)
 - **Entscheidung:** Junction-Tabelle `competency_competency_step`; `competency_step.competency_id` bleibt vorerst stehen und wird nicht mehr gelesen, Drop-Column folgt in einer eigenen Migration.
 - **Begründung:** Ein Teilschritt zahlt auf mehrere Kompetenzen ein.
-- **Status:** gültig (Drop-Column steht aus; bis dahin keine Kompetenzen löschen)
+- **Folgen:** Bis zur Drop-Column-Migration keine Kompetenzen löschen.
+- **Status:** gültig
 - **Belegt:** PR #43; Migration `0019`; `data-model.md` Group 2
 
 ### 2026-09-23 – Kompetenz ↔ Programm ist N:M (SR-70)
 - **Entscheidung:** Junction-Tabelle `competency_programme`; `competency.quelle` gilt nicht mehr als Programmzuordnung.
 - **Begründung:** Kompetenzen gehören zu mehreren Programmen.
-- **Status:** gültig (Drop-Column für `quelle` steht aus)
+- **Folgen:** `competency.quelle` bleibt vorerst als Spalte bestehen und wird nicht mehr als Programmzuordnung gelesen.
+- **Status:** gültig
 - **Belegt:** PR #45; Migration `0020`
 
 ### 2026-09-23 – Typ-Homogenität und AND-Logik auf Kompetenz-Ebene (SR-71, SR-72)
@@ -145,14 +148,15 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 
 ### 2026-09-28 – Vercel bleibt vorerst als Hosting
 - **Entscheidung:** Vercel bleibt für den Pilot, Function Region `fra1`, die Option „Improve models with this project's data“ ist deaktiviert. EU-Hosting wird zum MVP ab Januar 2027 geprüft.
-- **Begründung:** TODO Vera: klären (in der Vorgabe nicht genannt).
+- **Begründung:** Begründung nicht dokumentiert.
 - **Status:** gültig
 - **Belegt:** `fra1` über PR #39 / `vercel.json`. Die übrigen Punkte **aus Projektdoku übernommen** (Vercel-Einstellungen nicht einsehbar).
 
 ### 2026-09-28 – Resend wird durch Brevo ersetzt
 - **Entscheidung:** Der E-Mail-Versand (Magic Link, Einladungen) wechselt von Resend zu Brevo.
 - **Begründung:** E-Mail-Adressen und Magic-Link-Token sollen nicht in ein Drittland übertragen werden.
-- **Status:** gültig, umgesetzt am 30.09.2026. Der Versand ist nicht im Code eingebunden, sondern über die SMTP-Einstellungen von Supabase Auth: Host `smtp-relay.brevo.com`, Port 587, Absender `info@climatejobsacademy.com`. DNS-Einträge (DKIM, DMARC, Brevo-Code) sind gesetzt, der Testlogin auf learn.climatejobsacademy.com war erfolgreich. Resend-Domain, API-Keys und DNS-Einträge sind entfernt.
+- **Folgen:** Der Versand läuft nicht im Code, sondern über die SMTP-Einstellungen von Supabase Auth (Host `smtp-relay.brevo.com`, Port 587); DKIM, DMARC und Brevo-Code stehen in den DNS-Einträgen, die Resend-Einträge sind entfernt.
+- **Status:** gültig
 - **Belegt:** **aus Projektdoku übernommen**; Umsetzung laut Angabe von Vera vom 30.09.2026 (Supabase-Dashboard, DNS und Brevo nicht im Repo einsehbar)
 
 ### 2026-09-28 – Off-White als App-Hintergrund
@@ -163,7 +167,7 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 ### 2026-09-29 – Redesign 2a ohne Schema-Änderungen
 - **Entscheidung:** Das Design-Handoff „Richtung 2a Minimal“ wird ohne Migration umgesetzt; Elemente ohne Datenfeld (Uhrzeit bei Praxistagen, Themen-Label, gesperrtes Modul mit Freischaltdatum) werden weggelassen. Hintergrund wieder Weiß, Off-White nur als Fläche.
 - **Begründung:** Vorgabe für die Demo am 30.09.: keine Schema-Änderungen, keine Migrationen.
-- **Status:** gültig. Schritt f (übrige Screens) folgt.
+- **Status:** gültig
 - **Belegt:** PR #55, #56; `design-specifications.md` Abschnitt 1
 
 ### 2026-09-29 – Zähltext bleibt (K2), neutrale Login-Rückmeldung (K3)
@@ -186,7 +190,7 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 ### 2026-09-29 – Demo-SCORM-Zuordnungen (temporär)
 - **Entscheidung:** Für die Demo zeigen 9 Selbstlernmodule dasselbe Platzhalter-Paket „DEMO (temporär)“; die Zuordnung wird nach der Demo zurückgenommen.
 - **Begründung:** Nur ein echtes SCORM-Paket vorhanden.
-- **Status:** gültig bis zur Rücknahme (Asana-Task vorhanden)
+- **Status:** gültig bis zur Rücknahme
 - **Belegt:** **aus Projektdoku übernommen** (nur in der Produktionsdatenbank, nicht im Repo)
 
 ### 2026-09-30 – Plattform-Pilot mit Modul 2
@@ -203,7 +207,7 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 
 ### 2026-10-02 – Production zieht von Irland nach Frankfurt
 - **Entscheidung:** Production läuft ab 02.10.2026 auf einem neuen Supabase-Projekt in Frankfurt (`eu-central-1`, Ref `vqfnmkcfjsudsujiuoqm`). Das bisherige Projekt in Irland (`keijrwvegmwgpvprpoxa`) wird Staging und bedient die Vercel-Preview-Deployments. Vercel läuft auf dem Pro-Tarif, Function Region weiterhin `fra1`. Gegen den Supabase Team-Plan wurde entschieden. Die Hosting-Aufstellung wird im Review im Januar 2027 (MVP) erneut geprüft.
-- **Begründung:** Datenresidenz in Deutschland und Vertrauen; Datenbank und serverseitige Funktionen liegen damit in derselben Region. Gründe gegen den Team-Plan: TODO Vera: ergänzen.
+- **Begründung:** Datenresidenz in Deutschland und Vertrauen; Datenbank und serverseitige Funktionen liegen damit in derselben Region. Gründe gegen den Team-Plan: Begründung nicht dokumentiert.
 - **Status:** gültig; ersetzt 2026-09-15 (Supabase-Region EU/Irland)
 - **Belegt:** Region `eu-central-1` über den Pooler-Host des Frankfurter Projekts; Auto-RLS am 02.10.2026 lesend gegen Irland abgeglichen (`runbook.md`, Abschnitt 5); `CLAUDE.md`, Abschnitt Stack. Vercel Pro, die Umstellung der Production-Variablen und der Verzicht auf den Team-Plan **aus Projektdoku übernommen** (Vercel- und Supabase-Tarife nicht im Repo einsehbar).
 
@@ -302,7 +306,7 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Entscheidung:** (Beschluss Vera) Eine Fachsprache-Einheit gilt als veröffentlicht, wenn `status = 'veroeffentlicht'` gilt, sonst nichts. Die Prüfpflicht und alle Prüfungen in der Datenbank entfallen: die Spalten `fachlich_geprueft_von/_am` und `sprachlich_geprueft_von/_am`, die Constraints `fachsprache_nur_geprueft_veroeffentlichen` und `fachsprache_pruefung_paarweise` sowie die Prüf-Logik in `fn_fachsprache_inhalt_geaendert` werden entfernt (Migration 0053). Der Trigger `fachsprache_inhalt_geaendert` bleibt: Ändern sich Inhalt oder Titel, fällt der Status auf `entwurf` (und `inhalt_version` zählt hoch). Prüfen bleibt ein Teamprozess außerhalb der Datenbank.
 - **Begründung:** Prüfen ist ein Vorgang im Team, nicht in der Datenbank; leere oder gepflegte Prüfspalten würden nur eine Prüfung vortäuschen, die niemand erzwingt oder nachvollziehen kann.
 - **Folgen:** **Die Datenbank verhindert das Veröffentlichen ohne Prüfung nicht mehr.** Wer `status` setzen darf (AfCJ admin), kann jede Einheit veröffentlichen; ob geprüft wurde, hält das Team außerhalb fest. Ein Nachweis, wer wann geprüft hat, steht nicht mehr in der Datenbank. Der Import meldet bei geändertem Inhalt einer veröffentlichten Einheit „Status fällt auf entwurf“ (statt „Prüfung wird zurückgesetzt“) und kennt die Meldung „bild nach prüfung“ nicht mehr; er veröffentlicht weiterhin nie. Stand 2026-10-16: 0051 ist nicht auf Production angewendet; auf Staging liegen 7 Einheiten (alle Entwurf), alle Prüfspalten leer, keine Policy, View oder Funktion außer der ersetzten Trigger-Funktion nennt sie. Rückweg: Folge-Migration mit den Spalten und Constraints (Constraint nur, solange keine Einheit ohne Prüfung veröffentlicht ist).
-- **Status:** gültig (Entscheidung Vera); Migration 0053 in Arbeit, nicht auf Staging angewendet
+- **Status:** gültig (Entscheidung Vera)
 - **Belegt:** `0053_fachsprache_ohne_pruefung.sql`; `025_fachsprache_einheit.test.sql`; `scripts/import-plan/fachsprache.sql`; SR-84
 
 ### 2026-10-17 – Fragen-Thread an Live-Lektionen standardmäßig an
@@ -310,7 +314,7 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Entscheidung:** (Anna) Neue Live-Lektionen bekommen den Fragen-Thread automatisch (`chat_aktiv = true`), Selbstlern- und Repository-Lektionen nicht. Bestehende Live-Lektionen werden einmal eingeschaltet. Ausschalten bleibt je Lektion möglich.
 - **Begründung:** Mit dem Import neuer Lektionen (ab 02.11.) fehlte der Thread überall, weil der Standard aus war und ihn niemand einzeln eingeschaltet hatte.
 - **Folgen:** Deutsch/Fachdeutsch und Softskills Coaching hängen als Termine am Kurs, nicht an einer Lektion, und bekommen keinen Thread. Auf Staging gilt das auch für die Demo-Lektionen im Oktober, bei denen der Thread bisher aus war.
-- **Status:** gültig (Entscheidung Anna); Migration 0054
+- **Status:** gültig (Entscheidung Anna)
 - **Belegt:** `0054_thread_live_standard.sql`; `027_thread_live_standard.test.sql`; `013_lektion_beitrag.test.sql`; SR-74
 
 ### 2026-10-17 – Link zur Praxisaufgabe per Schalter
@@ -326,16 +330,16 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Entscheidung:** (Anna) Selbstlern-Lektionen (`content_type = 'scorm'`) erscheinen Schritt für Schritt im Plattform-Design: Kapitel, Fragen mit „Prüfen“ und Emoji-Rückmeldung, Fortschritt. Die Oberfläche kennt nur das eigene Kursformat `Lernkurs` (`src/lib/lernkurs.ts`); Elephant-SCORM-Pakete sind eine Quelle, die ein Adapter (`src/lib/elephant-kurs.ts`) in dieses Format übersetzt. Gezeigt wird nur das eigene Paket der Lektion, gelesen stückweise über die mit der Session signierte URL (RLS 0016/0017, kein Service-Role-Key). Kein Elephant-Paket oder Lesefehler → wie bisher der SCORM-Player; Für Lernende gibt es keinen Umschalt-Link (Anna 2026-10-17); das Team öffnet den Player zum Vergleich über `?ansicht=scorm`. Die Lektion gilt als abgeschlossen, sobald das letzte Kapitel abgeschlossen ist (`markLessonComplete`, `unit_progress`, einmal je Seitenaufruf). Medien nur über `/content/[lessonId]/medium`: nur was der Kurs nutzt, kein SVG, Range für Audio/Video, Rechte bei jedem Fehlschlag des kurzen Zugriffsspeichers neu geprüft. Schalter `NATIVE_SELBSTLERNEN` (`src/lib/schalter.ts`) bewusst anders als die übrigen: standardmäßig an, aus nur mit dem Wert `aus`.
 - **Begründung:** Der SCORM-Player wirkt wie ein Fremdkörper; die Demo hat gezeigt, dass Elephant den Kursinhalt lesbar ins Paket legt. Ein eigenes Format hält die Oberfläche unabhängig vom Autorenwerkzeug. Standardmäßig an, weil die native Ansicht überall gelten soll; der Rückfall auf den Player fängt nicht lesbare Pakete ab.
 - **Folgen:** Elephants Paketformat ist nicht offiziell dokumentiert; ändert es sich, greift der Rückfall auf den SCORM-Player. Inhalte werden vollständig so übernommen, wie sie geliefert werden (Anna 2026-10-17): keine Kürzungen, und kennt der Übersetzer eine Modulart nicht (Stand 17.10.: Seite, Lernkarten, Quiz, Wahr/Falsch, Hotspot, Video, Bildauswahl, Audio und Sortieren werden umgewandelt), zeigt die ganze Lektion den SCORM-Player. Der Stand innerhalb der Lektion wird nicht gespeichert (Neuladen beginnt vorn). Zwischenspeicher nur je Server-Instanz und klein (Kurs und Verzeichnis höchstens 8 Pakete, Medien höchstens 30 MB). Notbremse: in Vercel `NATIVE_SELBSTLERNEN=aus` setzen und neu deployen, dann zeigt jede Selbstlern-Lektion wieder den SCORM-Player und die Medien-Route antwortet mit 404. Direkt erstellte Kurse im Format `Lernkurs` (z. B. von Claude nach Vorlagen) sind vorgesehen; ihr Speicherort ist eine spätere Entscheidung mit Migration.
-- **Status:** gültig (Entscheidung Anna); noch nicht mit einem echten Paket im Browser geprüft
-- **Belegt:** `src/lib/lernkurs.ts`, `src/lib/elephant-kurs.ts` mit Tests, `src/lib/elephant-paket.ts`, `src/lib/schalter.ts` mit Tests, `src/app/(learner)/content/[lessonId]/native-lektion.tsx`, `src/app/(learner)/content/[lessonId]/medium/route.ts`; SR-85
+- **Status:** gültig (Entscheidung Anna)
+- **Belegt:** `src/lib/lernkurs.ts`, `src/lib/elephant-kurs.ts` mit Tests, `src/lib/elephant-paket.ts`, `src/lib/schalter.ts` mit Tests, `src/app/(learner)/content/[lessonId]/native-lektion.tsx`, `src/app/(learner)/content/[lessonId]/medium/route.ts`; SR-85; PR #138 (Prüfung im Browser auf Staging)
 
 ### 2026-10-17 – SCORM-Pakete beim Einspielen auspacken
 
 - **Entscheidung:** (Anna) Das Einspiel-Skript (`scripts/scorm-einspielen.mjs`) legt neben der Zip die Medien eines Elephant-Pakets ausgepackt in den Bucket `scorm-packages`, unter `<file_asset.storage_pfad>.entpackt/<innerer Zip-Pfad>`. Ausgepackt werden nur erlaubte Medien (Bilder, Audio, Video; kein HTML, JS, SVG). Audio, das nicht MP3/M4A ist (z. B. WAV), wandelt das Skript in M4A (AAC) um und legt es mit ersetzter Endung ab; das Original wird nicht ausgepackt. Die Medien-Route der nativen Ansicht signiert die ausgepackte Datei mit der Session der Person (10 Minuten) und leitet mit 307 dorthin um; fehlt sie, liest sie wie bisher aus der Zip. Lesen regelt eine zusätzliche Storage-Policy mit derselben Bedingung wie für die Zip (Lektion veröffentlicht), nur über das Präfix. Bereits vorhandene Pakete auf Staging werden nicht nachträglich ausgepackt. SR-50, SR-85.
 - **Begründung:** Antworten einer Vercel-Funktion sind auf 4,5 MB begrenzt; Videos und lange WAV-Audios (bis ca. 155 MB) liegen im Paket teils gepackt und lassen sich nicht stückweise aus der Zip ausliefern. Ausgepackt liefert Storage die Dateien direkt, auch Teilbereiche (Range). M4A statt WAV spart Datenvolumen, wichtig für Lernende mit Mobilfunk.
 - **Folgen:** Kein neues Attribut, keine neue Tabelle; ausgepackte Dateien haben keine `file_asset`-Zeile. Der Rückfall auf die Zip bleibt nötig (nicht ausgepackte Pakete, einzelne fehlende Dateien). Je Server-Instanz merkt sich die Route 3 Minuten, ob ein Paket ausgepackt ist; signiert wird trotzdem bei jeder Anfrage mit der Session. Neue Paketversion = neuer Zip-Name, überschrieben wird nie. Das Präfix gehört allein zum Paket: ein `storage_pfad`, der selbst `.entpackt/` enthält, wäre zu vermeiden. Admins können unveröffentlichte Pakete weiterhin nicht über die App signieren (wie bei der Zip, 0017).
-- **Status:** gültig (Entscheidung Anna); Migration 0055 noch nicht auf Staging angewendet, noch nicht mit einem echten ausgepackten Paket im Browser geprüft
-- **Belegt:** `supabase/migrations/0055_scorm_entpackt.sql`, `supabase/tests/database/028_scorm_entpackt_access.test.sql`, `src/lib/scorm-entpackt.ts` mit Tests, `src/lib/queries/scorm-paket.ts`, `src/app/(learner)/content/[lessonId]/medium/route.ts`; `data-model.md` Abschnitt SCORM; SR-50, SR-85
+- **Status:** gültig (Entscheidung Anna)
+- **Belegt:** `supabase/migrations/0055_scorm_entpackt.sql`, `supabase/tests/database/028_scorm_entpackt_access.test.sql`, `src/lib/scorm-entpackt.ts` mit Tests, `src/lib/queries/scorm-paket.ts`, `src/app/(learner)/content/[lessonId]/medium/route.ts`; `data-model.md` Abschnitt SCORM; SR-50, SR-85; PR #138 (Prüfung im Browser auf Staging)
 
 ### 2026-10-05 – Consent neu bewertet: im Pilot kein Cookie-Banner
 
@@ -366,7 +370,7 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Entscheidung:** Die Uhrzeit eines Praxistags steht als `field_job.start` und `field_job.ende` (`time`, Berliner Ortszeit, Namen wie bei `live_session`). Beide Werte oder keiner, `ende` nach `start`; ohne Werte zeigt die Oberfläche den Praxistag ganztägig ohne Uhrzeit. Der Ort bleibt `standort` (Freitext).
 - **Begründung:** `field_job` ist schon pro lernender Person, und ein Praxistag kann auch im eigenen Betrieb mit eigener Zeit stattfinden. Ein Praxistag, der für die ganze Kohorte gleich ist, bekommt in jeder Zeile dieselben Werte, wie schon das Datum. Keine eigene Kohorten-Tabelle und nicht an `field_job_type`, denn der Typ ist die Aufgabe, nicht der Termin.
 - **Folgen:** Lernende lesen die neuen Spalten mit der eigenen Zeile und schreiben weiter nur die drei Felder aus dem Eintrag vom 2026-09-11. Die Zeiten setzt AfCJ im Dashboard oder per SQL wie die übrigen Praxistag-Daten.
-- **Status:** gültig; Migration 0026
+- **Status:** gültig
 - **Belegt:** `0026_field_job_uhrzeit.sql`; `015_field_job_uhrzeit.test.sql`; `data-model.md` (Eintrag 2026-10-12 zu `field_job`); `access-matrix.md` (Zeile „Field job“, Eintrag 2026-10-12); SR-13
 
 ### 2026-10-12 – Reihenfolge der Kompetenzschritte und Programmfilter der Kompetenzseite (SR-69, SR-70)
@@ -374,7 +378,7 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Entscheidung:** Die Reihenfolge der Kompetenzschritte steht als `competency_competency_step.reihenfolge`, nicht an `competency_step`. Sie ist Pflichtfeld, größer als 0 und je Kompetenz eindeutig; die Eindeutigkeit wird erst am Ende der Transaktion geprüft (deferrable), damit sich Positionen tauschen lassen. Neue Zuordnungen brauchen deshalb immer eine Position. Die Kompetenzseite zeigt nur Kompetenzen des Programms der aktiven Einschreibung, über `competency_programme`.
 - **Begründung:** Derselbe Schritt kann in verschiedenen Kompetenzen an verschiedener Stelle stehen. Die Programmzuordnung ist die N:M-Tabelle aus dem Eintrag vom 2026-09-23.
 - **Folgen:** Der Backfill bei der Migration ordnete nach Lehrplan: (Modul, Kurs, Lektion) der frühesten zugeordneten Lektion, Praxisschritte nach den Theorieschritten ihres Moduls und dann nach `field_job_type.reihenfolge`, Schritte ohne Zuordnung ans Ende, dann nach Name. Die Anzeige sortiert danach (`src/lib/queries/competencies.ts`).
-- **Status:** gültig; Migration 0027
+- **Status:** gültig
 - **Belegt:** `0027_competency_step_reihenfolge.sql`; `016_competency_step_reihenfolge.test.sql`; `data-model.md` (Eintrag 2026-10-12 zu `reihenfolge`); für den Programmfilter `src/app/(learner)/kompetenzen/page.tsx`. Im Repo gibt es für den Programmfilter keine eigene datierte Entscheidung, nur den Code; das Datum gilt für `reihenfolge`.
 
 ### 2026-10-13 – Import-Regeln: Typ-Regel SR-71, eine Trainer:in je Termin, Trainer-Konten im Dashboard
