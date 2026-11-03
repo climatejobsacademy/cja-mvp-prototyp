@@ -20,7 +20,7 @@ Stand 14.10.2026. Zur Fassung der Datenschutzerklärung mit Kohortenansicht (SR-
 
 6. **Fachbegriff-Funktion der Demo (Vorlesen, Bilder).** Stand 14.10.2026: Bei einer Übernahme prüfen, ob externe Dienste genutzt werden; sonst stimmt „keine KI-Dienste“ nicht mehr. Stand der Demo: Das Vorlesen nutzt die Sprachausgabe des Browsers (`speechSynthesis`, Sprache de-DE, `components/sprachtraining/vorlesen.tsx`); manche Browser nutzen dafür Online-Stimmen des Browser-Anbieters. Die Bilder sind selbst gezeichnet (`wort-bilder.tsx`). Die Inhalte schrieb Claude (`lib/sprachtraining-daten.ts`): fachliche Prüfung und Hinweis in der Erklärung vor einer Übernahme.
 
-7. **Vercel: Pro-Plan vorhanden (Stand 14.10.2026, laut Vera).** Der Abschnitt „Hosting“ und das zugehörige Hosting-Dokument sind zu aktualisieren (Vertragsgrundlage, Region, Auftragsverarbeitung).
+7. **Vercel und Brevo: Vertragsgrundlage.** Vercel: Pro-Plan seit 01.10.2026 laut Betriebshandbuch (andere Stellen im Repo nennen den 02.10., siehe `decisions.md`). Der Auftragsverarbeitungsvertrag gilt laut Betriebshandbuch automatisch mit dem Pro-Plan und ist im Vercel-Konto noch zu bestätigen (Produkt-Lead). Brevo: Vertragspartner ist die Brevo GmbH, Berlin; gehostet wird bei OVH (Frankreich, Deutschland) und Google Cloud (Belgien) laut Unterauftragnehmerliste, die im Repository nicht prüfbar ist. Der Abschnitt „Hosting“ und das zugehörige Hosting-Dokument sind zu aktualisieren (Vertragsgrundlage, Region, Auftragsverarbeitung).
 
 8. **Standort der Daten.** Die Erklärung nennt Frankfurt. Production liegt in Frankfurt, Staging in Irland; der Text beschreibt **Production**. Staging enthält keine echten Personen. Vorschlag: Hinweis im internen Betriebsdokument, nicht in der Erklärung.
 
