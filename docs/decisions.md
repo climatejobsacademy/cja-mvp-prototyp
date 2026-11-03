@@ -116,7 +116,7 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 ### 2026-09-23 – Release-Prozess über `dev`
 - **Entscheidung:** Feature-PRs gehen nach `dev`, Releases als PR `dev` → `main`. `main` ist geschützt: 1 Freigabe, Pflicht-Check `lint-and-types`, gilt auch für Admins. Merge auf `main` deployt Production.
 - **Begründung:** Definition of Done: jeder PR wird von der zweiten Person reviewt (`definition-of-done.md`).
-- **Status:** gültig
+- **Status:** gültig; die Teilaussage „gilt auch für Admins“ ist ersetzt durch 2026-11-03
 - **Belegt:** erster Release-PR #40; Branch-Schutz per GitHub-API geprüft (30.09.); `.github/workflows/ci.yml`
 
 ### 2026-09-23 – Teilschritt ↔ Kompetenz ist N:M (SR-69)
@@ -385,6 +385,13 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Status:** gültig
 - **Belegt:** `scripts/import-plan/plan.mjs` (Typ-Regel SR-71, Meldung `trainer-team`); `import-plan.md` (Abschnitt Trainer-Konten, Abschnitt Was der Lauf ausgibt); `paket-g-plan.md`
 
+### 2026-11-03 – Branch-Schutz: was technisch erzwungen wird
+
+- **Entscheidung:** Die Doku beschreibt nur, was GitHub erzwingt, und trennt es von Teamregeln. Erzwungen auf `main`: Pull Request mit einem Approval, Pflicht-Check `lint-and-types`, Force-Push und Löschen gesperrt. Der Schutz gilt nicht für Admins (`enforce_admins` aus), Admins können ohne Approval mergen. `dev` ist nicht geschützt (weder Pull-Request-Pflicht noch Approval noch Check). `rls-tests` läuft in jedem Pull Request, ist aber kein Pflicht-Check. Teamregel, nicht erzwungen: Jeder Pull Request wird von einer zweiten Person freigegeben; ohne Zweitfreigabe nur mit Vermerk (`release.md`).
+- **Begründung:** Die Aussage „gilt auch für Admins“ im Eintrag vom 2026-09-23 stimmt mit der Einstellung nicht überein. Zwischen dem 20.10. und dem 01.11.2026 wurden 11 der letzten 30 Pull Requests nach `main` ohne Approval einer zweiten Person gemergt; die Doku soll deshalb nicht zusichern, was technisch nicht erzwungen wird.
+- **Status:** gültig; ersetzt die Teilaussage „gilt auch für Admins“ aus 2026-09-23.
+- **Belegt:** Branch-Schutz von `main` und `dev` sowie Rulesets des Repositorys per GitHub-API gelesen; die Zahl stammt aus den Reviews der letzten 30 gemergten Pull Requests nach `main`. Rulesets auf Organisationsebene sind nicht lesbar.
+
 ## Offene technische Schulden
 
 Diese Punkte sind keine Entscheidungen, sondern bekannte Lücken; was daraus wird, steht in Asana.
@@ -394,3 +401,5 @@ Diese Punkte sind keine Entscheidungen, sondern bekannte Lücken; was daraus wir
 **Löschweg.** Löschen einer Person ist ein manuelles Verfahren, beschrieben in `loeschweg.md`. Die Abwägung zwischen Löschanspruch, Unveränderlichkeit der Nachweise und Aufbewahrungspflicht ist nicht rechtlich geprüft.
 
 **`field_job` ohne Verweis auf die Einschreibung.** Ein Praxistag verweist auf die lernende Person (`learner_id`, Löschweitergabe) und auf den Auftragstyp, aber nicht auf die Einschreibung (Migration `0005`, keine spätere Migration ergänzt einen Verweis). Korrektur zur ersten Fassung dieses Abschnitts: Nur der Plan-Eintrag `schedule_entry` trägt die `enrolment_id` und kaskadiert mit der Einschreibung (`0005`). Wird die Einschreibung gelöscht, bleibt die `field_job`-Zeile bestehen, ohne dass ein Plan-Eintrag der Einschreibung auf sie zeigt; das ist die Folge des fehlenden Verweises, im Betrieb nicht geprüft.
+
+**Branch-Schutz.** Ob `enforce_admins` aktiviert und `rls-tests` Pflicht-Check wird, ist nicht entschieden (Ist-Stand: Eintrag 2026-11-03). Wird `enforce_admins` aktiviert, entfällt auch der in `release.md` beschriebene Admin-Bypass; das ist bei der Entscheidung mitzuprüfen. Aufgabe in Asana: „Branch-Schutz: Admin-Umgehung und Pflicht-Check rls-tests entscheiden“.
