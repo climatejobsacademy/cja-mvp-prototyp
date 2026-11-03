@@ -1,6 +1,6 @@
 # Access Matrix — AfCJ MVP-Prototyp
 
-Quelle: [MVP April 2027 — Product Development Playbook](https://app.notion.com/p/climatejobsacademy/MVP-April-2027-Product-Development-Playbook-3ce48915565b810db222c7e70679063b) (Notion), Schritt 4c, ergänzt um Team-Entscheidungen vom 2026-09-11 zu den offenen Fragen aus dem ersten Build-Task (siehe `open-questions.md`). Stand: 2026-09-11.
+Quelle: [MVP April 2027 — Product Development Playbook](https://app.notion.com/p/climatejobsacademy/MVP-April-2027-Product-Development-Playbook-3ce48915565b810db222c7e70679063b) (Notion), Schritt 4c, ergänzt um Team-Entscheidungen vom 2026-09-11 zu den Fragen aus dem ersten Build-Task (siehe `open-questions.md`) und um die später entschiedenen Zeilen und Absätze unter der Tabelle.
 
 Diese Tabelle wird wörtlich zu den RLS-Policies in der Datenbank. Weil die Regeln in der Datenbank liegen und nicht in der App, halten sie auch, wenn ein Screen falsch gebaut wird. Zugriff nie über das hier Gelistete hinaus erweitern, keine Rollen erfinden — siehe `data-model.md`.
 
@@ -58,7 +58,7 @@ Organisations-Logo (SR-76, 0025): Die Zuordnung `organisation.logo_pfad` folgt d
 
 ## Anmerkungen
 
-Entschieden 2026-09-04: Zehn von zwölf Zeilen ausgefüllt bei Erstanlage. "Field job" war zunächst offen (hängt an der Praxistag-Journey), ist mit Ergänzung 2026-09-09 als KI-Entwurf befüllt, analog zu Enrolment/Attendance — zur Bestätigung durch Malte zusammen mit Group 3 in `data-model.md` (Group 3 gilt dort bereits als abgenommen, da Malte vor Prototyp-Start kein Review mehr leisten kann). "Guidance conversations" bleibt leer, weil die zugrunde liegende Entität noch nicht Prototype ist (Build next).
+Entschieden 2026-09-04: Zehn von zwölf Zeilen ausgefüllt bei Erstanlage. "Field job" war zunächst offen (hängt an der Praxistag-Journey) und ist mit der Ergänzung 2026-09-09 analog zu Enrolment/Attendance befüllt; Group 3 in `data-model.md` gilt als abgenommen. "Guidance conversations" bleibt leer, weil die zugrunde liegende Entität nicht Teil des Prototyps ist.
 
 "Field capture" ist bewusst in zwei Zeilen gesplittet, weil das feste Zugriffs-Vokabular (Own/Org/Cohort/All/—) "Status ja, Rohmaterial nein" nicht in einer Zelle ausdrücken kann — Begründung siehe die Manager-Media-Access-Entscheidung in `data-model.md` (Open Decisions). "Competency evidence / profile" hat bewusst kein Write für irgendeine Rolle — folgt aus der "computed only"-Entscheidung dort; Werte entstehen ausschließlich über `unit_progress`/`attendance`/`verification`. AfCJ trainer ist im Prototyp überwiegend "—", weil die Rolle noch nicht real existiert (AfCJ admin deckt sie ab) — die Spalte bleibt zur Vorbereitung auf das MVP stehen. (Überholt für die Rolle `trainer` seit 0032, siehe Absatz vom 2026-10-13 zu SR-81/SR-82.)
 
