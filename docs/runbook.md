@@ -277,7 +277,7 @@ identisch. Wie man so einen Abgleich lesend macht: siehe Anhang.
 - **Nicht gesichert sind Dateien im Storage** (SCORM-Pakete und ausgepackte Medien, Lernmaterialien, Profilfotos, Fachsprache-Bilder); die Sicherung enthält nur ihre Einträge in der Datenbank. Gelöschte Dateien kommen mit einer Wiederherstellung nicht zurück. SCORM-Pakete und Fachsprache-Bilder liegen zusätzlich im Google-Drive-Ordner und lassen sich mit den Skripten neu einspielen; für Profilfotos und hochgeladene Materialien gibt es keine zweite Kopie.
 - **Eine Wiederherstellung setzt die ganze Datenbank auf den Stand der Sicherung zurück.** Alles seitdem geht verloren: Anwesenheiten, Fortschritt, Chat-Nachrichten, neue Konten. Deshalb nur als letzter Ausweg, wenn Daten sonst nicht zu retten sind.
 - **Wer entscheidet:** Anna. Ausgelöst wird im Dashboard (Database → Backups → Restore) von Anna oder Malte, nach Absprache.
-- Laut Veras Board gab es am 09.10. eine Probe-Wiederherstellung auf Production.
+- Eine Probe-Wiederherstellung ist in Abschnitt 7 (Restore-Probe) beschrieben.
 - Vor einem Release mit Migrationen: Die Sicherung der letzten Nacht ist der Rückweg. Wurde seitdem auf Production viel geändert, den Release lieber am nächsten Tag machen.
 
 ---
