@@ -7,7 +7,7 @@ Welche Umgebung wofür da ist, gegen welche Datenbank sie läuft und welche Date
 | Umgebung | Branch | Datenbank | Adresse | Daten | Wofür |
 |---|---|---|---|---|---|
 | Production | `main` | Supabase Frankfurt | Production-Domain (Vercel Production) | echte Lernende und Trainer:innen, dazu Testkonten des Teams | Betrieb mit der laufenden Kohorte |
-| Staging | `dev` und Feature-Branches | Supabase Irland | Vercel-Previews je Branch und Pull Request | keine echten Lernenden; Testkonten und eine Demo-Kohorte | Testen jeder Änderung vor dem Release, Migrationen zuerst hier |
+| Staging | `dev` und Feature-Branches | Supabase Irland (für Previews vorgesehen, nicht belegt) | Vercel-Previews je Branch und Pull Request | keine echten Lernenden; Testkonten und eine Demo-Kohorte | Testen jeder Änderung vor dem Release, Migrationen zuerst hier |
 | demo | `demo` | keine eigene, Preview dieses Branches (siehe unten) | Vercel-Preview des Branches `demo` | wie Staging | Vorlage für den Realbau des Praxisflows |
 | lokal | beliebig | Werte in `.env.local`: Staging oder ein lokales `supabase start` | `http://localhost:3000` | wie die gewählte Datenbank | Entwickeln und Ausprobieren |
 
