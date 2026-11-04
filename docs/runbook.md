@@ -37,7 +37,7 @@ Wo ein Vorgehen noch nicht geklärt ist, steht **offen**.
 | GitHub Actions | https://github.com/climatejobsacademy/cja-mvp-prototyp/actions | Automatische Prüfungen (`lint-and-types`, `rls-tests`) bei jedem Pull Request |
 | Statusseiten der Anbieter | https://status.supabase.com und https://www.vercel-status.com | Hat der Anbieter gerade selbst eine Störung? |
 
-Zugänge (Stand 18.10.2026): GitHub – Anna, Malte, Vera (alle Admin). Supabase-Dashboard – Anna, Malte, Vera mit eigenen Konten, Malte und Vera als Administratoren. Vercel – ein Konto (Annas), das das Team gemeinsam nutzt. Brevo – ein gemeinsames Konto für das Team.
+Zugänge: Wer welche Zugänge zu GitHub, Supabase, Vercel und Brevo hat, steht in Notion (Konten-Tabelle), nicht im Repository.
 
 **Was nur im Supabase-Dashboard oder per Skript geht.** Die App hat keinen Admin-Bereich (`decisions.md`, Eintrag zum Design-Fundament); Admin-Arbeit läuft im Dashboard oder über die Skripte in `scripts/`. Auth-Konten für Lernende und Trainer:innen legt man im Dashboard an (Authentication → Users → Add user), die Skripte schreiben nie in `auth.users`. Profil, Mitgliedschaft, Rolle und Einschreibung der Lernenden legt `scripts/lernende-anlegen.mjs` an (`lernende-anlegen.md`), die Person mit Rolle `trainer` der Plan-Import (`import-plan.md`, Abschnitt Trainer-Konten). Inhalte und Termine kommen per Plan-Import, SCORM-Pakete und Teams-Links per eigenem Skript (`scorm-einspielen.md`, `live-links.md`). Status und Freigaben ändert man von Hand im Table Editor, zum Beispiel eine Fachsprache-Einheit auf `veroeffentlicht` (`fachsprache.md`); auch das Organisations-Logo lädt man im Dashboard hoch (`organisations-logo.md`). Das Schema ändert sich nie im Dashboard, sondern nur über eine Migration (`CLAUDE.md`, Regel 4).
 
@@ -45,11 +45,10 @@ Zugänge (Stand 18.10.2026): GitHub – Anna, Malte, Vera (alle Admin). Supabase
 
 | Thema | Person | Erreichbar über |
 |---|---|---|
-| Technik (App, Deployment, Datenbank) | Malte, Vertretung Anna | Kontaktwege in Notion (nicht im Repo) |
-| Freigabe von Releases | die jeweils andere Person (Anna ↔ Malte); ist sie nicht erreichbar, merged die Person allein per Admin-Bypass und vermerkt „Ohne Zweitfreigabe“ im PR (`docs/release.md`) | Kontaktwege in Notion |
-| Datenschutzvorfall (Meldung, Betroffene informieren) | Anna (Geschäftsführung) | Kontaktwege in Notion |
-| App im Notfall vom Netz nehmen | entscheidet Anna | Kontaktwege in Notion |
-| Vertretung während Veras Urlaub (17.10.–01.11.) | Malte für Technik, Anna für alles andere | Kontaktwege in Notion |
+| Technik (App, Deployment, Datenbank) | Technik, Vertretung Geschäftsführung | Kontaktwege in Notion (nicht im Repo) |
+| Freigabe von Releases | die jeweils andere Person mit Release-Recht (Geschäftsführung ↔ Technik); ist sie nicht erreichbar, merged die Person allein per Admin-Bypass und vermerkt „Ohne Zweitfreigabe“ im PR (`docs/release.md`) | Kontaktwege in Notion |
+| Datenschutzvorfall (Meldung, Betroffene informieren) | Geschäftsführung | Kontaktwege in Notion |
+| App im Notfall vom Netz nehmen | entscheidet die Geschäftsführung | Kontaktwege in Notion |
 
 ---
 
@@ -79,7 +78,7 @@ sind). Die Meldung beweist also nicht, dass eine Mail verschickt wurde.
    dort ein Fehler beim Versand?
 6. Den E-Mail-Dienst prüfen. Die Mails verschickt nicht die App, sondern
    Supabase über einen externen Versanddienst (Brevo, seit 30.09.2026). Das
-   Versandprotokoll steht in Brevo unter Transactional → Logs. Zugang: gemeinsames Team-Konto (Anna, Malte, Vera).
+   Versandprotokoll steht in Brevo unter Transactional → Logs. Zugang: gemeinsames Team-Konto (Zugänge in Notion).
 7. Hat die Person viele Links kurz hintereinander angefordert? Supabase begrenzt,
    wie viele Mails in einem Zeitraum verschickt werden: Supabase-Dashboard → Projekt → Authentication → Rate Limits. Production (Frankfurt): 30 E-Mails pro Stunde (Stand 18.10.2026), bei 9 Lernenden im Pilot ausreichend. Zusätzlich gilt je Adresse eine kurze Wartezeit zwischen zwei Links.
 
@@ -98,7 +97,7 @@ Login-Seite ein Hinweis:
   Browser öffnen.
 - Konto anlegen oder erneut einladen, Profil oder Einschreibung anlegen: Das
   läuft heute über ein Skript bzw. direkt in der Datenbank und braucht
-  jemanden aus der Technik. Dürfen: Anna und Malte (Production nur aus dem Release-Ordner, `docs/release.md`).
+  jemanden aus der Technik. Dürfen: Personen mit Production-Zugang, Liste in Notion (Production nur aus dem Release-Ordner, `docs/release.md`).
 
 **Abbrechen und informieren**, wenn
 
@@ -157,7 +156,7 @@ Vorher unbedingt prüfen:
 **Prüfen**
 
 1. Betrifft es eine Person oder alle? Wenn möglich mit einem eigenen
-   Lernenden-Konto ansehen. Für Production gibt es ein Test-Konto des Teams (wird mit dem Skript „Lernende anlegen“ angelegt; Zugang bei Anna und Malte).
+   Lernenden-Konto ansehen. Für Production gibt es ein Test-Konto des Teams (wird mit dem Skript „Lernende anlegen“ angelegt; Zugang bei den Personen mit Production-Zugang).
 2. **Ist der Inhalt veröffentlicht?** Lernende sehen nur Inhalte mit Status
    `published`. In Supabase → **Table Editor** in den Tabellen `programme`,
    `module`, `course`, `lesson` bzw. `field_job_type` die Spalte `status`
@@ -186,7 +185,7 @@ Vorher unbedingt prüfen:
 - Nur ansehen und beschreiben: welcher Inhalt, welche Seite, bei wem, seit
   wann.
 - Inhalte ändern (Status setzen, Texte korrigieren, Termine eintragen) nur nach
-  Absprache, weil es die einzige Datenbank mit echten Daten ist. Dürfen: Anna und Malte.
+  Absprache, weil es die einzige Datenbank mit echten Daten ist. Dürfen: Personen mit Production-Zugang.
 - **Niemals Kompetenzen löschen.** Das löscht derzeit Teilschritte mit, die
   auch an anderen Kompetenzen hängen.
 
@@ -270,13 +269,13 @@ Am 02.10.2026 lesend abgeglichen: In Frankfurt und Irland sind RLS-Policies
 (7, darunter `ensure_rls`) und die Definition von `rls_auto_enable()`
 identisch. Wie man so einen Abgleich lesend macht: siehe Anhang.
 
-**Backups (Stand 18.10.2026, geprüft von Anna im Dashboard Frankfurt, Database → Backups):**
+**Backups (Stand 18.10.2026, geprüft von der Geschäftsführung im Dashboard Frankfurt, Database → Backups):**
 
 - Supabase sichert die Datenbank **täglich** gegen Mitternacht (Region Frankfurt; letzte Sicherung am 18.10. um 02:10). Aufbewahrt werden die Sicherungen der **letzten 7 Tage**.
 - **Point in Time Recovery** (Wiederherstellung auf eine bestimmte Minute) ist nicht gebucht. Das ist für den Pilot ausreichend.
 - **Nicht gesichert sind Dateien im Storage** (SCORM-Pakete und ausgepackte Medien, Lernmaterialien, Profilfotos, Fachsprache-Bilder); die Sicherung enthält nur ihre Einträge in der Datenbank. Gelöschte Dateien kommen mit einer Wiederherstellung nicht zurück. SCORM-Pakete und Fachsprache-Bilder liegen zusätzlich im Google-Drive-Ordner und lassen sich mit den Skripten neu einspielen; für Profilfotos und hochgeladene Materialien gibt es keine zweite Kopie.
 - **Eine Wiederherstellung setzt die ganze Datenbank auf den Stand der Sicherung zurück.** Alles seitdem geht verloren: Anwesenheiten, Fortschritt, Chat-Nachrichten, neue Konten. Deshalb nur als letzter Ausweg, wenn Daten sonst nicht zu retten sind.
-- **Wer entscheidet:** Anna. Ausgelöst wird im Dashboard (Database → Backups → Restore) von Anna oder Malte, nach Absprache.
+- **Wer entscheidet:** die Geschäftsführung. Ausgelöst wird im Dashboard (Database → Backups → Restore) von einer Person mit Production-Zugang, nach Absprache.
 - Eine Probe-Wiederherstellung ist in Abschnitt 7 (Restore-Probe) beschrieben.
 - Vor einem Release mit Migrationen: Die Sicherung der letzten Nacht ist der Rückweg. Wurde seitdem auf Production viel geändert, den Release lieber am nächsten Tag machen.
 
@@ -310,8 +309,8 @@ davon weiß.
 
 **Selbst tun**
 
-- **App vom Netz nehmen:** entscheidet Anna. Weg: Wartungsseite (Entscheidung Anna 18.10.). Technisch noch offen: Die App braucht dafür einen Schalter, der statt aller Seiten eine Wartungsseite zeigt (Umsetzung folgt).
-- **Meldung an die Aufsichtsbehörde** (Sächsische Datenschutz- und Transparenzbeauftragte) innerhalb von 72 Stunden und **Information der Betroffenen:** Anna.
+- **App vom Netz nehmen:** entscheidet die Geschäftsführung. Weg: Wartungsseite (Entscheidung Geschäftsführung 18.10.). Technisch noch offen: Die App braucht dafür einen Schalter, der statt aller Seiten eine Wartungsseite zeigt (Umsetzung folgt).
+- **Meldung an die Aufsichtsbehörde** (Sächsische Datenschutz- und Transparenzbeauftragte) innerhalb von 72 Stunden und **Information der Betroffenen:** Geschäftsführung.
 
 Technischer Hintergrund für die Technik: Die Zugriffsregeln liegen als
 Row-Level-Security in `supabase/migrations`, die Tests in

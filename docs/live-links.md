@@ -45,18 +45,18 @@ Es gibt zwei Varianten. Welche gilt, erkennt das Skript an der Kopfzeile.
 
 ```csv
 Kohorte,Modul,Link
-Energiehelden 28.09.26,II,https://teams.microsoft.com/l/meetup-join/...
+<Kohorte>,II,https://teams.microsoft.com/l/meetup-join/...
 ```
 
 - `Modul`: `I`, `II`, `III`, `IV`, `V` oder `Abschluss` (auch `Modul II`, `2` oder `M02`).
 - Zum Modul gehört ein Termin, wenn sein Kurs in einer Woche dieses Moduls liegt.
-- **Begleitkurse** (Deutsch/Fachdeutsch, Softskills Coaching) hängen an keinem Modul. Sie bekommen den Link nur mit `--mit-begleitkursen`, und zwar alle Begleitkurs-Termine der Kohorte zwischen dem ersten und letzten Termin des Moduls. Ohne den Schalter nennt der Lauf, wie viele ausgelassen wurden. **Entscheidung Anna 2026-10-18: Begleitkurse bekommen keinen Teams-Link**, also `--mit-begleitkursen` nicht verwenden.
+- **Begleitkurse** (Deutsch/Fachdeutsch, Softskills Coaching) hängen an keinem Modul. Sie bekommen den Link nur mit `--mit-begleitkursen`, und zwar alle Begleitkurs-Termine der Kohorte zwischen dem ersten und letzten Termin des Moduls. Ohne den Schalter nennt der Lauf, wie viele ausgelassen wurden. **Entscheidung Geschäftsführung 2026-10-18: Begleitkurse bekommen keinen Teams-Link**, also `--mit-begleitkursen` nicht verwenden.
 
 **Je Termin** (ein Link für einen einzelnen Termin):
 
 ```csv
 Kohorte,Datum,Start,Link
-Energiehelden 28.09.26,02.11.2026,08:00,https://teams.microsoft.com/l/meetup-join/...
+<Kohorte>,02.11.2026,08:00,https://teams.microsoft.com/l/meetup-join/...
 ```
 
 - `Datum`: `TT.MM.JJJJ` oder `JJJJ-MM-TT`. `Start`: Beginn wie im Stundenplan, `HH:MM`, Berliner Zeit.

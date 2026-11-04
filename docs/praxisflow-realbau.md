@@ -4,7 +4,7 @@ Stand 13.10.2026. **Nur Analyse und Entwurf.** Es gibt dazu keine Migration im R
 
 Zweck: Grundlage für den Realbau (der Bauzeitraum steht in Asana, nicht hier) und für die Übergabe an das Team.
 
-**Aktualisiert 14.10.2026** (Entscheidungen Vera): Login der Rolle `trainer` seit 0032; Migrationsnummern und Regeln für den Langzeit-Branch (Abschnitt 4.0); Auftragsnummer als neue Spalte `nummer`; Neu-Einreichen über `field_capture_fassung`; Freigaben nach E3 über `fn_trainer_kohorten_ids()`; Foto nur als Vorschau im ersten Schnitt; neue Abschnitte 9 (Aufwand je Phase und Gate) und 10 (Schnitte, Inhalte).
+**Aktualisiert 14.10.2026** (Entscheidungen Produkt-Lead): Login der Rolle `trainer` seit 0032; Migrationsnummern und Regeln für den Langzeit-Branch (Abschnitt 4.0); Auftragsnummer als neue Spalte `nummer`; Neu-Einreichen über `field_capture_fassung`; Freigaben nach E3 über `fn_trainer_kohorten_ids()`; Foto nur als Vorschau im ersten Schnitt; neue Abschnitte 9 (Aufwand je Phase und Gate) und 10 (Schnitte, Inhalte).
 
 ## 1. Ausgangslage
 
@@ -70,15 +70,15 @@ Alles additiv, ein Praxistag-Typ schaltet den neuen Ablauf einzeln ein, bis dahi
 ### 4.1 Erweiterungen bestehender Tabellen
 
 - **`field_job_type.ablauf`** `text not null default 'einfach' check (ablauf in ('einfach','gefuehrt'))`. Nur Typen mit `gefuehrt` zeigen den sechsphasigen Ablauf.
-- **`field_job_type.pruefprotokoll_papier`** `boolean not null default false` (demo: `ZEIGE_PRUEFPROTOKOLL_HINWEIS`, für Energiehelden an).
-- **`field_job_type.nummer`** `text unique` (nullable; z. B. `M02-A03`, Maltes Spalte „Nummer“) und **`field_job_type.unterlagen_nr`** `text` (z. B. `E-02`, Spalte „Unterlagen-Nr.“). Die Nummer ist der Schlüssel für den Import (wiederholbar ohne Dubletten). Werte werden per Datenskript aus `kategorie` übernommen; `kategorie` bleibt stehen (additiv, siehe 4a).
+- **`field_job_type.pruefprotokoll_papier`** `boolean not null default false` (demo: `ZEIGE_PRUEFPROTOKOLL_HINWEIS`, für den Partner an).
+- **`field_job_type.nummer`** `text unique` (nullable; z. B. `M02-A03`, Spalte der Auftrags-Excel „Nummer“) und **`field_job_type.unterlagen_nr`** `text` (z. B. `E-02`, Spalte „Unterlagen-Nr.“). Die Nummer ist der Schlüssel für den Import (wiederholbar ohne Dubletten). Werte werden per Datenskript aus `kategorie` übernommen; `kategorie` bleibt stehen (additiv, siehe 4a).
 - **`field_job.phase`** `text not null default 'analyse' check (phase in ('analyse','planen','entscheiden','durchfuehren','kontrolle','bewerten','abgeschlossen'))` und **`field_job.phase_seit`** `timestamptz`. Lernende bekommen **kein** Schreibrecht auf diese Spalten (Spaltenrechte wie 0012). Übergänge laufen nur über RPCs.
 
 ### 4.2 Neue Tabellen (alle mit `organisation_id`, `id`, `created_at`, `updated_at`)
 
 | Tabelle | Zweck | Wichtige Spalten |
 |---|---|---|
-| `field_job_type_unterlage` | Dateien je Auftrag (Maltes Spalte „Unterlagen“, ein Dateiname je Zeile der Zelle) | `field_job_type_id`, `reihenfolge`, `kuerzel` (Präfix des Dateinamens: AA, AU, BB, ML …), `titel`, `file_asset_id`; unique (`field_job_type_id`, `reihenfolge`) |
+| `field_job_type_unterlage` | Dateien je Auftrag (Spalte der Auftrags-Excel „Unterlagen“, ein Dateiname je Zeile der Zelle) | `field_job_type_id`, `reihenfolge`, `kuerzel` (Präfix des Dateinamens: AA, AU, BB, ML …), `titel`, `file_asset_id`; unique (`field_job_type_id`, `reihenfolge`) |
 | `field_job_unterlage_angesehen` | demo: weiter erst, wenn alle Dateien geöffnet sind | `field_job_id`, `unterlage_id`, `angesehen_am`; unique je Paar |
 | `field_job_plan_eintrag` | Plan | `field_job_id`, `liste` (werkzeug, material, schritt), `text` (≤ 300 Zeichen), `reihenfolge`, `erledigt_am` (nur `schritt`); unique (`field_job_id`, `liste`, `reihenfolge`) deferrable |
 | `field_job_freigabe` | Freigaben durch die Trainer:in | `field_job_id`, `gate` (plan, durchfuehrung, kontrolle, fremdbewertung), `freigegeben_von` → `person`, `freigegeben_am`; unique (`field_job_id`, `gate`) |
@@ -169,9 +169,9 @@ create table field_job_bewertung (
 -- RLS: siehe 5. Policies und pgTAP-Tests gehören in dieselbe Migration (Regel 2 und 5).
 ```
 
-## 4a. Import aus Maltes Excel (Tab „Aufträge“)
+## 4a. Import aus Auftrags-Excel der Fachlichen Leitung Praxis (Tab „Aufträge“)
 
-Spalten laut Malte: **Nummer** (z. B. `M02-A03`), **Titel**, **Modul**, **Teilschritte** (Kennungen, kommagetrennt), **Unterlagen-Nr.** (`E-xx`), **Unterlagen** (Dateinamen, ein Dateiname je Zeile der Zelle, z. B. `AA-E-02_….pdf`, `AU-E-02_….pdf`, `BB-E-02_….pdf`, `ML-E-02_….pdf`), **In Plattform zeigen** (ja/nein), **Ordner Praxisinhalte** (Drive-Ordnername), **Offen**.
+Spalten laut Fachlicher Leitung Praxis: **Nummer** (z. B. `M02-A03`), **Titel**, **Modul**, **Teilschritte** (Kennungen, kommagetrennt), **Unterlagen-Nr.** (`E-xx`), **Unterlagen** (Dateinamen, ein Dateiname je Zeile der Zelle, z. B. `AA-E-02_….pdf`, `AU-E-02_….pdf`, `BB-E-02_….pdf`, `ML-E-02_….pdf`), **In Plattform zeigen** (ja/nein), **Ordner Praxisinhalte** (Drive-Ordnername), **Offen**.
 
 | Spalte | Ziel | Bemerkung |
 |---|---|---|
@@ -194,7 +194,7 @@ Beim Realbau gab es zwei Wege für die Nummer (**entschieden 14.10.: Weg 2 in ad
 2. **In einer Migration nach `nummer` umziehen** (Spalte `nummer` anlegen, `unique`, `kategorie` übernehmen, danach `kategorie` freigeben oder entfernen). Das ist sauberer, ändert aber den Import aus #102 und braucht einen Zwei-Schritt (additiv zuerst, Spalte später löschen).
 Die Tabelle oben beschreibt das Ziel mit `nummer`. Der Import aus #102 schreibt dann zusätzlich `nummer`.
 
-**Teilschritt-Kennung:** `competency_step.kennung` bleibt eine **Option für einen späteren Import**. Solange Maltes Excel Teilschritte über Kennungen führt und der Import über Kompetenz und Name zuordnet, ist die Zuordnung eindeutig nur so lange, wie die Namen eindeutig bleiben; eine Kennung würde das absichern. Sie ist keine Voraussetzung für den Realbau.
+**Teilschritt-Kennung:** `competency_step.kennung` bleibt eine **Option für einen späteren Import**. Solange Auftrags-Excel der Fachlichen Leitung Praxis Teilschritte über Kennungen führt und der Import über Kompetenz und Name zuordnet, ist die Zuordnung eindeutig nur so lange, wie die Namen eindeutig bleiben; eine Kennung würde das absichern. Sie ist keine Voraussetzung für den Realbau.
 
 Ablauf: Skript wie die Skripte in `scripts/sql/`, **zuerst Probelauf** mit Zählung (neue und geänderte Aufträge, fehlende Dateien, unbekannte Teilschritte, unbekannte Kürzel), danach erst Speichern. Dateien lädt AfCJ admin in den Bucket `auftrags-unterlagen`; der Import legt nur die Zeilen an und meldet Dateien, die im Ordner fehlen. Dateinamen mit Leerzeichen oder Umlauten werden beim Upload zu `<uuid>.<ext>` umbenannt, der Originalname bleibt in `file_asset.dateiname`.
 
@@ -222,8 +222,8 @@ Zeilen von abgeschlossenen Praxistagen (Freigaben, Einschätzungen, Plan) werden
 3. **Diktat und Datenschutz.** Das Diktat nutzt die Spracherkennung des Browsers; das Audio geht an den Browser-Anbieter. Vor einem Einsatz mit Teilnehmenden braucht es eine Datenschutzprüfung und einen Absatz in der Datenschutzerklärung. Vorschlag: Funktion hinter einem Schalter, aus bis zur Freigabe; die Texteingabe funktioniert ohne.
 4. **Fotos.** *Erster Schnitt: nur Vorschau im Browser wie in demo, kein Upload (14.10.).* Pflicht oder freiwillig? Fotos von Arbeitsergebnissen können Personen oder Kundendaten zeigen: Hinweistext, Einwilligung, Aufbewahrungsdauer, Löschung klären (Datenschutzerklärung ergänzen wie bei den Profilfotos).
 5. **Wer verifiziert?** *Rechte entschieden (E2, 0032): Trainer:innen dürfen in ihren Kohorten verifizieren.* Bisher nur AfCJ admin. Ist die Fremdeinschätzung der Trainer:in ein Ersatz oder eine Ergänzung zur Verifizierung durch AfCJ? Davon hängt ab, ob `verification` für `trainer` geöffnet wird (SR-03, „ab MVP“).
-6. **Kriterien und Stufentexte.** Die vier Kriterien und die Texte je Punktestufe in demo sind Platzhalter. Gelten sie für alle Aufträge oder je Auftrag aus Maltes Excel?
-7. **Kürzel der Unterlagen.** In Maltes Dateinamen kommen die Präfixe AA, AU, BB und ML vor. AA (Auftragsblatt) und AU (Arbeitsunterlage) kennt demo; was BB und ML bedeuten und wie sie den Lernenden heißen sollen („Bauteilbeschreibung“, „Materialliste“ wäre geraten, nicht bestätigt), muss Malte sagen. Das Modell speichert deshalb das Kürzel und zeigt den Titel aus einer kleinen Tabelle im Code, bis die Bezeichnungen feststehen.
+6. **Kriterien und Stufentexte.** Die vier Kriterien und die Texte je Punktestufe in demo sind Platzhalter. Gelten sie für alle Aufträge oder je Auftrag aus Auftrags-Excel der Fachlichen Leitung Praxis?
+7. **Kürzel der Unterlagen.** In Dateinamen der Auftrags-Excel kommen die Präfixe AA, AU, BB und ML vor. AA (Auftragsblatt) und AU (Arbeitsunterlage) kennt demo; was BB und ML bedeuten und wie sie den Lernenden heißen sollen („Bauteilbeschreibung“, „Materialliste“ wäre geraten, nicht bestätigt), muss die Fachliche Leitung Praxis sagen. Das Modell speichert deshalb das Kürzel und zeigt den Titel aus einer kleinen Tabelle im Code, bis die Bezeichnungen feststehen.
 8. **Prüfprotokoll auf Papier**: je Auftrag (`pruefprotokoll_papier`) oder je Kohorte?
 9. **Trainer:in je Praxistag**: `field_job.instructor_id` muss befüllt werden (bisher leer); wer pflegt das, der Import?
 10. **Abschluss-Anzeige**: demo zeigt Prozentwerte je Kompetenz. Nachweis zählt erst nach Verifizierung – Vorschlag: „Diese Kompetenzen stärkt der Auftrag“ mit Ringen des heutigen Stands und dem Hinweis „zählt nach der Prüfung“.
@@ -237,7 +237,7 @@ Zeilen von abgeschlossenen Praxistagen (Freigaben, Einschätzungen, Plan) werden
 | Schema, RLS, Storage-Policies, pgTAP | 16–20 |
 | RPCs und Server-Aktionen (Übergänge, Abschluss in einer Transaktion) | 8–10 |
 | Analyse: Unterlagen (Bucket, Download/Vorschau, „angesehen“) | 8–10 |
-| Import aus Maltes Excel (Skript mit Probelauf, Zuordnung Modul und Teilschritte, Kennung am Teilschritt) | 8–12 |
+| Import aus Auftrags-Excel der Fachlichen Leitung Praxis (Skript mit Probelauf, Zuordnung Modul und Teilschritte, Kennung am Teilschritt) | 8–12 |
 | Planen: drei Listen, Sortieren, Speichern (Komponenten aus demo übernehmen) | 10–12 |
 | Durchführen: Schritte der Reihe nach abhaken | 4–6 |
 | Kontrolle: Foto (Verkleinern, Upload, Policies, Hinweis) | 8–10 |
@@ -308,7 +308,7 @@ Stand Excel 14.10. (gewusst):
 - **Bedeutung der Kürzel:** AA (Auftragsblatt) und AU (Arbeitsunterlage) sind aus demo bekannt; **BB** ist offen, **ML** heißt laut Dateiname „Werkzeug_Material_Arbeitsschritte“ – vermutlich der Musterplan. Zu klären: sehen Lernende ML (dann ist Planen vorweggenommen) oder nur Trainer:innen?
 - **Bewertungskriterien und Notentexte:** in demo Platzhalter; zu liefern: global oder je Auftrag (Frage 6), Texte für alle sechs Stufen.
 - **Arbeitsauftrag-Text** je Auftrag in Lernenden-Sprache (heute nur der Titel in der Excel).
-- **Gate-Texte und Etappen-Texte** (demo hat Vorschläge, Freigabe durch Malte oder Anna).
+- **Gate-Texte und Etappen-Texte** (demo hat Vorschläge, Freigabe durch Fachliche Leitung Praxis oder Geschäftsführung).
 - **Prüfprotokoll auf Papier** ja/nein je Auftrag oder je Kohorte (Frage 8).
 - **Welche Aufträge im Pilot den neuen Ablauf nutzen** (alle 13 im Block 16.–24.11. oder nur einzelne).
 - **Tagesplanung des Praxisblocks** und Trainer:in je Praxistag (Übergabe: `field_job.bis_datum`, Trainer:in A für „Trainer:in A & Trainer:in C“).

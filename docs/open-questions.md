@@ -1,4 +1,4 @@
-# Offene Fragen an Vera/Malte
+# Offene Fragen an Produkt-Lead und Fachliche Leitung Praxis
 
 > Aus der Instruktion (data-model.md, 4e): "Baue nichts über das hier Gelistete
 > hinaus. Fehlt aus deiner Sicht etwas: als offene Frage zurückmelden, nicht

@@ -1,13 +1,13 @@
 # Löschweg: Daten einer Person löschen (manuell)
 
-Stand 18.10.2026 · Ablauf für den Pilot, Entscheidungen Anna 18.10. (siehe unten); keine rechtliche Prüfung. Gilt für Lernende und Trainer:innen, bis die Löschung automatisiert ist (siehe `docs/datenschutz-offene-punkte.md`, Punkt 3, und Abschnitt „Speicherdauer“ in `src/app/(rechtliches)/datenschutz/page.tsx`).
+Stand 18.10.2026 · Ablauf für den Pilot, Entscheidungen Geschäftsführung 18.10. (siehe unten); keine rechtliche Prüfung. Gilt für Lernende und Trainer:innen, bis die Löschung automatisiert ist (siehe `docs/datenschutz-offene-punkte.md`, Punkt 3, und Abschnitt „Speicherdauer“ in `src/app/(rechtliches)/datenschutz/page.tsx`).
 
 **Grundregel für jeden Schritt:** Erst auf Staging (Irland, `keijrwvegmwgpvprpoxa`) mit einer Testperson üben. Auf Production (Frankfurt, `vqfnmkcfjsudsujiuoqm`) wird nur gelesen oder geändert, wenn es vorher ausdrücklich freigegeben wurde. **Production-Änderungen laufen nur nach ausdrücklicher Freigabe.**
 
-## Entscheidungen für den Pilot (Anna, 18.10.2026)
+## Entscheidungen für den Pilot (Geschäftsführung, 18.10.2026)
 
-- **Freigabe:** Anna gibt jede Löschung frei. Ausgeführt wird im Production-Ordner (`cja-mvp-prototyp-release`) mit Claude, mit Probelauf und STOPP. Login-Konto und Profilfoto löschen Anna, Malte oder Vera im Supabase-Dashboard.
-- **Nachweise (E1): Fall für Fall.** Gibt es Anwesenheit, Praxisberichte oder Prüfungen, wird nicht sofort gelöscht. Anna klärt innerhalb der Monatsfrist, ob eine Aufbewahrungspflicht (AZAV) besteht, und entscheidet dann.
+- **Freigabe:** Die Geschäftsführung gibt jede Löschung frei. Ausgeführt wird im Production-Ordner (`cja-mvp-prototyp-release`) mit Claude, mit Probelauf und STOPP. Login-Konto und Profilfoto löschen Personen mit Production-Zugang im Supabase-Dashboard.
+- **Nachweise (E1): Fall für Fall.** Gibt es Anwesenheit, Praxisberichte oder Prüfungen, wird nicht sofort gelöscht. Die Geschäftsführung klärt innerhalb der Monatsfrist, ob eine Aufbewahrungspflicht (AZAV) besteht, und entscheidet dann.
 - **Chat und Fragen-Thread (E4):** Anonymisieren reicht (Text und Name weg, Hinweis „gelöscht“ bleibt).
 - **Backups (E5):** bis zu sieben Tage, steht so in der Datenschutzerklärung.
 - **Nach dem Start:** Trainer-Konten mit bestätigter Anwesenheit oder Prüfungen (E2, braucht eine Migration), Verweise auf Trainer:innen (E3), Automatisierung (E7).
@@ -26,7 +26,7 @@ Stand 18.10.2026 · Ablauf für den Pilot, Entscheidungen Anna 18.10. (siehe unt
 
 3. **Lesender Bestandscheck.** Mit der `person_id` (= Konto-ID) zählen, welche Zeilen es gibt (SQL-Gerüst A unten, nur `select`). Ergebnis nur als Zahlen festhalten, ohne Inhalte. Wichtig ist vor allem: Gibt es Zeilen, die das Löschen blockieren (Tabelle unten, Spalte „blockiert“)? Gibt es Anwesenheit oder Prüfungen? *Probelauf auf Staging; auf Production nur nach ausdrücklicher Freigabe.*
 
-4. **Entscheidung einholen.** Wenn Anwesenheit, Praxisberichte oder Prüfungen vorhanden sind, entscheidet Anna (nicht die Technik) innerhalb der Monatsfrist, ob gelöscht, anonymisiert oder für die Aufbewahrungsfrist gesperrt wird (E1, Fall für Fall). Ohne diese Entscheidung nicht weitermachen.
+4. **Entscheidung einholen.** Wenn Anwesenheit, Praxisberichte oder Prüfungen vorhanden sind, entscheidet die Geschäftsführung (nicht die Technik) innerhalb der Monatsfrist, ob gelöscht, anonymisiert oder für die Aufbewahrungsfrist gesperrt wird (E1, Fall für Fall). Ohne diese Entscheidung nicht weitermachen.
 
 5. **Blockaden lösen (nur bei Trainer:innen, Team, Admins).** Einträge, die auf die Person zeigen und nicht automatisch geleert werden, vorher auf „leer“ setzen — z. B. Trainer:in am Termin (`live_session.trainer_id`). Bei `attendance.bestaetigt_von` und `verification.verifiziert_von` geht das **nicht**, weil diese Zeilen unveränderlich sind (Trigger `unveraenderlich`, `0032`). Dann stoppen und Punkt E2 entscheiden. *Probelauf auf Staging, auf Production nur nach ausdrücklicher Freigabe.*
 
