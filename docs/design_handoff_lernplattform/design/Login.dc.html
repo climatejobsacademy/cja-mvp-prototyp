@@ -50,7 +50,7 @@
               <div style="width:40px;height:40px;flex-shrink:0;border-radius:10px;background:rgba(35,150,105,0.10);display:flex;align-items:center;justify-content:center"><dc-import name="Icon" n="mail-check" c="#239669" s="20" hint-size="20px,20px"></dc-import></div>
               <h2 style="margin:0;font-size:15px;font-weight:600">Login-Link gesendet</h2>
             </div>
-            <p style="margin:0;font-size:14px;line-height:1.5;color:#3f3f46">Wir haben einen Link an <b style="color:#23321E;font-weight:600">vera.schulz@betrieb.de</b> geschickt. Er ist 15 Minuten gültig.</p>
+            <p style="margin:0;font-size:14px;line-height:1.5;color:#3f3f46">Wir haben einen Link an <b style="color:#23321E;font-weight:600">lea.muster@example.org</b> geschickt. Er ist 15 Minuten gültig.</p>
             <div style="display:flex;flex-wrap:wrap;gap:8px">
               <div style="height:44px;padding:0 16px;border:1px solid #e4e4e7;border-radius:8px;font-size:15px;font-weight:500;display:flex;align-items:center;cursor:pointer;transition:background-color .15s" style-hover="background:rgba(35,150,105,0.10)">Erneut senden</div>
               <div style="height:44px;padding:0 16px;border-radius:8px;font-size:15px;font-weight:500;color:#71717a;display:flex;align-items:center;cursor:pointer;transition:background-color .15s" style-hover="background:rgba(35,150,105,0.10);color:#23321E">Andere E-Mail-Adresse</div>
@@ -90,9 +90,9 @@ class Component extends DCLogic {
       formPad: '48px', hdAlign: 'flex-start', hdText: 'left', h1: '40px', ftDir: 'row', ftGap: '16px', ftPad: '12px 40px',
     };
     const S = {
-      default: { value: 'name@betrieb.de', inputColor: '#71717a', inputBorder: '1px solid #e4e4e7', inputRing: 'none' },
-      focus: { value: 'vera.schulz@betrieb.de', inputColor: '#23321E', inputBorder: '1px solid #23321E', inputRing: '0 0 0 2px #fff, 0 0 0 4px #239669' },
-      error: { value: 'vera.schulz@betreib.de', inputColor: '#23321E', inputBorder: '2px solid #F07167', inputRing: 'none' },
+      default: { value: 'name@example.org', inputColor: '#71717a', inputBorder: '1px solid #e4e4e7', inputRing: 'none' },
+      focus: { value: 'lea.muster@example.org', inputColor: '#23321E', inputBorder: '1px solid #23321E', inputRing: '0 0 0 2px #fff, 0 0 0 4px #239669' },
+      error: { value: 'lea.muster@example.invalid', inputColor: '#23321E', inputBorder: '2px solid #F07167', inputRing: 'none' },
       sent: { value: '', inputColor: '#23321E', inputBorder: '1px solid #e4e4e7', inputRing: 'none' },
     }[st];
     return { isIllu: !P, isPhoto: !!P, photoSrc: P ? P.src : '', photoAlt: P ? P.alt : '', photoPos: P ? P.pos : 'center', L, S, isForm: st !== 'sent', isSent: st === 'sent', isError: st === 'error', links: ['Impressum', 'Datenschutz', 'Barrierefreiheit'] };

@@ -5,7 +5,7 @@ Zuletzt gegen den Release vom 20.10.2026 geprüft (Abschnitte 1 bis 5). Ergänzt
 ## Kurz
 
 1. **Vorher:** Umfang festlegen, Zugänge prüfen, Backup-Stand kennen, Schalter für Production prüfen.
-2. **Release-PR** `dev` → `main` öffnen, `/pr-check` laufen lassen, CI abwarten. Keine Zweitfreigabe nötig. Noch nicht mergen, das passiert in Schritt 4 per Admin-Recht.
+2. **Release-PR** `dev` → `main` öffnen, den Release-Stand prüfen lassen (Abschnitt 2), CI abwarten. Keine Zweitfreigabe nötig. Noch nicht mergen, das passiert in Schritt 4 per Admin-Recht.
 3. **Migrationen** auf Production: Probelauf, anhalten und erklären, dann mit getippter Freigabe einspielen.
 4. **Merge** des Release-PRs. Vercel veröffentlicht automatisch.
 5. **Smoke-Test** auf learn.climatejobsacademy.com.
@@ -27,14 +27,15 @@ Migrationen kommen **vor** dem Merge: Die neue App erwartet die neuen Tabellen. 
 - [ ] **Jede fehlende Migration einmal lesen:** additiv oder nicht? Ändert sie Daten (z. B. 0054 schaltet den Fragen-Thread an allen Live-Lektionen ein)?
 - [ ] **Schalter für Production in Vercel** (Settings → Environment Variables, Umgebung Production): `FACHSPRACHE_EINHEIT` und `PRAXISAUFGABE_LINK` sind nur mit dem Wert `an` eingeschaltet, ohne Variable oder mit jedem anderen Wert sind sie aus. Vor dem Release den Wert beider Variablen in Production lesen und mit der Absicht für diesen Release vergleichen (Mechanismus der Fachsprache: `fachsprache.md`); eine Änderung wirkt erst nach einem neuen Deployment. `NATIVE_SELBSTLERNEN` ist ohne Variable **an** (native Selbstlern-Ansicht); nur `aus` schaltet sie ab. Der Kohorten-Chat ist je Kohorte über `cohort.chat_aktiv` aus (Standard), der Fragen-Thread je Lektion über `lesson.chat_aktiv`.
 - [ ] **Backup:** Im Supabase-Dashboard (Frankfurt) unter Database → Backups prüfen, dass die Sicherung der letzten Nacht da ist (tägliche Sicherung, 7 Tage, Storage-Dateien nicht enthalten; Details im Runbook Abschnitt 5). Wurde seit Mitternacht viel auf Production geändert, den Release lieber am nächsten Tag machen.
-- [ ] **Zugänge:** eigenes Supabase-Konto mit Zugriff auf das Frankfurter Projekt, `cja-db-fra` (und für Staging `cja-db-irl`) im Schlüsselbund, `psql` (Postgres.app oder Homebrew) für die Skripte, Merge-Recht für `main` auf GitHub, Zugriff auf Vercel.
+- [ ] **Zugänge:** eigenes Supabase-Konto mit Zugriff auf das Frankfurter Projekt, `cja-db-fra` (und für Staging `cja-db-irl`) im Schlüsselbund, `psql` (Postgres.app oder Homebrew) für die Skripte, Admin-Recht im Repository auf GitHub (nur Admins mergen nach `main` ohne Approval), Zugriff auf Vercel.
 - [ ] **Datenschutzerklärung:** Stimmt sie für alles, was mit diesem Release sichtbar wird? Das Datum „Stand dieser Erklärung“ (`src/app/(rechtliches)/datenschutz/page.tsx`) wird im Release-PR gesetzt.
 
 ## 2. Release-PR
 
 - Titel nach dem bisherigen Muster: `Release: <Inhalt in Stichworten> (Dev → Main, Stand TT.MM.JJJJ)`.
 - In die Beschreibung: Liste der Migrationen, die mitgehen, und ob sie eingespielt sind; welche Schalter aus bleiben; Smoke-Test-Liste.
-- Eine Zweitfreigabe durch eine zweite Person ist vorerst nicht nötig (`decisions.md`, 2026-11-04, „Releases ohne Zweitfreigabe“). Vor dem Merge laufen `/pr-check` und die Pflicht-Checks `lint-and-types` und `rls-tests` und müssen grün sein (Admins könnten sie technisch umgehen, das ist nicht vorgesehen); die Person, die den Release macht, liest den Diff und hat die Änderungen auf Staging geprüft. Gemergt wird per Admin-Recht (das eingestellte Approval auf `main` gilt nicht für Admins); wer kein Admin ist, braucht eine Person mit Admin-Recht. Gemergt wird erst nach Schritt 3.
+- **Prüfung:** `/pr-check` vergleicht fest mit `origin/dev` und findet bei einem Release-PR keinen Diff. Die Sitzung startet deshalb den Agenten `code-reviewer` direkt mit dem Diff `origin/main...origin/dev` und meldet das Ergebnis in der PR.
+- Eine Zweitfreigabe durch eine zweite Person ist vorerst nicht nötig (`decisions.md`, 2026-11-04, „Releases ohne Zweitfreigabe“). Vor dem Merge laufen die Prüfung durch den Review-Agenten und die Pflicht-Checks `lint-and-types` und `rls-tests` und müssen grün sein (Admins könnten sie technisch umgehen, das ist nicht vorgesehen); die Person, die den Release macht, liest den Diff und hat die Änderungen auf Staging geprüft. Gemergt wird per Admin-Recht (das eingestellte Approval auf `main` gilt nicht für Admins); wer kein Admin ist, braucht eine Person mit Admin-Recht. Gemergt wird erst nach Schritt 3.
 
 ## 3. Migrationen auf Production
 
