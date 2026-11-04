@@ -46,7 +46,7 @@ Zugänge: Wer welche Zugänge zu GitHub, Supabase, Vercel und Brevo hat, steht i
 | Thema | Person | Erreichbar über |
 |---|---|---|
 | Technik (App, Deployment, Datenbank) | Technik, Vertretung Geschäftsführung | Kontaktwege in Notion (nicht im Repo) |
-| Freigabe von Releases | die jeweils andere Person mit Release-Recht (Geschäftsführung ↔ Technik); ist sie nicht erreichbar, merged die Person allein per Admin-Bypass und vermerkt „Ohne Zweitfreigabe“ im PR (`docs/release.md`) | Kontaktwege in Notion |
+| Freigabe von Releases | keine Zweitfreigabe nötig; die Person mit Admin-Recht, die den Release macht, merged nach `/pr-check`, grüner CI und Prüfung auf Staging (`docs/release.md`, `docs/decisions.md` 2026-11-04) | Kontaktwege in Notion |
 | Datenschutzvorfall (Meldung, Betroffene informieren) | Geschäftsführung | Kontaktwege in Notion |
 | App im Notfall vom Netz nehmen | entscheidet die Geschäftsführung | Kontaktwege in Notion |
 
@@ -206,10 +206,12 @@ es meist nur, wenn eine Korrektur live gehen soll.
 **Prüfen**
 
 1. **Auf GitHub**, im Pull Request unter „Checks“: Welche Prüfung ist rot?
-   - `lint-and-types` prüft Code-Stil und Typen. Ohne grünen Haken lässt sich
-     nichts nach `main` übernehmen.
+   - `lint-and-types` prüft Code-Stil und Typen.
    - `rls-tests` prüft die Zugriffsregeln der Datenbank (wer darf welche Daten
      sehen).
+   - Beide sind Pflicht-Checks auf `main`: Ohne grüne Haken lässt sich nichts
+     nach `main` übernehmen, außer per Admin-Recht; das ist nicht vorgesehen
+     (`decisions.md`, 2026-11-04).
    - „Details“ öffnet das Protokoll.
 2. **In Vercel** → **Deployments**: Steht beim betroffenen Deployment „Error“?
    Die Build-Logs zeigen den Grund.
