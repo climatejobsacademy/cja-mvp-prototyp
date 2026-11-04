@@ -36,7 +36,7 @@ Stand 18.10.2026 · Ablauf für den Pilot, Entscheidungen Geschäftsführung 18.
 
 8. **Prüfen.** Bestandscheck (Gerüst A) noch einmal laufen lassen: Alle Zahlen müssen 0 sein, außer Chat- und Thread-Zeilen, die jetzt ohne Person und ohne Text dastehen. Den Speicherordner noch einmal ansehen. Ergebnis als Zahlen zur Vorgangsnummer notieren. *Nur lesen; auf Production nur nach ausdrücklicher Freigabe.*
 
-9. **Antwort an die Person.** Kurz bestätigen, was gelöscht wurde, was anonymisiert ist (Chat, Fragen) und was — falls entschieden — wegen Aufbewahrungspflicht bis wann gesperrt bleibt, mit Grund. Hinweis auf Backups (bis zu sieben Tage). *Freigabe des Antworttexts durch Anna.*
+9. **Antwort an die Person.** Kurz bestätigen, was gelöscht wurde, was anonymisiert ist (Chat, Fragen) und was — falls entschieden — wegen Aufbewahrungspflicht bis wann gesperrt bleibt, mit Grund. Hinweis auf Backups (bis zu sieben Tage). *Freigabe des Antworttexts durch die Geschäftsführung.*
 
 10. **Frist.** Spätestens einen Monat nach Eingang (Art. 12 Abs. 3 DSGVO). Verlängern geht nur mit Begründung und Mitteilung an die Person innerhalb des ersten Monats. Den Vorgang danach schließen; die Notiz enthält nur Vorgangsnummer, Daten und Zahlen.
 

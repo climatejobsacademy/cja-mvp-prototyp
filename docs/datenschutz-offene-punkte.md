@@ -1,6 +1,6 @@
 # Datenschutzerklärung: offene Punkte
 
-Stand 14.10.2026. Zur Fassung der Datenschutzerklärung mit Kohortenansicht (SR-30), Sichtbarkeit der Fotos und Beiträge und manuellem Löschweg (Branch `docs/dse-kohortensicht`). Das Datum bei „Stand dieser Erklärung“ ist **nicht** geändert; Vera setzt es beim Merge (Punkt 9).
+Stand 14.10.2026. Zur Fassung der Datenschutzerklärung mit Kohortenansicht (SR-30), Sichtbarkeit der Fotos und Beiträge und manuellem Löschweg (Branch `docs/dse-kohortensicht`). Das Datum bei „Stand dieser Erklärung“ ist **nicht** geändert; die Produkt-Lead setzt es beim Merge (Punkt 9).
 
 ## Die neun Punkte
 
@@ -16,7 +16,7 @@ Stand 14.10.2026. Zur Fassung der Datenschutzerklärung mit Kohortenansicht (SR-
    - *Rolle „Moderierende“: keine Rolle, aber vorhanden.* Moderation ist ein Eintrag in `kohorte_moderation` (Skript `scripts/sql/thread_aktivieren.sql`), AfCJ admin moderiert immer; es gibt keine Rolle in `role_assignment`. Der Text („Personen, die die Fragen Ihrer Kohorte moderieren“) trifft zu.
    - *Trainerinnen und Trainer sehen die Beiträge nur als Moderierende.* Lesen dürfen laut `fn_kann_beitraege_lesen` (0024) Moderierende der Kohorte, AfCJ admin (über `fn_moderiert_kohorte`) und Lernende mit aktiver oder abgeschlossener Einschreibung in dieser Kohorte, wenn die Lektion lesbar und der Thread freigeschaltet ist. *Erledigt 14.10.:* Der Text nennt Trainer:innen nur noch, wenn sie als Moderierende eingetragen sind.
 
-5. **Fotos auf Production, die vor dieser Änderung hochgeladen wurden.** Stand 14.10.2026: Wer ein Foto unter dem alten Text („nicht für andere Teilnehmende“) hochgeladen hat, hat der neuen Sichtbarkeit für die Kohorte nicht zugestimmt. Das Verfahren (Hinweis beim nächsten Öffnen oder Zurücksetzen) ist vor Release 2 festzulegen; die Zählung auf Production erfolgt nur mit Veras getippter Freigabe. Auf Staging gibt es keine echten Personen, dort ist nichts nötig.
+5. **Fotos auf Production, die vor dieser Änderung hochgeladen wurden.** Stand 14.10.2026: Wer ein Foto unter dem alten Text („nicht für andere Teilnehmende“) hochgeladen hat, hat der neuen Sichtbarkeit für die Kohorte nicht zugestimmt. Das Verfahren (Hinweis beim nächsten Öffnen oder Zurücksetzen) ist vor Release 2 festzulegen; die Zählung auf Production erfolgt nur mit getippter Freigabe der Produkt-Lead. Auf Staging gibt es keine echten Personen, dort ist nichts nötig.
 
 6. **Fachbegriff-Funktion der Demo (Vorlesen, Bilder).** Stand 14.10.2026: Bei einer Übernahme prüfen, ob externe Dienste genutzt werden; sonst stimmt „keine KI-Dienste“ nicht mehr. Stand der Demo: Das Vorlesen nutzt die Sprachausgabe des Browsers (`speechSynthesis`, Sprache de-DE, `components/sprachtraining/vorlesen.tsx`); manche Browser nutzen dafür Online-Stimmen des Browser-Anbieters. Die Bilder sind selbst gezeichnet (`wort-bilder.tsx`). Die Inhalte schrieb Claude (`lib/sprachtraining-daten.ts`): fachliche Prüfung und Hinweis in der Erklärung vor einer Übernahme.
 
