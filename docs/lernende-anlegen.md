@@ -9,7 +9,7 @@ Skript: `scripts/lernende-anlegen.mjs` (Teile in `scripts/lernende-anlegen/`). R
 3. Datei prüfen ohne Datenbank: `--nur-pruefen`.
 4. Probelauf gegen Staging. Das ist der Standard, am Ende wird alles zurückgerollt.
 5. Echter Lauf mit `--ausfuehren`, nur mit Freigabe. Mit `--plan-datei` und `--trainer-datei` läuft danach gleich der Plan-Import für die Kohorten der Liste (Praxistage), mit Rückfrage „Tippe ja“.
-6. Kontrolle am Ende lesen (läuft immer nach dem echten Lauf). Die Anmeldung erklärt Malte im ersten Termin (keine Startnachricht, Entscheidung Anna 18.10.).
+6. Kontrolle am Ende lesen (läuft immer nach dem echten Lauf). Die Anmeldung erklärt die Fachliche Leitung Praxis im ersten Termin (keine Startnachricht, Entscheidung Geschäftsführung 18.10.).
 
 ```sh
 DIR="$HOME/Projects/import-daten"
@@ -48,7 +48,7 @@ node scripts/lernende-anlegen.mjs --datei "$DIR/lernende-production.csv" --ziel 
 
 ## Reihenfolge auf Production
 
-Kohorte „Energiehelden 28.09.26“ und Betrieb Energiehelden gibt es auf Production schon (nur lesend geprüft am 18.10.). Der erste Plan-Import braucht deshalb noch keine Lernenden.
+Die Pilot-Kohorte und den Betrieb des Partners gibt es auf Production schon (nur lesend geprüft am 18.10.). Der erste Plan-Import braucht deshalb noch keine Lernenden.
 
 1. **Release 1** (`docs/release.md`): Migrationen und App-Version.
 2. **Plan-Import** (`docs/import-plan.md`): legt Module, Kompetenzen, Aufträge und die Kohorten-Termine an.
@@ -60,7 +60,7 @@ Kohorte „Energiehelden 28.09.26“ und Betrieb Energiehelden gibt es auf Produ
 
 ### Warum der zweite Plan-Import nötig ist
 
-Praxistage gehören nicht der Kohorte, sondern jeder einzelnen Einschreibung: Der Plan-Import legt je aktiver Einschreibung eigene `field_job`- und `schedule_entry`-Zeilen (mit `enrolment_id`) an (Entscheidung 18.10., „Variante B“). Beim ersten Import gibt es noch keine Lernenden, also auch keine Praxistage. Erst ein Import **nach** dem Anlegen der Lernenden gibt ihnen ihre Praxistage. Er ist idempotent: Live-Termine, Kompetenzen usw. bleiben unverändert, neu sind nur die Praxistage der neuen Lernenden.
+Praxistage gehören nicht der Kohorte, sondern jeder einzelnen Einschreibung: Der Plan-Import legt je aktiver Einschreibung eine `field_job`-Zeile an, die an `learner_id` hängt und nicht an der Einschreibung, und dazu eine `schedule_entry`-Zeile, die allein die `enrolment_id` trägt (Entscheidung 18.10., „Variante B“). Nur `schedule_entry` kaskadiert mit der Einschreibung (Migration 0005); die `field_job`-Zeile bleibt bestehen, wenn die Einschreibung wegfällt. Beim ersten Import gibt es noch keine Lernenden, also auch keine Praxistage. Erst ein Import **nach** dem Anlegen der Lernenden gibt ihnen ihre Praxistage. Er ist idempotent: Live-Termine, Kompetenzen usw. bleiben unverändert, neu sind nur die Praxistage der neuen Lernenden.
 
 ### Was passiert, wenn man ihn vergisst
 
@@ -92,7 +92,7 @@ Reine CSV (nicht RTF; in TextEdit „Format → In reinen Text umwandeln“), Ko
 
 ```csv
 E-Mail,Vorname,Nachname,Rufname,Betrieb,Kohorte
-test+lernende1@example.org,Erika,Muster,,Testbetrieb GmbH,Energiehelden 28.09.26
+test+lernende1@example.org,Erika,Muster,,Testbetrieb GmbH,<Kohorte>
 ```
 
 | Spalte | Pflicht | Bedeutung |
@@ -173,7 +173,7 @@ node scripts/import-plan.mjs --datei "$DIR/<plan.xlsx>" --ziel staging \
 
 ## Schritt 4: Anmeldung der Lernenden
 
-Es gibt keine Startnachricht: Malte erklärt die Anmeldung im ersten Termin am 02.11. (Entscheidung Anna 18.10.). Die Lernenden melden sich selbst an: Seite öffnen, E-Mail eingeben, Link aus der Mail öffnen.
+Es gibt keine Startnachricht: Die Fachliche Leitung Praxis erklärt die Anmeldung im ersten Termin am 02.11. (Entscheidung Geschäftsführung 18.10.). Die Lernenden melden sich selbst an: Seite öffnen, E-Mail eingeben, Link aus der Mail öffnen.
 
 - Production: https://learn.climatejobsacademy.com/login
 - Staging (Vorschau): https://cja-mvp-prototyp-git-dev-af-cj-s.vercel.app/login
@@ -186,12 +186,12 @@ Team-Mitglieder bekommen eigene **Lernenden**-Test-Konten über dasselbe Skript,
 
 - Eigene Adresse mit Zusatz, z. B. `name+test@…` (nicht `+demo@`, die fasst das Skript nie an). Auth-Konto wie in Schritt 1 im Dashboard anlegen.
 - Eine Zeile in der Lernenden-CSV, Aufruf mit `--plan-datei`, damit das Konto auch Praxistage bekommt.
-- **Staging:** im Betrieb Energiehelden, in der Kohorte der echten Test-Lernenden.
-- **Production:** in einem eigenen Team-Betrieb, in der Kohorte der Lernenden (Entscheidung Anna 18.10.). Dafür gibt es schon den Betrieb „Test-Arbeitgeber (Dev)“ (Name später änderbar). Echte Lernende sehen die Testkonten dann nicht in „Deine Kohorte“. Ob sie im Chat oder in der Anwesenheitsliste auftauchen, beim Klicktest prüfen. Tauchen sie dort auf, nimmt Anna sie vor dem 02.11. wieder aus der Kohorte.
+- **Staging:** im Betrieb des Partners, in der Kohorte der echten Test-Lernenden.
+- **Production:** in einem eigenen Team-Betrieb, in der Kohorte der Lernenden (Entscheidung Geschäftsführung 18.10.). Dafür gibt es schon den Betrieb „Test-Arbeitgeber (Dev)“ (Name später änderbar). Echte Lernende sehen die Testkonten dann nicht in „Deine Kohorte“. Ob sie im Chat oder in der Anwesenheitsliste auftauchen, beim Klicktest prüfen. Tauchen sie dort auf, nimmt die Geschäftsführung sie vor dem 02.11. wieder aus der Kohorte.
 
 ## Regeln
 
-- Ein Konto hat genau eine aktive Einschreibung. Gibt es schon eine aktive Einschreibung in einer anderen Kohorte oder bei einem anderen Betrieb, meldet das Skript „Konflikt“ und hängt **nicht** um. Umhängen heißt: neue Einschreibung anlegen und die alte beenden, nie die bestehende ändern; das passiert händisch.
+- Ein Konto hat genau eine aktive Einschreibung. Gibt es schon eine aktive Einschreibung in einer anderen Kohorte oder bei einem anderen Betrieb, meldet das Skript „Konflikt“ und hängt **nicht** um. Umhängen heißt: neue Einschreibung anlegen und die alte beenden, nie die bestehende ändern; das passiert händisch. Hat ein Konto trotzdem mehrere aktive Einschreibungen, nimmt die App die älteste (`created_at` aufsteigend, `src/lib/queries/session.ts`). Demo-Konten werden nicht von Hand umgehängt.
 - Eine beendete Einschreibung (abgeschlossen, abgebrochen) in derselben Kohorte wird nicht wieder aktiviert: Konflikt.
 - Konten mit der Rolle Trainer:in oder Admin werden nicht als Lernende verknüpft (getrennte Konten): Konflikt.
 - Gehört die E-Mail schon einer anderen Person (anderes Auth-Konto): Konflikt.

@@ -1,11 +1,11 @@
 # Release: dev nach Production
 
-Stand 18.10.2026 (Anna mit Claude). Ergänzt `docs/runbook.md` (was tun, wenn etwas bricht). Diese Seite beschreibt den **geplanten** Weg von `dev` nach Production: was vorher feststehen muss, in welcher Reihenfolge es läuft, wie man prüft und wie man zurückkommt.
+Zuletzt gegen den Release vom 20.10.2026 geprüft (Abschnitte 1 bis 5). Ergänzt `docs/runbook.md` (was tun, wenn etwas bricht). Diese Seite beschreibt den Weg von `dev` nach Production: was vorher feststehen muss, in welcher Reihenfolge es läuft, wie man prüft und wie man zurückkommt.
 
 ## Kurz
 
 1. **Vorher:** Umfang festlegen, Zugänge prüfen, Backup-Stand kennen, Schalter für Production prüfen.
-2. **Release-PR** `dev` → `main` öffnen, die jeweils andere Person gibt frei (Anna ↔ Malte). Noch nicht mergen.
+2. **Release-PR** `dev` → `main` öffnen, `/pr-check` laufen lassen, CI abwarten. Keine Zweitfreigabe nötig. Noch nicht mergen, das passiert in Schritt 4 per Admin-Recht.
 3. **Migrationen** auf Production: Probelauf, anhalten und erklären, dann mit getippter Freigabe einspielen.
 4. **Merge** des Release-PRs. Vercel veröffentlicht automatisch.
 5. **Smoke-Test** auf learn.climatejobsacademy.com.
@@ -25,7 +25,7 @@ Migrationen kommen **vor** dem Merge: Die neue App erwartet die neuen Tabellen. 
 
 - [ ] **Umfang:** Welche Commits und welche Migrationen gehen mit? Liste mit `git log origin/main..origin/dev` und `ls supabase/migrations`, Abgleich mit `supabase migration list` im Release-Ordner (nur lesend).
 - [ ] **Jede fehlende Migration einmal lesen:** additiv oder nicht? Ändert sie Daten (z. B. 0054 schaltet den Fragen-Thread an allen Live-Lektionen ein)?
-- [ ] **Schalter für Production in Vercel** (Settings → Environment Variables, Umgebung Production): `FACHSPRACHE_EINHEIT` und `PRAXISAUFGABE_LINK` nicht gesetzt oder nicht `an`, solange die Funktion aus sein soll. `NATIVE_SELBSTLERNEN` ist ohne Variable **an** (native Selbstlern-Ansicht); nur `aus` schaltet sie ab. Der Kohorten-Chat ist je Kohorte über `cohort.chat_aktiv` aus (Standard), der Fragen-Thread je Lektion über `lesson.chat_aktiv`.
+- [ ] **Schalter für Production in Vercel** (Settings → Environment Variables, Umgebung Production): `FACHSPRACHE_EINHEIT` und `PRAXISAUFGABE_LINK` sind nur mit dem Wert `an` eingeschaltet, ohne Variable oder mit jedem anderen Wert sind sie aus. Vor dem Release den Wert beider Variablen in Production lesen und mit der Absicht für diesen Release vergleichen (Mechanismus der Fachsprache: `fachsprache.md`); eine Änderung wirkt erst nach einem neuen Deployment. `NATIVE_SELBSTLERNEN` ist ohne Variable **an** (native Selbstlern-Ansicht); nur `aus` schaltet sie ab. Der Kohorten-Chat ist je Kohorte über `cohort.chat_aktiv` aus (Standard), der Fragen-Thread je Lektion über `lesson.chat_aktiv`.
 - [ ] **Backup:** Im Supabase-Dashboard (Frankfurt) unter Database → Backups prüfen, dass die Sicherung der letzten Nacht da ist (tägliche Sicherung, 7 Tage, Storage-Dateien nicht enthalten; Details im Runbook Abschnitt 5). Wurde seit Mitternacht viel auf Production geändert, den Release lieber am nächsten Tag machen.
 - [ ] **Zugänge:** eigenes Supabase-Konto mit Zugriff auf das Frankfurter Projekt, `cja-db-fra` (und für Staging `cja-db-irl`) im Schlüsselbund, `psql` (Postgres.app oder Homebrew) für die Skripte, Merge-Recht für `main` auf GitHub, Zugriff auf Vercel.
 - [ ] **Datenschutzerklärung:** Stimmt sie für alles, was mit diesem Release sichtbar wird? Das Datum „Stand dieser Erklärung“ (`src/app/(rechtliches)/datenschutz/page.tsx`) wird im Release-PR gesetzt.
@@ -34,7 +34,7 @@ Migrationen kommen **vor** dem Merge: Die neue App erwartet die neuen Tabellen. 
 
 - Titel nach dem bisherigen Muster: `Release: <Inhalt in Stichworten> (Dev → Main, Stand TT.MM.JJJJ)`.
 - In die Beschreibung: Liste der Migrationen, die mitgehen, und ob sie eingespielt sind; welche Schalter aus bleiben; Smoke-Test-Liste.
-- Freigabe im Normalfall durch die jeweils andere Person (Anna ↔ Malte). Ist sie nicht erreichbar, darf die Person als Admin allein mergen (Bypass der Pflicht-Freigabe auf `main`); dann im PR „Ohne Zweitfreigabe, weil … nicht erreichbar“ vermerken und die andere Person danach informieren (Entscheidung Anna 2026-10-17). Gemergt wird erst nach Schritt 3.
+- Eine Zweitfreigabe durch eine zweite Person ist vorerst nicht nötig (`decisions.md`, 2026-11-04, „Releases ohne Zweitfreigabe“). Vor dem Merge laufen `/pr-check` und die Pflicht-Checks `lint-and-types` und `rls-tests` und müssen grün sein (Admins könnten sie technisch umgehen, das ist nicht vorgesehen); die Person, die den Release macht, liest den Diff und hat die Änderungen auf Staging geprüft. Gemergt wird per Admin-Recht (das eingestellte Approval auf `main` gilt nicht für Admins); wer kein Admin ist, braucht eine Person mit Admin-Recht. Gemergt wird erst nach Schritt 3.
 
 ## 3. Migrationen auf Production
 
@@ -62,6 +62,7 @@ Mit einem eigenen Testkonto auf learn.climatejobsacademy.com, nicht mit Konten v
 - [ ] Was aus sein soll, ist nicht sichtbar (Fachsprache, Link zur Praxisaufgabe, Chat).
 - [ ] Datenschutzerklärung, Impressum und Barrierefreiheit öffnen sich, „Zurück“ funktioniert.
 - [ ] Trainer-Konto landet in `/trainer`.
+- [ ] Haben Live-Termine einen Teams-Link, führen „Zum Live-Unterricht“ auf Home und der Termin im Stundenplan ins richtige Meeting (`docs/live-links.md`, Klicktest).
 - [ ] Vercel → Logs: keine roten Fehler seit dem Deployment.
 
 ## 6. Inhalte

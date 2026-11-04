@@ -1,6 +1,6 @@
 # Verzeichnis der Verarbeitungstätigkeiten (Art. 30 DSGVO): Lernplattform
 
-Stand 18.10.2026 · **Entwurf** (Anna mit Claude), keine rechtliche Prüfung. Abgeleitet aus `docs/data-model.md`, `docs/access-matrix.md`, der Datenschutzerklärung (`src/app/(rechtliches)/datenschutz/page.tsx`), `docs/loeschweg.md` und `docs/runbook.md`.
+Stand 18.10.2026 · **Entwurf** (Geschäftsführung mit Claude), keine rechtliche Prüfung. Abgeleitet aus `docs/data-model.md`, `docs/access-matrix.md`, der Datenschutzerklärung (`src/app/(rechtliches)/datenschutz/page.tsx`), `docs/loeschweg.md` und `docs/runbook.md`.
 
 Gilt für die Lernplattform learn.climatejobsacademy.com (Production, Supabase Frankfurt). Staging enthält keine echten Personen und ist nicht Teil des Verzeichnisses. Werkzeuge rund um den Pilot (Microsoft Teams, Google Drive) stehen vorläufig unter 9 und 10. Ein Gesamtverzeichnis der Akademie gibt es noch nicht (Stand 18.10.2026); dieses Verzeichnis ist der Anfang und wird nach dem Pilot um die übrigen Tätigkeiten der Akademie (z. B. Buchhaltung, Bewerbungen) erweitert.
 
@@ -8,9 +8,9 @@ Gilt für die Lernplattform learn.climatejobsacademy.com (Production, Supabase F
 
 | Angabe | Inhalt |
 |---|---|
-| Verantwortliche Stelle | Akademie für Klimajobs UG (haftungsbeschränkt), Kochstraße 42, 04275 Leipzig, vertreten durch die Geschäftsführerin Anna Sauter-Getschmann, info@climatejobsacademy.com |
-| Gemeinsam Verantwortliche | keine für die Plattform; für Microsoft Teams ggf. der Partner Energiehelden (Art. 26 DSGVO, zu klären, siehe Tätigkeit 9) |
-| Datenschutzbeauftragte:r | keine:r benannt; nicht verpflichtend, weil weniger als 20 Personen ständig mit der Verarbeitung personenbezogener Daten beschäftigt sind (§ 38 BDSG, Bestätigung Anna 18.10.2026) |
+| Verantwortliche Stelle | Akademie für Klimajobs UG (haftungsbeschränkt), vertreten durch die Geschäftsführung; Anschrift und Kontakt siehe Impressum |
+| Gemeinsam Verantwortliche | keine für die Plattform; für Microsoft Teams ggf. der Partner (Art. 26 DSGVO, zu klären, siehe Tätigkeit 9) |
+| Datenschutzbeauftragte:r | keine:r benannt; nicht verpflichtend, weil weniger als 20 Personen ständig mit der Verarbeitung personenbezogener Daten beschäftigt sind (§ 38 BDSG, Bestätigung Geschäftsführung 18.10.2026) |
 | Auftragsverarbeiter (Art. 28 DSGVO) | Supabase Pte. Ltd., Singapur (Datenbank, Login, Dateispeicher; Server in der EU, Frankfurt; DPA Version 1 vom 01.08.2026, gilt ohne gesonderte Unterschrift), Vercel Inc., USA (Hosting; Funktionen in Frankfurt, weltweites Netzwerk), Brevo GmbH, Berlin (Versand der Login-Mails; EU-Rechenzentren, Unterauftragsverarbeiter z. B. Cloudflare) |
 | Drittlandübermittlung (Art. 30 Abs. 1 lit. e) | **Vercel Inc. (USA):** zertifiziert nach dem EU-US Data Privacy Framework, also Angemessenheitsbeschluss (Art. 45 DSGVO); zusätzlich Standardvertragsklauseln im DPA. **Supabase:** Daten auf Servern in Frankfurt; mögliche Zugriffe aus dem Drittland abgesichert über Standardvertragsklauseln (Art. 46 Abs. 2 lit. c DSGVO, Durchführungsbeschluss (EU) 2021/914) im DPA; Risikoanalyse (Transfer Impact Assessment) in `docs/tia-supabase.md`. **Unterauftragsverarbeiter von Brevo:** Standardvertragsklauseln bzw. Data Privacy Framework laut Brevo. |
 | Technische und organisatorische Maßnahmen | siehe Abschnitt „TOM“ am Ende |
@@ -22,7 +22,7 @@ Gilt für die Lernplattform learn.climatejobsacademy.com (Production, Supabase F
 - **Zweck:** Zugang zur Lernplattform, Zuordnung zu Partnerorganisation (Bildungsträger), Rolle und Kohorte.
 - **Betroffene:** Lernende, Trainer:innen, Team der Akademie.
 - **Daten:** E-Mail-Adresse, Name, Rufname, Benutzername, Rolle, Organisation (Partnerorganisation), Zeitpunkte der Anmeldung; soweit erfasst Geburtsdatum, Geschlecht, Vorerfahrung, Sprache.
-- **Herkunft der Daten (Art. 14 DSGVO):** Name und E-Mail-Adresse der Lernenden stammen von der Partnerorganisation (im Pilot der Bildungsträger Energiehelden); die Information darüber steht in der Datenschutzerklärung.
+- **Herkunft der Daten (Art. 14 DSGVO):** Name und E-Mail-Adresse der Lernenden stammen von der Partnerorganisation (im Pilot der Partner-Bildungsträger); die Information darüber steht in der Datenschutzerklärung.
 - **Rechtsgrundlage:** Art. 6 Abs. 1 lit. b DSGVO.
 - **Empfänger:** Team der Akademie (Admin); Auftragsverarbeiter Supabase.
 - **Löschfrist:** solange das Konto besteht und der Zweck der Qualifizierung es erfordert; Löschung auf Anfrage innerhalb eines Monats (`docs/loeschweg.md`), soweit keine Aufbewahrungspflicht entgegensteht.
@@ -86,8 +86,8 @@ Gilt für die Lernplattform learn.climatejobsacademy.com (Production, Supabase F
 - **Betroffene:** anfragende Personen.
 - **Daten:** Anfrage, Kontaktdaten, Vorgangsnummer, Ergebnis (nur Zahlen, keine Inhalte).
 - **Rechtsgrundlage:** Art. 6 Abs. 1 lit. c DSGVO.
-- **Empfänger:** Anna (Freigabe), ausführende Person im Team.
-- **Löschfrist:** 3 Jahre nach Abschluss der Anfrage, als Nachweis der Bearbeitung (Entscheidung Anna 18.10.2026).
+- **Empfänger:** Geschäftsführung (Freigabe), ausführende Person im Team.
+- **Löschfrist:** 3 Jahre nach Abschluss der Anfrage, als Nachweis der Bearbeitung (Entscheidung Geschäftsführung 18.10.2026).
 
 ### 9. Live-Unterricht in Microsoft Teams (vorläufig, außerhalb der Plattform)
 
@@ -95,7 +95,7 @@ Gilt für die Lernplattform learn.climatejobsacademy.com (Production, Supabase F
 - **Betroffene:** Lernende, Trainer:innen.
 - **Daten:** Name bzw. Anzeigename, ggf. E-Mail-Adresse, Bild und Ton während des Termins (keine Aufzeichnung, Stand 18.10.2026), Teilnahme- bzw. Anwesenheitslisten (in Klassenräumen automatisch), Chat in Teams.
 - **Rechtsgrundlage:** Art. 6 Abs. 1 lit. b DSGVO.
-- **Verantwortlich:** Der Teams-Bereich gehört dem Partner (Energiehelden). Die Akademie stellt den Link bereit, ihre Trainer:innen leiten die Termine, und sie bestätigt die Anwesenheit auf der Plattform (ggf. anhand der Teams-Liste) für eigene Zwecke. Damit liegt wahrscheinlich eine gemeinsame Verantwortlichkeit (Art. 26 DSGVO) vor; zu klären.
+- **Verantwortlich:** Der Teams-Bereich gehört dem Partner. Die Akademie stellt den Link bereit, ihre Trainer:innen leiten die Termine, und sie bestätigt die Anwesenheit auf der Plattform (ggf. anhand der Teams-Liste) für eigene Zwecke. Damit liegt wahrscheinlich eine gemeinsame Verantwortlichkeit (Art. 26 DSGVO) vor; zu klären.
 - **Empfänger:** Microsoft (Auftragsverarbeiter des Partners).
 - **Löschfrist:** nach den Vorgaben des Partners.
 - **Offen:** Mit dem Partner klären (Termin 29.10.2026), wer wofür verantwortlich ist, und eine Vereinbarung nach Art. 26 DSGVO schließen bzw. die Rollen schriftlich festhalten.
@@ -119,13 +119,13 @@ Gilt für die Lernplattform learn.climatejobsacademy.com (Production, Supabase F
 - **Protokolle:** keine personenbezogenen Daten und keine Nachrichteninhalte in App-Logs.
 - **Verschlüsselung:** Übertragung per HTTPS; Verschlüsselung der gespeicherten Daten durch Supabase (Anbieterangabe, nicht geprüft).
 - **Backups:** täglich, 7 Tage (`docs/runbook.md`).
-- **Änderungen:** Datenbank nur über geprüfte Migrationen, Release mit Probelauf und Zweitfreigabe (`docs/release.md`).
+- **Änderungen:** Datenbank nur über geprüfte Migrationen, Release mit Probelauf, getippter Freigabe, automatischen Tests (Pflicht-Checks auf `main`) und Prüfung auf Staging; eine Zweitfreigabe durch eine zweite Person ist vorerst keine Pflicht (`docs/release.md`, `docs/decisions.md` 2026-11-04).
 - **Zugänge des Teams:** eigene Konten in Supabase und GitHub; Vercel und Brevo als geteilte Konten (Zwei-Faktor-Anmeldung für Brevo nach dem Start).
 
 ## Offen
 
-- Auftragsverarbeitungsverträge: die aktuellen DPAs von Supabase, Vercel und Brevo als PDF mit Datum ablegen (Anna, 18.10.2026).
+- Auftragsverarbeitungsverträge: die aktuellen DPAs von Supabase, Vercel und Brevo als PDF mit Datum ablegen (Geschäftsführung, 18.10.2026).
 - Nach dem Pilot: dieses Verzeichnis um die übrigen Tätigkeiten der Akademie erweitern (es gibt kein Gesamtverzeichnis).
 - Teams: gemeinsame Verantwortlichkeit mit dem Partner klären (Abschnitt 9).
-- Aufbewahrungspflichten (AZAV) für Nachweise: Anna fragt Energiehelden am 29.10.2026.
+- Aufbewahrungspflichten (AZAV) für Nachweise: Die Geschäftsführung fragt beim Partner nach.
 - Keine rechtliche Prüfinstanz.

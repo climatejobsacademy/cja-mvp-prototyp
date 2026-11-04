@@ -6,7 +6,6 @@ einem Symptom und führt in dieser Reihenfolge durch:
 **Abbrechen und informieren**.
 
 Wo ein Vorgehen noch nicht geklärt ist, steht **offen**.
-Stand: 30.09.2026, Zuständigkeiten ergänzt am 18.10.2026 (Anna).
 
 ---
 
@@ -26,6 +25,8 @@ Stand: 30.09.2026, Zuständigkeiten ergänzt am 18.10.2026 (Anna).
 4. **Uhrzeit notieren.** Die Logs in Vercel und Supabase lassen sich nach Zeit
    filtern. Wann ist der Fehler aufgetreten, auf welcher Seite, bei wem?
 
+**Zusatz: Nachweise nicht anfassen.** Anwesenheit (`attendance`) und Verifizierung (`verification`) sind seit Migration 0032 per Trigger gegen Änderungen geschützt (Korrektur nur per Storno-Zeile); Löschen sperrt der Trigger nicht. `unit_progress`, `field_capture` und `field_capture_antwort` haben keinen solchen Schutz. Diese Daten werden von Hand weder geändert noch gelöscht, bis der Löschweg entschieden ist (`loeschweg.md`).
+
 ## Wo man nachsieht
 
 | Was | Wo | Wofür |
@@ -36,17 +37,18 @@ Stand: 30.09.2026, Zuständigkeiten ergänzt am 18.10.2026 (Anna).
 | GitHub Actions | https://github.com/climatejobsacademy/cja-mvp-prototyp/actions | Automatische Prüfungen (`lint-and-types`, `rls-tests`) bei jedem Pull Request |
 | Statusseiten der Anbieter | https://status.supabase.com und https://www.vercel-status.com | Hat der Anbieter gerade selbst eine Störung? |
 
-Zugänge (Stand 18.10.2026): GitHub – Anna, Malte, Vera (alle Admin). Supabase-Dashboard – Anna, Malte, Vera mit eigenen Konten, Malte und Vera als Administratoren. Vercel – ein Konto (Annas), das das Team gemeinsam nutzt. Brevo – ein gemeinsames Konto für das Team.
+Zugänge: Wer welche Zugänge zu GitHub, Supabase, Vercel und Brevo hat, steht in Notion (Konten-Tabelle), nicht im Repository.
+
+**Was nur im Supabase-Dashboard oder per Skript geht.** Die App hat keinen Admin-Bereich (`decisions.md`, Eintrag zum Design-Fundament); Admin-Arbeit läuft im Dashboard oder über die Skripte in `scripts/`. Auth-Konten für Lernende und Trainer:innen legt man im Dashboard an (Authentication → Users → Add user), die Skripte schreiben nie in `auth.users`. Profil, Mitgliedschaft, Rolle und Einschreibung der Lernenden legt `scripts/lernende-anlegen.mjs` an (`lernende-anlegen.md`), die Person mit Rolle `trainer` der Plan-Import (`import-plan.md`, Abschnitt Trainer-Konten). Inhalte und Termine kommen per Plan-Import, SCORM-Pakete und Teams-Links per eigenem Skript (`scorm-einspielen.md`, `live-links.md`). Status und Freigaben ändert man von Hand im Table Editor, zum Beispiel eine Fachsprache-Einheit auf `veroeffentlicht` (`fachsprache.md`); auch das Organisations-Logo lädt man im Dashboard hoch (`organisations-logo.md`). Das Schema ändert sich nie im Dashboard, sondern nur über eine Migration (`CLAUDE.md`, Regel 4).
 
 ## Wen informieren
 
 | Thema | Person | Erreichbar über |
 |---|---|---|
-| Technik (App, Deployment, Datenbank) | Malte, Vertretung Anna | Kontaktwege in Notion (nicht im Repo) |
-| Freigabe von Releases | die jeweils andere Person (Anna ↔ Malte); ist sie nicht erreichbar, merged die Person allein per Admin-Bypass und vermerkt „Ohne Zweitfreigabe“ im PR (`docs/release.md`) | Kontaktwege in Notion |
-| Datenschutzvorfall (Meldung, Betroffene informieren) | Anna (Geschäftsführung) | Kontaktwege in Notion |
-| App im Notfall vom Netz nehmen | entscheidet Anna | Kontaktwege in Notion |
-| Vertretung während Veras Urlaub (17.10.–01.11.) | Malte für Technik, Anna für alles andere | Kontaktwege in Notion |
+| Technik (App, Deployment, Datenbank) | Technik, Vertretung Geschäftsführung | Kontaktwege in Notion (nicht im Repo) |
+| Freigabe von Releases | keine Zweitfreigabe nötig; die Person mit Admin-Recht, die den Release macht, merged nach `/pr-check`, grüner CI und Prüfung auf Staging (`docs/release.md`, `docs/decisions.md` 2026-11-04) | Kontaktwege in Notion |
+| Datenschutzvorfall (Meldung, Betroffene informieren) | Geschäftsführung | Kontaktwege in Notion |
+| App im Notfall vom Netz nehmen | entscheidet die Geschäftsführung | Kontaktwege in Notion |
 
 ---
 
@@ -76,7 +78,7 @@ sind). Die Meldung beweist also nicht, dass eine Mail verschickt wurde.
    dort ein Fehler beim Versand?
 6. Den E-Mail-Dienst prüfen. Die Mails verschickt nicht die App, sondern
    Supabase über einen externen Versanddienst (Brevo, seit 30.09.2026). Das
-   Versandprotokoll steht in Brevo unter Transactional → Logs. Zugang: gemeinsames Team-Konto (Anna, Malte, Vera).
+   Versandprotokoll steht in Brevo unter Transactional → Logs. Zugang: gemeinsames Team-Konto (Zugänge in Notion).
 7. Hat die Person viele Links kurz hintereinander angefordert? Supabase begrenzt,
    wie viele Mails in einem Zeitraum verschickt werden: Supabase-Dashboard → Projekt → Authentication → Rate Limits. Production (Frankfurt): 30 E-Mails pro Stunde (Stand 18.10.2026), bei 9 Lernenden im Pilot ausreichend. Zusätzlich gilt je Adresse eine kurze Wartezeit zwischen zwei Links.
 
@@ -95,7 +97,7 @@ Login-Seite ein Hinweis:
   Browser öffnen.
 - Konto anlegen oder erneut einladen, Profil oder Einschreibung anlegen: Das
   läuft heute über ein Skript bzw. direkt in der Datenbank und braucht
-  jemanden aus der Technik. Dürfen: Anna und Malte (Production nur aus dem Release-Ordner, `docs/release.md`).
+  jemanden aus der Technik. Dürfen: Personen mit Production-Zugang, Liste in Notion (Production nur aus dem Release-Ordner, `docs/release.md`).
 
 **Abbrechen und informieren**, wenn
 
@@ -154,7 +156,7 @@ Vorher unbedingt prüfen:
 **Prüfen**
 
 1. Betrifft es eine Person oder alle? Wenn möglich mit einem eigenen
-   Lernenden-Konto ansehen. Für Production gibt es ein Test-Konto des Teams (wird mit dem Skript „Lernende anlegen“ angelegt; Zugang bei Anna und Malte).
+   Lernenden-Konto ansehen. Für Production gibt es ein Test-Konto des Teams (wird mit dem Skript „Lernende anlegen“ angelegt; Zugang bei den Personen mit Production-Zugang).
 2. **Ist der Inhalt veröffentlicht?** Lernende sehen nur Inhalte mit Status
    `published`. In Supabase → **Table Editor** in den Tabellen `programme`,
    `module`, `course`, `lesson` bzw. `field_job_type` die Spalte `status`
@@ -183,7 +185,7 @@ Vorher unbedingt prüfen:
 - Nur ansehen und beschreiben: welcher Inhalt, welche Seite, bei wem, seit
   wann.
 - Inhalte ändern (Status setzen, Texte korrigieren, Termine eintragen) nur nach
-  Absprache, weil es die einzige Datenbank mit echten Daten ist. Dürfen: Anna und Malte.
+  Absprache, weil es die einzige Datenbank mit echten Daten ist. Dürfen: Personen mit Production-Zugang.
 - **Niemals Kompetenzen löschen.** Das löscht derzeit Teilschritte mit, die
   auch an anderen Kompetenzen hängen.
 
@@ -204,10 +206,12 @@ es meist nur, wenn eine Korrektur live gehen soll.
 **Prüfen**
 
 1. **Auf GitHub**, im Pull Request unter „Checks“: Welche Prüfung ist rot?
-   - `lint-and-types` prüft Code-Stil und Typen. Ohne grünen Haken lässt sich
-     nichts nach `main` übernehmen.
+   - `lint-and-types` prüft Code-Stil und Typen.
    - `rls-tests` prüft die Zugriffsregeln der Datenbank (wer darf welche Daten
      sehen).
+   - Beide sind Pflicht-Checks auf `main`: Ohne grüne Haken lässt sich nichts
+     nach `main` übernehmen, außer per Admin-Recht; das ist nicht vorgesehen
+     (`decisions.md`, 2026-11-04).
    - „Details“ öffnet das Protokoll.
 2. **In Vercel** → **Deployments**: Steht beim betroffenen Deployment „Error“?
    Die Build-Logs zeigen den Grund.
@@ -267,14 +271,14 @@ Am 02.10.2026 lesend abgeglichen: In Frankfurt und Irland sind RLS-Policies
 (7, darunter `ensure_rls`) und die Definition von `rls_auto_enable()`
 identisch. Wie man so einen Abgleich lesend macht: siehe Anhang.
 
-**Backups (Stand 18.10.2026, geprüft von Anna im Dashboard Frankfurt, Database → Backups):**
+**Backups (Stand 18.10.2026, geprüft von der Geschäftsführung im Dashboard Frankfurt, Database → Backups):**
 
 - Supabase sichert die Datenbank **täglich** gegen Mitternacht (Region Frankfurt; letzte Sicherung am 18.10. um 02:10). Aufbewahrt werden die Sicherungen der **letzten 7 Tage**.
 - **Point in Time Recovery** (Wiederherstellung auf eine bestimmte Minute) ist nicht gebucht. Das ist für den Pilot ausreichend.
 - **Nicht gesichert sind Dateien im Storage** (SCORM-Pakete und ausgepackte Medien, Lernmaterialien, Profilfotos, Fachsprache-Bilder); die Sicherung enthält nur ihre Einträge in der Datenbank. Gelöschte Dateien kommen mit einer Wiederherstellung nicht zurück. SCORM-Pakete und Fachsprache-Bilder liegen zusätzlich im Google-Drive-Ordner und lassen sich mit den Skripten neu einspielen; für Profilfotos und hochgeladene Materialien gibt es keine zweite Kopie.
 - **Eine Wiederherstellung setzt die ganze Datenbank auf den Stand der Sicherung zurück.** Alles seitdem geht verloren: Anwesenheiten, Fortschritt, Chat-Nachrichten, neue Konten. Deshalb nur als letzter Ausweg, wenn Daten sonst nicht zu retten sind.
-- **Wer entscheidet:** Anna. Ausgelöst wird im Dashboard (Database → Backups → Restore) von Anna oder Malte, nach Absprache.
-- Laut Veras Board gab es am 09.10. eine Probe-Wiederherstellung auf Production.
+- **Wer entscheidet:** die Geschäftsführung. Ausgelöst wird im Dashboard (Database → Backups → Restore) von einer Person mit Production-Zugang, nach Absprache.
+- Eine Probe-Wiederherstellung ist in Abschnitt 7 (Restore-Probe) beschrieben.
 - Vor einem Release mit Migrationen: Die Sicherung der letzten Nacht ist der Rückweg. Wurde seitdem auf Production viel geändert, den Release lieber am nächsten Tag machen.
 
 ---
@@ -307,14 +311,72 @@ davon weiß.
 
 **Selbst tun**
 
-- **App vom Netz nehmen:** entscheidet Anna. Weg: Wartungsseite (Entscheidung Anna 18.10.). Technisch noch offen: Die App braucht dafür einen Schalter, der statt aller Seiten eine Wartungsseite zeigt (Umsetzung folgt).
-- **Meldung an die Aufsichtsbehörde** (Sächsische Datenschutz- und Transparenzbeauftragte) innerhalb von 72 Stunden und **Information der Betroffenen:** Anna.
+- **App vom Netz nehmen:** entscheidet die Geschäftsführung. Weg: Wartungsseite (Entscheidung Geschäftsführung 18.10.). Technisch noch offen: Die App braucht dafür einen Schalter, der statt aller Seiten eine Wartungsseite zeigt (Umsetzung folgt).
+- **Meldung an die Aufsichtsbehörde** (Sächsische Datenschutz- und Transparenzbeauftragte) innerhalb von 72 Stunden und **Information der Betroffenen:** Geschäftsführung.
 
 Technischer Hintergrund für die Technik: Die Zugriffsregeln liegen als
 Row-Level-Security in `supabase/migrations`, die Tests in
 `supabase/tests/database` laufen bei jedem Pull Request (`rls-tests`).
 
 ---
+
+## 7. Variablen, Redirect-URLs, Storage und Restore-Probe
+
+Dieser Abschnitt ergänzt das, was für den Betrieb außerhalb eines Fehlers gebraucht wird. Werte von Variablen, Schlüsseln und Projekt-Referenzen stehen hier nicht. Das Zurückrollen eines Deployments (Instant Rollback) steht in Abschnitt 2, die Sicherung in Abschnitt 5.
+
+### Variablen und Schalter
+
+Die App liest die folgenden Variablen. Sie werden in Vercel gesetzt (Projekt, Settings, Environment Variables, getrennt für Production, Preview und Development) und lokal in `.env.local`, die nie committet wird. Eine Änderung in Vercel wirkt erst nach einem neuen Deployment.
+
+| Name | Bedeutung | Wo gesetzt | Umgebung |
+|---|---|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Adresse und öffentlicher Schlüssel des Supabase-Projekts; ohne sie startet die App nicht, auch `/login` nicht (`.env.example`). Wegen des Präfixes im Browser sichtbar. | Vercel, lokal `.env.local` | Production zeigt auf das Projekt in Frankfurt; Preview (auch `demo`) und Development auf Staging in Irland (`umgebungen.md`) |
+| `NEXT_PUBLIC_SITE_URL` | Basis-Adresse für den Magic-Link-Redirect in Production; ohne Wert gilt die Production-Domain (`src/app/login/actions.ts`) | Vercel (Production), lokal `.env.local` | Production, lokal |
+| `VERCEL_ENV`, `VERCEL_BRANCH_URL` | Systemvariablen von Vercel: Umgebung und Adresse der Vorschau-Version; nicht selbst setzen (`decisions.md`, Eintrag 2026-09-21) | Vercel, automatisch | alle |
+| `FACHSPRACHE_EINHEIT`, `PRAXISAUFGABE_LINK` | Funktionsschalter: nur der Wert `an` schaltet ein, ohne Variable ist die Funktion aus (`src/lib/schalter.ts`, `fachsprache.md`) | Vercel | je Umgebung ein eigener Wert |
+| `NATIVE_SELBSTLERNEN` | Schalter mit umgekehrtem Standard: ohne Variable ist die native Selbstlern-Ansicht an, nur der Wert `aus` schaltet sie ab (Notbremse) | Vercel | je Umgebung ein eigener Wert |
+| `SUPABASE_SERVICE_ROLE_KEY` | nur für `scripts/invite-learner.mjs`, nie im App-Code; für Production liest das Skript den Schlüssel nur aus dem Schlüsselbund (`.env.example`) | lokal `.env.local` | lokal |
+| `PGPASSWORD`, `PSQL` | für die Skripte: Datenbank-Passwort (sonst ein Schlüsselbund-Eintrag je Ziel) und Pfad zu `psql` (`import-plan.md`, `lernende-anlegen.md`) | eigene Shell | lokal |
+
+### Redirect-URLs
+
+Der Magic-Link führt zu `<Basis>/auth/callback`. Die Basis bestimmt `src/app/login/actions.ts`: In Production `NEXT_PUBLIC_SITE_URL` (sonst die Production-Domain), in Vorschau-Versionen `https://<VERCEL_BRANCH_URL>`, sonst `http://localhost:3000`. Supabase leitet nur auf Adressen aus der Liste unter Authentication, URL Configuration weiter; die Liste steht im Dashboard und nicht im Repository, und jedes Projekt hat seine eigene. Als Muster gilt: Das Production-Projekt erlaubt nur `https://<production-domain>/**`, das Staging-Projekt zusätzlich `http://localhost:3000/**` und das Muster der Vorschau-Adressen `https://*-<vercel-team>.vercel.app/**`. Das Muster stammt aus der Projektdoku und ist im Dashboard nicht geprüft. Landet ein Link auf der falschen Adresse, fehlt vermutlich der passende Eintrag in dieser Liste.
+
+### Stolpersteine
+
+- **Sensitive-Variablen in Vercel.** Eine als „Sensitive“ gespeicherte Variable lässt sich danach nicht mehr anzeigen, nur ersetzen (Verhalten des Anbieters, im Repository nicht geprüft). Wer einen Wert braucht, setzt ihn neu und deployt neu.
+- **Magic-Link im selben Browser.** Der Rückkehrpunkt tauscht einen Code gegen die Sitzung (`exchangeCodeForSession` in `src/app/auth/callback/route.ts`); bei Misserfolg leitet er auf `/login?error=login-fehlgeschlagen`. Dieses Verfahren (PKCE) braucht vermutlich denselben Browser, in dem der Link angefordert wurde; ein Link, der in einem anderen Browser oder einer Mail-App geöffnet wird, schlägt dann fehl (im Browser nicht geprüft).
+- **Einladungslinks von Supabase funktionieren nicht.** Der Rückkehrpunkt liest nur den Parameter `code`; ein Einladungslink trägt sein Token vermutlich hinter einem `#`, den der Server nicht sieht (abgeleitet aus dem Code). Konten werden deshalb im Dashboard mit „Create new user“ und „Auto Confirm“ angelegt, ohne Einladung (`lernende-anlegen.md`), und auch `scripts/invite-learner.mjs` wird nicht benutzt.
+- **Schlüssel nie auf der Befehlszeile.** Passwörter und Schlüssel werden nie als Argument eines Befehls übergeben, weil sie sonst im Verlauf der Shell und in der Prozessliste stehen. Die Skripte lesen sie aus der Umgebung der eigenen Shell oder aus dem Schlüsselbund und geben sie nie aus (`import-plan.md`, `lernende-anlegen.md`).
+
+### Storage
+
+Buckets entstehen nur über Migrationen. Die Angaben stammen aus den Migrationen und den genannten Dokumenten.
+
+| Bucket | Zugriff | Grenze je Datei | Formate | Pfad und Dateiname |
+|---|---|---|---|---|
+| `scorm-packages` | privat | keine am Bucket, nur die Upload-Grenze des Projekts (Dashboard, Storage, Settings; `scorm-einspielen.md`) | Zip und ausgepackte Medien | ausgepackt unter `<storage_pfad>.entpackt/`; eine neue Paketversion bekommt einen neuen Dateinamen, überschrieben wird nie (`scorm-einspielen.md`, `decisions.md`) |
+| `lesson-resources` | privat | 50 MB | PDF, PNG, JPEG, WebP, DOCX, PPTX, XLSX | nur Kleinbuchstaben a bis z, Ziffern und Bindestriche, eine Endung, keine Umlaute, keine Leerzeichen, keine Ordner (`lernmaterialien-upload.md`) |
+| `fachsprache-bilder` | privat | 2 MB | PNG, JPEG, WebP (kein SVG) | `<lesson_id>/<dateiname>`, Dateiname aus Buchstaben, Ziffern, Punkt, Unterstrich und Bindestrich, höchstens 100 Zeichen, mit Endung (`0051`, `fachsprache.md`) |
+| `profilfotos` | privat | 1 MB | nur JPEG | Ordner `<person_id>/` (`loeschweg.md`) |
+| `org-logos` | öffentlich | 512000 Byte | PNG, WebP, JPEG | direkt im Wurzelverzeichnis, Dateiname eine neue UUID in Kleinbuchstaben mit Endung, keine Ordner (`organisations-logo.md`) |
+
+Storage ist nicht im Backup: Die Sicherung enthält nur die Einträge in der Datenbank, nicht die Dateien (Abschnitt 5). Eine gelöschte Datei kommt durch eine Wiederherstellung nicht zurück.
+
+### Restore-Probe
+
+Eine Restore-Probe am 07.10.2026 mit dem Backup vom selben Tag hat den Rückweg erprobt. Belegt ist:
+
+- **Dauer:** Start und Ende lagen in derselben Minute. Bei der kleinen Testdatenmenge sagt das nichts über die Dauer mit echten Daten; sie ist nicht belegt (Vermutung).
+- **Danach intakt:** Der vor dem Restore gesetzte Marker war weg, die Datenbank stand also auf dem Stand der Sicherung. Die Testzeilen, der Magic-Link-Login, eine SCORM-Lektion und die Dateien im Storage waren vorhanden, und das globale Upload-Limit stand weiter bei 200 MB.
+- **Nach jedem Restore zu prüfen:** Konten und Daten, die nach dem Backup entstanden sind, fehlen und müssen neu angelegt werden (in der Probe betraf das ein Testkonto). Das Passwort der Datenbankverbindung, mit der das Terminal arbeitet, ist nicht Teil der Sicherung: Zuerst kam „password authentication failed“, nach Aktualisierung des Zugangs ging die Verbindung wieder. Alle Sitzungen sind danach ungültig, alle müssen sich neu anmelden.
+- **Während des Restore:** Das Projekt ist nicht erreichbar, und alles seit dem Backup wird überschrieben. Ein Restore läuft nur nach Absprache (Abschnitt 5, wer entscheidet).
+
+Ablauf für eine weitere Probe oder einen echten Restore:
+
+- **Vorher:** Festlegen, wer entscheidet und wer im Dashboard auslöst (Abschnitt 5). Im Dashboard unter Database, Backups die Sicherung der letzten Nacht ansehen. Zählstände festhalten, nur Zahlen und keine Inhalte, zum Beispiel Zeilen in `person`, `enrolment`, `attendance` und `unit_progress` sowie die Zahl der Dateien je Bucket. Das Team informieren: Alles seit der Sicherung geht verloren, und das Projekt ist während der Wiederherstellung nicht erreichbar.
+- **Danach prüfen:** Anmelden per Magic Link mit einem Testkonto und den Smoke-Test aus `release.md` durchgehen. Die Zählstände mit den festgehaltenen vergleichen; Unterschiede müssen sich aus den Änderungen seit der Sicherung erklären lassen. Den Migrationsstand mit `migration list` ansehen: Eine Migration, die erst nach der Sicherung eingespielt wurde, fehlt nach der Wiederherstellung und müsste neu eingespielt werden. Prüfen, dass Seiten mit Dateien (Lernmaterialien, Fachsprache-Bilder, Profilfotos) noch laden.
+- **Nicht im Backup:** die Dateien im Storage (Tabelle oben). Die Einstellungen des Projekts (Auth, SMTP, Redirect-URLs) und die Variablen in Vercel sind keine Datenbankinhalte; ob sie eine Wiederherstellung unverändert überstehen, ist nicht belegt (Vermutung).
 
 ## Anhang für die Technik: lesend auf die Datenbank zugreifen
 

@@ -9,7 +9,7 @@
 // - Typ-Regel SR-71: theoretische Teilschritte nur an Lektionen (über den
 //   Theorietag), praktische nur an Aufträge (Field-Job-Typen). Alles andere
 //   wird gemeldet und nicht importiert.
-// - Eine Trainer:in je Termin: bei "Simon, Tom" die erste.
+// - Eine Trainer:in je Termin: bei "Trainer:in A, Trainer:in C" die erste.
 // - Zeilen ohne Datum werden übersprungen und gemeldet; Spalte "Offen",
 //   SCORM, PDFs und Zoom-Links werden nicht gelesen.
 // - Aufträge eines Praxisblocks ohne Tagesbindung werden der Reihe nach auf
@@ -392,7 +392,7 @@ export function erstellePlan(tabs, optionen = {}) {
   const trainer = trainerTab
     .filter((z) => trainerBenutzt.has(z["Kennung"]))
     .map((z) => ({ kennung: z["Kennung"], anzeigename: z["Anzeigename"] }));
-  // Alle Trainer:innen aus dem Tab (auch ohne eigenen Termin, z. B. die zweite bei "Simon, Tom") für --nur-trainer
+  // Alle Trainer:innen aus dem Tab (auch ohne eigenen Termin, z. B. die zweite bei "Trainer:in A, Trainer:in C") für --nur-trainer
   const trainerAlle = trainerTab.map((z) => ({ kennung: z["Kennung"], anzeigename: z["Anzeigename"] }));
 
   return {

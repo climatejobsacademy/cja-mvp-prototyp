@@ -45,18 +45,18 @@ Es gibt zwei Varianten. Welche gilt, erkennt das Skript an der Kopfzeile.
 
 ```csv
 Kohorte,Modul,Link
-Energiehelden 28.09.26,II,https://teams.microsoft.com/l/meetup-join/...
+<Kohorte>,II,https://teams.microsoft.com/l/meetup-join/...
 ```
 
 - `Modul`: `I`, `II`, `III`, `IV`, `V` oder `Abschluss` (auch `Modul II`, `2` oder `M02`).
 - Zum Modul gehört ein Termin, wenn sein Kurs in einer Woche dieses Moduls liegt.
-- **Begleitkurse** (Deutsch/Fachdeutsch, Softskills Coaching) hängen an keinem Modul. Sie bekommen den Link nur mit `--mit-begleitkursen`, und zwar alle Begleitkurs-Termine der Kohorte zwischen dem ersten und letzten Termin des Moduls. Ohne den Schalter nennt der Lauf, wie viele ausgelassen wurden. **Entscheidung Anna 2026-10-18: Begleitkurse bekommen keinen Teams-Link**, also `--mit-begleitkursen` nicht verwenden.
+- **Begleitkurse** (Deutsch/Fachdeutsch, Softskills Coaching) hängen an keinem Modul. Sie bekommen den Link nur mit `--mit-begleitkursen`, und zwar alle Begleitkurs-Termine der Kohorte zwischen dem ersten und letzten Termin des Moduls. Ohne den Schalter nennt der Lauf, wie viele ausgelassen wurden. **Entscheidung Geschäftsführung 2026-10-18: Begleitkurse bekommen keinen Teams-Link**, also `--mit-begleitkursen` nicht verwenden.
 
 **Je Termin** (ein Link für einen einzelnen Termin):
 
 ```csv
 Kohorte,Datum,Start,Link
-Energiehelden 28.09.26,02.11.2026,08:00,https://teams.microsoft.com/l/meetup-join/...
+<Kohorte>,02.11.2026,08:00,https://teams.microsoft.com/l/meetup-join/...
 ```
 
 - `Datum`: `TT.MM.JJJJ` oder `JJJJ-MM-TT`. `Start`: Beginn wie im Stundenplan, `HH:MM`, Berliner Zeit.
@@ -87,6 +87,10 @@ Für beide gilt:
 - **Je Zeile:** Kohorte und Modul bzw. Datum und Start, die Domain des Links, die Anzahl der betroffenen Live-Termine und davon **neu** (bisher kein Link), **geändert** (anderer Link) und **unverändert**. Der Link selbst wird nie ausgegeben.
 - **Meldungen:** ausgelassene Begleitkurs-Termine; Termine, die auch zu einer anderen Kohorte gehören (dort gilt der Link dann mit).
 - **Zweiter Durchgang:** Das Skript läuft in derselben Transaktion ein zweites Mal. Ändert es dabei etwas, bricht es ab, und es wird nichts gespeichert. Ein zweiter echter Lauf mit derselben Datei meldet überall „unverändert“.
+
+## Klicktest nach dem Einspielen
+
+Nach dem echten Lauf prüft eine Person mit einem Lernenden-Testkonto der Kohorte, dass der Link im richtigen Meeting landet; der Lauf selbst gibt den Link nie aus. Auf Home trägt die Karte des Live-Termins den Knopf „Zum Live-Unterricht“, bei laufendem Termin „Jetzt beitreten“; ist ein Link hinterlegt, ist das Ziel extern (`src/app/(learner)/home/tages-karten.tsx`). Im Stundenplan führt der Termin ab 15 Minuten vor Beginn bis zum Ende direkt in den Live-Raum, davor in die Lektion (`src/app/(learner)/schedule/plan-modell.ts`). In der Lektion steht „Beitreten“ bis zum Ende des Termins, sofern ein Link da ist (`src/app/(learner)/content/[lessonId]/termin-karte.tsx`).
 
 ## Was das Skript nicht tut
 

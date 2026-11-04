@@ -1,0 +1,51 @@
+# Arbeitsweise mit Claude
+
+Das Team baut die Plattform ohne eigene Entwickler:innen mit Claude Code. Dieses Dokument soll jede Person und jede neue Sitzung ohne Rückfragen einsteigen lassen. Die Regeln für den Code stehen in `CLAUDE.md`, wo welche Information liegt, in `README.md`, welche Umgebung wofür da ist, in `umgebungen.md`. Was das Team gemeinsam als Stand braucht, steht im Repository, weil jede Sitzung jeder Person darauf zugreift; eine Sitzung führt keine eigenen Status- oder Übergabedokumente, auch nicht in einem Chat-Projekt.
+
+## Eine Sitzung, mehrere Werkzeuge
+
+Gearbeitet wird in einer Claude-Code-Sitzung (Terminal, Desktop-App oder IDE) in einer lokalen Kopie dieses Repositorys. Die Sitzung liest Kontext, plant, ändert Code und Dokumente, führt Tests aus und committet. Je nach Einrichtung der Person hat sie zusätzlich Zugriff auf GitHub (`gh`), auf Notion (SR-Datenbank, Produkt-Handbuch) und auf Asana (Aufgaben und Status). Mehrere Personen können parallel mit eigenen Sitzungen arbeiten; jede arbeitet auf ihrem eigenen Feature-Branch, und Merges nach `dev` laufen nacheinander (siehe unten).
+
+Was für Asana gilt: Die Sitzung liest Karten und darf auf Auftrag Kommentare schreiben oder Karten anlegen. Priorisieren und das Verschieben in „Ready for Build“ (Produkt-Backlog) oder „Bereit“ (Entwicklungs-Board) entscheidet die Produkt-Lead. Karten verschiebt, benennt oder schließt die Sitzung nur nach ausdrücklicher Freigabe der Person, mit der sie arbeitet. In Asana, Notion und GitHub gelten dieselben Datenschutzregeln wie im Repository (Abschnitt „Git- und Freigaberegeln“).
+
+## Ablauf pro Aufgabe
+
+Eine Aufgabe beginnt mit einer Beschreibung durch die Person, am besten mit Verweis auf die Asana-Karte und, wenn vorhanden, die SR-Nummer. Die Sitzung liest zuerst (Repository, SR aus Notion, Karte aus Asana) und zeigt einen kurzen Plan: Branch, Dateien, die sie anfasst und die sie nicht anfasst, Tabellen, Policies und Ansichten (`CLAUDE.md`, „Way of working“). Erst nach dem Go der Person baut sie. Für Arbeit, die nur gelesen und bewertet werden soll, sagt die Person das ausdrücklich, dann wird nichts geändert, committet oder gepusht. Berichte trennen Belegtes (aus Code, Konfiguration, Datenbank oder Git-Verlauf gelesen) von Vermutungen. Mehrere Themen laufen nacheinander und nicht gleichzeitig, weil sich sonst Änderungen in denselben Dateien überschneiden. Fehlt für eine Funktion die SR-Nummer, wird sie zuerst in der Notion-SR-Datenbank angelegt; im Repo heißt es bis dahin „SR folgt“.
+
+## Weg einer Änderung
+
+1. **Karte und SR.** Die Karte steht im Asana-Produkt-Backlog; ändert sie das Verhalten der Plattform, gibt es eine SR in Notion. Ab „Ready for Build“ hängt die Karte auch im Entwicklungs-Board.
+2. **Feature-Branch** von einem frisch geholten `dev`, ein Thema je Branch.
+3. **Bauen** gegen den Acceptance Check der SR; Schemaänderungen nur über `supabase/migrations` (`CLAUDE.md`, Regel 4), eingespielt zuerst auf Staging (`umgebungen.md`, `release.md`).
+4. **`/pr-check`** vor der Pull Request (Anleitung unten).
+5. **Pull Request nach `dev`**, Review nach den Regeln unten, grüne CI.
+6. **Prüfung auf der Preview.** Jede Pull Request bekommt eine Vercel-Preview. Auf ihr wird das geänderte Verhalten einmal durchgeklickt, mit einem Testkonto und nie mit Konten von Lernenden. Gegen welche Datenbank die Preview läuft, steht in `umgebungen.md`.
+7. **Release** als Pull Request von `dev` nach `main`, mit Migrationen auf Production vor dem Merge (`release.md`).
+8. **Abschluss** in Asana: Entwicklungsaufgabe und Produkt-Karte werden nach dem Release geschlossen, von der Person oder auf ihre Freigabe.
+
+Eine SR ist nur für neues oder geändertes Verhalten nötig: Bugfixes stellen bestehendes Verhalten wieder her, und Refactorings, Betriebsthemen und reine Doku brauchen keine; ein Bugfix nennt die bestehende SR, deren Verhalten er wiederherstellt. SRs werden ausschließlich in der Notion-Datenbank „System Requirements“ angelegt und geändert, Notion vergibt die Nummer. Die Sitzung liest sie von dort. Sie legt SRs in Notion nur nach ausdrücklicher Freigabe der Person an, mit der sie arbeitet, und ändert sie dort nur so; im Repository entsteht oder ändert sich nie eine SR, und `requirements.md` wird nie von Hand geändert, denn die Datei ist ein Auszug aus Notion. Bei einer Aufgabe mit SR-Bezug liest die Sitzung die SR aus Notion und gleicht vor dem Bauen, vor einer PR, die sie referenziert, und vor jedem Release den Auszug gegen Notion ab; bei Abweichung erzeugt sie ihn neu. Sie baut gegen den Acceptance Check und nennt die SR in den Tests und im PR-Titel. Ändert sich der Acceptance Check beim Bauen, wird zuerst Notion angepasst und danach der Auszug neu erzeugt. Wo was gepflegt wird, steht auf der Notion-Seite „Quellen und Arbeitsteilung: was wo lebt“.
+
+## Git- und Freigaberegeln
+
+Gearbeitet wird auf einem Feature-Branch; der Pull Request geht nach `dev`, ein Release-Pull-Request von `dev` nach `main`. Ein Pull Request betrifft eine SR oder eine zusammengehörige Änderung. Vor jeder Pull Request läuft `/pr-check` (`definition-of-done.md`). Eine Zweitfreigabe durch eine zweite Person ist weder für Pull Requests nach `dev` noch für Releases nach `main` Pflicht, solange niemand im Team inhaltlich als Entwickler:in prüfen kann und auf Production nur die Pilotkohorte und Testkonten sind (`decisions.md`, beide Einträge vom 2026-11-04); die Person, mit der die Sitzung arbeitet, liest den Diff selbst und klickt das Verhalten auf der Preview durch. Den Ablauf eines Releases regelt `release.md`. Technisch verlangt `main` ein Approval und die Pflicht-Checks `lint-and-types` und `rls-tests`; Admins können beides umgehen, gemergt wird trotzdem nur mit grüner CI. Auf `dev` gibt es keinen Schutz. Die Sitzung pusht, mergt und schreibt auf Production nur nach ausdrücklicher Freigabe der Person, mit der sie arbeitet. Echte Schreibzugriffe auf eine Datenbank und Migrationen laufen immer zuerst als Probelauf, und der echte Lauf braucht eine von Hand getippte Freigabe; jede Aktion nennt das Ziel mit `--project-ref`. Der genaue Weg nach Production steht in `release.md`.
+
+Vor jeder PR lässt die Sitzung mit `/pr-check` den Diff des Branches gegen den zuletzt geholten Stand von `origin/dev` von einem nur lesenden Agenten prüfen (Agent in `.claude/agents/code-reviewer.md`, Befehl in `.claude/commands/pr-check.md`; Anleitung unten). Der Agent fängt Regelverstöße früh ab; er prüft keine Inhalte, kein Verhalten im Browser und gibt nie frei. Die Regeln selbst stehen nur in `CLAUDE.md` und `docs/`; seine Checkliste verweist darauf, statt sie zu wiederholen.
+
+Vor jedem Push und jedem Merge wird geprüft, ob sich `dev` seit dem Start des Branches bewegt hat. Liegt eine `.git/*.lock`-Datei im Weg, wird sie im eigenen Terminal entfernt, danach läuft der Befehl erneut. Dateien werden namentlich gestaged, nie mit `git add .` oder `git add -A`, damit lokale Dateien ohne Bezug zum Auftrag nicht im Commit landen. Das Production-Passwort wird nur nach einer getippten Freigabe benutzt und kommt dann aus dem eigenen Schlüsselbund. Merges nach `dev` laufen nacheinander: Vor dem Merge wird `dev` in den eigenen Branch geholt, und der Merge wartet auf eine grüne CI für genau diesen Stand. Bei Konflikten in `decisions.md` und `traceability.md` bleiben beide Einträge erhalten, der von `dev` steht zuerst. GitHub-Abfragen laufen nicht in Schleifen, weil das Rate Limit sonst die Arbeit blockiert. Mehrere Fälle fragt man mit einer Abfrage oder einem Filter ab.
+
+Namen, E-Mail-Adressen, Schlüssel und Passwörter gehören weder in Chats noch in Ausgaben der Sitzung, Commits, Pull-Request-Texte oder Asana-Karten. Passwörter stehen nur im Team-Passwort-Manager. Importdaten (Excel-Dateien, Lernendenlisten, Link-Listen) liegen außerhalb des Repositorys und kommen nie hinein.
+
+### So benutzt du /pr-check
+
+1. Hole auf dem Feature-Branch mit `git fetch` den Stand von `origin/dev`, führe ihn in den Branch ein (damit auch die Dateien unter `.claude/` im Branch liegen) und committe alle Änderungen: Der Befehl liest nur den committeten Diff gegen `origin/dev`, Nicht-Committetes erscheint nur als Statuszeile. Starte danach eine neue Claude-Code-Sitzung auf dem Branch, denn Agent- und Befehlsdateien werden nur beim Start geladen.
+2. Gib `/pr-check` ein, mit PR-Nummer (`/pr-check 123`), wenn der PR-Text mitgeprüft werden soll.
+3. Lies den Bericht: Befunde nach Schwere (Blocker, Hoch, Hinweis), jeweils mit `Datei:Zeile` und der Regel samt Quelldatei, darunter „Nicht geprüft“. „Keine Verstöße gefunden“ heißt nicht „in Ordnung“.
+4. Ordne die Befunde ein und behebe sie oder begründe, warum nicht, und öffne dann die PR. Den Diff liest und die Preview prüft weiterhin ein Mensch (Abschnitt oben).
+
+Der Agent prüft gegen die Regeln aus `CLAUDE.md` und `docs/`, nicht den Datenbankstand, die CI, das Verhalten im Browser und nicht den Abgleich von `requirements.md` mit Notion. Große Diffs werden bei etwa 200 KB gekürzt (Lockfiles sind ausgenommen); der Bericht meldet dann „Diff gekürzt“. Der Agent hat keine Schreib- und keine Shell-Werkzeuge und kann nichts schreiben, pushen oder freigeben.
+
+## Dokumentation
+
+Aufgaben, Status, Prioritäten und Termine leben nur in Asana. Technischer Stand, Abläufe und technische Entscheidungen stehen nur im Repository unter `docs/`; Entscheidungen kommen mit Datum unten an `decisions.md`. In Notion stehen die SR-Datenbank, das Produkt-Handbuch, die Datenschutz-Dokumentation und alles mit Personenbezug, und Notion verweist für Abläufe auf das Repository, statt sie zu wiederholen. Skizzen in Miro tragen keinen Status. Dokumente im Claude-Projekt sind keine Quelle: Was dort noch gilt, wird ins Repository übernommen, der Rest wird als veraltet gekennzeichnet.
+
+Ein Dokument in `docs/` enthält keinen Fortschritt („erledigt“, „offen“, „in Arbeit“) und keine Kalenderdaten für geplante Arbeit. Was ein Mensch noch tun muss, wird zu einer Aufgabe in Asana. Zeigt ein Dokument auf Aufgaben, nennt es höchstens den Titel der Karte und keinen Zustand.

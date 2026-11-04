@@ -218,7 +218,7 @@ if (!nurTrainer && !nurFachsprache && arg.ziel === "production" && plan.analyse.
 
 // ---------- Trainer-Datei (Kennung, E-Mail[, Anzeigename]) ----------
 // Optionale dritte Spalte Anzeigename: ersetzt den Namen aus der Excel beim
-// ersten Anlegen der Person (z. B. TR-02 "Simon & Tom" in der Excel -> Simon,
+// ersten Anlegen der Person (z. B. TR-02 "Trainer:in A & Trainer:in C" in der Excel -> Trainer:in A,
 // Entscheidung 2026-10-14: ein Trainer je Termin).
 plan.trainerKonten = [];
 if (arg["trainer-datei"]) {

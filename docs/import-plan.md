@@ -19,14 +19,14 @@ node scripts/import-plan.mjs --datei "$DATEI" --nur-analyse
 # Probelauf Staging (ROLLBACK), beide Kohorten, DEMO Rim um zwei Wochen verschoben (seit 15.10. +14, belegt auf Staging)
 node scripts/import-plan.mjs --datei "$DATEI" --ziel staging \
   --trainer-datei "$DIR/trainer-staging.csv" \
-  --kohorte "Energiehelden 28.09.26" --kohorte "DEMO Rim@+14"
+  --kohorte "<Kohorte>" --kohorte "DEMO Rim@+14"
 
 # Echter Lauf Staging: gleicher Aufruf mit --ausfuehren
 
-# Production: nur mit --production-freigabe, mit Praxis Modul II (Entscheidung Anna 18.10.);
+# Production: nur mit --production-freigabe, mit Praxis Modul II (Entscheidung Geschäftsführung 18.10.);
 # der echte Lauf fragt zusätzlich die Projekt-Ref ab
 node scripts/import-plan.mjs --datei "$DATEI" --ziel production --production-freigabe \
-  --trainer-datei "$DIR/trainer-production.csv" --kohorte "Energiehelden 28.09.26" [--ausfuehren]
+  --trainer-datei "$DIR/trainer-production.csv" --kohorte "<Kohorte>" [--ausfuehren]
 ```
 
 ## Voraussetzungen
@@ -40,8 +40,8 @@ node scripts/import-plan.mjs --datei "$DATEI" --ziel production --production-fre
 
 - Migrationen 0025–0030 (und 0031 für die Kann-Sätze) sind auf Production angewendet.
 - **Die Teilschritte ohne jede Zuordnung sind in der Excel korrigiert** (Stand 13.10.: 9, Liste mit `--nur-analyse`). Solange es welche gibt, bricht das Skript gegen Production ab. Abschalten nur bewusst mit `--ohne-zuordnung-erlauben`.
-- Die Tagesplanung des Praxisblocks Modul II steht in der Excel (seit 16.10.). Production läuft deshalb **mit** Praxis Modul II. Meldet der Probelauf trotzdem „VORLÄUFIG“ (Aufträge ohne Tagesbindung), vor dem echten Lauf mit Malte klären.
-- Die Kohorte und ihr Betrieb gibt es schon (nur lesend geprüft am 18.10.): „Energiehelden 28.09.26“ mit 20 Stundenplan-Einträgen, alle am Betrieb Energiehelden. Der Import legt keine Kohorte an. Er nimmt den Betrieb aus den vorhandenen Stundenplan-Einträgen, sonst aus den Einschreibungen; ist er nicht eindeutig, bricht er ab. Lernende müssen für den ersten Import also noch nicht angelegt sein.
+- Die Tagesplanung des Praxisblocks Modul II steht in der Excel (seit 16.10.). Production läuft deshalb **mit** Praxis Modul II. Meldet der Probelauf trotzdem „VORLÄUFIG“ (Aufträge ohne Tagesbindung), vor dem echten Lauf mit der Fachlichen Leitung Praxis klären.
+- Die Kohorte und ihr Betrieb gibt es schon (nur lesend geprüft am 18.10.): die Pilot-Kohorte mit 20 Stundenplan-Einträgen, alle am Betrieb des Partners. Der Import legt keine Kohorte an. Er nimmt den Betrieb aus den vorhandenen Stundenplan-Einträgen, sonst aus den Einschreibungen; ist er nicht eindeutig, bricht er ab. Lernende müssen für den ersten Import also noch nicht angelegt sein.
 - Trainer-Konten sind im Dashboard angelegt, `trainer-production.csv` ist gepflegt.
 
 ## Trainer-Konten
@@ -49,11 +49,13 @@ node scripts/import-plan.mjs --datei "$DATEI" --ziel production --production-fre
 Das Skript legt **keine Auth-Konten** an und schreibt nie in `auth.users`.
 
 1. Konto im Supabase-Dashboard anlegen (Authentication → Users → Add user, echte E-Mail, ohne Einladung).
-2. Zuordnungsdatei als reine CSV (nicht RTF, in TextEdit „Format → In reinen Text umwandeln“) mit Kopf `Kennung,E-Mail`, optional `,Anzeigename`, z. B. `TR-02,name@example.org,Simon`. Jede Kennung nur einmal, sonst bricht das Skript ab. Die Kennung zählt so, wie sie im Tab Trainer steht (seit 14.10.: TR-03 = Anne). Für Staging `trainer-staging.csv` **nur mit Test-Adressen**, weil Staging echte Mails über Brevo verschickt. Für Production `trainer-production.csv`.
+2. Zuordnungsdatei als reine CSV (nicht RTF, in TextEdit „Format → In reinen Text umwandeln“) mit Kopf `Kennung,E-Mail`, optional `,Anzeigename`, z. B. `TR-02,name@example.org,Beispielname`. Jede Kennung nur einmal, sonst bricht das Skript ab. Die Kennung zählt so, wie sie im Tab Trainer steht (seit 14.10.: TR-03 = Trainer:in B). Für Staging `trainer-staging.csv` **nur mit Test-Adressen**, weil Staging echte Mails über Brevo verschickt. Für Production `trainer-production.csv`.
 3. Das Skript bricht ab, wenn bei `--ziel staging` eine Datei ohne „staging“ im Namen übergeben wird, oder bei `--ziel production` eine mit „staging“.
-4. **Nur die Konten verknüpfen** (ohne Import, z. B. direkt nach dem Anlegen im Dashboard): `--nur-trainer` verknüpft alle Trainer:innen aus dem Tab Trainer (auch die zweite bei „Simon, Tom“), sonst nichts. Probelauf als Standard, speichern mit `--ausfuehren`:
+4. **Nur die Konten verknüpfen** (ohne Import, z. B. direkt nach dem Anlegen im Dashboard): `--nur-trainer` verknüpft alle Trainer:innen aus dem Tab Trainer (auch die zweite bei „Trainer:in A, Trainer:in C“), sonst nichts. Probelauf als Standard, speichern mit `--ausfuehren`:
    `node scripts/import-plan.mjs --datei "$DATEI" --ziel staging --trainer-datei "$DIR/trainer-staging.csv" --nur-trainer`
-5. Gefundenes Konto: Das Skript legt die `person` (Name = Anzeigename aus der Trainer-Datei, sonst aus der Excel; Benutzername `trainer-tr-xx`) mit Rolle `trainer` (AfCJ) an. Ein Team-Name wie „Simon & Tom“ wird nicht als Person angelegt: Es gilt eine Trainer:in je Termin, für TR-02 Simon (Entscheidung 14.10.); die betroffenen Termine stehen in der Ausgabe unter `trainer-team`. Ist der Benutzername schon vergeben, meldet das Skript es und verknüpft nicht. Name, Rufname und Foto lassen sich danach händisch ändern, das Skript überschreibt sie nicht. Fehlt ein Konto oder eine Zeile in der Datei, werden die Termine ohne Trainer:in angelegt und gemeldet. Ein späterer Lauf trägt die Trainer:in nach, solange am Termin keine steht. Gehört das Konto einer lernenden Person, verknüpft das Skript es nicht.
+5. Gefundenes Konto: Das Skript legt die `person` (Name = Anzeigename aus der Trainer-Datei, sonst aus der Excel; Benutzername `trainer-tr-xx`) mit Rolle `trainer` (AfCJ) an. Ein Team-Name wie „Trainer:in A & Trainer:in C“ wird nicht als Person angelegt: Es gilt eine Trainer:in je Termin, für TR-02 Trainer:in A (Entscheidung 14.10.); die betroffenen Termine stehen in der Ausgabe unter `trainer-team`. Ist der Benutzername schon vergeben, meldet das Skript es und verknüpft nicht. Name, Rufname und Foto lassen sich danach händisch ändern, das Skript überschreibt sie nicht. Fehlt ein Konto oder eine Zeile in der Datei, werden die Termine ohne Trainer:in angelegt und gemeldet. Ein späterer Lauf trägt die Trainer:in nach, solange am Termin keine steht. Gehört das Konto einer lernenden Person, verknüpft das Skript es nicht.
+6. **Freigaben im Skript.** Ohne `--ausfuehren` läuft immer ein Probelauf, der am Ende zurückgerollt wird. Mit `--ausfuehren` speichert das Skript auf Staging ohne weitere Abfrage. Gegen Production verlangt es `--production-freigabe` schon für den Probelauf; mit `--ausfuehren` fragt es zusätzlich nach der Projekt-Referenz und bricht ab, wenn die Eingabe nicht stimmt (`scripts/import-plan.mjs`, Abschnitt „Ziel und Freigaben“). Eine Abfrage „Tippe ja“ gibt es in diesem Skript nicht, sie gehört zu `lernende-anlegen.mjs`.
+7. **Login prüfen.** Nach dem echten Lauf meldet sich die Trainer:in per Magic Link an. Der Link führt über `/home` (`src/app/auth/callback/route.ts`), und eine Person mit Rolle `trainer` ohne aktive Einschreibung landet dort auf `/trainer` (`src/lib/queries/session.ts`). Die Tagesansicht zeigt die Live-Termine und Praxistage der eigenen Kohorten für den gewählten Tag (`src/app/(trainer)/trainer/page.tsx`). Fehlen die Termine, liegt es vermutlich an der Zuordnung in der Trainer-Datei oder daran, dass der Plan-Import noch nicht gelaufen ist.
 
 ## Parameter
 
@@ -95,7 +97,7 @@ Das Skript legt **keine Auth-Konten** an und schreibt nie in `auth.users`.
 | Kompetenzen | `competency` (Name = Kurztitel, Kann-Satz in `kann_satz`, sobald Migration 0031 angewendet ist), `competency_programme`, `modul_competency` mit Kürzel = Kennung (M02-K03). Ein bisheriges Kürzel (M2.03) wird umgestellt, ohne Dublette |
 | Teilschritte | `competency_step` und `competency_competency_step` (Reihenfolge). Theoretisch: `content_competency_mapping` zu den Live-Lektionen der genannten Theorietage. Praktisch: `field_job_type_competency_mapping` zu den Aufträgen |
 | Aufträge | `field_job_type` mit `kategorie` = Auftragsnummer, Woche des ersten Termins |
-| Trainer | `person` mit Rolle `trainer` (AfCJ) am vorhandenen Auth-Konto (siehe „Trainer-Konten“). Eine Trainer:in je Termin, bei „Simon, Tom“ die erste |
+| Trainer | `person` mit Rolle `trainer` (AfCJ) am vorhandenen Auth-Konto (siehe „Trainer-Konten“). Eine Trainer:in je Termin, bei „Trainer:in A, Trainer:in C“ die erste |
 
 Nicht importiert werden: die Spalte „Offen“, SCORM, PDFs, Zoom-Links und Ort bei Live-Terminen (`live_session` hat kein Ortsfeld). Gelöscht wird nichts, außer Lektion-Zuordnungen eines Teilschritts, dessen Typ laut Excel auf „praktisch“ wechselt (und umgekehrt). Sonst würden sie gegen SR-71 verstoßen. Die Excel ist führend (Entscheidung 13.10.): In Modul I betrifft das 8 Lektion-Zuordnungen. Jede Löschung steht in den Meldungen.
 
@@ -120,7 +122,7 @@ Die Theorietage sind die Foliensätze der Wochen 1–2. Sie werden über `lesson
 
 ### Ort
 
-Praxistage bekommen den Ort aus der Spalte „Ort“ in `field_job.standort` (seit 14.10. für Modul I Woche 4–5 und Modul II: Plochingen). Live-Termine haben kein Ortsfeld; der Ort der Coaching-Termine steht deshalb in der Liste „nicht importiert“.
+Praxistage bekommen den Ort aus der Spalte „Ort“ in `field_job.standort` (seit 14.10. für Modul I Woche 4–5 und Modul II: der Praxisort des Partners). Live-Termine haben kein Ortsfeld; der Ort der Coaching-Termine steht deshalb in der Liste „nicht importiert“.
 
 ### Ausgabe „nicht importiert“ und „offen“
 
@@ -128,7 +130,7 @@ Die Ausgabe listet, was bewusst nicht in die Datenbank geht, mit Grund (u. a. Mo
 
 ### Praxisblock ohne Tagesbindung (Modul II, 16.–24.11.): vorläufig
 
-**Vorläufig, die Tagesplanung von Malte fehlt.** `field_job` hat genau ein Datum, und Home zeigt die offene Praxisaufgabe von heute („Zur Praxisaufgabe“). Als Platzhalter verteilt das Skript die Aufträge der Reihe nach auf die Blocktage: zwei pro Tag, am letzten Tag einer, ganztägig ohne Uhrzeit. Die Ausgabe kennzeichnet das als „VORLÄUFIG“. Seit dem 16.10. hat die Excel die Tagesplanung; der Platzhalter greift nur noch für Aufträge ohne Tagesbindung. Taucht „VORLÄUFIG“ im Production-Probelauf auf, vorher mit Malte klären. Achtung: Wurden Platzhalter-Praxistage schon gespeichert (Staging), legt ein Lauf mit neuer Verteilung die neuen Tage zusätzlich an (Schlüssel ist das Datum). Die alten Platzhalter dann vorher entfernen oder verschieben.
+**Vorläufig, die Tagesplanung der Fachlichen Leitung Praxis fehlt.** `field_job` hat genau ein Datum, und Home zeigt die offene Praxisaufgabe von heute („Zur Praxisaufgabe“). Als Platzhalter verteilt das Skript die Aufträge der Reihe nach auf die Blocktage: zwei pro Tag, am letzten Tag einer, ganztägig ohne Uhrzeit. Die Ausgabe kennzeichnet das als „VORLÄUFIG“. Seit dem 16.10. hat die Excel die Tagesplanung; der Platzhalter greift nur noch für Aufträge ohne Tagesbindung. Taucht „VORLÄUFIG“ im Production-Probelauf auf, vorher mit der Fachlichen Leitung Praxis klären. Achtung: Wurden Platzhalter-Praxistage schon gespeichert (Staging), legt ein Lauf mit neuer Verteilung die neuen Tage zusätzlich an (Schlüssel ist das Datum). Die alten Platzhalter dann vorher entfernen oder verschieben.
 
 ## Fachsprache-Einheiten
 

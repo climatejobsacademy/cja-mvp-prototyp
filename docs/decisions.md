@@ -38,13 +38,14 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 ### 2026-09-07 – Praxisphase als nachgelagerte Selbstauskunft
 - **Entscheidung:** Kein begleitetes Live-Erfassen; Lernende bestätigen nach dem Einsatz.
 - **Begründung:** Kein Kamera-Live-Zugriff und keine Offline-Fähigkeit nötig, PWA reicht.
-- **Status:** gültig (MVP-Gestaltung offen)
+- **Status:** gültig
 - **Belegt:** `data-model.md`, Open decisions
 
 ### 2026-09-09 – Stundenplan kohortenweit, Praxistage je Learner
 - **Entscheidung:** `schedule_entry` hängt an der Kohorte (`cohort_id`) oder, für Praxistage, am einzelnen Learner (`enrolment_id`).
 - **Begründung:** Live-Sessions und Deadlines sind für alle gleich, Praxiseinsätze nicht.
-- **Status:** gültig. Ergänzung 2026-09-15: Einträge mit `art = 'live'` immer mit `cohort_id`, sonst sind sie unsichtbar (PR #9).
+- **Folgen:** Einträge mit `art = 'live'` tragen immer `cohort_id`, sonst sind sie unsichtbar (Ergänzung 2026-09-15, PR #9).
+- **Status:** gültig
 - **Belegt:** `data-model.md` Group 3; `0005_delivery.sql`
 
 ### 2026-09-09 – Design-Fundament und Admin-Oberfläche zurückgestellt
@@ -116,19 +117,21 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 ### 2026-09-23 – Release-Prozess über `dev`
 - **Entscheidung:** Feature-PRs gehen nach `dev`, Releases als PR `dev` → `main`. `main` ist geschützt: 1 Freigabe, Pflicht-Check `lint-and-types`, gilt auch für Admins. Merge auf `main` deployt Production.
 - **Begründung:** Definition of Done: jeder PR wird von der zweiten Person reviewt (`definition-of-done.md`).
-- **Status:** gültig
+- **Status:** gültig für den Weg `dev` → `main`; die Teilaussage „gilt auch für Admins“ ist ersetzt durch 2026-11-03, die Begründung mit der Zweitfreigabe durch die beiden Einträge vom 2026-11-04 (keine Zweitfreigabe, auch nicht für Releases), die Pflicht-Checks durch 2026-11-04 (`rls-tests` dazu)
 - **Belegt:** erster Release-PR #40; Branch-Schutz per GitHub-API geprüft (30.09.); `.github/workflows/ci.yml`
 
 ### 2026-09-23 – Teilschritt ↔ Kompetenz ist N:M (SR-69)
 - **Entscheidung:** Junction-Tabelle `competency_competency_step`; `competency_step.competency_id` bleibt vorerst stehen und wird nicht mehr gelesen, Drop-Column folgt in einer eigenen Migration.
 - **Begründung:** Ein Teilschritt zahlt auf mehrere Kompetenzen ein.
-- **Status:** gültig (Drop-Column steht aus; bis dahin keine Kompetenzen löschen)
+- **Folgen:** Bis zur Drop-Column-Migration keine Kompetenzen löschen.
+- **Status:** gültig
 - **Belegt:** PR #43; Migration `0019`; `data-model.md` Group 2
 
 ### 2026-09-23 – Kompetenz ↔ Programm ist N:M (SR-70)
 - **Entscheidung:** Junction-Tabelle `competency_programme`; `competency.quelle` gilt nicht mehr als Programmzuordnung.
 - **Begründung:** Kompetenzen gehören zu mehreren Programmen.
-- **Status:** gültig (Drop-Column für `quelle` steht aus)
+- **Folgen:** `competency.quelle` bleibt vorerst als Spalte bestehen und wird nicht mehr als Programmzuordnung gelesen.
+- **Status:** gültig
 - **Belegt:** PR #45; Migration `0020`
 
 ### 2026-09-23 – Typ-Homogenität und AND-Logik auf Kompetenz-Ebene (SR-71, SR-72)
@@ -145,15 +148,16 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 
 ### 2026-09-28 – Vercel bleibt vorerst als Hosting
 - **Entscheidung:** Vercel bleibt für den Pilot, Function Region `fra1`, die Option „Improve models with this project's data“ ist deaktiviert. EU-Hosting wird zum MVP ab Januar 2027 geprüft.
-- **Begründung:** TODO Vera: klären (in der Vorgabe nicht genannt).
+- **Begründung:** Begründung nicht dokumentiert.
 - **Status:** gültig
 - **Belegt:** `fra1` über PR #39 / `vercel.json`. Die übrigen Punkte **aus Projektdoku übernommen** (Vercel-Einstellungen nicht einsehbar).
 
 ### 2026-09-28 – Resend wird durch Brevo ersetzt
 - **Entscheidung:** Der E-Mail-Versand (Magic Link, Einladungen) wechselt von Resend zu Brevo.
 - **Begründung:** E-Mail-Adressen und Magic-Link-Token sollen nicht in ein Drittland übertragen werden.
-- **Status:** gültig, umgesetzt am 30.09.2026. Der Versand ist nicht im Code eingebunden, sondern über die SMTP-Einstellungen von Supabase Auth: Host `smtp-relay.brevo.com`, Port 587, Absender `info@climatejobsacademy.com`. DNS-Einträge (DKIM, DMARC, Brevo-Code) sind gesetzt, der Testlogin auf learn.climatejobsacademy.com war erfolgreich. Resend-Domain, API-Keys und DNS-Einträge sind entfernt.
-- **Belegt:** **aus Projektdoku übernommen**; Umsetzung laut Angabe von Vera vom 30.09.2026 (Supabase-Dashboard, DNS und Brevo nicht im Repo einsehbar)
+- **Folgen:** Der Versand läuft nicht im Code, sondern über die SMTP-Einstellungen von Supabase Auth (Host `smtp-relay.brevo.com`, Port 587); DKIM, DMARC und Brevo-Code stehen in den DNS-Einträgen, die Resend-Einträge sind entfernt.
+- **Status:** gültig
+- **Belegt:** **aus Projektdoku übernommen**; Umsetzung laut Angabe der Produkt-Lead vom 30.09.2026 (Supabase-Dashboard, DNS und Brevo nicht im Repo einsehbar)
 
 ### 2026-09-28 – Off-White als App-Hintergrund
 - **Entscheidung:** `--background` wird Off-White `#F5F5F0`.
@@ -163,7 +167,7 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 ### 2026-09-29 – Redesign 2a ohne Schema-Änderungen
 - **Entscheidung:** Das Design-Handoff „Richtung 2a Minimal“ wird ohne Migration umgesetzt; Elemente ohne Datenfeld (Uhrzeit bei Praxistagen, Themen-Label, gesperrtes Modul mit Freischaltdatum) werden weggelassen. Hintergrund wieder Weiß, Off-White nur als Fläche.
 - **Begründung:** Vorgabe für die Demo am 30.09.: keine Schema-Änderungen, keine Migrationen.
-- **Status:** gültig. Schritt f (übrige Screens) folgt.
+- **Status:** gültig
 - **Belegt:** PR #55, #56; `design-specifications.md` Abschnitt 1
 
 ### 2026-09-29 – Zähltext bleibt (K2), neutrale Login-Rückmeldung (K3)
@@ -186,12 +190,12 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 ### 2026-09-29 – Demo-SCORM-Zuordnungen (temporär)
 - **Entscheidung:** Für die Demo zeigen 9 Selbstlernmodule dasselbe Platzhalter-Paket „DEMO (temporär)“; die Zuordnung wird nach der Demo zurückgenommen.
 - **Begründung:** Nur ein echtes SCORM-Paket vorhanden.
-- **Status:** gültig bis zur Rücknahme (Asana-Task vorhanden)
+- **Status:** gültig bis zur Rücknahme
 - **Belegt:** **aus Projektdoku übernommen** (nur in der Produktionsdatenbank, nicht im Repo)
 
 ### 2026-09-30 – Plattform-Pilot mit Modul 2
 - **Entscheidung:** Der Plattform-Pilot läuft mit Modul 2 (Start 02.11.2026) statt Modul 1. MS Teams bleibt für Live-Unterricht und Kommunikation.
-- **Begründung:** Ergebnis des Treffens mit energiehelden am 30.09.
+- **Begründung:** Ergebnis des Treffens mit dem Partner am 30.09.
 - **Status:** gültig
 - **Belegt:** **aus Projektdoku übernommen**
 
@@ -203,65 +207,65 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 
 ### 2026-10-02 – Production zieht von Irland nach Frankfurt
 - **Entscheidung:** Production läuft ab 02.10.2026 auf einem neuen Supabase-Projekt in Frankfurt (`eu-central-1`, Ref `vqfnmkcfjsudsujiuoqm`). Das bisherige Projekt in Irland (`keijrwvegmwgpvprpoxa`) wird Staging und bedient die Vercel-Preview-Deployments. Vercel läuft auf dem Pro-Tarif, Function Region weiterhin `fra1`. Gegen den Supabase Team-Plan wurde entschieden. Die Hosting-Aufstellung wird im Review im Januar 2027 (MVP) erneut geprüft.
-- **Begründung:** Datenresidenz in Deutschland und Vertrauen; Datenbank und serverseitige Funktionen liegen damit in derselben Region. Gründe gegen den Team-Plan: TODO Vera: ergänzen.
+- **Begründung:** Datenresidenz in Deutschland und Vertrauen; Datenbank und serverseitige Funktionen liegen damit in derselben Region. Gründe gegen den Team-Plan: Begründung nicht dokumentiert.
 - **Status:** gültig; ersetzt 2026-09-15 (Supabase-Region EU/Irland)
 - **Belegt:** Region `eu-central-1` über den Pooler-Host des Frankfurter Projekts; Auto-RLS am 02.10.2026 lesend gegen Irland abgeglichen (`runbook.md`, Abschnitt 5); `CLAUDE.md`, Abschnitt Stack. Vercel Pro, die Umstellung der Production-Variablen und der Verzicht auf den Team-Plan **aus Projektdoku übernommen** (Vercel- und Supabase-Tarife nicht im Repo einsehbar).
 
 ### 2026-10-07 – Fragen-Thread gehört der Kohorte, Ausnahme von SR-06
 - **Entscheidung:** Beiträge im Fragen-Thread lesen alle Lernenden der Kohorte, die Moderierenden und AfCJ admin. Da `cohort` keine `organisation_id` hat, hängt die Sichtbarkeit nicht am Arbeitgeber; das weicht von der Trennung nach Organisation (SR-06) ab. Die `organisation_id` am Beitrag kommt aus der Einschreibung der Autor:in und bleibt zur Nachvollziehbarkeit erhalten. Moderiert wird über `kohorte_moderation`; eingetragen werden können AfCJ admins und Lernende. Admin- und Lernendenkonten bleiben getrennt, weil ein Admin mit Einschreibung die Stundenplan- und Programmsicht anderer Kohorten sähe.
-- **Begründung:** Der Austausch gehört zur Kohorte. Die Pilotkohorte besteht nur aus Mitarbeitenden von energiehelden, im Piloten sehen sich also nur Personen desselben Betriebs. Kohorten werden in der Regel je Betrieb angelegt.
+- **Begründung:** Der Austausch gehört zur Kohorte. Die Pilotkohorte besteht nur aus Mitarbeitenden des Partners, im Piloten sehen sich also nur Personen desselben Betriebs. Kohorten werden in der Regel je Betrieb angelegt.
 - **Folgen:** Bei einer Kohorte mit mehreren Arbeitgebern gilt die Ausnahme weiter und wird dann neu bewertet. Alternative: Threads je Kohorte und Arbeitgeber trennen (PR #74).
-- **Status:** gültig (Entscheidung Vera)
+- **Status:** gültig (Entscheidung Produkt-Lead)
 - **Belegt:** PR #74; `0024_lektion_beitrag.sql`; `access-matrix.md`, Zeile „Fragen-Thread“; SR-74, SR-75
 
 ### 2026-10-13 – Echte Modul-Ebene über den Wochen
 - **Entscheidung:** Neue Tabelle `modul` über den Wochen; `module` bleibt vorerst die Woche und bekommt `modul_id`, `wochentyp` und `lage` (Migration 0028, additiv). Die Umbenennung von `module` in `woche` folgt nach dem Pilotstart am 02.11.2026 zusammen mit der Code-Umstellung. Zeiträume der Module kommen aus dem Stundenplan der Kohorte (`fn_modul_zeitraum`), ohne Versatz ab Kohortenstart; Module ohne Termine haben keinen Zeitraum. Kompetenzen je Modul stehen explizit in `modul_competency` mit Kürzel und Reihenfolge. Die Nummer einer Woche im Modul wird abgeleitet, nicht gespeichert. Die Prüfungsvorbereitung ist ein Modul mit der Überzeile „Abschluss“.
 - **Begründung:** Das Modul stand bisher nur im Code (`gliederungFuer`, Branch demo) und passte nicht zu verschobenen Kohorten oder Ferien. Modul II (Start 02.11.2026) soll direkt in diese Struktur importiert werden. Zwei Schritte, damit vor dem Pilotstart kein bestehender Code bricht.
 - **Folgen:** Wochennamen ohne feste Daten anlegen, die Zeiträume kommen aus dem Stundenplan. Home, Programm, Kompetenz-Reiter und Chat-Kanäle lesen die Module künftig aus der Datenbank statt aus `gliederungFuer`.
-- **Status:** gültig (Entscheidung Vera)
+- **Status:** gültig (Entscheidung Produkt-Lead)
 - **Belegt:** `0028_modul_ebene.sql`; `017_modul_ebene.test.sql`; `data-model.md`, Group 2; SR-05
 
 ### 2026-10-13 – Thema, Selbstlernen ↔ Live, „begonnen“ und Rufname als eigene Felder
 - **Entscheidung:** `lesson.thema` statt Klammer im Titel; `lesson.live_lektion_id` verknüpft eine Selbstlern-Lektion 1:1 mit ihrer Live-Lektion statt Abgleich über gleichen Titel am selben Tag; „in Bearbeitung“ wird beim ersten Öffnen einer Selbstlern-Lektion gesetzt (nur Code, nie Update); `person.rufname` als Pflichtfeld, das Lernende selbst ändern dürfen (Migration 0029). Migration 0029 ändert `lesson.name` nicht; die Klammer entfernt das Datenskript `scripts/sql/lektion_klammer_entfernen.sql` nach der Demo am 15.10.2026 auf Staging und im Release auf Production.
 - **Begründung:** Titelvergleich und Klammer-Zerlegung im Code sind fehleranfällig (Datenlücken Nr. 4, 8, 9, 10). Die demo-Preview läuft gegen Staging und zerlegt den Titel dort noch selbst, darum vor der Demo keine Namensänderung.
 - **Folgen:** Der Import schreibt das Thema direkt in `thema`. Mehrdeutige Paare Selbstlernen ↔ Live bleiben beim Backfill leer und werden von Hand zugeordnet.
-- **Status:** gültig (Entscheidung Vera)
+- **Status:** gültig (Entscheidung Produkt-Lead)
 - **Belegt:** `0029_felder_lektion_person.sql`; `018_felder_lektion_person.test.sql`; `data-model.md`, Groups 1 und 2; SR-13, SR-15, SR-48, SR-73
 
 ### 2026-10-13 – Trainer:innen als Personen und private Profilfotos
 - **Entscheidung:** Neue Rolle `trainer` in `role_assignment`. Trainer:innen bekommen eigene Personen und Auth-Konten ohne Login-Nutzung, getrennt von evtl. vorhandenen Lernenden-Konten derselben Person, und werden über `live_session.trainer_id` und `field_job.instructor_id` zugeordnet. Profilfotos von Lernenden und Trainer:innen liegen im privaten Bucket `profilfotos` (`<person_id>/<uuid>.jpg`, JPEG bis 1 MB, Zuschnitt 512 px im Browser), Abruf über signierte Links. Lernende sehen ihr eigenes Foto und die Fotos ihrer Trainer:innen, nicht die anderer Lernender. Lernende ändern Foto und Rufname im Konto-Menü (Migration 0030).
 - **Begründung:** Die Rolle verhindert, dass eine versehentlich als `trainer_id` eingetragene Person (etwa eine lernende) mit Name und Foto sichtbar wird. `fn_meine_trainer()` zeigt nur Name, Rufname und Foto, ohne E-Mail und Geburtsdatum aus `person` freizugeben. Fotos anderer Lernender hängen an der Kohortensicht (Datenlücke Nr. 6), die noch offen ist.
 - **Folgen:** Ersetzt die fest eingetragenen Trainer:innen auf demo (`demo-personen.ts`, `public/demo-bilder`); `public/demo-bilder` bleibt nur auf demo. Fotos von Trainer:innen lädt AfCJ admin mit deren Einwilligung hoch. Beim Löschen eines Kontos bleibt eine Fotodatei im Speicher, weil Storage nicht kaskadiert; das gehört in den Löschpfad (Lücke aus dem Audit vom 30.09.2026). Home und Programm zeigen die Trainer:innen später.
-- **Status:** gültig (Entscheidung Vera)
+- **Status:** gültig (Entscheidung Produkt-Lead)
 - **Belegt:** `0030_trainer_profilfotos.sql`; `019_trainer_profilfotos.test.sql`; `access-matrix.md`, Zeilen „Profilfoto“ und „Trainer:in je Termin“; Datenschutzerklärung, Abschnitt „Profilfotos“; SR-77, SR-78, SR-60
 
 ### 2026-10-13 – Kann-Satz als eigenes Feld an der Kompetenz
 - **Entscheidung:** `competency.kann_satz` (Text, optional) nimmt den ausformulierten Kann-Satz aus der Importvorlage auf; `name` bleibt der Kurztitel. Das Import-Skript (`scripts/import-plan.mjs`) füllt das Feld, sobald die Spalte existiert (Migration 0031).
 - **Begründung:** Die Kann-Sätze von Content & Learning hatten kein Feld; im Namen wären sie für Listen und Ringe zu lang.
 - **Folgen:** Anzeige in der Kompetenz-Detailansicht folgt in einem eigenen PR. Keine neuen Policies (bestehende Lese- und Schreibregeln für `competency` gelten).
-- **Status:** gültig (Entscheidung Vera)
+- **Status:** gültig (Entscheidung Produkt-Lead)
 - **Belegt:** `0031_kompetenz_kann_satz.sql`; `020_kompetenz_kann_satz.test.sql`; `data-model.md`, Zeile „competency“; SR-80
 
 ### 2026-10-13 – Trainer:innen bestätigen Anwesenheit und prüfen Praxisberichte; Storno statt Änderung
 - **Entscheidung:** (E1) Trainer:innen melden sich an (Magic Link wie Lernende). (E2) Sie prüfen Praxisberichte (`verification`). (E3) Eine Trainer:in handelt für alle Termine und Praxisberichte einer Kohorte, in der sie mindestens einen Termin hat (`live_session.trainer_id` oder `field_job.instructor_id`). (E4) `attendance` und `verification` sind für alle Rollen unveränderlich; Korrektur per Storno-Eintrag (`korrigiert_id`). Löschen bleibt AfCJ admin vorbehalten, bis der Löschweg (DSGVO-Löschrecht) entschieden ist.
 - **Begründung:** Ohne Bestätigung zählen Stundenplan-Häkchen und „Heute frei“ (SR-79) keinen Live-Termin. Je Termin ist nur eine Person gespeichert, Vertretungen kommen vor (E3). SR-07 verlangt unveränderliche Nachweise; Storno hält den Verlauf für AZAV-Prüfungen fest.
 - **Folgen:** Überholt den Teil von 0030 „Trainer:innen ohne Login-Nutzung“. Trainer:innen lesen Kohorte, Plan, Einschreibungen, Praxistage und -berichte ihrer Kohorten; Namen der Lernenden nur über `fn_trainer_teilnehmende()`. Datenschutzerklärung ergänzen (Paket G, Übergabe). Oberfläche für Trainer:innen folgt (G2).
-- **Status:** gültig (Entscheidung Vera)
+- **Status:** gültig (Entscheidung Produkt-Lead)
 - **Belegt:** `0032_trainer_anwesenheit_pruefung.sql`; `021_trainer_anwesenheit_pruefung.test.sql`; `access-matrix.md`; SR-07, SR-81, SR-82
 
 ### 2026-10-13 – Eigene Personendaten: nur Rufname und Foto selbst änderbar
 - **Entscheidung:** Spalten-Grant auf `person`: Angemeldete ändern nur `rufname` und `foto_pfad` (eigene Zeile über `person_self_update`). Alle anderen Felder pflegt AfCJ admin im Dashboard.
 - **Begründung:** `person_self_update` gab die ganze eigene Zeile frei; über die API ließen sich E-Mail, Name und Geburtsdatum ändern, `person.email` konnte von `auth.users.email` abweichen (Paket-G-Analyse).
 - **Folgen:** Auch AfCJ admin ändert in der App nur diese beiden Spalten (heute ohne Bedeutung, Pflege im Dashboard). Ob Lernende Vorerfahrung oder Sprache selbst ändern, entscheidet die Profilseite (Übergabe).
-- **Status:** gültig (Entscheidung Vera)
+- **Status:** gültig (Entscheidung Produkt-Lead)
 - **Belegt:** `0033_person_spaltenrechte.sql`; `022_person_spaltenrechte.test.sql`; `access-matrix.md`; SR-77
 
 ### 2026-10-14 – Kohortensicht: Anzeigename und Foto der Kohortenmitglieder
 
 - **Entscheidung:** Lernende sehen die anderen Lernenden ihrer Kohorte mit Anzeigename (Rufname plus Initial des Nachnamens), der Anzahl und, wenn die Person ein Foto hochgeladen hat, mit dem Foto. Der Upload ist die Freigabe; der Upload-Dialog sagt das ausdrücklich („Mit dem Hochladen bist du einverstanden, dass dein Foto für Mitglieder deiner Kohorte sichtbar ist. Du kannst es jederzeit entfernen.“). Nur gleiche Kohorte und gleiche Organisation, nur aktive Einschreibungen. `fn_meine_kohorte()` liefert `person_id`, `anzeigename`, `foto_pfad`; `fn_darf_foto_sehen` bekommt die Kohortenregel. Keine neuen Spalten oder Schalter an `person`.
-- **Begründung:** SR-30 (Build next) verlangt Namen und Profilbild; die Abgrenzung auf Kohorte und Organisation schützt auch dann, wenn Kohorten später organisationsübergreifend gemischt werden. Ein zusätzlicher Schalter wäre ein zweiter Ort für dieselbe Entscheidung: wer kein Foto hochlädt oder es entfernt, zeigt keins.
+- **Begründung:** SR-30 verlangt Namen und Profilbild; die Abgrenzung auf Kohorte und Organisation schützt auch dann, wenn Kohorten später organisationsübergreifend gemischt werden. Ein zusätzlicher Schalter wäre ein zweiter Ort für dieselbe Entscheidung: wer kein Foto hochlädt oder es entfernt, zeigt keins.
 - **Folgen:** Die Datenschutzerklärung sagt heute, das Foto sei „nicht für andere Teilnehmende“ sichtbar. Vor der Veröffentlichung auf Production müssen Abschnitt „Profilfotos“ und ein neuer Abschnitt „Kohortenansicht“ geändert werden (Entwurf in `docs/datenschutz-kohortenansicht-entwurf.md`, Prüfinstanz offen). Wer ein Foto vor dieser Änderung hochgeladen hat, hat unter dem alten Text zugestimmt; der neue Dialogtext und die Datenschutzerklärung müssen vor dem Release dafür sorgen, dass diese Personen die neue Sichtbarkeit kennen (Entscheidung offen: Hinweis beim nächsten Öffnen oder Foto zurücksetzen). Der Name ist ohne Abwahl sichtbar; eine Abwahl gibt es nicht. Keine Trainer-Liste, keine Vorerfahrung, keine Profilseite.
-- **Status:** gültig (Entscheidung Vera)
+- **Status:** gültig (Entscheidung Produkt-Lead)
 - **Belegt:** `0034_kohortensicht.sql`; `023_kohortensicht.test.sql`; `access-matrix.md`; SR-30
 
 ### 2026-10-16 – Kohorten-Chat gehört der Kohorte, Ausnahme von SR-06
@@ -269,16 +273,16 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Entscheidung:** Kohorten-Chat (Variante B1 der Bauanleitung „Fachsprache und Haupt-Chat vor dem 02.11.“) mit zwei Kanälen je Kohorte: „Ankündigungen“ schreiben nur Trainer:innen der Kohorte und das Team, „Treffpunkt“ alle mit aktiver Einschreibung, dazu Trainer:innen und Team. Lesen alle der Kohorte, über Arbeitgeber hinweg. Moderation durch Trainer:innen der Kohorte, `kohorte_moderation` und AfCJ admin, Melden durch Lernende. Neue Nachrichten holt die App alle 30 Sekunden, ein Zähler zeigt Ungelesenes. Die Rolle der Autor:in wird nicht angezeigt. Schalter `cohort.chat_aktiv`, auf Production aus.
 - **Begründung:** Der Chat dient dem Austausch der ganzen Kohorte (z. B. Verabredungen), wie der Fragen-Thread (2026-10-07). Eine Trennung nach Betrieb wie bei der Kohortensicht (2026-10-14) würde gemischte Kohorten teilen. Echtzeit wäre aufwendiger und teurer als regelmäßiges Abfragen.
 - **Folgen:** Ausnahme von SR-06 wie beim Fragen-Thread. Vor dem Einschalten auf Production: Datenschutzerklärung (Abschnitt Kohorten-Chat), Nutzungsregeln und eine verantwortliche Person für die Moderation. Ankündigungen setzen voraus, dass Trainer:innen einen Termin in der Kohorte haben (Import).
-- **Status:** gültig (Entscheidung Anna)
+- **Status:** gültig (Entscheidung Geschäftsführung)
 - **Belegt:** `0050_kohorten_chat.sql`; `024_kohorten_chat.test.sql`; `access-matrix.md`; SR-83
 
 ### 2026-10-16 – Fachsprache-Einheit (Stufe 2): eigene Tabelle, Prüfpflicht, private Bilder
 
-- **Entscheidung:** (Entwurf, wartet auf Freigabe) Eine Einheit je Lektion in `fachsprache_einheit`. Inhalt als JSON mit Datenbankprüfung (genau eine richtige Antwort je Quizfrage über den Index `richtig`). Veröffentlichung nur mit fachlicher und sprachlicher Prüfung (Person + Datum); bei geändertem Inhalt oder Titel fällt der Status auf `entwurf` und beide Prüfungen werden geleert, bei unverändertem Inhalt nicht. Bilder im privaten Bucket `fachsprache-bilder` (2 MB, PNG/JPEG/WebP, kein SVG), nur Dateiname im JSON, Alternativtext Pflicht. Lesen wie Lernmaterialien über `fn_kann_lektion_lesen`, Schreiben nur AfCJ admin.
+- **Entscheidung:** Eine Einheit je Lektion in `fachsprache_einheit`. Inhalt als JSON mit Datenbankprüfung (genau eine richtige Antwort je Quizfrage über den Index `richtig`). Veröffentlichung nur mit fachlicher und sprachlicher Prüfung (Person + Datum); bei geändertem Inhalt oder Titel fällt der Status auf `entwurf` und beide Prüfungen werden geleert, bei unverändertem Inhalt nicht. Bilder im privaten Bucket `fachsprache-bilder` (2 MB, PNG/JPEG/WebP, kein SVG), nur Dateiname im JSON, Alternativtext Pflicht. Lesen wie Lernmaterialien über `fn_kann_lektion_lesen`, Schreiben nur AfCJ admin.
 - **Begründung:** Inhalte für Lernende müssen fachlich und sprachlich geprüft sein; SVG im Bucket wäre ausführbarer Inhalt; keine eigene Lernstand-Tabelle, damit kein Nachweis ohne Regel 6 entsteht.
 - **Folgen:** Einstiege (Stundenplan-Chip, Home-Kästchen), Import-Tab und Seite folgen in eigenen Schritten. Offen: ob Prüfende zwei verschiedene Personen sein müssen, Trainer:innen-Lesezugriff, echter Fortschritt. Datenschutz: Vorlesen über die Sprachausgabe des Browsers vor Livegang in der Erklärung nennen.
-- **Status:** Entwurf, nicht auf Staging angewendet
-- **Ergänzung 2026-10-16:** Prüfpflicht, Prüfspalten und Prüf-Constraints sind aufgehoben (Beschluss Vera, Migration 0053), siehe den Eintrag „Fachsprache-Einheit: keine Prüfungen in der Datenbank“ unten. Der Text oben gilt insoweit nicht mehr.
+- **Status:** gültig, außer der Prüfpflicht (ersetzt durch den Eintrag „Fachsprache-Einheit: keine Prüfungen in der Datenbank“ vom 2026-10-16)
+- **Ergänzung 2026-10-16:** Prüfpflicht, Prüfspalten und Prüf-Constraints sind aufgehoben (Beschluss Produkt-Lead, Migration 0053), siehe den Eintrag „Fachsprache-Einheit: keine Prüfungen in der Datenbank“ unten. Der Text oben gilt insoweit nicht mehr.
 - **Belegt:** `0051_fachsprache_einheit.sql`; `025_fachsprache_einheit.test.sql`
 
 ### 2026-10-16 – Bestätigte Anwesenheit zählt für Kompetenzschritte, Fortschritt anteilig
@@ -286,7 +290,7 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Entscheidung:** Eine Live-Lektion gilt für den theoretischen Teilschritt als erledigt, sobald die Trainer:in die Anwesenheit bestätigt hat (aktueller Wert, eine Korrektur auf „nicht anwesend“ nimmt es zurück). Die AND-Logik von SR-63 bleibt. Der Kompetenz-Ring zeigt den Fortschritt anteilig (z. B. halber Teilschritt nach einer von zwei Lektionen).
 - **Begründung:** Für Live-Lektionen gab es keinen Weg zu „abgeschlossen“; Teilschritte mit Live- und Selbstlern-Lektion waren nie erfüllbar, bestätigte Anwesenheit kam im Fortschritt nicht an. CLAUDE.md Regel 6 nennt bestätigte Anwesenheit ausdrücklich als Quelle für Nachweise.
 - **Folgen:** Die Anwesenheit muss von Trainer:innen im Bereich `/trainer` bestätigt werden, sonst bleibt der Teilschritt offen. `competency_evidence` bleibt unverändert.
-- **Status:** gültig (Entscheidung Anna)
+- **Status:** gültig (Entscheidung Geschäftsführung)
 - **Belegt:** `0052_kompetenz_anwesenheit.sql`; `026_kompetenz_anwesenheit.test.sql`; `src/lib/queries/lektionen-erledigt.ts`; SR-63
 
 ### 2026-10-16 – Fachsprache-Seite: Schalter, Lektion des Tages, Entwürfe, kein Ergebnis
@@ -294,45 +298,134 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Entscheidung:** Die Oberfläche der Fachsprache-Einheit (Seite `/fachsprache/[einheitId]`, Chip im Stundenplan, Kästchen auf Home) hängt am serverseitigen Schalter `FACHSPRACHE_EINHEIT` (`src/lib/schalter.ts`): an nur mit dem Wert `an`, ohne Variable aus; in Vercel für Preview und Development an, für Production aus. Lektion des Tages ist die Live-Lektion mit Termin an diesem Tag; Tage nur mit Selbstlernen bekommen keinen Einstieg (O2). Home und Stundenplan zeigen nur veröffentlichte Einheiten; AfCJ admin kann einen Entwurf über die direkte URL öffnen, mit dem Banner „Entwurf, für Lernende nicht sichtbar“ (O3). Bilder stehen direkt auf der Karte und lassen sich per Klick vergrößern (O5). Das Quiz ist freiwillig: wählen, „Weiter“ prüft, falsch neu wählen, richtig mit Erklärung, beliebig oft wiederholbar; es speichert nichts, zählt nichts und erzeugt keine competency_evidence (Regel 6), der Abschluss zeigt kein Ergebnis und keinen Ring.
 - **Begründung:** Production soll die Funktion erst nach Prüfung der Inhalte und des Datenschutzes zeigen; ein Schalter ohne `NEXT_PUBLIC_`-Präfix kommt nicht ins Browser-Bundle. Die Fachsprache-Einheit hängt laut Import an der ersten Live-Lektion des Kurses. Prüfende brauchen eine Vorschau, Lernende dürfen keine ungeprüften Inhalte sehen.
 - **Folgen:** Vorlesen nutzt die Stimmen des Browsers; auf Staging dürfen alle Stimmen vorlesen, ob auf Production nur lokale Stimmen erlaubt sind, wird vor dem Einschalten entschieden (O4, Datenschutz Punkt 6). Keine Bibliothek für Komponententests (O6): Regeln als reine Funktionen mit `node --test`, die Oberfläche über den Klicktest. Abfragen (`src/lib/queries/fachsprache.ts`) und Oberfläche folgen, sobald 0051 auf Staging liegt.
-- **Status:** gültig (Entscheidung Vera)
+- **Status:** gültig (Entscheidung Produkt-Lead)
 - **Belegt:** `src/lib/schalter.ts`, `src/lib/fachsprache.ts`, `src/lib/fachsprache-quiz.ts` mit Tests; SR-84
 
 ### 2026-10-16 – Fachsprache-Einheit: keine Prüfungen in der Datenbank
 
-- **Entscheidung:** (Beschluss Vera) Eine Fachsprache-Einheit gilt als veröffentlicht, wenn `status = 'veroeffentlicht'` gilt, sonst nichts. Die Prüfpflicht und alle Prüfungen in der Datenbank entfallen: die Spalten `fachlich_geprueft_von/_am` und `sprachlich_geprueft_von/_am`, die Constraints `fachsprache_nur_geprueft_veroeffentlichen` und `fachsprache_pruefung_paarweise` sowie die Prüf-Logik in `fn_fachsprache_inhalt_geaendert` werden entfernt (Migration 0053). Der Trigger `fachsprache_inhalt_geaendert` bleibt: Ändern sich Inhalt oder Titel, fällt der Status auf `entwurf` (und `inhalt_version` zählt hoch). Prüfen bleibt ein Teamprozess außerhalb der Datenbank.
+- **Entscheidung:** (Beschluss Produkt-Lead) Eine Fachsprache-Einheit gilt als veröffentlicht, wenn `status = 'veroeffentlicht'` gilt, sonst nichts. Die Prüfpflicht und alle Prüfungen in der Datenbank entfallen: die Spalten `fachlich_geprueft_von/_am` und `sprachlich_geprueft_von/_am`, die Constraints `fachsprache_nur_geprueft_veroeffentlichen` und `fachsprache_pruefung_paarweise` sowie die Prüf-Logik in `fn_fachsprache_inhalt_geaendert` werden entfernt (Migration 0053). Der Trigger `fachsprache_inhalt_geaendert` bleibt: Ändern sich Inhalt oder Titel, fällt der Status auf `entwurf` (und `inhalt_version` zählt hoch). Prüfen bleibt ein Teamprozess außerhalb der Datenbank.
 - **Begründung:** Prüfen ist ein Vorgang im Team, nicht in der Datenbank; leere oder gepflegte Prüfspalten würden nur eine Prüfung vortäuschen, die niemand erzwingt oder nachvollziehen kann.
 - **Folgen:** **Die Datenbank verhindert das Veröffentlichen ohne Prüfung nicht mehr.** Wer `status` setzen darf (AfCJ admin), kann jede Einheit veröffentlichen; ob geprüft wurde, hält das Team außerhalb fest. Ein Nachweis, wer wann geprüft hat, steht nicht mehr in der Datenbank. Der Import meldet bei geändertem Inhalt einer veröffentlichten Einheit „Status fällt auf entwurf“ (statt „Prüfung wird zurückgesetzt“) und kennt die Meldung „bild nach prüfung“ nicht mehr; er veröffentlicht weiterhin nie. Stand 2026-10-16: 0051 ist nicht auf Production angewendet; auf Staging liegen 7 Einheiten (alle Entwurf), alle Prüfspalten leer, keine Policy, View oder Funktion außer der ersetzten Trigger-Funktion nennt sie. Rückweg: Folge-Migration mit den Spalten und Constraints (Constraint nur, solange keine Einheit ohne Prüfung veröffentlicht ist).
-- **Status:** gültig (Entscheidung Vera); Migration 0053 in Arbeit, nicht auf Staging angewendet
+- **Status:** gültig (Entscheidung Produkt-Lead)
 - **Belegt:** `0053_fachsprache_ohne_pruefung.sql`; `025_fachsprache_einheit.test.sql`; `scripts/import-plan/fachsprache.sql`; SR-84
 
 ### 2026-10-17 – Fragen-Thread an Live-Lektionen standardmäßig an
 
-- **Entscheidung:** (Anna) Neue Live-Lektionen bekommen den Fragen-Thread automatisch (`chat_aktiv = true`), Selbstlern- und Repository-Lektionen nicht. Bestehende Live-Lektionen werden einmal eingeschaltet. Ausschalten bleibt je Lektion möglich.
+- **Entscheidung:** (Geschäftsführung) Neue Live-Lektionen bekommen den Fragen-Thread automatisch (`chat_aktiv = true`), Selbstlern- und Repository-Lektionen nicht. Bestehende Live-Lektionen werden einmal eingeschaltet. Ausschalten bleibt je Lektion möglich.
 - **Begründung:** Mit dem Import neuer Lektionen (ab 02.11.) fehlte der Thread überall, weil der Standard aus war und ihn niemand einzeln eingeschaltet hatte.
 - **Folgen:** Deutsch/Fachdeutsch und Softskills Coaching hängen als Termine am Kurs, nicht an einer Lektion, und bekommen keinen Thread. Auf Staging gilt das auch für die Demo-Lektionen im Oktober, bei denen der Thread bisher aus war.
-- **Status:** gültig (Entscheidung Anna); Migration 0054
+- **Status:** gültig (Entscheidung Geschäftsführung)
 - **Belegt:** `0054_thread_live_standard.sql`; `027_thread_live_standard.test.sql`; `013_lektion_beitrag.test.sql`; SR-74
 
 ### 2026-10-17 – Link zur Praxisaufgabe per Schalter
 
-- **Entscheidung:** (Anna) Der Link zur Praxisaufgabe (`/praxistag/[fieldJobId]`) hängt am serverseitigen Schalter `PRAXISAUFGABE_LINK` (`src/lib/schalter.ts`): an nur mit dem Wert `an`, ohne Variable aus. Aus heißt: Stundenplan, Home, Programm-Übersicht und Kompetenzen zeigen die Praxisaufgabe als Text ohne Link; „Zur Praxisaufgabe →“ und „Praxisaufgabe öffnen“ entfallen. Die Seite selbst bleibt über die Adresse erreichbar.
+- **Entscheidung:** (Geschäftsführung) Der Link zur Praxisaufgabe (`/praxistag/[fieldJobId]`) hängt am serverseitigen Schalter `PRAXISAUFGABE_LINK` (`src/lib/schalter.ts`): an nur mit dem Wert `an`, ohne Variable aus. Aus heißt: Stundenplan, Home, Programm-Übersicht und Kompetenzen zeigen die Praxisaufgabe als Text ohne Link; „Zur Praxisaufgabe →“ und „Praxisaufgabe öffnen“ entfallen. Die Seite selbst bleibt über die Adresse erreichbar.
 - **Begründung:** Der Praxisflow wird erst gebaut (Realbau ab 02.11., `docs/praxisflow-realbau.md`); bis dahin soll niemand aus der Plattform hineingeführt werden.
 - **Folgen:** Ohne gesetzte Variable ist der Link in allen Umgebungen aus. Zum Einschalten in Vercel `PRAXISAUFGABE_LINK=an` je Umgebung setzen und neu deployen.
-- **Status:** gültig (Entscheidung Anna)
+- **Status:** gültig (Entscheidung Geschäftsführung)
 - **Belegt:** `src/lib/schalter.ts`, `src/lib/schalter.test.ts`, `src/lib/programm-inhalte.test.ts`; SR-13
 
 ### 2026-10-17 – Selbstlern-Lektionen nativ statt im SCORM-Player
 
-- **Entscheidung:** (Anna) Selbstlern-Lektionen (`content_type = 'scorm'`) erscheinen Schritt für Schritt im Plattform-Design: Kapitel, Fragen mit „Prüfen“ und Emoji-Rückmeldung, Fortschritt. Die Oberfläche kennt nur das eigene Kursformat `Lernkurs` (`src/lib/lernkurs.ts`); Elephant-SCORM-Pakete sind eine Quelle, die ein Adapter (`src/lib/elephant-kurs.ts`) in dieses Format übersetzt. Gezeigt wird nur das eigene Paket der Lektion, gelesen stückweise über die mit der Session signierte URL (RLS 0016/0017, kein Service-Role-Key). Kein Elephant-Paket oder Lesefehler → wie bisher der SCORM-Player; Für Lernende gibt es keinen Umschalt-Link (Anna 2026-10-17); das Team öffnet den Player zum Vergleich über `?ansicht=scorm`. Die Lektion gilt als abgeschlossen, sobald das letzte Kapitel abgeschlossen ist (`markLessonComplete`, `unit_progress`, einmal je Seitenaufruf). Medien nur über `/content/[lessonId]/medium`: nur was der Kurs nutzt, kein SVG, Range für Audio/Video, Rechte bei jedem Fehlschlag des kurzen Zugriffsspeichers neu geprüft. Schalter `NATIVE_SELBSTLERNEN` (`src/lib/schalter.ts`) bewusst anders als die übrigen: standardmäßig an, aus nur mit dem Wert `aus`.
+- **Entscheidung:** (Geschäftsführung) Selbstlern-Lektionen (`content_type = 'scorm'`) erscheinen Schritt für Schritt im Plattform-Design: Kapitel, Fragen mit „Prüfen“ und Emoji-Rückmeldung, Fortschritt. Die Oberfläche kennt nur das eigene Kursformat `Lernkurs` (`src/lib/lernkurs.ts`); Elephant-SCORM-Pakete sind eine Quelle, die ein Adapter (`src/lib/elephant-kurs.ts`) in dieses Format übersetzt. Gezeigt wird nur das eigene Paket der Lektion, gelesen stückweise über die mit der Session signierte URL (RLS 0016/0017, kein Service-Role-Key). Kein Elephant-Paket oder Lesefehler → wie bisher der SCORM-Player; Für Lernende gibt es keinen Umschalt-Link (Geschäftsführung 2026-10-17); das Team öffnet den Player zum Vergleich über `?ansicht=scorm`. Die Lektion gilt als abgeschlossen, sobald das letzte Kapitel abgeschlossen ist (`markLessonComplete`, `unit_progress`, einmal je Seitenaufruf). Medien nur über `/content/[lessonId]/medium`: nur was der Kurs nutzt, kein SVG, Range für Audio/Video, Rechte bei jedem Fehlschlag des kurzen Zugriffsspeichers neu geprüft. Schalter `NATIVE_SELBSTLERNEN` (`src/lib/schalter.ts`) bewusst anders als die übrigen: standardmäßig an, aus nur mit dem Wert `aus`.
 - **Begründung:** Der SCORM-Player wirkt wie ein Fremdkörper; die Demo hat gezeigt, dass Elephant den Kursinhalt lesbar ins Paket legt. Ein eigenes Format hält die Oberfläche unabhängig vom Autorenwerkzeug. Standardmäßig an, weil die native Ansicht überall gelten soll; der Rückfall auf den Player fängt nicht lesbare Pakete ab.
-- **Folgen:** Elephants Paketformat ist nicht offiziell dokumentiert; ändert es sich, greift der Rückfall auf den SCORM-Player. Inhalte werden vollständig so übernommen, wie sie geliefert werden (Anna 2026-10-17): keine Kürzungen, und kennt der Übersetzer eine Modulart nicht (Stand 17.10.: Seite, Lernkarten, Quiz, Wahr/Falsch, Hotspot, Video, Bildauswahl, Audio und Sortieren werden umgewandelt), zeigt die ganze Lektion den SCORM-Player. Der Stand innerhalb der Lektion wird nicht gespeichert (Neuladen beginnt vorn). Zwischenspeicher nur je Server-Instanz und klein (Kurs und Verzeichnis höchstens 8 Pakete, Medien höchstens 30 MB). Notbremse: in Vercel `NATIVE_SELBSTLERNEN=aus` setzen und neu deployen, dann zeigt jede Selbstlern-Lektion wieder den SCORM-Player und die Medien-Route antwortet mit 404. Direkt erstellte Kurse im Format `Lernkurs` (z. B. von Claude nach Vorlagen) sind vorgesehen; ihr Speicherort ist eine spätere Entscheidung mit Migration.
-- **Status:** gültig (Entscheidung Anna); noch nicht mit einem echten Paket im Browser geprüft
-- **Belegt:** `src/lib/lernkurs.ts`, `src/lib/elephant-kurs.ts` mit Tests, `src/lib/elephant-paket.ts`, `src/lib/schalter.ts` mit Tests, `src/app/(learner)/content/[lessonId]/native-lektion.tsx`, `src/app/(learner)/content/[lessonId]/medium/route.ts`; SR-85
+- **Folgen:** Elephants Paketformat ist nicht offiziell dokumentiert; ändert es sich, greift der Rückfall auf den SCORM-Player. Inhalte werden vollständig so übernommen, wie sie geliefert werden (Geschäftsführung 2026-10-17): keine Kürzungen, und kennt der Übersetzer eine Modulart nicht (Stand 17.10.: Seite, Lernkarten, Quiz, Wahr/Falsch, Hotspot, Video, Bildauswahl, Audio und Sortieren werden umgewandelt), zeigt die ganze Lektion den SCORM-Player. Der Stand innerhalb der Lektion wird nicht gespeichert (Neuladen beginnt vorn). Zwischenspeicher nur je Server-Instanz und klein (Kurs und Verzeichnis höchstens 8 Pakete, Medien höchstens 30 MB). Notbremse: in Vercel `NATIVE_SELBSTLERNEN=aus` setzen und neu deployen, dann zeigt jede Selbstlern-Lektion wieder den SCORM-Player und die Medien-Route antwortet mit 404. Direkt erstellte Kurse im Format `Lernkurs` (z. B. von Claude nach Vorlagen) sind vorgesehen; ihr Speicherort ist eine spätere Entscheidung mit Migration.
+- **Status:** gültig (Entscheidung Geschäftsführung)
+- **Belegt:** `src/lib/lernkurs.ts`, `src/lib/elephant-kurs.ts` mit Tests, `src/lib/elephant-paket.ts`, `src/lib/schalter.ts` mit Tests, `src/app/(learner)/content/[lessonId]/native-lektion.tsx`, `src/app/(learner)/content/[lessonId]/medium/route.ts`; SR-85; PR #138 (Prüfung im Browser auf Staging)
 
 ### 2026-10-17 – SCORM-Pakete beim Einspielen auspacken
 
-- **Entscheidung:** (Anna) Das Einspiel-Skript (`scripts/scorm-einspielen.mjs`) legt neben der Zip die Medien eines Elephant-Pakets ausgepackt in den Bucket `scorm-packages`, unter `<file_asset.storage_pfad>.entpackt/<innerer Zip-Pfad>`. Ausgepackt werden nur erlaubte Medien (Bilder, Audio, Video; kein HTML, JS, SVG). Audio, das nicht MP3/M4A ist (z. B. WAV), wandelt das Skript in M4A (AAC) um und legt es mit ersetzter Endung ab; das Original wird nicht ausgepackt. Die Medien-Route der nativen Ansicht signiert die ausgepackte Datei mit der Session der Person (10 Minuten) und leitet mit 307 dorthin um; fehlt sie, liest sie wie bisher aus der Zip. Lesen regelt eine zusätzliche Storage-Policy mit derselben Bedingung wie für die Zip (Lektion veröffentlicht), nur über das Präfix. Bereits vorhandene Pakete auf Staging werden nicht nachträglich ausgepackt. SR-50, SR-85.
+- **Entscheidung:** (Geschäftsführung) Das Einspiel-Skript (`scripts/scorm-einspielen.mjs`) legt neben der Zip die Medien eines Elephant-Pakets ausgepackt in den Bucket `scorm-packages`, unter `<file_asset.storage_pfad>.entpackt/<innerer Zip-Pfad>`. Ausgepackt werden nur erlaubte Medien (Bilder, Audio, Video; kein HTML, JS, SVG). Audio, das nicht MP3/M4A ist (z. B. WAV), wandelt das Skript in M4A (AAC) um und legt es mit ersetzter Endung ab; das Original wird nicht ausgepackt. Die Medien-Route der nativen Ansicht signiert die ausgepackte Datei mit der Session der Person (10 Minuten) und leitet mit 307 dorthin um; fehlt sie, liest sie wie bisher aus der Zip. Lesen regelt eine zusätzliche Storage-Policy mit derselben Bedingung wie für die Zip (Lektion veröffentlicht), nur über das Präfix. Bereits vorhandene Pakete auf Staging werden nicht nachträglich ausgepackt. SR-50, SR-85.
 - **Begründung:** Antworten einer Vercel-Funktion sind auf 4,5 MB begrenzt; Videos und lange WAV-Audios (bis ca. 155 MB) liegen im Paket teils gepackt und lassen sich nicht stückweise aus der Zip ausliefern. Ausgepackt liefert Storage die Dateien direkt, auch Teilbereiche (Range). M4A statt WAV spart Datenvolumen, wichtig für Lernende mit Mobilfunk.
 - **Folgen:** Kein neues Attribut, keine neue Tabelle; ausgepackte Dateien haben keine `file_asset`-Zeile. Der Rückfall auf die Zip bleibt nötig (nicht ausgepackte Pakete, einzelne fehlende Dateien). Je Server-Instanz merkt sich die Route 3 Minuten, ob ein Paket ausgepackt ist; signiert wird trotzdem bei jeder Anfrage mit der Session. Neue Paketversion = neuer Zip-Name, überschrieben wird nie. Das Präfix gehört allein zum Paket: ein `storage_pfad`, der selbst `.entpackt/` enthält, wäre zu vermeiden. Admins können unveröffentlichte Pakete weiterhin nicht über die App signieren (wie bei der Zip, 0017).
-- **Status:** gültig (Entscheidung Anna); Migration 0055 noch nicht auf Staging angewendet, noch nicht mit einem echten ausgepackten Paket im Browser geprüft
-- **Belegt:** `supabase/migrations/0055_scorm_entpackt.sql`, `supabase/tests/database/028_scorm_entpackt_access.test.sql`, `src/lib/scorm-entpackt.ts` mit Tests, `src/lib/queries/scorm-paket.ts`, `src/app/(learner)/content/[lessonId]/medium/route.ts`; `data-model.md` Abschnitt SCORM; SR-50, SR-85
+- **Status:** gültig (Entscheidung Geschäftsführung)
+- **Belegt:** `supabase/migrations/0055_scorm_entpackt.sql`, `supabase/tests/database/028_scorm_entpackt_access.test.sql`, `src/lib/scorm-entpackt.ts` mit Tests, `src/lib/queries/scorm-paket.ts`, `src/app/(learner)/content/[lessonId]/medium/route.ts`; `data-model.md` Abschnitt SCORM; SR-50, SR-85; PR #138 (Prüfung im Browser auf Staging)
+
+### 2026-10-05 – Consent neu bewertet: im Pilot kein Cookie-Banner
+
+- **Entscheidung:** Im Pilot gibt es kein Cookie-Banner und keine gesonderte Einwilligung. Die Plattform setzt nur technisch notwendige Cookies für die Anmeldung; Tracking- und Analysedienste laufen nicht. Beim Onboarding gibt es eine Datenschutzinformation in einfacher Sprache als Information, nicht als Einwilligung. Banner und Einwilligung kommen erst, wenn Analytics eingeführt wird.
+- **Begründung:** Der frühere Beschluss im Playbook (Banner Pflicht) beruhte auf geplantem Tracking, das es nicht gibt. Das ist eine eigene Einschätzung des Teams und **nicht rechtlich bestätigt**; eine Prüfinstanz gibt es noch nicht.
+- **Folgen:** Wer einen Dienst mit Tracking oder Analyse einbaut (auch einen, der Cookies setzt), muss diese Entscheidung vorher neu bewerten; siehe auch die Grundsätze in `design-specifications.md` und die Regel 11 in `CLAUDE.md`.
+- **Status:** gültig; ersetzt den früheren Banner-Beschluss im Playbook (Notion)
+- **Belegt:** `src/app/(rechtliches)/datenschutz/page.tsx` (Abschnitt „Cookies und Session-Management“: nur technisch notwendige Cookies); `package.json` enthält keinen Analytics-Dienst; `src/lib/fachsprache-lesend.test.ts` prüft für die Fachsprache auf Tracking. Der Beschluss selbst ist **aus Projektdoku übernommen** (Planungsstand 05.10.).
+
+### 2026-10-05 – Scope für den Piloten: Datei-Upload und Fragen-Thread an Lektionen
+
+- **Entscheidung:** Im Pilot werden zwei Funktionen mit Personenbezug eingesetzt, jeweils an Lektionen gebunden und bewusst schlank: Lernmaterialien, die das Team an Lektionen hängt (Lernende laden nichts hoch), und der Fragen-Thread je Lektion (siehe 2026-10-07). Der Kohorten-Chat kam später dazu (siehe 2026-10-16).
+- **Begründung:** Beides wurde im Pilot getestet; schlanke Varianten halten den Aufwand und die neuen Datenkategorien klein. Beides macht eine Ergänzung der Datenschutzerklärung nötig (neue Datenkategorien, Sichtbarkeit, Fristen, Löschweg) und berührt das Backup-Konzept, weil Dateien im Storage nicht in der Datenbanksicherung stehen.
+- **Folgen:** Neue Funktionen mit Personendaten oder Dateien brauchen vor dem Livegang eine Ergänzung der Datenschutzerklärung (`datenschutz-offene-punkte.md`) und eine Prüfung des Löschwegs (`loeschweg.md`). Der Aufwand je Funktion war eine Annahme, nicht gemessen.
+- **Status:** gültig
+- **Belegt:** `lernmaterialien-upload.md` (nur AfCJ lädt hoch), `fragen-thread.md`, Migrationen `0023`, `0024`, `0050`; `runbook.md` Abschnitt Backup (Storage nicht gesichert). Der Beschluss selbst ist **aus Projektdoku übernommen** (Planungsstand 05.10.).
+
+### 2026-10-14 – Zeitpunkt des Praxisflow-Baus
+
+- **Entscheidung:** Der Praxisflow wird nach dem Release 2 und vor dem Praxisblock des Piloten gebaut; Struktur (Datenmodell, Ablauf, Rechte) und Inhalte (Unterlagen, Kriterien, Gate-Texte) entstehen gemeinsam, der Zeitplan steht in Asana. Auflage für den Bau: Die Fremdeinschätzung und die Freigaben dürfen für Lernende vor Abschluss des Praxistags nicht lesbar sein, entweder über eigene Spalten mit Spaltenrechten oder über Lesen nur per RPC, mit einem pgTAP-Test als Beleg.
+- **Begründung:** Ein Praxisflow-Schnitt hätte in Release 2 nichts sicher hineingebracht, weil die Inhalte fehlten. Ein langlebiger Branch erhöht das Risiko für Production, wenn das Team ihn nicht gemeinsam prüfen kann.
+- **Folgen:** Bis zum Bau bleibt der einfache Praxistag aus Migration `0011`; der Link dorthin hängt am Schalter `PRAXISAUFGABE_LINK` (siehe 2026-10-17). Migrationen für den Bau kommen als kleine, additive Pull Requests zuerst nach `dev`.
+- **Status:** gültig
+- **Belegt:** `praxisflow-realbau.md` (Abschnitt 4.0 und Rechte-Tabelle); der Beschluss selbst ist **aus Projektdoku übernommen**.
+
+### 2026-10-12 – Uhrzeit des Praxistags (SR-13)
+
+- **Entscheidung:** Die Uhrzeit eines Praxistags steht als `field_job.start` und `field_job.ende` (`time`, Berliner Ortszeit, Namen wie bei `live_session`). Beide Werte oder keiner, `ende` nach `start`; ohne Werte zeigt die Oberfläche den Praxistag ganztägig ohne Uhrzeit. Der Ort bleibt `standort` (Freitext).
+- **Begründung:** `field_job` ist schon pro lernender Person, und ein Praxistag kann auch im eigenen Betrieb mit eigener Zeit stattfinden. Ein Praxistag, der für die ganze Kohorte gleich ist, bekommt in jeder Zeile dieselben Werte, wie schon das Datum. Keine eigene Kohorten-Tabelle und nicht an `field_job_type`, denn der Typ ist die Aufgabe, nicht der Termin.
+- **Folgen:** Lernende lesen die neuen Spalten mit der eigenen Zeile und schreiben weiter nur die drei Felder aus dem Eintrag vom 2026-09-11. Die Zeiten setzt AfCJ im Dashboard oder per SQL wie die übrigen Praxistag-Daten.
+- **Status:** gültig
+- **Belegt:** `0026_field_job_uhrzeit.sql`; `015_field_job_uhrzeit.test.sql`; `data-model.md` (Eintrag 2026-10-12 zu `field_job`); `access-matrix.md` (Zeile „Field job“, Eintrag 2026-10-12); SR-13
+
+### 2026-10-12 – Reihenfolge der Kompetenzschritte und Programmfilter der Kompetenzseite (SR-69, SR-70)
+
+- **Entscheidung:** Die Reihenfolge der Kompetenzschritte steht als `competency_competency_step.reihenfolge`, nicht an `competency_step`. Sie ist Pflichtfeld, größer als 0 und je Kompetenz eindeutig; die Eindeutigkeit wird erst am Ende der Transaktion geprüft (deferrable), damit sich Positionen tauschen lassen. Neue Zuordnungen brauchen deshalb immer eine Position. Die Kompetenzseite zeigt nur Kompetenzen des Programms der aktiven Einschreibung, über `competency_programme`.
+- **Begründung:** Derselbe Schritt kann in verschiedenen Kompetenzen an verschiedener Stelle stehen. Die Programmzuordnung ist die N:M-Tabelle aus dem Eintrag vom 2026-09-23.
+- **Folgen:** Der Backfill bei der Migration ordnete nach Lehrplan: (Modul, Kurs, Lektion) der frühesten zugeordneten Lektion, Praxisschritte nach den Theorieschritten ihres Moduls und dann nach `field_job_type.reihenfolge`, Schritte ohne Zuordnung ans Ende, dann nach Name. Die Anzeige sortiert danach (`src/lib/queries/competencies.ts`).
+- **Status:** gültig
+- **Belegt:** `0027_competency_step_reihenfolge.sql`; `016_competency_step_reihenfolge.test.sql`; `data-model.md` (Eintrag 2026-10-12 zu `reihenfolge`); für den Programmfilter `src/app/(learner)/kompetenzen/page.tsx`. Im Repo gibt es für den Programmfilter keine eigene datierte Entscheidung, nur den Code; das Datum gilt für `reihenfolge`.
+
+### 2026-10-13 – Import-Regeln: Typ-Regel SR-71, eine Trainer:in je Termin, Trainer-Konten im Dashboard
+
+- **Entscheidung:** (1) Die Typ-Regel SR-71 gilt auch für den Plan-Import: Die Analyse der Excel meldet Zuordnungen, die sie ausschließt (theoretische Teilschritte an Aufträgen, praktische an Theorietagen). (2) Je Termin gilt genau eine Trainer:in; ein Team-Eintrag mit zwei Trainer:innen wird nicht als Person angelegt, es gilt die erste, und die betroffenen Termine stehen in der Ausgabe unter `trainer-team`. (3) Der Import legt keine Trainer-Konten an: Das Auth-Konto entsteht im Dashboard, das Skript verknüpft nur die `person` mit der Rolle `trainer`.
+- **Begründung:** (1) Typ-Homogenität, siehe 2026-09-23. (2) Je Termin ist nur eine Person gespeichert, Vertretungen kommen vor (Eintrag 2026-10-13, E3). (3) Es gibt keine Admin-Oberfläche, Admin-Arbeit läuft in Supabase (Eintrag 2026-09-09), und das Skript schreibt nie in `auth.users`.
+- **Folgen:** Fehlt ein Konto oder eine Zeile in der Trainer-Datei, entstehen die Termine ohne Trainer:in und werden gemeldet; ein späterer Lauf trägt sie nach. `import-plan.md` und `paket-g-plan.md` führen die Regel zu Team-Einträgen mit dem Datum 14.10.
+- **Status:** gültig
+- **Belegt:** `scripts/import-plan/plan.mjs` (Typ-Regel SR-71, Meldung `trainer-team`); `import-plan.md` (Abschnitt Trainer-Konten, Abschnitt Was der Lauf ausgibt); `paket-g-plan.md`
+
+### 2026-11-03 – Branch-Schutz: was technisch erzwungen wird
+
+- **Entscheidung:** Die Doku beschreibt nur, was GitHub erzwingt, und trennt es von Teamregeln. Erzwungen auf `main`: Pull Request mit einem Approval, Pflicht-Check `lint-and-types`, Force-Push und Löschen gesperrt. Der Schutz gilt nicht für Admins (`enforce_admins` aus), Admins können ohne Approval mergen. `dev` ist nicht geschützt (weder Pull-Request-Pflicht noch Approval noch Check). `rls-tests` läuft in jedem Pull Request, ist aber kein Pflicht-Check. Teamregel, nicht erzwungen: Jeder Pull Request wird von einer zweiten Person freigegeben; ohne Zweitfreigabe nur mit Vermerk (`release.md`).
+- **Begründung:** Die Aussage „gilt auch für Admins“ im Eintrag vom 2026-09-23 stimmt mit der Einstellung nicht überein. Zwischen dem 20.10. und dem 01.11.2026 wurden 11 der letzten 30 Pull Requests nach `main` ohne Approval einer zweiten Person gemergt; die Doku soll deshalb nicht zusichern, was technisch nicht erzwungen wird.
+- **Status:** gültig; ersetzt die Teilaussage „gilt auch für Admins“ aus 2026-09-23. Die Teamregel zur Zweitfreigabe ist ersetzt durch die Einträge vom 2026-11-04 (`/pr-check` Pflicht; keine Zweitfreigabe, auch nicht für Releases). `rls-tests` ist seit 2026-11-04 Pflicht-Check (Eintrag „Releases ohne Zweitfreigabe“).
+- **Belegt:** Branch-Schutz von `main` und `dev` sowie Rulesets des Repositorys per GitHub-API gelesen; die Zahl stammt aus den Reviews der letzten 30 gemergten Pull Requests nach `main`. Rulesets auf Organisationsebene sind nicht lesbar.
+
+### 2026-11-04 – Arbeit in Claude-Code-Sitzungen, gemeinsamer Stand nur im Repository
+
+- **Entscheidung:** (Produkt-Lead) Das Team arbeitet in Claude-Code-Sitzungen, die selbst lesen, planen, bauen und, je nach Einrichtung, auf GitHub, Notion und Asana zugreifen. Die Aufteilung in einen Chat, der Aufträge schreibt, und ein Terminal, das sie ausführt, entfällt als Vorgabe. Was mehrere Personen und Sitzungen gemeinsam als Stand brauchen, steht im Repository; Chat-Projekte sind keine Quelle. Asana-Karten verschiebt, benennt oder schließt eine Sitzung nur nach Freigabe.
+- **Begründung:** Mehrere Personen arbeiten parallel mit eigenen Sitzungen; nur das Repository sehen alle. Das Kopieren von Aufträgen und Berichten zwischen Chat und Terminal kostete Zeit und erzeugte Stände außerhalb des Repositorys.
+- **Folgen:** `arbeitsweise.md` beschreibt die Arbeit mit einer Sitzung und den Weg einer Änderung; `umgebungen.md` beschreibt die Umgebungen. Die Datenschutzregeln bleiben unverändert; Freigaben und SRs regelt der folgende Eintrag.
+- **Status:** gültig
+- **Belegt:** `docs/arbeitsweise.md`, `docs/umgebungen.md`
+
+### 2026-11-04 – `/pr-check` Pflicht, keine Zweitfreigabe nach `dev`, SRs mit Freigabe aus der Sitzung
+
+- **Entscheidung:** (Produkt-Lead) (1) Vor jeder Pull Request läuft `/pr-check`; das steht in der Definition of Done. (2) Für Pull Requests nach `dev` ist eine Zweitfreigabe durch eine zweite Person keine Pflicht. Die Person, mit der die Sitzung arbeitet, liest den Diff und prüft das Verhalten auf der Preview. Für Release-Pull-Requests nach `main` gilt weiter `release.md`. (3) Eine Sitzung darf SRs in der Notion-Datenbank anlegen und ändern, aber nur nach ausdrücklicher Freigabe der Person; SRs entstehen und ändern sich nur in Notion, das Repository übernimmt den Stand als Auszug.
+- **Begründung:** Im Team arbeitet keine Entwickler:in; eine Zweitfreigabe unter Kolleg:innen war keine inhaltliche Prüfung und kostete nur Zeit. Der Review-Agent prüft die Regeln aus `CLAUDE.md` und `docs/` dagegen bei jeder Pull Request. SRs als Entwurf aus der Sitzung sparen das Abtippen; die Freigabe bleibt beim Menschen.
+- **Folgen:** Kommen Entwickler:innen ins Team, wird die Review-Regel neu entschieden. Ersetzt die Teamregel „jeder Pull Request wird von einer zweiten Person freigegeben“ aus 2026-11-03 für Pull Requests nach `dev`; das Approval im Branch-Schutz auf `main` bleibt unverändert (Pflicht-Checks: folgender Eintrag).
+- **Status:** gültig; für Release-Pull-Requests ergänzt durch den folgenden Eintrag
+- **Belegt:** `CLAUDE.md` (Abschnitt „What we are building“), `docs/arbeitsweise.md`, `docs/definition-of-done.md`, `.claude/agents/code-reviewer.md`
+
+### 2026-11-04 – Releases ohne Zweitfreigabe, Branch-Schutz auf `main` bleibt, `rls-tests` Pflicht-Check
+
+- **Entscheidung:** (Geschäftsführung und Produkt-Lead) (1) Auch Release-Pull-Requests von `dev` nach `main` brauchen vorerst keine Zweitfreigabe durch eine zweite Person; es gilt dasselbe wie nach `dev`: `/pr-check`, grüne CI, die Person liest den Diff und prüft auf Staging. Der Ablauf in `release.md` (Migrationen vor dem Merge, Probelauf, getippte Freigabe, Smoke-Test) bleibt. (2) Der Branch-Schutz auf `main` bleibt, wie er ist: ein Approval ist eingestellt, gilt aber nicht für Admins (`enforce_admins` aus); Admins mergen den Release allein, ein Vermerk im PR ist nicht nötig. Wer kein Admin ist, kann nicht allein nach `main` mergen. (3) `rls-tests` ist neben `lint-and-types` Pflicht-Check auf `main` (Einstellung durch die Produkt-Lead). Auch die Pflicht-Checks können Admins technisch umgehen; Teamregel ist, nie ohne grüne CI zu mergen.
+- **Begründung:** Im Team prüft niemand inhaltlich als Entwickler:in; eine Zweitfreigabe wäre formal. Auf Production sind nur die Pilotkohorte und Testkonten des Teams; das Risiko, durch einen Release etwas Größeres zu beschädigen, ist gering und wird durch die automatischen Tests, die Abnahme auf Staging, das tägliche Backup und den Rollback in Vercel weiter begrenzt.
+- **Folgen:** Kommen Entwickler:innen ins Team oder deutlich mehr echte Konten auf Production, wird die Freigaberegel für Releases neu entschieden, einschließlich `enforce_admins`. Ersetzt die Regel „Freigabe durch die jeweils andere Person, ohne sie nur mit Vermerk“ aus `release.md` (Entscheidung Geschäftsführung 2026-10-17). Der offene Punkt „Branch-Schutz“ unter „Offene technische Schulden“ entfällt.
+- **Status:** gültig
+- **Belegt:** Branch-Schutz von `main` per GitHub-API gelesen (ein Approval, `enforce_admins` aus, Pflicht-Checks `lint-and-types` und `rls-tests`); `docs/release.md`, `docs/runbook.md`, `docs/arbeitsweise.md`
+
+## Offene technische Schulden
+
+Diese Punkte sind keine Entscheidungen, sondern bekannte Lücken; was daraus wird, steht in Asana.
+
+**Nachweise sind nicht durchgehend unveränderlich.** Belegt ist: `attendance` und `verification` haben seit Migration `0032` einen `BEFORE UPDATE`-Trigger (`unveraenderlich`), der jedes Update ablehnt, auch für AfCJ admin; Korrekturen laufen als Storno-Zeile mit `korrigiert_id`. Löschen ist dort nicht gesperrt: `attendance_admin_all` und `verification_admin_all` (Migration `0009`) bleiben bestehen, und der Kommentar zu `fn_unveraenderlich` in `0032` sagt, dass das Löschen für AfCJ admin bleibt, bis der Löschweg entschieden ist. Für `unit_progress`, `field_capture` und `field_capture_antwort` findet sich in den Migrationen kein Schutz-Trigger; sie sind veränderbar.
+
+**Löschweg.** Löschen einer Person ist ein manuelles Verfahren, beschrieben in `loeschweg.md`. Die Abwägung zwischen Löschanspruch, Unveränderlichkeit der Nachweise und Aufbewahrungspflicht ist nicht rechtlich geprüft.
+
+**`field_job` ohne Verweis auf die Einschreibung.** Ein Praxistag verweist auf die lernende Person (`learner_id`, Löschweitergabe) und auf den Auftragstyp, aber nicht auf die Einschreibung (Migration `0005`, keine spätere Migration ergänzt einen Verweis). Korrektur zur ersten Fassung dieses Abschnitts: Nur der Plan-Eintrag `schedule_entry` trägt die `enrolment_id` und kaskadiert mit der Einschreibung (`0005`). Wird die Einschreibung gelöscht, bleibt die `field_job`-Zeile bestehen, ohne dass ein Plan-Eintrag der Einschreibung auf sie zeigt; das ist die Folge des fehlenden Verweises, im Betrieb nicht geprüft.

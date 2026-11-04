@@ -4,7 +4,7 @@ Stand 14.10.2026. **Textvorschlag, nicht veröffentlicht.** Die Seite `/datensch
 
 **Wann:** spätestens vor dem Release von Migration 0034 und der Kohortenansicht auf Production. Bis dahin sagt die Erklärung „nicht für andere Teilnehmende“; das passt nur zum Stand ohne Kohortenansicht (dev/Staging sind Testumgebungen).
 
-Was die Funktion tut (Entscheidung Vera 14.10.2026, `docs/decisions.md`): Lernende sehen die anderen Lernenden ihrer Kohorte mit Rufname plus Initial des Nachnamens, der Anzahl und – wenn hochgeladen – dem Foto. Nur gleiche Kohorte und gleicher Betrieb, nur aktive Einschreibungen. Der Foto-Upload ist die Freigabe.
+Was die Funktion tut (Entscheidung Produkt-Lead 14.10.2026, `docs/decisions.md`): Lernende sehen die anderen Lernenden ihrer Kohorte mit Rufname plus Initial des Nachnamens, der Anzahl und – wenn hochgeladen – dem Foto. Nur gleiche Kohorte und gleicher Betrieb, nur aktive Einschreibungen. Der Foto-Upload ist die Freigabe.
 
 ## 1. Abschnitt „Profilfotos“ – geänderter Satz
 
