@@ -393,8 +393,24 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 
 - **Entscheidung:** Die Doku beschreibt nur, was GitHub erzwingt, und trennt es von Teamregeln. Erzwungen auf `main`: Pull Request mit einem Approval, Pflicht-Check `lint-and-types`, Force-Push und Löschen gesperrt. Der Schutz gilt nicht für Admins (`enforce_admins` aus), Admins können ohne Approval mergen. `dev` ist nicht geschützt (weder Pull-Request-Pflicht noch Approval noch Check). `rls-tests` läuft in jedem Pull Request, ist aber kein Pflicht-Check. Teamregel, nicht erzwungen: Jeder Pull Request wird von einer zweiten Person freigegeben; ohne Zweitfreigabe nur mit Vermerk (`release.md`).
 - **Begründung:** Die Aussage „gilt auch für Admins“ im Eintrag vom 2026-09-23 stimmt mit der Einstellung nicht überein. Zwischen dem 20.10. und dem 01.11.2026 wurden 11 der letzten 30 Pull Requests nach `main` ohne Approval einer zweiten Person gemergt; die Doku soll deshalb nicht zusichern, was technisch nicht erzwungen wird.
-- **Status:** gültig; ersetzt die Teilaussage „gilt auch für Admins“ aus 2026-09-23.
+- **Status:** gültig; ersetzt die Teilaussage „gilt auch für Admins“ aus 2026-09-23. Die Teamregel zur Zweitfreigabe ist für Pull Requests nach `dev` ersetzt durch 2026-11-04 (`/pr-check` Pflicht).
 - **Belegt:** Branch-Schutz von `main` und `dev` sowie Rulesets des Repositorys per GitHub-API gelesen; die Zahl stammt aus den Reviews der letzten 30 gemergten Pull Requests nach `main`. Rulesets auf Organisationsebene sind nicht lesbar.
+
+### 2026-11-04 – Arbeit in Claude-Code-Sitzungen, gemeinsamer Stand nur im Repository
+
+- **Entscheidung:** (Produkt-Lead) Das Team arbeitet in Claude-Code-Sitzungen, die selbst lesen, planen, bauen und, je nach Einrichtung, auf GitHub, Notion und Asana zugreifen. Die Aufteilung in einen Chat, der Aufträge schreibt, und ein Terminal, das sie ausführt, entfällt als Vorgabe. Was mehrere Personen und Sitzungen gemeinsam als Stand brauchen, steht im Repository; Chat-Projekte sind keine Quelle. Asana-Karten verschiebt, benennt oder schließt eine Sitzung nur nach Freigabe.
+- **Begründung:** Mehrere Personen arbeiten parallel mit eigenen Sitzungen; nur das Repository sehen alle. Das Kopieren von Aufträgen und Berichten zwischen Chat und Terminal kostete Zeit und erzeugte Stände außerhalb des Repositorys.
+- **Folgen:** `arbeitsweise.md` beschreibt die Arbeit mit einer Sitzung und den Weg einer Änderung; `umgebungen.md` beschreibt die Umgebungen. Die Datenschutzregeln bleiben unverändert; Freigaben und SRs regelt der folgende Eintrag.
+- **Status:** gültig
+- **Belegt:** `docs/arbeitsweise.md`, `docs/umgebungen.md`
+
+### 2026-11-04 – `/pr-check` Pflicht, keine Zweitfreigabe nach `dev`, SRs mit Freigabe aus der Sitzung
+
+- **Entscheidung:** (Produkt-Lead) (1) Vor jeder Pull Request läuft `/pr-check`; das steht in der Definition of Done. (2) Für Pull Requests nach `dev` ist eine Zweitfreigabe durch eine zweite Person keine Pflicht. Die Person, mit der die Sitzung arbeitet, liest den Diff und prüft das Verhalten auf der Preview. Für Release-Pull-Requests nach `main` gilt weiter `release.md`. (3) Eine Sitzung darf SRs in der Notion-Datenbank anlegen und ändern, aber nur nach ausdrücklicher Freigabe der Person; SRs entstehen und ändern sich nur in Notion, das Repository übernimmt den Stand als Auszug.
+- **Begründung:** Im Team arbeitet keine Entwickler:in; eine Zweitfreigabe unter Kolleg:innen war keine inhaltliche Prüfung und kostete nur Zeit. Der Review-Agent prüft die Regeln aus `CLAUDE.md` und `docs/` dagegen bei jeder Pull Request. SRs als Entwurf aus der Sitzung sparen das Abtippen; die Freigabe bleibt beim Menschen.
+- **Folgen:** Kommen Entwickler:innen ins Team, wird die Review-Regel neu entschieden. Ersetzt die Teamregel „jeder Pull Request wird von einer zweiten Person freigegeben“ aus 2026-11-03 für Pull Requests nach `dev`; der Branch-Schutz auf `main` bleibt unverändert.
+- **Status:** gültig
+- **Belegt:** `CLAUDE.md` (Abschnitt „What we are building“), `docs/arbeitsweise.md`, `docs/definition-of-done.md`, `.claude/agents/code-reviewer.md`
 
 ## Offene technische Schulden
 

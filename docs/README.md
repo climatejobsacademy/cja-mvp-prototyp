@@ -1,6 +1,6 @@
 # Dokumentation: Einstieg
 
-Dieses Verzeichnis enthält den technischen Stand der Plattform, ihre Abläufe und die technischen Entscheidungen. Das Repository ist öffentlich: Hier stehen weder Personennamen noch E-Mail-Adressen noch Listen mit Personenbezug, und es stehen hier keine Zugangsdaten. Rollen (Produkt-Lead, Trainer:in, Terminal) ersetzen Namen.
+Dieses Verzeichnis enthält den technischen Stand der Plattform, ihre Abläufe und die technischen Entscheidungen. Das Repository ist öffentlich: Hier stehen weder Personennamen noch E-Mail-Adressen noch Listen mit Personenbezug, und es stehen hier keine Zugangsdaten. Rollen (Produkt-Lead, Trainer:in, Sitzung) ersetzen Namen.
 
 ## Was steht wo
 
@@ -14,7 +14,7 @@ Jede Art von Information hat genau einen Ort. Gibt es zu einer Sache zwei Fassun
 | Skizzen und Diagramme ohne Status | Miro |
 | Passwörter, Schlüssel, Zugangsdaten | nur im Team-Passwort-Manager, nie in Chat, Notion, Asana oder Repository |
 
-Statusdokumente („Stand vom …“, „offen“, „erledigt“) gehören nicht nach `docs/`. Ein Dokument beschreibt, wie etwas funktioniert oder warum es so entschieden wurde, und bleibt damit gültig, bis sich der Mechanismus ändert. Was sich pro Woche ändert, steht in Asana. Wie die Arbeit mit dem Terminal abläuft, steht in `arbeitsweise.md`; die Regeln für den Code stehen in `CLAUDE.md` im Wurzelverzeichnis.
+Statusdokumente („Stand vom …“, „offen“, „erledigt“) gehören nicht nach `docs/`. Ein Dokument beschreibt, wie etwas funktioniert oder warum es so entschieden wurde, und bleibt damit gültig, bis sich der Mechanismus ändert. Was sich pro Woche ändert, steht in Asana. Wie die Arbeit mit Claude-Code-Sitzungen abläuft, steht in `arbeitsweise.md`; die Regeln für den Code stehen in `CLAUDE.md` im Wurzelverzeichnis.
 
 ## Index
 
@@ -24,7 +24,7 @@ Statusdokumente („Stand vom …“, „offen“, „erledigt“) gehören nich
 
 **Design.** `design-specifications.md` enthält Design-Tokens, Abläufe und die Grundsätze für Dienste mit Personendaten. In `design_handoff_lernplattform/` liegen die HTML-Referenzen und der Auftrag der Design-Übergabe; sie sind Vorlage und kein Produktionscode.
 
-**Betrieb und Release.** `runbook.md` sagt, was zu tun ist, wenn etwas bricht, und wer entscheidet. `release.md` beschreibt den Weg von `dev` nach Production mit Checkliste und Rückweg. `definition-of-done.md` legt fest, wann ein Pull Request fertig ist.
+**Betrieb und Release.** `umgebungen.md` zeigt, welche Umgebung (Production, Staging, `demo`, lokal) wofür da ist, gegen welche Datenbank sie läuft und welche Daten darin liegen. `runbook.md` sagt, was zu tun ist, wenn etwas bricht, und wer entscheidet. `release.md` beschreibt den Weg von `dev` nach Production mit Checkliste und Rückweg. `definition-of-done.md` legt fest, wann ein Pull Request fertig ist.
 
 **Importe und Skripte.** `import-plan.md` beschreibt den Excel-Import für Stundenplan, Kompetenzen, Aufträge und Fachsprache-Einheiten, `lernende-anlegen.md` das Anlegen von Konten, Profilen und Einschreibungen, `scorm-einspielen.md` das Einspielen von Selbstlern-Paketen und `live-links.md` das Hinterlegen der Teams-Links. `lernmaterialien-upload.md` erklärt, wie Dateien an Lektionen hängen.
 

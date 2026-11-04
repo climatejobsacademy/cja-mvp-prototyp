@@ -1,9 +1,16 @@
 # Academy Platform — project rules
 
 ## What we are building
-A qualification platform for climate-trade employers. Learners in a programme
-learn in three contexts — live sessions, self-paced units, app-guided field jobs —
-and all three produce competency evidence in one profile per learner.
+A qualification platform for new skilled workers in the electrical trade with a
+focus on renewable energy. Learners in a programme learn in three contexts —
+live sessions, self-paced units, app-guided field jobs — and all three produce
+competency evidence in one profile per learner.
+Context of the current pilot: an education provider runs a publicly funded
+training measure; learners are not employed by a company. Theory runs online,
+practice on site with the provider. In the data model and code, `organisation`
+(type Employer) and "Betrieb"/"employer" are legacy terms for the organisation a
+learner belongs to; keep them in code and schema, but don't use "Betrieb" in
+learner-facing pilot texts.
 Start with /docs/README.md (what lives where). Spec: /docs/requirements.md (SR-xx),
 /docs/data-model.md, /docs/access-matrix.md, /docs/design-specifications.md.
 Every new or changed behaviour traces to an SR-xx. No SR → ask before building.
@@ -14,8 +21,10 @@ SR numbers are assigned only in Notion (database "System Requirements"). If no
 matching SR exists, it is created there; until then the repo says "SR folgt",
 and the PR replaces it as soon as the number is known. Never assign SR numbers
 in the repo. Add every new Notion SR to /docs/sr-registry.json in the same PR.
-SRs are changed only in Notion as well: read them from there, never write them,
-and never edit /docs/requirements.md by hand, it is an extract of Notion. On a
+SRs are created and changed only in Notion as well: read them from there; write
+or change an SR in Notion only with the explicit approval of the person you work
+with; never create or change an SR in the repo and never edit
+/docs/requirements.md by hand, it is an extract of Notion. On a
 task with an SR, read the SR from Notion before building, before a PR that
 references it and before every release, compare the extract with it and
 regenerate the extract on deviation. Build against the Acceptance Check and name
@@ -33,7 +42,9 @@ maintained: Notion page "Quellen und Arbeitsteilung: was wo lebt".
   (AWS eu-west-1, ref keijrwvegmwgpvprpoxa).
 - Environments: Production = Supabase Frankfurt, served by Vercel Production
   (`main` → learn.climatejobsacademy.com). Staging = Supabase Ireland, used by
-  Vercel Preview deployments. Never run anything against Production unless
+  Vercel Preview deployments, including branch `demo`, which has no database of
+  its own. Overview, data per environment and what is verified:
+  /docs/umgebungen.md. Never run anything against Production unless
   explicitly told; every remote DB action names its `--project-ref` explicitly.
 
 ## Non-negotiable rules
