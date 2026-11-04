@@ -68,7 +68,7 @@ Mit einem eigenen Testkonto auf learn.climatejobsacademy.com, nicht mit Konten v
 
 ## 6. Inhalte
 
-Erst nach den Migrationen (der Import braucht mindestens 0030). Aus dem Release-Ordner mit `/production-inhalte`. Empfohlen ist erst Staging, direkt auf Production ist erlaubt, wenn man das ausdrücklich will. Je Schritt Probelauf, Freigabe, echter Lauf:
+Erst nach den Migrationen (der Import braucht mindestens 0030). Aus dem Release-Ordner (Abschnitt „Release-Ordner einrichten“, Punkt 4). Empfohlen ist erst Staging, direkt auf Production ist erlaubt, wenn man das ausdrücklich will. Je Schritt Probelauf, Freigabe, echter Lauf:
 
 - Trainer-Konten und Plan: `scripts/import-plan.mjs --ziel production --production-freigabe …` (siehe `docs/import-plan.md`).
 - SCORM (`scripts/scorm-einspielen.mjs`, veröffentlicht sofort), Fachsprache (`scripts/import-plan.mjs --fachsprache`), Teams-Links (`scripts/live-links.mjs`, ohne Begleitkurse): dieselben Skripte wie auf Staging, Ziel Production.
@@ -85,7 +85,7 @@ Erst nach den Migrationen (der Import braucht mindestens 0030). Aus dem Release-
 
 Ein eigener Ordner verhindert, dass ein Befehl aus Versehen gegen die falsche Datenbank läuft. Die Arbeitsordner für `dev` bleiben mit Staging verlinkt.
 
-1. Neuer Arbeitsbaum, z. B. `../cja-mvp-prototyp-release` (`git worktree add`). Weil Migrationen vor dem Merge eingespielt werden, steht er für den Probelauf und den echten Lauf auf dem Stand von `origin/dev` (ohne eigenen Branch, `git switch --detach origin/dev`), nicht auf `main`.
+1. Neuer Arbeitsbaum, z. B. `../cja-mvp-prototyp-release` (`git worktree add`). Weil Migrationen vor dem Merge eingespielt werden, steht er für den Probelauf und den echten Lauf auf dem Stand von `origin/dev` (ohne eigenen Branch, `git switch --detach origin/dev`), nicht auf `main`. Vor dem Probelauf `git fetch` und prüfen, dass die Migrationen im Ordner genau die aus dem Release-PR sind; wurde inzwischen weiter nach `dev` gemergt, gehört das in den Release-PR oder in den nächsten Release.
 2. Production-Passwort selbst in den Schlüsselbund (`cja-db-fra`), dann im Ordner `SUPABASE_DB_PASSWORD="$(security find-generic-password -s cja-db-fra -w)" npx supabase@2.117.0 link --project-ref vqfnmkcfjsudsujiuoqm`. Claude sieht das Passwort nie.
 3. Prüfen, dass `supabase/.temp/project-ref` die Frankfurter Ref enthält, und im Staging-Ordner weiterhin die Irland-Ref.
 4. Die Befehle `/release` und `/production-inhalte` sowie die Datei `ONBOARDING-PRODUCTION.md` liegen nicht im Repository; wo sie lokal eingerichtet sind, führen sie durch diese Seite. Ohne sie geht die Sitzung diese Seite Schritt für Schritt durch und hält vor jedem Production-Schritt an.
