@@ -8,7 +8,8 @@ Ein Pull Request ist fertig, wenn:
 - Schema-Änderungen als Migrationen vorliegen, mit Policies in derselben Datei
 - RLS-Tests hinzugefügt oder aktualisiert wurden, wo sich Zugriff geändert hat
 - CI grün ist (Types, Lint, Unit-Tests, RLS-Tests)
-- Er laut Teamregel von der zweiten Person reviewt wurde (technisch erzwungen ist ein Approval nur auf `main`, siehe `decisions.md`, 2026-11-03) und auf `dev` durchgeklickt wurde
+- `/pr-check` gelaufen ist und jeder Befund behoben oder in der PR begründet ist (`arbeitsweise.md`)
+- Die Person, mit der die Sitzung gearbeitet hat, den Diff gelesen und das Verhalten auf der Preview durchgeklickt hat; eine Zweitfreigabe durch eine zweite Person ist nach `dev` keine Pflicht (`decisions.md`, 2026-11-04), für Releases gilt `release.md`
 - Die Traceability-Tabelle aktualisiert ist
 
 ## Wöchentliches Ritual (1 Stunde)
