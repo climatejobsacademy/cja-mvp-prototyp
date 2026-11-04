@@ -46,7 +46,7 @@ Zugänge: Wer welche Zugänge zu GitHub, Supabase, Vercel und Brevo hat, steht i
 | Thema | Person | Erreichbar über |
 |---|---|---|
 | Technik (App, Deployment, Datenbank) | Technik, Vertretung Geschäftsführung | Kontaktwege in Notion (nicht im Repo) |
-| Freigabe von Releases | keine Zweitfreigabe nötig; die Person mit Admin-Recht, die den Release macht, merged nach `/pr-check`, grüner CI und Prüfung auf Staging (`docs/release.md`, `docs/decisions.md` 2026-11-04) | Kontaktwege in Notion |
+| Freigabe von Releases | keine Zweitfreigabe nötig; die Person mit Admin-Recht, die den Release macht, merged nach der Prüfung durch den Review-Agenten, grüner CI und Prüfung auf Staging (`docs/release.md`, `docs/decisions.md` 2026-11-04) | Kontaktwege in Notion |
 | Datenschutzvorfall (Meldung, Betroffene informieren) | Geschäftsführung | Kontaktwege in Notion |
 | App im Notfall vom Netz nehmen | entscheidet die Geschäftsführung | Kontaktwege in Notion |
 
