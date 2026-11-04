@@ -2,8 +2,8 @@
 // Nur serverseitig: ohne NEXT_PUBLIC_-Präfix kommt der Wert nicht ins
 // Browser-Bundle. Ohne gesetzte Variable ist jeder Schalter aus (Ausnahme:
 // NATIVE_SELBSTLERNEN, siehe unten); gesetzt wird er in Vercel je Umgebung
-// (Preview/Development an, Production aus). Eine
-// Änderung wirkt erst nach einem neuen Deployment. Getestet in
+// mit eigenem Wert, der nur in Vercel steht (docs/runbook.md, Abschnitt 7).
+// Eine Änderung wirkt erst nach einem neuen Deployment. Getestet in
 // src/lib/schalter.test.ts.
 
 type Umgebung = Record<string, string | undefined>;

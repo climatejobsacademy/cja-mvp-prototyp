@@ -1,6 +1,6 @@
 # Release: dev nach Production
 
-Zuletzt gegen den Release vom 20.10.2026 geprüft (Abschnitte 1 bis 5). Ergänzt `docs/runbook.md` (was tun, wenn etwas bricht). Diese Seite beschreibt den Weg von `dev` nach Production: was vorher feststehen muss, in welcher Reihenfolge es läuft, wie man prüft und wie man zurückkommt.
+Ergänzt `docs/runbook.md` (was tun, wenn etwas bricht). Diese Seite beschreibt den Weg von `dev` nach Production: was vorher feststehen muss, in welcher Reihenfolge es läuft, wie man prüft und wie man zurückkommt.
 
 ## Kurz
 
@@ -85,7 +85,7 @@ Erst nach den Migrationen (der Import braucht mindestens 0030). Aus dem Release-
 
 Ein eigener Ordner verhindert, dass ein Befehl aus Versehen gegen die falsche Datenbank läuft. Die Arbeitsordner für `dev` bleiben mit Staging verlinkt.
 
-1. Neuer Arbeitsbaum, z. B. `../cja-mvp-prototyp-release` auf `main` (`git worktree add`).
+1. Neuer Arbeitsbaum, z. B. `../cja-mvp-prototyp-release` (`git worktree add`). Weil Migrationen vor dem Merge eingespielt werden, steht er für den Probelauf und den echten Lauf auf dem Stand von `origin/dev` (ohne eigenen Branch, `git switch --detach origin/dev`), nicht auf `main`.
 2. Production-Passwort selbst in den Schlüsselbund (`cja-db-fra`), dann im Ordner `SUPABASE_DB_PASSWORD="$(security find-generic-password -s cja-db-fra -w)" npx supabase@2.117.0 link --project-ref vqfnmkcfjsudsujiuoqm`. Claude sieht das Passwort nie.
 3. Prüfen, dass `supabase/.temp/project-ref` die Frankfurter Ref enthält, und im Staging-Ordner weiterhin die Irland-Ref.
-4. Die Befehle `/release` (Code und Migrationen) und `/production-inhalte` (Inhalte, Konten, Lernende) für Claude führen durch diese Seite, mit Anhalten vor jedem Production-Schritt. Einrichtung für weitere Personen: `ONBOARDING-PRODUCTION.md` (lokal, wird per Datei weitergegeben).
+4. Die Befehle `/release` und `/production-inhalte` sowie die Datei `ONBOARDING-PRODUCTION.md` liegen nicht im Repository; wo sie lokal eingerichtet sind, führen sie durch diese Seite. Ohne sie geht die Sitzung diese Seite Schritt für Schritt durch und hält vor jedem Production-Schritt an.
