@@ -67,14 +67,14 @@ Eine Zuordnung entfernen: Zeile in `lesson_resource` löschen. Die Datei selbst 
 
 Voraussetzung: Materialien an der TEST Live-Session, der SCORM-Testlektion und der TEST Repository-Lektion (Testdaten-Skripte aus der Sitzung, nur Staging). Preview-Deployment des PR öffnen (Vercel Preview nutzt Staging).
 
-1. **vera+testlearner2** (Test-Kohorte, EFK-EE) anmelden.
+1. **Testkonto 2** (Test-Kohorte, EFK-EE) anmelden.
    - TEST Live-Session öffnen: Abschnitt „Materialien“ unter dem Termin, sechs Zeilen in der Reihenfolge PDF, Bild, Word, PowerPoint, Excel, Link, je mit Dateiname, Format, Größe.
    - „Vorschau“ bei PDF und Bild öffnet einen neuen Tab mit der Datei. Bei Word, PowerPoint, Excel gibt es nur „Download“.
    - „Download“ lädt die Datei mit ihrem Dateinamen herunter; die Zeile zeigt danach „heruntergeladen“. Neuer Tab oder neue Sitzung: Marker ist weg.
    - „Öffnen“ beim Link öffnet https://example.com in einem neuen Tab.
    - SCORM-Testlektion: Materialien über dem Player. TEST Repository-Lektion: Liste als Hauptinhalt, darunter „Als abgeschlossen markieren“.
    - Tastatur: mit Tab durch die Aktionen, Enter löst aus, Fokus-Ring sichtbar.
-2. **vera+testlearner** (Energiehelden, ebenfalls EFK-EE): sieht dieselben Materialien, weil beide im selben Programm eingeschrieben sind. Der Fall „ohne Einschreibung“ ist auf Staging mit diesen Konten nicht nachstellbar und durch den pgTAP-Test 012 aus PR 1 abgedeckt.
+2. **Testkonto 1** (Betrieb des Partners, ebenfalls EFK-EE): sieht dieselben Materialien, weil beide im selben Programm eingeschrieben sind. Der Fall „ohne Einschreibung“ ist auf Staging mit diesen Konten nicht nachstellbar und durch den pgTAP-Test 012 aus PR 1 abgedeckt.
 3. **Unveröffentlicht:** Lektion im Dashboard auf `unpublished` setzen → Seite nicht erreichbar bzw. ohne Materialien; ein vorher kopierter Link `/content/<lektion>/material/<material>` liefert 404. Danach wieder auf `published`.
 4. **Ablauf nach einer Stunde:** Bei „Vorschau“ die Adresse des neuen Tabs (signierter Link) kopieren, nach mehr als einer Stunde erneut aufrufen → Supabase meldet einen abgelaufenen Link. Ein neuer Klick auf „Vorschau“ erzeugt einen neuen, gültigen Link.
 5. **Ohne Anmeldung:** `/content/<lektion>/material/<material>` in einem privaten Fenster → Weiterleitung auf `/login`.

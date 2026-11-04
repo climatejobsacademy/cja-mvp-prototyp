@@ -1,6 +1,6 @@
 # Risikoanalyse Drittlandübermittlung (Transfer Impact Assessment): Supabase
 
-Stand 18.10.2026 · **Entwurf** (Anna mit Claude), keine rechtliche Prüfung. Gehört zum Verzeichnis der Verarbeitungstätigkeiten (`docs/verarbeitungsverzeichnis.md`).
+Stand 18.10.2026 · **Entwurf** (Geschäftsführung mit Claude), keine rechtliche Prüfung. Gehört zum Verzeichnis der Verarbeitungstätigkeiten (`docs/verarbeitungsverzeichnis.md`).
 
 ## 1. Übermittlung
 
