@@ -119,7 +119,7 @@ Gilt für die Lernplattform learn.climatejobsacademy.com (Production, Supabase F
 - **Protokolle:** keine personenbezogenen Daten und keine Nachrichteninhalte in App-Logs.
 - **Verschlüsselung:** Übertragung per HTTPS; Verschlüsselung der gespeicherten Daten durch Supabase (Anbieterangabe, nicht geprüft).
 - **Backups:** täglich, 7 Tage (`docs/runbook.md`).
-- **Änderungen:** Datenbank nur über geprüfte Migrationen, Release mit Probelauf und Zweitfreigabe als Teamregel; technisch erzwungen ist auf `main` ein Approval, nicht für Admins (`docs/release.md`, `docs/decisions.md`).
+- **Änderungen:** Datenbank nur über geprüfte Migrationen, Release mit Probelauf, getippter Freigabe, automatischen Tests (Pflicht-Checks auf `main`) und Prüfung auf Staging; eine Zweitfreigabe durch eine zweite Person ist vorerst keine Pflicht (`docs/release.md`, `docs/decisions.md` 2026-11-04).
 - **Zugänge des Teams:** eigene Konten in Supabase und GitHub; Vercel und Brevo als geteilte Konten (Zwei-Faktor-Anmeldung für Brevo nach dem Start).
 
 ## Offen

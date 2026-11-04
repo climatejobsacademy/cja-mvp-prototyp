@@ -5,7 +5,7 @@ Zuletzt gegen den Release vom 20.10.2026 geprüft (Abschnitte 1 bis 5). Ergänzt
 ## Kurz
 
 1. **Vorher:** Umfang festlegen, Zugänge prüfen, Backup-Stand kennen, Schalter für Production prüfen.
-2. **Release-PR** `dev` → `main` öffnen, die jeweils andere Person gibt frei (Geschäftsführung ↔ Technik). Noch nicht mergen.
+2. **Release-PR** `dev` → `main` öffnen, `/pr-check` laufen lassen, CI abwarten. Keine Zweitfreigabe nötig, gemergt wird per Admin-Recht. Noch nicht mergen.
 3. **Migrationen** auf Production: Probelauf, anhalten und erklären, dann mit getippter Freigabe einspielen.
 4. **Merge** des Release-PRs. Vercel veröffentlicht automatisch.
 5. **Smoke-Test** auf learn.climatejobsacademy.com.
@@ -34,7 +34,7 @@ Migrationen kommen **vor** dem Merge: Die neue App erwartet die neuen Tabellen. 
 
 - Titel nach dem bisherigen Muster: `Release: <Inhalt in Stichworten> (Dev → Main, Stand TT.MM.JJJJ)`.
 - In die Beschreibung: Liste der Migrationen, die mitgehen, und ob sie eingespielt sind; welche Schalter aus bleiben; Smoke-Test-Liste.
-- Freigabe im Normalfall durch die jeweils andere Person (Geschäftsführung ↔ Technik). Ist sie nicht erreichbar, darf die Person als Admin allein mergen (Bypass der Pflicht-Freigabe auf `main`); dann im PR „Ohne Zweitfreigabe, weil … nicht erreichbar“ vermerken und die andere Person danach informieren (Entscheidung Geschäftsführung 2026-10-17). Gemergt wird erst nach Schritt 3.
+- Eine Zweitfreigabe durch eine zweite Person ist vorerst nicht nötig (`decisions.md`, 2026-11-04, „Releases ohne Zweitfreigabe“). Vor dem Merge laufen `/pr-check` und die Pflicht-Checks `lint-and-types` und `rls-tests`; die Person, die den Release macht, liest den Diff und hat die Änderungen auf Staging geprüft. Gemergt wird per Admin-Recht (das eingestellte Approval auf `main` gilt nicht für Admins); wer kein Admin ist, braucht eine Person mit Admin-Recht. Gemergt wird erst nach Schritt 3.
 
 ## 3. Migrationen auf Production
 
