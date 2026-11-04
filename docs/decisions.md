@@ -396,6 +396,14 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Status:** gültig; ersetzt die Teilaussage „gilt auch für Admins“ aus 2026-09-23.
 - **Belegt:** Branch-Schutz von `main` und `dev` sowie Rulesets des Repositorys per GitHub-API gelesen; die Zahl stammt aus den Reviews der letzten 30 gemergten Pull Requests nach `main`. Rulesets auf Organisationsebene sind nicht lesbar.
 
+### 2026-11-04 – Arbeit in Claude-Code-Sitzungen, gemeinsamer Stand nur im Repository
+
+- **Entscheidung:** (Produkt-Lead) Das Team arbeitet in Claude-Code-Sitzungen, die selbst lesen, planen, bauen und, je nach Einrichtung, auf GitHub, Notion und Asana zugreifen. Die Aufteilung in einen Chat, der Aufträge schreibt, und ein Terminal, das sie ausführt, entfällt als Vorgabe. Was mehrere Personen und Sitzungen gemeinsam als Stand brauchen, steht im Repository; Chat-Projekte sind keine Quelle. Asana-Karten verschiebt, benennt oder schließt eine Sitzung nur nach Freigabe.
+- **Begründung:** Mehrere Personen arbeiten parallel mit eigenen Sitzungen; nur das Repository sehen alle. Das Kopieren von Aufträgen und Berichten zwischen Chat und Terminal kostete Zeit und erzeugte Stände außerhalb des Repositorys.
+- **Folgen:** `arbeitsweise.md` beschreibt die Arbeit mit einer Sitzung und den Weg einer Änderung; `umgebungen.md` beschreibt die Umgebungen. Die Regeln zu Freigaben, SRs und Datenschutz bleiben unverändert.
+- **Status:** gültig
+- **Belegt:** `docs/arbeitsweise.md`, `docs/umgebungen.md`
+
 ## Offene technische Schulden
 
 Diese Punkte sind keine Entscheidungen, sondern bekannte Lücken; was daraus wird, steht in Asana.

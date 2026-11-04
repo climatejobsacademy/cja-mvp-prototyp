@@ -1,9 +1,16 @@
 # Academy Platform — project rules
 
 ## What we are building
-A qualification platform for climate-trade employers. Learners in a programme
-learn in three contexts — live sessions, self-paced units, app-guided field jobs —
-and all three produce competency evidence in one profile per learner.
+A qualification platform for new skilled workers in the electrical trade with a
+focus on renewable energy. Learners in a programme learn in three contexts —
+live sessions, self-paced units, app-guided field jobs — and all three produce
+competency evidence in one profile per learner.
+Context of the current pilot: an education provider runs a publicly funded
+training measure; learners are not employed by a company. Theory runs online,
+practice on site with the provider. In the data model and code, `organisation`
+(type Employer) and "Betrieb"/"employer" are legacy terms for the organisation a
+learner belongs to; keep them in code and schema, but don't use "Betrieb" in
+learner-facing pilot texts.
 Start with /docs/README.md (what lives where). Spec: /docs/requirements.md (SR-xx),
 /docs/data-model.md, /docs/access-matrix.md, /docs/design-specifications.md.
 Every new or changed behaviour traces to an SR-xx. No SR → ask before building.
@@ -32,8 +39,10 @@ maintained: Notion page "Quellen und Arbeitsteilung: was wo lebt".
   in Frankfurt (AWS eu-central-1, ref vqfnmkcfjsudsujiuoqm), Staging in Ireland
   (AWS eu-west-1, ref keijrwvegmwgpvprpoxa).
 - Environments: Production = Supabase Frankfurt, served by Vercel Production
-  (`main` → learn.climatejobsacademy.com). Staging = Supabase Ireland, used by
-  Vercel Preview deployments. Never run anything against Production unless
+  (`main` → learn.climatejobsacademy.com). Staging = Supabase Ireland, intended
+  for Vercel Preview deployments (not verified in Vercel). Branch `demo` has no
+  database of its own. Overview, data per environment and what is verified:
+  /docs/umgebungen.md. Never run anything against Production unless
   explicitly told; every remote DB action names its `--project-ref` explicitly.
 
 ## Non-negotiable rules

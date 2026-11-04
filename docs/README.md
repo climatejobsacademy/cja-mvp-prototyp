@@ -24,7 +24,7 @@ Statusdokumente („Stand vom …“, „offen“, „erledigt“) gehören nich
 
 **Design.** `design-specifications.md` enthält Design-Tokens, Abläufe und die Grundsätze für Dienste mit Personendaten. In `design_handoff_lernplattform/` liegen die HTML-Referenzen und der Auftrag der Design-Übergabe; sie sind Vorlage und kein Produktionscode.
 
-**Betrieb und Release.** `runbook.md` sagt, was zu tun ist, wenn etwas bricht, und wer entscheidet. `release.md` beschreibt den Weg von `dev` nach Production mit Checkliste und Rückweg. `definition-of-done.md` legt fest, wann ein Pull Request fertig ist.
+**Betrieb und Release.** `umgebungen.md` zeigt, welche Umgebung (Production, Staging, `demo`, lokal) wofür da ist, gegen welche Datenbank sie läuft und welche Daten darin liegen. `runbook.md` sagt, was zu tun ist, wenn etwas bricht, und wer entscheidet. `release.md` beschreibt den Weg von `dev` nach Production mit Checkliste und Rückweg. `definition-of-done.md` legt fest, wann ein Pull Request fertig ist.
 
 **Importe und Skripte.** `import-plan.md` beschreibt den Excel-Import für Stundenplan, Kompetenzen, Aufträge und Fachsprache-Einheiten, `lernende-anlegen.md` das Anlegen von Konten, Profilen und Einschreibungen, `scorm-einspielen.md` das Einspielen von Selbstlern-Paketen und `live-links.md` das Hinterlegen der Teams-Links. `lernmaterialien-upload.md` erklärt, wie Dateien an Lektionen hängen.
 

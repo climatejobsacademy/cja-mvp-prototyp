@@ -329,7 +329,7 @@ Die App liest die folgenden Variablen. Sie werden in Vercel gesetzt (Projekt, Se
 
 | Name | Bedeutung | Wo gesetzt | Umgebung |
 |---|---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Adresse und öffentlicher Schlüssel des Supabase-Projekts; ohne sie startet die App nicht, auch `/login` nicht (`.env.example`). Wegen des Präfixes im Browser sichtbar. | Vercel, lokal `.env.local` | Production zeigt auf das Projekt in Frankfurt, Preview und Development auf Staging (`CLAUDE.md`) |
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Adresse und öffentlicher Schlüssel des Supabase-Projekts; ohne sie startet die App nicht, auch `/login` nicht (`.env.example`). Wegen des Präfixes im Browser sichtbar. | Vercel, lokal `.env.local` | Production zeigt auf das Projekt in Frankfurt; Preview und Development sollen auf Staging zeigen, für Preview in Vercel nicht geprüft (`umgebungen.md`) |
 | `NEXT_PUBLIC_SITE_URL` | Basis-Adresse für den Magic-Link-Redirect in Production; ohne Wert gilt die Production-Domain (`src/app/login/actions.ts`) | Vercel (Production), lokal `.env.local` | Production, lokal |
 | `VERCEL_ENV`, `VERCEL_BRANCH_URL` | Systemvariablen von Vercel: Umgebung und Adresse der Vorschau-Version; nicht selbst setzen (`decisions.md`, Eintrag 2026-09-21) | Vercel, automatisch | alle |
 | `FACHSPRACHE_EINHEIT`, `PRAXISAUFGABE_LINK` | Funktionsschalter: nur der Wert `an` schaltet ein, ohne Variable ist die Funktion aus (`src/lib/schalter.ts`, `fachsprache.md`) | Vercel | je Umgebung ein eigener Wert |
