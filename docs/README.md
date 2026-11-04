@@ -1,6 +1,6 @@
 # Dokumentation: Einstieg
 
-Dieses Verzeichnis enthält den technischen Stand der Plattform, ihre Abläufe und die technischen Entscheidungen. Das Repository ist öffentlich: Hier stehen weder Personennamen noch E-Mail-Adressen noch Listen mit Personenbezug, und es stehen hier keine Zugangsdaten. Rollen (Produkt-Lead, Trainer:in, Terminal) ersetzen Namen.
+Dieses Verzeichnis enthält den technischen Stand der Plattform, ihre Abläufe und die technischen Entscheidungen. Das Repository ist öffentlich: Hier stehen weder Personennamen noch E-Mail-Adressen noch Listen mit Personenbezug, und es stehen hier keine Zugangsdaten. Rollen (Produkt-Lead, Trainer:in, Sitzung) ersetzen Namen.
 
 ## Was steht wo
 
@@ -14,7 +14,7 @@ Jede Art von Information hat genau einen Ort. Gibt es zu einer Sache zwei Fassun
 | Skizzen und Diagramme ohne Status | Miro |
 | Passwörter, Schlüssel, Zugangsdaten | nur im Team-Passwort-Manager, nie in Chat, Notion, Asana oder Repository |
 
-Statusdokumente („Stand vom …“, „offen“, „erledigt“) gehören nicht nach `docs/`. Ein Dokument beschreibt, wie etwas funktioniert oder warum es so entschieden wurde, und bleibt damit gültig, bis sich der Mechanismus ändert. Was sich pro Woche ändert, steht in Asana. Wie die Arbeit mit dem Terminal abläuft, steht in `arbeitsweise.md`; die Regeln für den Code stehen in `CLAUDE.md` im Wurzelverzeichnis.
+Statusdokumente („Stand vom …“, „offen“, „erledigt“) gehören nicht nach `docs/`. Ein Dokument beschreibt, wie etwas funktioniert oder warum es so entschieden wurde, und bleibt damit gültig, bis sich der Mechanismus ändert. Was sich pro Woche ändert, steht in Asana. Wie die Arbeit mit Claude-Code-Sitzungen abläuft, steht in `arbeitsweise.md`; die Regeln für den Code stehen in `CLAUDE.md` im Wurzelverzeichnis.
 
 ## Index
 

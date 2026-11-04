@@ -27,7 +27,7 @@ Gegen Staging wird alles erprobt, bevor es nach Production geht: Migrationen, Im
 
 ## demo
 
-`demo` ist ein früher Abzweig von `dev` mit eigenen Commits, der weit hinter `dev` liegt. Er enthält Ansichten, die es auf `dev` nicht gibt, darunter den Praxisflow als Prototyp ohne Server (Stand im Browser, `praxisflow-realbau.md`) und eine Hilfe-Seite. Er kennt viele spätere Migrationen nicht und hat keine eigene Datenbank; seine Preview läuft vermutlich gegen Staging (nicht belegt, siehe oben). Ob jede Ansicht in `demo` mit dem aktuellen Schema von Staging funktioniert, ist nicht geprüft.
+`demo` ist ein früher Abzweig von `dev` mit eigenen Commits. Er enthält Ansichten, die es auf `dev` nicht gibt, darunter den Praxisflow als Prototyp ohne Server (Stand im Browser, `praxisflow-realbau.md`) und eine Hilfe-Seite. Er kennt viele spätere Migrationen nicht und hat keine eigene Datenbank; seine Preview läuft vermutlich gegen Staging (nicht belegt, siehe oben). Vermutung: Nicht jede Ansicht in `demo` passt zum Schema von Staging.
 
 Was daraus gebraucht wird, wird gezielt nach `dev` übernommen (Komponenten, Logik, Tests; `praxisflow-realbau.md`), nicht per Merge des Branches. Migrationen entstehen nie auf `demo`, sondern nur über Feature-Branches nach `dev` (`CLAUDE.md`, Regel 4).
 

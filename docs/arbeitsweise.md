@@ -16,14 +16,14 @@ Eine Aufgabe beginnt mit einer Beschreibung durch die Person, am besten mit Verw
 
 1. **Karte und SR.** Die Karte steht im Asana-Produkt-Backlog; ändert sie das Verhalten der Plattform, gibt es eine SR in Notion. Ab „Ready for Build“ hängt die Karte auch im Entwicklungs-Board.
 2. **Feature-Branch** von einem frisch geholten `dev`, ein Thema je Branch.
-3. **Bauen** gegen den Acceptance Check der SR; Migrationen nur über `supabase/migrations`, lokal und gegen Staging getestet (`CLAUDE.md`).
+3. **Bauen** gegen den Acceptance Check der SR; Schemaänderungen nur über `supabase/migrations` (`CLAUDE.md`, Regel 4), eingespielt zuerst auf Staging (`umgebungen.md`, `release.md`).
 4. **`/pr-check`** vor der Pull Request (Anleitung unten).
 5. **Pull Request nach `dev`**, Review nach den Regeln unten, grüne CI.
 6. **Prüfung auf der Preview.** Jede Pull Request bekommt eine Vercel-Preview. Auf ihr wird das geänderte Verhalten einmal durchgeklickt, mit einem Testkonto und nie mit Konten von Lernenden. Gegen welche Datenbank die Preview läuft, steht in `umgebungen.md`.
 7. **Release** als Pull Request von `dev` nach `main`, mit Migrationen auf Production vor dem Merge (`release.md`).
 8. **Abschluss** in Asana: Entwicklungsaufgabe und Produkt-Karte werden nach dem Release geschlossen, von der Person oder auf ihre Freigabe.
 
-Eine SR ist nur für neues oder geändertes Verhalten nötig: Bugfixes stellen bestehendes Verhalten wieder her, und Refactorings, Betriebsthemen und reine Doku brauchen keine; ein Bugfix nennt die bestehende SR, deren Verhalten er wiederherstellt. SRs werden ausschließlich in der Notion-Datenbank „System Requirements“ angelegt und geändert, Notion vergibt die Nummer. Die Sitzung liest sie von dort, schreibt keine SRs und ändert `requirements.md` nicht von Hand, denn die Datei ist ein Auszug aus Notion. Bei einer Aufgabe mit SR-Bezug liest die Sitzung die SR aus Notion und gleicht vor dem Bauen, vor einer PR, die sie referenziert, und vor jedem Release den Auszug gegen Notion ab; bei Abweichung erzeugt es ihn neu. Es baut gegen den Acceptance Check und nennt die SR in den Tests und im PR-Titel. Ändert sich der Acceptance Check beim Bauen, wird zuerst Notion angepasst und danach der Auszug neu erzeugt. Wo was gepflegt wird, steht auf der Notion-Seite „Quellen und Arbeitsteilung: was wo lebt“.
+Eine SR ist nur für neues oder geändertes Verhalten nötig: Bugfixes stellen bestehendes Verhalten wieder her, und Refactorings, Betriebsthemen und reine Doku brauchen keine; ein Bugfix nennt die bestehende SR, deren Verhalten er wiederherstellt. SRs werden ausschließlich in der Notion-Datenbank „System Requirements“ angelegt und geändert, Notion vergibt die Nummer. Die Sitzung liest sie von dort, schreibt keine SRs und ändert `requirements.md` nicht von Hand, denn die Datei ist ein Auszug aus Notion. Bei einer Aufgabe mit SR-Bezug liest die Sitzung die SR aus Notion und gleicht vor dem Bauen, vor einer PR, die sie referenziert, und vor jedem Release den Auszug gegen Notion ab; bei Abweichung erzeugt sie ihn neu. Sie baut gegen den Acceptance Check und nennt die SR in den Tests und im PR-Titel. Ändert sich der Acceptance Check beim Bauen, wird zuerst Notion angepasst und danach der Auszug neu erzeugt. Wo was gepflegt wird, steht auf der Notion-Seite „Quellen und Arbeitsteilung: was wo lebt“.
 
 ## Git- und Freigaberegeln
 
@@ -33,7 +33,7 @@ Vor jeder PR lässt die Sitzung mit `/pr-check` den Diff des Branches gegen den 
 
 Vor jedem Push und jedem Merge wird geprüft, ob sich `dev` seit dem Start des Branches bewegt hat. Liegt eine `.git/*.lock`-Datei im Weg, wird sie im eigenen Terminal entfernt, danach läuft der Befehl erneut. Dateien werden namentlich gestaged, nie mit `git add .` oder `git add -A`, damit lokale Dateien ohne Bezug zum Auftrag nicht im Commit landen. Das Production-Passwort wird nur nach einer getippten Freigabe benutzt und kommt dann aus dem eigenen Schlüsselbund. Merges nach `dev` laufen nacheinander: Vor dem Merge wird `dev` in den eigenen Branch geholt, und der Merge wartet auf eine grüne CI für genau diesen Stand. Bei Konflikten in `decisions.md` und `traceability.md` bleiben beide Einträge erhalten, der von `dev` steht zuerst. GitHub-Abfragen laufen nicht in Schleifen, weil das Rate Limit sonst die Arbeit blockiert. Mehrere Fälle fragt man mit einer Abfrage oder einem Filter ab.
 
-Namen, E-Mail-Adressen, Schlüssel und Passwörter gehören weder in Chats noch in Ausgaben der Sitzung, Commits, Pull-Request-Texte oder Asana-Karten. Passwörter und Schlüssel liegen im Schlüsselbund der Person (`runbook.md`, Anhang) und nie in Dateien. Importdaten (Excel-Dateien, Lernendenlisten, Link-Listen) liegen außerhalb des Repositorys und kommen nie hinein.
+Namen, E-Mail-Adressen, Schlüssel und Passwörter gehören weder in Chats noch in Ausgaben der Sitzung, Commits, Pull-Request-Texte oder Asana-Karten. Passwörter stehen nur im Team-Passwort-Manager. Importdaten (Excel-Dateien, Lernendenlisten, Link-Listen) liegen außerhalb des Repositorys und kommen nie hinein.
 
 ### So benutzt du /pr-check
 
