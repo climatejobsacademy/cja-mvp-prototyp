@@ -8,7 +8,7 @@ begin;
 
 create extension if not exists pgtap schema extensions;
 
-select plan(17);
+select plan(19);
 
 -- anon: kein Aufruf
 select ok(not has_function_privilege('anon', 'public.fn_is_afcj_admin()', 'execute'),
@@ -33,6 +33,10 @@ select ok(has_function_privilege('authenticated', 'public.fn_current_enrolment_i
   'authenticated darf fn_current_enrolment_ids ausführen');
 select ok(not has_function_privilege('authenticated', 'public.fn_apply_verification_to_capture()', 'execute'),
   'authenticated ruft fn_apply_verification_to_capture nicht direkt auf');
+select ok(not has_function_privilege('authenticated', 'public.fn_derive_field_capture_step_mapping()', 'execute'),
+  'authenticated ruft fn_derive_field_capture_step_mapping nicht direkt auf');
+select ok(not has_function_privilege('authenticated', 'public.fn_validate_field_capture_antwort()', 'execute'),
+  'authenticated ruft fn_validate_field_capture_antwort nicht direkt auf');
 
 -- Fester Suchpfad
 select ok(
