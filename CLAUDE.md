@@ -21,8 +21,10 @@ SR numbers are assigned only in Notion (database "System Requirements"). If no
 matching SR exists, it is created there; until then the repo says "SR folgt",
 and the PR replaces it as soon as the number is known. Never assign SR numbers
 in the repo. Add every new Notion SR to /docs/sr-registry.json in the same PR.
-SRs are changed only in Notion as well: read them from there, never write them,
-and never edit /docs/requirements.md by hand, it is an extract of Notion. On a
+SRs are created and changed only in Notion as well: read them from there; write
+or change an SR in Notion only with the explicit approval of the person you work
+with; never create or change an SR in the repo and never edit
+/docs/requirements.md by hand, it is an extract of Notion. On a
 task with an SR, read the SR from Notion before building, before a PR that
 references it and before every release, compare the extract with it and
 regenerate the extract on deviation. Build against the Acceptance Check and name
