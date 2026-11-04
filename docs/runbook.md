@@ -206,10 +206,12 @@ es meist nur, wenn eine Korrektur live gehen soll.
 **Prüfen**
 
 1. **Auf GitHub**, im Pull Request unter „Checks“: Welche Prüfung ist rot?
-   - `lint-and-types` prüft Code-Stil und Typen. Ohne grünen Haken lässt sich
-     nichts nach `main` übernehmen.
+   - `lint-and-types` prüft Code-Stil und Typen.
    - `rls-tests` prüft die Zugriffsregeln der Datenbank (wer darf welche Daten
      sehen).
+   - Beide sind Pflicht-Checks auf `main`: Ohne grüne Haken lässt sich nichts
+     nach `main` übernehmen, außer per Admin-Recht; das ist nicht vorgesehen
+     (`decisions.md`, 2026-11-04).
    - „Details“ öffnet das Protokoll.
 2. **In Vercel** → **Deployments**: Steht beim betroffenen Deployment „Error“?
    Die Build-Logs zeigen den Grund.
