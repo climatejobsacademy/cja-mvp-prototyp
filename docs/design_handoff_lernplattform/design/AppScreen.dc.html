@@ -232,8 +232,8 @@
   <sc-if value="{{ menuOpen }}">
     <div style="position:absolute;top:{{ L.menuTop }};right:{{ L.menuRight }};width:{{ L.menuW }};background:#fff;border:1px solid #e4e4e7;border-radius:12px;box-shadow:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1);overflow:hidden;z-index:10">
       <div style="display:flex;align-items:center;gap:12px;padding:16px">
-        <div style="width:40px;height:40px;flex-shrink:0;border-radius:9999px;background:#f4f4f5;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600">V</div>
-        <div style="min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:600">Vera Schulz</span><span style="font-size:13px;color:#71717a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">vera.schulz@betrieb.de</span></div>
+        <div style="width:40px;height:40px;flex-shrink:0;border-radius:9999px;background:#f4f4f5;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600">L</div>
+        <div style="min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:600">Lea Muster</span><span style="font-size:13px;color:#71717a;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">lea.muster@example.org</span></div>
       </div>
       <div style="display:flex;flex-direction:column;gap:12px;padding:16px;border-top:1px solid #e4e4e7">
         <div style="display:flex;align-items:flex-start;gap:12px"><dc-import name="Icon" n="graduation-cap" s="18" hint-size="18px,18px"></dc-import><div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:12px;color:#71717a">Programm</span><span style="font-size:14px;font-weight:500;line-height:1.35">Elektrofachkraft Erneuerbare Energien</span></div></div>
@@ -264,7 +264,7 @@ class Component extends DCLogic {
       emptyPad: mobile ? '40px 20px' : '64px 32px',
       menuTop: mobile ? '60px' : '64px', menuRight: mobile ? '12px' : '24px', menuW: mobile ? '300px' : '300px',
     };
-    const H = { home: { title: 'Hallo Vera' }, stundenplan: { title: 'Stundenplan' }, kompetenzen: { title: 'Kompetenzen' }, material: { title: 'Lernmaterialien' }, leer: { title: 'Lernmaterialien' }, reflexion: { title: 'Übungen an den ETS-Boards' } }[page];
+    const H = { home: { title: 'Hallo Lea' }, stundenplan: { title: 'Stundenplan' }, kompetenzen: { title: 'Kompetenzen' }, material: { title: 'Lernmaterialien' }, leer: { title: 'Lernmaterialien' }, reflexion: { title: 'Übungen an den ETS-Boards' } }[page];
     const badge = s => ({
       'Offen': { label: s, bg: 'transparent', border: '1px solid #e4e4e7', icon: 'circle-dashed' },
       'Abgeschlossen': { label: s, bg: 'rgba(35,150,105,0.10)', border: '1px solid transparent', icon: 'circle-check' },

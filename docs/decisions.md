@@ -420,6 +420,14 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Status:** gültig
 - **Belegt:** Branch-Schutz von `main` per GitHub-API gelesen (ein Approval, `enforce_admins` aus, Pflicht-Checks `lint-and-types` und `rls-tests`); `docs/release.md`, `docs/runbook.md`, `docs/arbeitsweise.md`
 
+### 2026-11-04 – Warnungen des Supabase Security Advisors bewusst akzeptiert
+
+- **Entscheidung:** (Produkt-Lead) Nach Migration `0057` meldet der Security Advisor für Production keine Fehler und 29 Warnungen; sie werden akzeptiert. (1) 28 Warnungen „Signed-In Users Can Execute SECURITY DEFINER Function“: Die Funktionen sind Hilfsfunktionen der Zugriffsregeln oder Aktionen, die die App per `rpc` aufruft (Chat, Fragen-Thread, Kohorte, Trainer-Ansicht). Jede Migration gibt sie ausdrücklich für `authenticated` frei; ohne dieses Recht greifen die Zugriffsregeln nicht. Sie leiten ihr Ergebnis aus der angemeldeten Person ab. (2) Eine Warnung „Leaked Password Protection Disabled“: Die Plattform meldet nur per Magic Link an und hat keine Passwörter; die Einstellung im Dashboard ist Sache der Geschäftsführung.
+- **Begründung:** Der Advisor erkennt nicht, ob eine Freigabe für Angemeldete gewollt ist. Die Warnungen zu Suchpfaden und zu Funktionen, die Nicht-Angemeldete aufrufen konnten, sind mit `0057` behoben.
+- **Folgen:** Die Hilfsfunktionen könnten in ein Schema verschoben werden, das die API nicht anbietet; dann entfallen die Warnungen. Das gehört zu den technischen Schulden nach dem Pilot. Eine vollständige Prüfung jeder Funktion auf den Bezug zur angemeldeten Person gehört zur Nachprüfung durch Entwickler:innen (RLS-Policies und Hilfsfunktionen). Neue `SECURITY DEFINER`-Funktionen prüfen die angemeldete Person selbst oder über eine dieser Hilfsfunktionen.
+- **Status:** gültig
+- **Belegt:** `supabase db advisors --type security` gegen Production (nur lesend); Freigaben in den Migrationen `0024`, `0032`, `0050` und weiteren; Aufrufe per `rpc` in `src/`
+
 ## Offene technische Schulden
 
 Diese Punkte sind keine Entscheidungen, sondern bekannte Lücken; was daraus wird, steht in Asana.
