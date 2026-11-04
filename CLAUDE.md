@@ -41,9 +41,9 @@ maintained: Notion page "Quellen und Arbeitsteilung: was wo lebt".
   in Frankfurt (AWS eu-central-1, ref vqfnmkcfjsudsujiuoqm), Staging in Ireland
   (AWS eu-west-1, ref keijrwvegmwgpvprpoxa).
 - Environments: Production = Supabase Frankfurt, served by Vercel Production
-  (`main` → learn.climatejobsacademy.com). Staging = Supabase Ireland, intended
-  for Vercel Preview deployments (not verified in Vercel). Branch `demo` has no
-  database of its own. Overview, data per environment and what is verified:
+  (`main` → learn.climatejobsacademy.com). Staging = Supabase Ireland, used by
+  Vercel Preview deployments, including branch `demo`, which has no database of
+  its own. Overview, data per environment and what is verified:
   /docs/umgebungen.md. Never run anything against Production unless
   explicitly told; every remote DB action names its `--project-ref` explicitly.
 
