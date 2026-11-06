@@ -8,7 +8,7 @@ begin;
 
 create extension if not exists pgtap schema extensions;
 
-select plan(31);
+select plan(36);
 
 -- ------------------------------------------------------------
 -- Fixtures (als Superuser)
@@ -107,14 +107,13 @@ select throws_ok(
   '42501', null,
   'Kein Upload zu einem Praxistag im einfachen Ablauf'
 );
-select is(
-  (with u as (
-     update storage.objects set name = '00000000-0000-0000-0000-000000032001/00000000-0000-0000-0000-000000032081/neu.pdf'
-     where bucket_id = 'praxis-dateien'
-       and name = '00000000-0000-0000-0000-000000032001/00000000-0000-0000-0000-000000032081/a1.pdf'
-     returning 1)
-   select count(*) from u),
-  0::bigint,
+select lives_ok(
+  $$update storage.objects set name = '00000000-0000-0000-0000-000000032001/00000000-0000-0000-0000-000000032081/neu.pdf'
+    where bucket_id = 'praxis-dateien' and name = '00000000-0000-0000-0000-000000032001/00000000-0000-0000-0000-000000032081/a1.pdf'$$,
+  'Umbenennen einer Datei im Speicher wird ohne Wirkung ausgeführt'
+);
+select ok(
+  exists (select 1 from storage.objects where bucket_id = 'praxis-dateien' and name = '00000000-0000-0000-0000-000000032001/00000000-0000-0000-0000-000000032081/a1.pdf'),
   'Dateien im Speicher lassen sich nicht überschreiben oder umbenennen'
 );
 select throws_ok(
@@ -166,24 +165,21 @@ select is(
   'planen',
   'Mit hochgeladenem Arbeitsauftrag geht es zu Planen'
 );
-select is(
-  (with d as (
-     delete from field_job_datei
-     where storage_pfad = '00000000-0000-0000-0000-000000032001/00000000-0000-0000-0000-000000032081/a2.pdf'
-     returning 1)
-   select count(*) from d),
-  1::bigint,
-  'Eigene Datei vor dem Abschluss löschen'
+select lives_ok(
+  $$delete from field_job_datei where storage_pfad = '00000000-0000-0000-0000-000000032001/00000000-0000-0000-0000-000000032081/a2.pdf'$$,
+  'Eigene Dateizeile vor dem Abschluss löschen'
 );
-select is(
-  (with d as (
-     delete from storage.objects
-     where bucket_id = 'praxis-dateien'
-       and name = '00000000-0000-0000-0000-000000032001/00000000-0000-0000-0000-000000032081/a2.pdf'
-     returning 1)
-   select count(*) from d),
-  1::bigint,
+select is_empty(
+  $$select id from field_job_datei where storage_pfad = '00000000-0000-0000-0000-000000032001/00000000-0000-0000-0000-000000032081/a2.pdf'$$,
+  'Die gelöschte Dateizeile ist weg'
+);
+select lives_ok(
+  $$delete from storage.objects where bucket_id = 'praxis-dateien' and name = '00000000-0000-0000-0000-000000032001/00000000-0000-0000-0000-000000032081/a2.pdf'$$,
   'Eigene Datei vor dem Abschluss aus dem Speicher löschen'
+);
+select is_empty(
+  $$select name from storage.objects where bucket_id = 'praxis-dateien' and name = '00000000-0000-0000-0000-000000032001/00000000-0000-0000-0000-000000032081/a2.pdf'$$,
+  'Die gelöschte Datei ist weg'
 );
 
 -- ------------------------------------------------------------
@@ -194,10 +190,9 @@ select set_config('request.jwt.claims',
 select is_empty($$select id from field_job_datei$$, 'Andere Lernende sehen keine Dateizeilen');
 select is_empty($$select name from storage.objects where bucket_id = 'praxis-dateien'$$,
   'Andere Lernende sehen keine Dateien im Speicher');
-select is(
-  (with d as (delete from field_job_datei returning 1) select count(*) from d),
-  0::bigint,
-  'Andere Lernende löschen keine fremden Dateizeilen'
+select lives_ok(
+  $$delete from field_job_datei$$,
+  'Löschversuch anderer Lernender läuft ohne Wirkung (Prüfung unten)'
 );
 
 select set_config('request.jwt.claims',
@@ -228,14 +223,22 @@ set local role authenticated;
 select set_config('request.jwt.claims',
   json_build_object('sub', '00000000-0000-0000-0000-000000032001', 'role', 'authenticated')::text, true);
 
-select is(
-  (with d as (delete from field_job_datei returning 1) select count(*) from d),
-  0::bigint,
-  'Nach dem Abschluss lassen sich Dateizeilen nicht mehr löschen'
+select lives_ok(
+  $$delete from field_job_datei$$,
+  'Löschversuch nach dem Abschluss läuft ohne Wirkung'
 );
 select is(
-  (with d as (delete from storage.objects where bucket_id = 'praxis-dateien' returning 1) select count(*) from d),
-  0::bigint,
+  (select count(*) from field_job_datei),
+  1::bigint,
+  'Nach dem Abschluss lassen sich Dateizeilen nicht mehr löschen; andere Lernende haben auch nichts gelöscht'
+);
+select lives_ok(
+  $$delete from storage.objects where bucket_id = 'praxis-dateien'$$,
+  'Löschversuch im Speicher nach dem Abschluss läuft ohne Wirkung'
+);
+select is(
+  (select count(*) from storage.objects where bucket_id = 'praxis-dateien'),
+  1::bigint,
   'Nach dem Abschluss lassen sich Dateien im Speicher nicht mehr löschen'
 );
 select throws_ok(
