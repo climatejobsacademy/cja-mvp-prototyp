@@ -66,7 +66,12 @@ export type PraxisFortschritt = {
   erledigt?: { id: string; am: string }[];
   plan_bestaetigt_am?: string;
   verlauf?: { zeit: string; ereignis: string }[];
+  // 0060 (SR-65): abgehakte Prüfpunkte und Freigaben der Trainer:in.
+  kontrolle?: { id: string; am: string }[];
+  zuschalten_freigegeben_am?: string;
+  bewertung_freigegeben_am?: string;
 };
+export type PraxisGate = "zuschalten" | "bewertung";
 export type FieldJobErgebnis = "erledigt" | "problem";
 export type FieldCapturePhase = "start" | "abschluss";
 export type UnitProgressStatus = "offen" | "in Bearbeitung" | "abgeschlossen";
@@ -1133,6 +1138,11 @@ export type Database = {
       fn_praxis_schritt_abhaken: { Args: { p_job: string; p_schritt: string }; Returns: PraxisFortschritt };
       // 0059 (SR-88): Dateien zum Praxistag hochladen oder löschen erlaubt?
       fn_praxis_datei_offen: { Args: { p_job: string }; Returns: boolean };
+      // 0060 (SR-65): Prüfpunkte abhaken, Trainer-Gate mit Codewort, Pflege durch AfCJ admin.
+      fn_praxis_kontrolle_abhaken: { Args: { p_job: string; p_punkt: string }; Returns: PraxisFortschritt };
+      fn_praxis_gate: { Args: { p_job: string; p_gate: PraxisGate; p_codewort: string }; Returns: boolean };
+      fn_praxis_codewort_setzen: { Args: { p_cohort: string; p_codewort: string }; Returns: undefined };
+      fn_praxis_codewort_entsperren: { Args: { p_job: string; p_gate: PraxisGate }; Returns: undefined };
     };
   };
 };
