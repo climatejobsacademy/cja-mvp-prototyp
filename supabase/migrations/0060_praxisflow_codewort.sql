@@ -13,6 +13,8 @@
 --   - praxis_codewort_versuch: Protokoll der Versuche je Praxistag und Gate.
 --     Nach 5 Fehlversuchen seit dem letzten Erfolg oder der letzten
 --     Entsperrung ist das Gate gesperrt; AfCJ admin hebt die Sperre auf.
+--     Gates: zuschalten (fn_praxis_gate) und bewertung (Trainer-Einschätzung,
+--     Codewort beim Speichern, 0061).
 --   - Prüfliste Kontrollieren (ids wie demo: a1–a4 spannungsfrei, c1–c2
 --     unter Spannung); die Texte stehen in der App.
 --   - fn_praxis_gate, fn_praxis_kontrolle_abhaken; Ersatz von
@@ -21,7 +23,7 @@
 --
 -- Neue Schlüssel in field_job.praxisflow:
 --   kontrolle: [{id, am}]
---   zuschalten_freigegeben_am, bewertung_freigegeben_am: timestamptz
+--   zuschalten_freigegeben_am: timestamptz
 
 -- ============================================================
 -- Tabellen
@@ -135,7 +137,7 @@ as $$
     ), '-infinity'::timestamptz);
 $$;
 
--- Voraussetzung je Gate. 0061 ersetzt fn_praxis_pruefe_gate_bewertung.
+-- Voraussetzung für das Gate Zuschalten.
 create or replace function fn_praxis_pruefe_gate_zuschalten(v field_job)
 returns void
 language plpgsql
@@ -159,18 +161,6 @@ begin
 end;
 $$;
 
-create or replace function fn_praxis_pruefe_gate_bewertung(v field_job)
-returns void
-language plpgsql
-stable
-set search_path = public
-as $$
-begin
-  if v.phase <> 'bewerten' then
-    raise exception 'Freigabe zur Trainer-Einschätzung nur in Bewerten' using errcode = '23514';
-  end if;
-end;
-$$;
 
 -- Kontrollieren endet mit allen Prüfpunkten und dem Prüfprotokoll.
 -- Ersetzt die Fassung aus 0058.
@@ -203,7 +193,6 @@ revoke execute on function fn_praxis_kohorte(uuid) from public, anon, authentica
 revoke execute on function fn_praxis_pruefliste() from public, anon, authenticated;
 revoke execute on function fn_praxis_fehlversuche(uuid, text) from public, anon, authenticated;
 revoke execute on function fn_praxis_pruefe_gate_zuschalten(field_job) from public, anon, authenticated;
-revoke execute on function fn_praxis_pruefe_gate_bewertung(field_job) from public, anon, authenticated;
 revoke execute on function fn_praxis_pruefe_kontrollieren(field_job) from public, anon, authenticated;
 
 -- ============================================================
@@ -255,15 +244,46 @@ begin
 end;
 $$;
 
--- Trainer-Gate. Gibt true zurück, wenn das Codewort stimmt (oder das Gate
--- schon offen ist), sonst false; ein Fehlversuch wird protokolliert und
--- bleibt auch bei false gespeichert. Gesperrt: Fehler 55P03. Ohne gesetztes
--- Codewort: Fehler P0002, kein Fehlversuch. Die Sperre gilt je Praxistag
--- und Gate (N = 5, Vorschlag aus SR-65). Zeitstempel der Versuche mit
--- clock_timestamp(), damit die Reihenfolge auch innerhalb einer Transaktion
--- stimmt.
--- Die Zeile des Praxistags ist für die Dauer des Aufrufs gesperrt, damit
--- gleichzeitige Versuche die Zählung nicht umgehen.
+-- Codewort prüfen und den Versuch protokollieren (intern). true = richtig,
+-- false = falsch (Fehlversuch bleibt gespeichert). Gesperrt: Fehler 55P03.
+-- Ohne gesetztes Codewort: Fehler P0002, kein Fehlversuch. Die Sperre gilt
+-- je Praxistag und Gate (N = 5, Vorschlag aus SR-65). Zeitstempel mit
+-- clock_timestamp(), damit die Reihenfolge auch in einer Transaktion stimmt.
+-- Der Aufrufer hält die Zeile des Praxistags gesperrt (fn_praxis_eigener_job),
+-- damit gleichzeitige Versuche die Zählung nicht umgehen.
+create or replace function fn_praxis_codewort_ok(v field_job, p_gate text, p_codewort text)
+returns boolean
+language plpgsql
+volatile
+set search_path = public
+as $$
+declare
+  v_hash text;
+begin
+  if fn_praxis_fehlversuche(v.id, p_gate) >= 5 then
+    raise exception 'Gate gesperrt, bitte AfCJ melden' using errcode = '55P03';
+  end if;
+  select c.hash into v_hash from praxis_codewort c where c.cohort_id = fn_praxis_kohorte(v.id);
+  if v_hash is null then
+    raise exception 'Für diese Kohorte ist kein Codewort gesetzt' using errcode = 'P0002';
+  end if;
+  if extensions.crypt(lower(btrim(coalesce(p_codewort, ''))), v_hash) <> v_hash then
+    insert into praxis_codewort_versuch (created_at, organisation_id, field_job_id, gate, art, person_id)
+    values (clock_timestamp(), v.organisation_id, v.id, p_gate, 'fehlversuch', auth.uid());
+    return false;
+  end if;
+  insert into praxis_codewort_versuch (created_at, organisation_id, field_job_id, gate, art, person_id)
+  values (clock_timestamp(), v.organisation_id, v.id, p_gate, 'erfolg', auth.uid());
+  return true;
+end;
+$$;
+
+revoke execute on function fn_praxis_codewort_ok(field_job, text, text) from public, anon, authenticated;
+
+-- Gate Zuschalten (Kontrollieren). true, wenn das Codewort stimmt oder das
+-- Gate schon offen ist, sonst false. Die Trainer-Einschätzung prüft ihr
+-- Codewort beim Speichern selbst (0061, Entscheidung 06.11.2026: kein
+-- Speichern ohne Codewort).
 create or replace function fn_praxis_gate(p_job uuid, p_gate text, p_codewort text)
 returns boolean
 language plpgsql
@@ -272,43 +292,22 @@ set search_path = public
 as $$
 declare
   v field_job;
-  v_schluessel text;
-  v_hash text;
 begin
-  if p_gate not in ('zuschalten', 'bewertung') then
+  if p_gate <> 'zuschalten' then
     raise exception 'Unbekanntes Gate' using errcode = '22023';
   end if;
   v := fn_praxis_eigener_job(p_job);
-  v_schluessel := p_gate || '_freigegeben_am';
-  if v.praxisflow ? v_schluessel then
+  if v.praxisflow ? 'zuschalten_freigegeben_am' then
     return true;
   end if;
-  if p_gate = 'zuschalten' then
-    perform fn_praxis_pruefe_gate_zuschalten(v);
-  else
-    perform fn_praxis_pruefe_gate_bewertung(v);
-  end if;
-  if fn_praxis_fehlversuche(v.id, p_gate) >= 5 then
-    raise exception 'Gate gesperrt, bitte AfCJ melden' using errcode = '55P03';
-  end if;
-
-  select c.hash into v_hash from praxis_codewort c where c.cohort_id = fn_praxis_kohorte(v.id);
-  if v_hash is null then
-    -- Kein Codewort für die Kohorte gesetzt: kein Fehlversuch, Fehler an AfCJ.
-    raise exception 'Für diese Kohorte ist kein Codewort gesetzt' using errcode = 'P0002';
-  end if;
-  if extensions.crypt(lower(btrim(coalesce(p_codewort, ''))), v_hash) <> v_hash then
-    insert into praxis_codewort_versuch (created_at, organisation_id, field_job_id, gate, art, person_id)
-    values (clock_timestamp(), v.organisation_id, v.id, p_gate, 'fehlversuch', auth.uid());
+  perform fn_praxis_pruefe_gate_zuschalten(v);
+  if not fn_praxis_codewort_ok(v, p_gate, p_codewort) then
     return false;
   end if;
-
-  insert into praxis_codewort_versuch (created_at, organisation_id, field_job_id, gate, art, person_id)
-  values (clock_timestamp(), v.organisation_id, v.id, p_gate, 'erfolg', auth.uid());
   update field_job
   set praxisflow = fn_praxis_mit_verlauf(
-        v.praxisflow || jsonb_build_object(v_schluessel, now()),
-        'gate:' || p_gate)
+        v.praxisflow || jsonb_build_object('zuschalten_freigegeben_am', now()),
+        'gate:zuschalten')
   where id = v.id;
   return true;
 end;

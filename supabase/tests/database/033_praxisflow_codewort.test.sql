@@ -127,10 +127,41 @@ select throws_ok(
   '42501', null,
   'Lernende heben keine Sperre auf'
 );
+select throws_ok(
+  $$select fn_praxis_gate('00000000-0000-0000-0000-000000033081', 'bewertung', 'Probewort')$$,
+  '22023', null,
+  'Das Gate Bewertung gibt es nur beim Speichern der Trainer-Einschätzung (0061)'
+);
+select is(
+  (select count(*) from generate_series(1, 4) g
+    where not fn_praxis_gate('00000000-0000-0000-0000-000000033081', 'zuschalten', 'falsch' || g)),
+  4::bigint,
+  'Vier weitere Fehlversuche'
+);
+select throws_ok(
+  $$select fn_praxis_gate('00000000-0000-0000-0000-000000033081', 'zuschalten', 'Probewort')$$,
+  '55P03', null,
+  'Nach fünf Fehlversuchen ist das Gate gesperrt, auch mit richtigem Codewort'
+);
+
+select set_config('request.jwt.claims',
+  json_build_object('sub', '00000000-0000-0000-0000-000000033003', 'role', 'authenticated')::text, true);
+select is(
+  (select count(*) from praxis_codewort_versuch where art = 'fehlversuch'),
+  5::bigint,
+  'AfCJ admin sieht alle Fehlversuche im Protokoll'
+);
+select lives_ok(
+  $$select fn_praxis_codewort_entsperren('00000000-0000-0000-0000-000000033081', 'zuschalten')$$,
+  'AfCJ admin hebt die Sperre auf'
+);
+
+select set_config('request.jwt.claims',
+  json_build_object('sub', '00000000-0000-0000-0000-000000033001', 'role', 'authenticated')::text, true);
 select is(
   fn_praxis_gate('00000000-0000-0000-0000-000000033081', 'zuschalten', '  PROBEWORT '),
   true,
-  'Richtiges Codewort (Groß-/Kleinschreibung und Leerzeichen egal) öffnet das Gate'
+  'Nach der Entsperrung öffnet das richtige Codewort (Groß-/Kleinschreibung und Leerzeichen egal) das Gate'
 );
 select is(jsonb_array_length(fn_praxis_kontrolle_abhaken('00000000-0000-0000-0000-000000033081', 'c1') -> 'kontrolle'), 5, 'c1 nach der Freigabe abgehakt');
 select is(jsonb_array_length(fn_praxis_kontrolle_abhaken('00000000-0000-0000-0000-000000033081', 'c2') -> 'kontrolle'), 6, 'c2 abgehakt');
@@ -149,37 +180,6 @@ select is(
   fn_praxis_weiter('00000000-0000-0000-0000-000000033081', 'kontrollieren'),
   'bewerten',
   'Kontrollieren -> Bewerten mit allen Prüfpunkten und Protokoll'
-);
-select is(
-  (select count(*) from generate_series(1, 5) g
-    where not fn_praxis_gate('00000000-0000-0000-0000-000000033081', 'bewertung', 'falsch' || g)),
-  5::bigint,
-  'Fünf Fehlversuche am Gate Bewertung'
-);
-select throws_ok(
-  $$select fn_praxis_gate('00000000-0000-0000-0000-000000033081', 'bewertung', 'Probewort')$$,
-  '55P03', null,
-  'Nach fünf Fehlversuchen ist das Gate gesperrt, auch mit richtigem Codewort'
-);
-
-select set_config('request.jwt.claims',
-  json_build_object('sub', '00000000-0000-0000-0000-000000033003', 'role', 'authenticated')::text, true);
-select is(
-  (select count(*) from praxis_codewort_versuch where art = 'fehlversuch'),
-  6::bigint,
-  'AfCJ admin sieht alle Fehlversuche im Protokoll'
-);
-select lives_ok(
-  $$select fn_praxis_codewort_entsperren('00000000-0000-0000-0000-000000033081', 'bewertung')$$,
-  'AfCJ admin hebt die Sperre auf'
-);
-
-select set_config('request.jwt.claims',
-  json_build_object('sub', '00000000-0000-0000-0000-000000033001', 'role', 'authenticated')::text, true);
-select is(
-  fn_praxis_gate('00000000-0000-0000-0000-000000033081', 'bewertung', 'Probewort'),
-  true,
-  'Nach der Entsperrung öffnet das richtige Codewort das Gate'
 );
 
 -- Trainer:in liest weder Codewort noch Versuche.
