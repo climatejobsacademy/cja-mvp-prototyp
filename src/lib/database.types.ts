@@ -1169,8 +1169,13 @@ export type Database = {
       fn_praxis_codewort_entsperren: { Args: { p_job: string; p_gate: PraxisGate }; Returns: undefined };
       // 0061 (SR-89, SR-03): Einschätzung speichern, Abschluss mit automatischer Verifizierung.
       fn_praxis_einschaetzen: {
-        Args: { p_job: string; p_rolle: PraxisRolle; p_werte: Record<string, number> };
+        Args: { p_job: string; p_rolle: "selbst" | "peer"; p_werte: Record<string, number> };
         Returns: PraxisFortschritt;
+      };
+      // Trainer-Einschätzung nur mit Codewort im selben Aufruf; false = Codewort falsch.
+      fn_praxis_trainer_einschaetzen: {
+        Args: { p_job: string; p_werte: Record<string, number>; p_codewort: string };
+        Returns: boolean;
       };
       fn_praxis_abschliessen: { Args: { p_job: string; p_naechstes_mal: string | null }; Returns: PraxisErgebnis };
     };

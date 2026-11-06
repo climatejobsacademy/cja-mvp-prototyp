@@ -5,16 +5,15 @@
 -- (Zusammenfassung: alle Angaben bleiben in field_job.praxisflow).
 -- Entscheidungen 06.11.2026 (decisions.md).
 --
--- Nur additiv: Funktionen, Ersatz von fn_praxis_pruefe_gate_bewertung (0060).
+-- Nur additiv: Funktionen.
 -- Keine neue Tabelle. Regel 6 (CLAUDE.md) bleibt: Nachweise entstehen nur
 -- über eine Verifizierung; hier legt sie das System an.
 --
 -- Ablauf in Bewerten:
 --   1. Selbsteinschätzung, 2. Peer-Einschätzung (nur Rolle, keine Person),
---   3. Trainer:in gibt das Codewort ein (Gate bewertung, 0060); danach sind
---      Selbst- und Peer-Einschätzung fest,
---   4. Trainer-Einschätzung, genau einmal,
---   5. Abschluss: field_capture (phase abschluss) und, wenn kein
+--   3. Trainer-Einschätzung, genau einmal, nur zusammen mit dem Codewort im
+--      selben Aufruf (Gate bewertung); danach sind Selbst und Peer fest,
+--   4. Abschluss: field_capture (phase abschluss) und, wenn kein
 --      K.-o.-Kriterium der Trainer-Einschätzung 0 ist und dem Praxistag eine
 --      Trainer:in zugeordnet ist, eine verification 'verified' mit dieser
 --      Trainer:in als Prüfer:in. Was Lernende nach einem K.-o. tun, ist
@@ -64,35 +63,15 @@ as $$
     );
 $$;
 
--- Bewertung: Selbst und Peer müssen vor dem Codewort vollständig sein.
--- Ersetzt die Fassung aus 0060.
-create or replace function fn_praxis_pruefe_gate_bewertung(v field_job)
-returns void
-language plpgsql
-stable
-set search_path = public
-as $$
-begin
-  if v.phase <> 'bewerten' then
-    raise exception 'Freigabe zur Trainer-Einschätzung nur in Bewerten' using errcode = '23514';
-  end if;
-  if not coalesce(fn_praxis_einschaetzung_gueltig(v.praxisflow #> '{einschaetzung,selbst}'), false)
-     or not coalesce(fn_praxis_einschaetzung_gueltig(v.praxisflow #> '{einschaetzung,peer}'), false) then
-    raise exception 'Erst Selbst- und Peer-Einschätzung abgeben' using errcode = '23514';
-  end if;
-end;
-$$;
-
 revoke execute on function fn_praxis_bewertungsbogen() from public, anon, authenticated;
 revoke execute on function fn_praxis_einschaetzung_gueltig(jsonb) from public, anon, authenticated;
-revoke execute on function fn_praxis_pruefe_gate_bewertung(field_job) from public, anon, authenticated;
 
 -- ============================================================
 -- Aufrufe der App
 -- ============================================================
 
--- Eine Einschätzung speichern. selbst und peer: änderbar bis zum Codewort
--- der Trainer:in; trainer: erst nach dem Codewort und nur einmal.
+-- Selbst- oder Peer-Einschätzung speichern; änderbar, bis die Trainer-
+-- Einschätzung gespeichert ist. Peer erst nach der Selbsteinschätzung.
 create or replace function fn_praxis_einschaetzen(p_job uuid, p_rolle text, p_werte jsonb)
 returns jsonb
 language plpgsql
@@ -103,31 +82,21 @@ declare
   v field_job;
   v_flow jsonb;
 begin
-  if p_rolle not in ('selbst', 'peer', 'trainer') then
+  if p_rolle not in ('selbst', 'peer') then
     raise exception 'Unbekannte Rolle' using errcode = '22023';
   end if;
   v := fn_praxis_eigener_job(p_job);
   if v.phase <> 'bewerten' then
     raise exception 'Einschätzen geht nur in der Phase Bewerten' using errcode = '23514';
   end if;
+  if v.praxisflow #> '{einschaetzung,trainer}' is not null then
+    raise exception 'Nach der Trainer-Einschätzung sind Selbst- und Peer-Einschätzung fest' using errcode = '23514';
+  end if;
   if not coalesce(fn_praxis_einschaetzung_gueltig(p_werte), false) then
     raise exception 'Einschätzung unvollständig oder außerhalb der Skala' using errcode = '23514';
   end if;
-
-  if p_rolle = 'trainer' then
-    if not (v.praxisflow ? 'bewertung_freigegeben_am') then
-      raise exception 'Trainer-Einschätzung erst nach dem Codewort' using errcode = '42501';
-    end if;
-    if v.praxisflow #> '{einschaetzung,trainer}' is not null then
-      raise exception 'Die Trainer-Einschätzung ist schon gespeichert' using errcode = '23514';
-    end if;
-  else
-    if v.praxisflow ? 'bewertung_freigegeben_am' then
-      raise exception 'Nach dem Codewort sind Selbst- und Peer-Einschätzung fest' using errcode = '23514';
-    end if;
-    if p_rolle = 'peer' and v.praxisflow #> '{einschaetzung,selbst}' is null then
-      raise exception 'Erst die Selbsteinschätzung abgeben' using errcode = '23514';
-    end if;
+  if p_rolle = 'peer' and v.praxisflow #> '{einschaetzung,selbst}' is null then
+    raise exception 'Erst die Selbsteinschätzung abgeben' using errcode = '23514';
   end if;
 
   v_flow := jsonb_set(
@@ -138,6 +107,47 @@ begin
   v_flow := fn_praxis_mit_verlauf(v_flow, 'einschaetzung:' || p_rolle);
   update field_job set praxisflow = v_flow where id = v.id;
   return v_flow;
+end;
+$$;
+
+-- Trainer-Einschätzung speichern, nur zusammen mit dem Codewort im selben
+-- Aufruf (Entscheidung 06.11.2026: das Codewort wird immer neu eingegeben,
+-- kein Speichern ohne Codewort). Genau einmal; Selbst und Peer müssen
+-- vorliegen. true = gespeichert, false = Codewort falsch (Fehlversuch
+-- protokolliert, Gate bewertung). Gesperrt: 55P03.
+create or replace function fn_praxis_trainer_einschaetzen(p_job uuid, p_werte jsonb, p_codewort text)
+returns boolean
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v field_job;
+  v_flow jsonb;
+begin
+  v := fn_praxis_eigener_job(p_job);
+  if v.phase <> 'bewerten' then
+    raise exception 'Einschätzen geht nur in der Phase Bewerten' using errcode = '23514';
+  end if;
+  if v.praxisflow #> '{einschaetzung,trainer}' is not null then
+    raise exception 'Die Trainer-Einschätzung ist schon gespeichert' using errcode = '23514';
+  end if;
+  if not coalesce(fn_praxis_einschaetzung_gueltig(v.praxisflow #> '{einschaetzung,selbst}'), false)
+     or not coalesce(fn_praxis_einschaetzung_gueltig(v.praxisflow #> '{einschaetzung,peer}'), false) then
+    raise exception 'Erst Selbst- und Peer-Einschätzung abgeben' using errcode = '23514';
+  end if;
+  if not coalesce(fn_praxis_einschaetzung_gueltig(p_werte), false) then
+    raise exception 'Einschätzung unvollständig oder außerhalb der Skala' using errcode = '23514';
+  end if;
+  if not fn_praxis_codewort_ok(v, 'bewertung', p_codewort) then
+    return false;
+  end if;
+
+  v_flow := jsonb_set(v.praxisflow, '{einschaetzung,trainer}', p_werte)
+    || jsonb_build_object('bewertung_freigegeben_am', now());
+  v_flow := fn_praxis_mit_verlauf(v_flow, 'einschaetzung:trainer');
+  update field_job set praxisflow = v_flow where id = v.id;
+  return true;
 end;
 $$;
 
@@ -210,6 +220,8 @@ end;
 $$;
 
 revoke execute on function fn_praxis_einschaetzen(uuid, text, jsonb) from public, anon;
+revoke execute on function fn_praxis_trainer_einschaetzen(uuid, jsonb, text) from public, anon;
+grant execute on function fn_praxis_trainer_einschaetzen(uuid, jsonb, text) to authenticated;
 revoke execute on function fn_praxis_abschliessen(uuid, text) from public, anon;
 grant execute on function fn_praxis_einschaetzen(uuid, text, jsonb) to authenticated;
 grant execute on function fn_praxis_abschliessen(uuid, text) to authenticated;

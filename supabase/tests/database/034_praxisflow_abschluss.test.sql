@@ -1,7 +1,7 @@
 -- 034_praxisflow_abschluss.test.sql
 -- SR-89 (Migration 0061): Selbst-, Peer- und Trainer-Einschätzung in
--- Reihenfolge, Skala je Kriterium, Trainer-Einschätzung erst nach dem
--- Codewort und nur einmal; nur ein K.-o.-Kriterium mit 0 in der
+-- Reihenfolge, Skala je Kriterium, Trainer-Einschätzung nur mit dem
+-- Codewort im selben Aufruf und nur einmal; nur ein K.-o.-Kriterium mit 0 in der
 -- Trainer-Einschätzung verhindert die Anrechnung.
 -- SR-03: automatische Verifizierung beim Abschluss mit der Trainer:in des
 -- Praxistags; ohne Trainer:in keine.
@@ -11,7 +11,7 @@ begin;
 
 create extension if not exists pgtap schema extensions;
 
-select plan(20);
+select plan(21);
 
 -- ------------------------------------------------------------
 -- Fixtures (als Superuser)
@@ -87,14 +87,12 @@ select set_config('request.jwt.claims',
   json_build_object('sub', '00000000-0000-0000-0000-000000034001', 'role', 'authenticated')::text, true);
 
 select throws_ok(
-  $$select fn_praxis_einschaetzen('00000000-0000-0000-0000-000000034081', 'peer',
-    '{"funktion": 10, "ausfuehrung": 9, "schutz": 10, "protokoll": 7, "unterlagen": 10}')$$,
+  $$select fn_praxis_einschaetzen('00000000-0000-0000-0000-000000034081', 'peer', '{"funktion": 10, "ausfuehrung": 9, "schutz": 10, "protokoll": 7, "unterlagen": 10}')$$,
   '23514', null,
   'Peer-Einschätzung erst nach der Selbsteinschätzung'
 );
 select throws_ok(
-  $$select fn_praxis_einschaetzen('00000000-0000-0000-0000-000000034081', 'selbst',
-    '{"funktion": 10, "ausfuehrung": 9}')$$,
+  $$select fn_praxis_einschaetzen('00000000-0000-0000-0000-000000034081', 'selbst', '{"funktion": 10, "ausfuehrung": 9}')$$,
   '23514', null,
   'Unvollständige Einschätzung wird abgelehnt'
 );
@@ -104,53 +102,56 @@ select throws_ok(
   '23514', null,
   'Punkte außerhalb der Skala des Kriteriums (Ja/Nein: 10 oder 0) werden abgelehnt'
 );
+select throws_ok(
+  $$select fn_praxis_einschaetzen('00000000-0000-0000-0000-000000034081', 'trainer', '{"funktion": 10, "ausfuehrung": 9, "schutz": 10, "protokoll": 7, "unterlagen": 10}')$$,
+  '22023', null,
+  'Die Trainer-Einschätzung geht nicht über fn_praxis_einschaetzen'
+);
 select lives_ok(
   $$select fn_praxis_einschaetzen('00000000-0000-0000-0000-000000034081', 'selbst',
     '{"funktion": 10, "ausfuehrung": 7, "schutz": 10, "protokoll": 9, "unterlagen": 10}')$$,
   'Selbsteinschätzung speichern'
 );
 select throws_ok(
-  $$select fn_praxis_einschaetzen('00000000-0000-0000-0000-000000034081', 'trainer',
-    '{"funktion": 10, "ausfuehrung": 9, "schutz": 10, "protokoll": 7, "unterlagen": 10}')$$,
-  '42501', null,
-  'Trainer-Einschätzung erst nach dem Codewort'
-);
-select throws_ok(
-  $$select fn_praxis_gate('00000000-0000-0000-0000-000000034081', 'bewertung', 'probewort')$$,
+  $$select fn_praxis_trainer_einschaetzen('00000000-0000-0000-0000-000000034081', '{"funktion": 10, "ausfuehrung": 9, "schutz": 10, "protokoll": 7, "unterlagen": 10}', 'probewort')$$,
   '23514', null,
-  'Codewort der Trainer:in erst nach Selbst- und Peer-Einschätzung'
+  'Trainer-Einschätzung erst nach Selbst- und Peer-Einschätzung'
 );
 select lives_ok(
-  $$select fn_praxis_einschaetzen('00000000-0000-0000-0000-000000034081', 'peer',
-    '{"funktion": 10, "ausfuehrung": 9, "schutz": 10, "protokoll": 7, "unterlagen": 10}')$$,
+  $$select fn_praxis_einschaetzen('00000000-0000-0000-0000-000000034081', 'peer', '{"funktion": 10, "ausfuehrung": 9, "schutz": 10, "protokoll": 7, "unterlagen": 10}')$$,
   'Peer-Einschätzung speichern'
-);
-select is(
-  fn_praxis_gate('00000000-0000-0000-0000-000000034081', 'bewertung', 'probewort'),
-  true,
-  'Trainer:in gibt das Codewort ein'
-);
-select throws_ok(
-  $$select fn_praxis_einschaetzen('00000000-0000-0000-0000-000000034081', 'selbst',
-    '{"funktion": 10, "ausfuehrung": 10, "schutz": 10, "protokoll": 10, "unterlagen": 10}')$$,
-  '23514', null,
-  'Nach dem Codewort ist die Selbsteinschätzung fest'
 );
 select throws_ok(
   $$select fn_praxis_abschliessen('00000000-0000-0000-0000-000000034081', null)$$,
   '23514', null,
   'Abschluss erst mit Trainer-Einschätzung'
 );
-select lives_ok(
-  $$select fn_praxis_einschaetzen('00000000-0000-0000-0000-000000034081', 'trainer',
-    '{"funktion": 10, "ausfuehrung": 9, "schutz": 10, "protokoll": 7, "unterlagen": 9}')$$,
-  'Trainer-Einschätzung speichern'
+select is(
+  fn_praxis_trainer_einschaetzen('00000000-0000-0000-0000-000000034081', '{"funktion": 10, "ausfuehrung": 9, "schutz": 10, "protokoll": 7, "unterlagen": 10}', 'falsch'),
+  false,
+  'Ohne richtiges Codewort wird die Trainer-Einschätzung nicht gespeichert'
+);
+select ok(
+  (select praxisflow #> '{einschaetzung,trainer}' is null from field_job where id = '00000000-0000-0000-0000-000000034081'),
+  'Nach falschem Codewort liegt keine Trainer-Einschätzung vor'
+);
+select is(
+  fn_praxis_trainer_einschaetzen('00000000-0000-0000-0000-000000034081',
+    '{"funktion": 10, "ausfuehrung": 9, "schutz": 10, "protokoll": 7, "unterlagen": 9}', 'probewort'),
+  true,
+  'Trainer-Einschätzung mit Codewort im selben Aufruf speichern'
 );
 select throws_ok(
-  $$select fn_praxis_einschaetzen('00000000-0000-0000-0000-000000034081', 'trainer',
+  $$select fn_praxis_trainer_einschaetzen('00000000-0000-0000-0000-000000034081',
+    '{"funktion": 10, "ausfuehrung": 10, "schutz": 10, "protokoll": 10, "unterlagen": 10}', 'probewort')$$,
+  '23514', null,
+  'Die Trainer-Einschätzung lässt sich nicht überschreiben, auch nicht mit Codewort'
+);
+select throws_ok(
+  $$select fn_praxis_einschaetzen('00000000-0000-0000-0000-000000034081', 'selbst',
     '{"funktion": 10, "ausfuehrung": 10, "schutz": 10, "protokoll": 10, "unterlagen": 10}')$$,
   '23514', null,
-  'Die Trainer-Einschätzung lässt sich nicht überschreiben'
+  'Nach der Trainer-Einschätzung ist die Selbsteinschätzung fest'
 );
 select is(
   fn_praxis_abschliessen('00000000-0000-0000-0000-000000034081', 'Leitung vorher messen'),
