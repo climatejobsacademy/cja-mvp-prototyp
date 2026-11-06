@@ -204,8 +204,8 @@ select is(
 );
 select throws_ok(
   $$select fn_praxis_weiter('00000000-0000-0000-0000-000000031081', 'kontrollieren')$$,
-  '0A000', null,
-  'Kontrollieren ist ohne die folgenden Migrationen noch nicht abschließbar'
+  '23514', null,
+  'Kontrollieren endet erst mit allen Prüfpunkten (seit 0060)'
 );
 select throws_ok(
   $$select fn_praxis_weiter('00000000-0000-0000-0000-000000031083', 'informieren')$$,
