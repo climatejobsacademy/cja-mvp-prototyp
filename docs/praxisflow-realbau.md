@@ -43,13 +43,13 @@ Die 19 Schritte in Bewerten passen zu demo (belegt): 5 Kriterien im Standard-Bew
 
 | Punkt | Matrix | demo | SR | Folge |
 |---|---|---|---|---|
-| Freigabe vor dem Arbeiten unter Spannung | nicht genannt | Codewort zwischen „spannungsfrei“ und „unter Spannung“ | SR-65 (Gate allgemein) | **klären**: Sicherheitsfrage; das Partner-Feedback verlangt die Freigabe vor dem Zuschalten |
-| Freigabe durch die Trainer:in | Codewort am Gerät der Lernenden | Codewort im Browser | SR-65 (Codewort serverseitig, Hash, Sperre); SR-67 (eigener Login, **ohne** gemeinsames Codewort, Stage Later) | Pilot: Codewort serverseitig nach SR-65; eigener Trainer-Login bleibt SR-67 |
-| Peer-Einschätzung | ein Set Items, „wer sie gemacht hat“ wird gespeichert | am selben Gerät, ohne Identität | SR-89 | ohne Login ist nur die Rolle „Peer“ speicherbar, nicht die Person (in SR-89 offen) |
-| Ergebnis „bestanden / nicht bestanden“ | offen | K.-o.-Kriterien (Funktion, Schutzmaßnahmen) führen zur Nacharbeit | SR-66: Ergebnis nur mit Codewort | Widerspruch zu Prüfprotokoll und Punkten ist in SR-66 gestrichen; das Ergebnis selbst hängt an Frage 3 |
+| Freigabe vor dem Arbeiten unter Spannung | nicht genannt | Codewort zwischen „spannungsfrei“ und „unter Spannung“ | SR-65 | **entschieden 06.11.:** ja, immer, per Codewort der Trainer:in |
+| Freigabe durch die Trainer:in | Codewort am Gerät der Lernenden | Codewort im Browser | SR-65 (serverseitig, Hash, Sperre, ein Codewort je Kohorte); SR-67 (eigener Login, Stage Later) | **entschieden 06.11.:** Codewort am Gerät der Lernenden, eins je Kohorte für beide Gates |
+| Peer-Einschätzung | ein Set Items, „wer sie gemacht hat“ wird gespeichert | am selben Gerät, ohne Identität | SR-89 | **entschieden 06.11.:** nur die Rolle „Peer“ wird gespeichert |
+| Ergebnis „bestanden / nicht bestanden“ | offen | K.-o.-Kriterien (Funktion, Schutzmaßnahmen) führen zur Nacharbeit | SR-66 (Stage Later, im Pilot nicht umgesetzt); SR-89 | **entschieden 06.11.:** kein eigenes Ergebnis; nur ein K.-o.-Kriterium mit 0 in der Trainer-Einschätzung verhindert die Anrechnung. Was Lernende danach tun, klärt das Trainer-Feedback |
 | Dateien je Auftrag | Zusatzmaterial je Auftrag, Hilfen auch von Lernenden | Hilfen mit eigenem Upload | SR-68 (Lektionen und Praxisaufgaben); SR-88 (Uploads der Lernenden) | Unterlagen je Auftrag von AfCJ nach SR-68, eigene Uploads nach SR-88 |
 | Zusammenfassung als PDF | drucken oder als PDF speichern | Auftragsakte mit `window.print()` | SR-90 | Druckfunktion des Browsers reicht für den Pilot |
-| Abschluss als Nachweis | nicht genannt | nur Auftragsakte | SR-02, SR-03, SR-82 | **klären**: zählt der Abschluss als Selbstauskunft, die verifiziert wird? |
+| Abschluss als Nachweis | nicht genannt | nur Auftragsakte | SR-02, SR-03, SR-89 | **entschieden 06.11.:** kein Verifizierungsschritt im Pilot; das System legt beim Abschluss die Verifizierung an (SR-03), außer bei K.-o. |
 | Phasen-Namen | Informieren … Bewerten | ebenso | SR-64 (angeglichen) | im Code bleiben die ids aus demo (`analyse`, `durchfuehren`, `kontrolle`) oder werden beim Bau umbenannt |
 
 ## 4. Was dev schon hat
@@ -87,12 +87,12 @@ Plan, Haken, Kontrollschritte und Einschätzungen sind je Praxistag klein und we
 | Auftragsnummer | `field_job_type.nummer` | `text unique`, nullable (z. B. `M02-A03`); Schlüssel für den Import (Abschnitt 6) |
 | Phase | `field_job.phase`, `field_job.phase_seit` | `text not null default 'informieren' check (phase in ('informieren','planen','entscheiden','ausfuehren','kontrollieren','bewerten','abgeschlossen'))`; kein Schreibrecht für Lernende |
 | Fortschritt | `field_job.praxisflow` | `jsonb not null default '{}'`; Felder: `werkzeuge[]`, `materialien[]`, `schritte[] {id, text, erledigt_am}`, `plan_bestaetigt_am`, `kontrolle[] {id, erledigt_am}`, `inbetriebnahme_freigegeben_am`, `einschaetzung {selbst, peer, trainer: {kriterium: punkte}}`, `trainer_freigegeben_am`, `naechstes_mal` (Freitext), `verlauf[] {zeit, text}`; Schreiben nur über RPC |
-| Dateien (SR-88) | neue Tabelle `field_job_datei` | `organisation_id`, `field_job_id`, `art` (`auftrag`, `hilfe`, `plan`, `protokoll`), `storage_pfad`, `dateiname`, `mime_type`, `groesse`; Lesen, Anlegen und Löschen nur durch die lernende Person selbst; ob nach dem Abschluss noch gelöscht werden darf, ist offen |
+| Dateien (SR-88) | neue Tabelle `field_job_datei` | `organisation_id`, `field_job_id`, `art` (`auftrag`, `hilfe`, `plan`, `protokoll`), `storage_pfad`, `dateiname`, `mime_type`, `groesse`; Lesen, Anlegen und Löschen nur durch die lernende Person selbst, Löschen nur bis zum Abschluss des Auftrags |
 | Unterlagen je Auftrag (von AfCJ) | neue Tabelle `field_job_type_unterlage` | `field_job_type_id`, `reihenfolge`, `kuerzel`, `titel`, `file_asset_id`; unique (`field_job_type_id`, `reihenfolge`) |
-| Codewort | neue Tabelle `praxis_codewort` | `organisation_id`, Reichweite (Vorschlag: je Kohorte und Gate `inbetriebnahme` bzw. `bewertung`), `hash`, `geaendert_am`; kein Lese- oder Schreibrecht für Lernende (SR-65) |
+| Codewort (SR-65) | neue Tabelle `praxis_codewort` | `organisation_id`, `cohort_id` (ein Codewort je Kohorte, gilt für beide Gates `zuschalten` und `bewertung`), `hash`, `geaendert_am`; kein Lese- oder Schreibrecht für Lernende |
 | Fehlversuche | neue Tabelle `praxis_codewort_versuch` | `field_job_id`, `gate`, `versucht_am`, `erfolgreich`; Sperre nach N Fehlversuchen (SR-65, N offen) |
 
-Storage: ein **privater** Bucket `praxis-dateien`, Zugriff nur über signierte Links (Muster `lesson-resources`, `profilfotos`). Pfad `<learner_id>/<field_job_id>/<uuid>.<ext>`; die Storage-Policies erlauben Lesen, Hochladen und Löschen nur, wenn der erste Pfadteil die eigene `auth.uid()` ist. In der Plattform sieht niemand sonst die Dateien, auch keine Trainer:in und kein AfCJ admin (SR-88); erreichbar sind sie nur über den Supabase-Zugang des Projekts. Formate und Größengrenzen werden gesondert festgelegt; demo nutzt Bilder, PDF, CSV/Excel und bei Plänen zusätzlich DWG, DXF, GLB (`UPLOAD_FORMATE`). Unterlagen je Auftrag liegen in einem eigenen Bucket `auftrags-unterlagen` (Upload nur AfCJ admin) oder in `lesson-resources`-Logik; Entscheidung beim Bau.
+Storage: ein **privater** Bucket `praxis-dateien`, Zugriff nur über signierte Links (Muster `lesson-resources`, `profilfotos`). Pfad `<learner_id>/<field_job_id>/<uuid>.<ext>`; die Storage-Policies erlauben Lesen und Hochladen nur, wenn der erste Pfadteil die eigene `auth.uid()` ist, Löschen zusätzlich nur, solange der Praxistag nicht abgeschlossen ist. In der Plattform sieht niemand sonst die Dateien, auch keine Trainer:in und kein AfCJ admin (SR-88); erreichbar sind sie nur über den Supabase-Zugang des Projekts. Formate (entschieden 06.11.) wie demo (`UPLOAD_FORMATE`): Bilder und PDF überall, CSV/Excel, bei Plänen zusätzlich DWG, DXF, GLB. Größengrenze 50 MB je Datei (Bucket-Einstellung und Prüfung vor dem Upload).
 
 Später ohne Umbau möglich (Vermutung): JSON-Felder in Tabellen überführen (additive Migration plus Datenskript), Kriterien und Kontrollschritte je Auftrag statt global.
 
@@ -109,7 +109,7 @@ Jede Funktion prüft Eigentum (`learner_id = auth.uid()`), `ablauf = 'gefuehrt'`
 | `fn_praxis_kontrolle_abhaken(job, punkt)` | Reihenfolge der Kontrollschritte; Punkte unter Spannung erst nach Freigabe | `erledigt_am` |
 | `fn_praxis_gate(job, gate, codewort)` | Codewort korrekt, nicht gesperrt (SR-65) | `inbetriebnahme_freigegeben_am` bzw. `trainer_freigegeben_am`; Versuch protokolliert |
 | `fn_praxis_einschaetzen(job, rolle, werte)` | `selbst` und `peer` ohne Codewort, `trainer` nur nach Gate `bewertung` | Punkte je Kriterium auf der jeweiligen Skala |
-| `fn_praxis_abschliessen(job, naechstes_mal)` | alle Kontrollschritte erledigt, Datei `protokoll` vorhanden, drei vollständige Einschätzungen | `phase = abgeschlossen`; danach keine Änderung mehr; ob zusätzlich ein `field_capture` (Status `submitted`) entsteht, hängt an Frage 6 |
+| `fn_praxis_abschliessen(job, naechstes_mal)` | alle Kontrollschritte erledigt, Datei `protokoll` vorhanden, drei vollständige Einschätzungen | `phase = abgeschlossen`, danach keine Änderung mehr; legt `field_capture` (phase `abschluss`) an und, wenn kein K.-o.-Kriterium in der Trainer-Einschätzung 0 ist und `field_job.instructor_id` gesetzt ist, in derselben Transaktion eine `verification` (`verified`, `verifiziert_von = instructor_id`, Kommentar „automatisch, Praxisflow“) |
 
 Einschätzungen sind **keine** Nachweise. Nachweis entsteht weiter nur über eine Verifizierung (Regel 6 in `CLAUDE.md`).
 
@@ -142,28 +142,35 @@ Erweiterung der Zugriffsmatrix (Regel 3 in `CLAUDE.md`): `docs/access-matrix.md`
 | Trainer-Einschätzung | eintragen nur nach Codewort am eigenen Gerät; lesen erst nach Abschluss (Vorschlag) | lesen | lesen | — |
 | Verifizierung | lesen eigene | anlegen in ihren Kohorten (0032) | alles | lesen Ergebnis |
 
+Im Pilot legt nur `fn_praxis_abschliessen` (security definer) die Verifizierung an; Lernende erhalten kein Schreibrecht auf `verification` (SR-03).
+
 Der Fortschritt abgeschlossener Praxistage wird nicht mehr geändert und nicht gelöscht; kein Code darf das tun (wie Regel 7). Dateien darf die lernende Person löschen (SR-88).
 
 Folge (Entscheidung Produktleitung 06.11.2026, für den Pilot): Weil Trainer:innen die Dateien nicht sehen, prüfen sie Prüfprotokoll und Pläne am Gerät der Lernenden oder auf Papier, nicht in der Plattform.
 
-## 8. Offene Produktfragen
+## 8. Produktfragen
 
-1. **Freigabe vor dem Zuschalten.** Braucht es vor dem Arbeiten unter Spannung ein Codewort der Trainer:in (demo, Partner-Feedback), obwohl die Matrix es nicht nennt? Gilt das für alle Aufträge in Modul II?
-2. **Codewort oder Trainer-Login.** Pilot mit Codewort am Gerät der Lernenden (Matrix, SR-65) und Trainer-Login später (SR-67)? Reichweite des Codeworts: je Kohorte, je Auftrag oder je Gate?
-3. **Fehlschlag.** Was passiert bei „nicht bestanden“ oder einem K.-o.-Kriterium: zurück zu Ausführen oder Kontrollieren, neuer Durchlauf, nur Vermerk?
-4. **Peer.** Reicht die Rolle „Peer“ ohne Person, oder muss erkennbar sein, wer eingeschätzt hat?
-5. **Inhalte.** Die 9 Kontrollschritte und die Items der Einschätzung: global für Modul II oder je Auftrag? Wer liefert die endgültigen Texte und Stufenbeschreibungen?
-6. **Abschluss als Nachweis.** Wird der abgeschlossene Auftrag eine Selbstauskunft (`field_capture`), die eine Trainer:in oder AfCJ verifiziert, und bewegt er damit den Kompetenzring?
-7. **Prüfprotokoll.** PDF aus dem Prüfgerät oder Foto; Pflicht für jeden Auftrag?
-8. **Uploads und Datenschutz.** Dateiformate und Größengrenzen, Aufbewahrung, Löschen nach dem Abschluss (SR-88); die Datenschutzerklärung (Abschnitt „Uploads“) muss vor dem Einsatz ergänzt werden (`docs/datenschutz-offene-punkte.md`).
-9. **Welche Aufträge** bekommen `ablauf = 'gefuehrt'`, und liegen für sie Unterlagen vor?
+Entschieden am 06.11.2026 (Produkt-Lead, Einträge in `decisions.md`):
+- **Freigabe vor dem Zuschalten:** ja, immer, per Codewort der Trainer:in.
+- **Codewort:** am Gerät der Lernenden, ein Codewort je Kohorte für beide Gates; Trainer-Login bleibt SR-67.
+- **Peer:** nur die Rolle „Peer“, nicht die Person.
+- **Anrechnung:** kein Verifizierungsschritt im Pilot; das System verifiziert beim Abschluss, außer ein K.-o.-Kriterium ist in der Trainer-Einschätzung 0.
+- **Uploads:** Formate wie demo, 50 MB je Datei, sichtbar nur für die lernende Person, löschen bis zum Abschluss.
+
+Offen:
+1. **Fehlschlag.** Was tun Lernende nach einem durchgefallenen K.-o.-Kriterium: Auftrag neu, nur Ausführen oder Kontrollieren wiederholen, nur Vermerk? Frage an die Trainer:innen (Notion: „Feedback zum Praxisflow“).
+2. **Inhalte.** Die 9 Kontrollschritte und die Items der Einschätzung: global für Modul II oder je Auftrag? Wer liefert die endgültigen Texte und Stufenbeschreibungen?
+3. **Prüfprotokoll.** PDF aus dem Prüfgerät oder Foto; Pflicht für jeden Auftrag?
+4. **Datenschutz.** Aufbewahrung der Uploads; die Datenschutzerklärung (Abschnitt „Uploads“) muss vor dem Einsatz ergänzt werden (`docs/datenschutz-offene-punkte.md`).
+5. **Welche Aufträge** bekommen `ablauf = 'gefuehrt'`, und liegen für sie Unterlagen vor?
+6. **Nach dem Pilot:** Verifizierung automatisiert oder über eine Trainer-Ansicht.
 
 ## 9. Anforderungen (SR)
 
 SR-Nummern und SR-Texte entstehen nur in Notion. Stand des Abgleichs (belegt, Notion am 06.11.2026):
 
 - **Vorhanden und tragend:** SR-64 (Phasen und Schritte in Reihenfolge, serverseitig), SR-65 (Codewort-Gate serverseitig), SR-08 (atomare Schreibvorgänge), SR-71 (praktische Teilschritte), SR-81 (Trainer:in bestätigt Anwesenheit am Praxistag).
-- **Am 06.11.2026 in Notion angepasst:** SR-64 (Phasen-Namen; Abfragen sind Listen-Eingaben, Abhaken und Punktwahl), SR-66 (Satz „Prüfprotokoll und Benotung nicht Teil der Plattform“ gestrichen; ob es ein Ergebnis „bestanden / nicht bestanden“ gibt, hängt an Frage 3), SR-68 (Dateien auch je Praxisaufgabe).
+- **Am 06.11.2026 in Notion angepasst:** SR-03 (automatische Verifizierung beim Abschluss im Praxisflow), SR-64 (Phasen-Namen; Abfragen sind Listen-Eingaben, Abhaken und Punktwahl), SR-65 (ein Codewort je Kohorte, zwei Gates), SR-66 (Stage Later, im Pilot nicht umgesetzt), SR-68 (Dateien auch je Praxisaufgabe), SR-88 (Löschen nur bis zum Abschluss), SR-89 (nur K.-o. in der Trainer-Einschätzung blockiert die Anrechnung; Peer nur als Rolle).
 - **Neu:** SR-88 (Uploads der Lernenden, nur für sie selbst sichtbar, löschbar), SR-89 (Selbst-, Peer- und Trainer-Einschätzung), SR-90 (Zusammenfassung des Auftrags zum Drucken bzw. als PDF).
 - **Neu zu bewerten:** SR-82 (Bezug zum neuen Ablauf).
 - **SR folgt** für: Import der Aufträge mit Nummer und Unterlagen.
@@ -202,4 +209,4 @@ Die Bausteine aus demo (`src/components/praxisflow/*`, „Jetzt dran“, `praxis
 
 ### 10.3 Was ohne die offenen Fragen schon gebaut werden kann
 
-Unabhängig von den Fragen in Abschnitt 8 (Vermutung, nach Lesen der Matrix): Bucket und Tabelle für Dateien, `ablauf` und `phase`, das JSON für Plan und Haken, die Phasen Informieren bis Ausführen. Von den Antworten abhängig sind Kontrollieren (Frage 1, 5, 7), Bewerten (Frage 2, 4, 5) und der Abschluss (Frage 3, 6).
+Nach den Entscheidungen vom 06.11. ist der ganze Ablauf baubar: Dateien, `ablauf` und `phase`, das JSON für Plan und Haken, Codewort, alle sechs Phasen und der Abschluss mit automatischer Verifizierung. Von den offenen Punkten in Abschnitt 8 hängen nur Texte und Inhalte ab (Kontrollschritte, Items, Prüfprotokoll) sowie das Verhalten nach einem durchgefallenen K.-o.-Kriterium; bis zur Klärung endet der Auftrag dann ohne Anrechnung.

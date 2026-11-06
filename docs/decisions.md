@@ -428,6 +428,22 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Status:** gültig
 - **Belegt:** `supabase db advisors --type security` gegen Production (nur lesend); Freigaben in den Migrationen `0024`, `0028`, `0030`, `0032`, `0034`, `0050` und `0057`; Aufrufe per `rpc` in `src/`
 
+### 2026-11-06 – Praxisflow im Pilot: Uploads nur für die lernende Person
+
+- **Entscheidung:** (Produkt-Lead) Dateien, die Lernende im Praxisflow hochladen (Arbeitsauftrag, Hilfen, Pläne, Prüfprotokoll), sieht in der Plattform nur die lernende Person selbst, weder andere Lernende noch Trainer:innen noch AfCJ admin. Lernende können eigene Dateien bis zum Abschluss des Auftrags löschen, danach nicht mehr. Erlaubt sind die Formate aus demo (`UPLOAD_FORMATE`: Bilder und PDF, CSV/Excel, bei Plänen zusätzlich DWG, DXF, GLB), höchstens 50 MB je Datei. Trainer:innen prüfen Prüfprotokoll und Pläne im Pilot am Gerät der Lernenden oder auf Papier.
+- **Begründung:** Die Trainer:innen sind beim Prüfen vor Ort dabei; eine Sicht für weitere Personen bringt im Pilot keinen Nutzen und vergrößert den Datenschutzumfang. Bis zum Abschluss lassen sich falsche Dateien korrigieren, danach bleiben sie Teil der Zusammenfassung (SR-90).
+- **Folgen:** Privater Bucket mit Pfad je lernender Person; Storage-Policies nur für die eigene `auth.uid()`; erreichbar sind die Dateien sonst nur über den Supabase-Zugang des Projekts. Die Datenschutzerklärung (Abschnitt „Uploads“) wird vor dem Einsatz ergänzt.
+- **Status:** gültig
+- **Belegt:** SR-88, `praxisflow-realbau.md` (Abschnitte 5.2 und 7)
+
+### 2026-11-06 – Praxisflow im Pilot: Codewort, Einschätzung und automatische Verifizierung
+
+- **Entscheidung:** (Produkt-Lead) (1) Trainer:innen geben an zwei festen Stellen mit einem Codewort frei: vor dem Zuschalten der Spannung (Kontrollieren) und vor ihrer Einschätzung (Bewerten). Es gibt ein Codewort je Kohorte für alle Gates; AfCJ admin kann es ändern. (2) Die Peer-Einschätzung wird nur mit der Rolle „Peer“ gespeichert, nicht mit der Person. (3) Im Pilot gibt es keinen eigenen Verifizierungsschritt, weder im Backend noch in der App. Beim Abschluss legt das System die Verifizierung selbst an, mit der Trainer:in des Praxistags (`field_job.instructor_id`) als Prüfer:in. (4) Nur ein K.-o.-Kriterium, das in der Trainer-Einschätzung mit 0 bewertet ist, verhindert die Verifizierung und damit die Anrechnung auf Teilschritte; Selbst- und Peer-Einschätzung blockieren nichts. (5) Ein eigenes Ergebnis „bestanden / nicht bestanden“ (SR-66) gibt es im Pilot nicht.
+- **Begründung:** Prüfen und Bewerten finden im Pilot immer mit der Trainer:in vor Ort statt; das ersetzt die nachträgliche Verifizierung. Die Größenordnung (313 geplante Praxistage auf Production am 06.11.2026, gezählt nur lesend) wäre von Hand nicht zu verifizieren. Ein Codewort je Kohorte ist für die Trainer:innen am einfachsten.
+- **Folgen:** Regel 6 in `CLAUDE.md` bleibt gültig: Nachweise entstehen weiter über eine Verifizierung, die hier das System anlegt. Ohne zugeordnete Trainer:in am Praxistag entsteht keine Verifizierung; Trainer:innen müssen vor der Praxisphase als Personen mit Rolle `trainer` angelegt und den Praxistagen zugeordnet sein. Was Lernende nach einem durchgefallenen K.-o.-Kriterium tun, klärt das Feedback der Trainer:innen. Wie die Verifizierung nach dem Pilot läuft (automatisiert oder über eine Trainer-Ansicht), ist offen.
+- **Status:** gültig
+- **Belegt:** SR-03, SR-65, SR-66 (Stage Later), SR-89, `praxisflow-realbau.md` (Abschnitte 5 und 8)
+
 ## Offene technische Schulden
 
 Diese Punkte sind keine Entscheidungen, sondern bekannte Lücken; was daraus wird, steht in Asana.
