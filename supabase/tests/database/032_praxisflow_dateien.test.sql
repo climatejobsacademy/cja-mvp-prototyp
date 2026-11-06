@@ -8,12 +8,12 @@ begin;
 
 create extension if not exists pgtap schema extensions;
 
-select plan(26);
+select plan(31);
 
 -- ------------------------------------------------------------
 -- Fixtures (als Superuser)
 -- 32001 Lernende A, 32002 Lernende B, 32003 AfCJ admin, 32004 Trainer:in.
--- 32081 Praxistag A (geführt, Trainer:in 32004), 32082 Praxistag A (geführt),
+-- 32081 Praxistag A (geführt, Trainer:in 32004), 32082 Praxistag A (einfach),
 -- 32083 Praxistag B (geführt).
 -- ------------------------------------------------------------
 insert into auth.users (id, email) values
@@ -48,11 +48,12 @@ insert into programme (id, name, kuerzel, status) values
   ('00000000-0000-0000-0000-000000032021', 'Programm', 'PD-P1', 'published');
 
 insert into field_job_type (id, titel, programme_id, reihenfolge, status, ablauf) values
-  ('00000000-0000-0000-0000-000000032041', 'Auftrag geführt', '00000000-0000-0000-0000-000000032021', 1, 'published', 'gefuehrt');
+  ('00000000-0000-0000-0000-000000032041', 'Auftrag geführt', '00000000-0000-0000-0000-000000032021', 1, 'published', 'gefuehrt'),
+  ('00000000-0000-0000-0000-000000032042', 'Auftrag einfach', '00000000-0000-0000-0000-000000032021', 2, 'published', 'einfach');
 
 insert into field_job (id, organisation_id, datum, field_job_type_id, learner_id, instructor_id) values
   ('00000000-0000-0000-0000-000000032081', '00000000-0000-0000-0000-000000032011', '2026-11-16', '00000000-0000-0000-0000-000000032041', '00000000-0000-0000-0000-000000032001', '00000000-0000-0000-0000-000000032004'),
-  ('00000000-0000-0000-0000-000000032082', '00000000-0000-0000-0000-000000032011', '2026-11-17', '00000000-0000-0000-0000-000000032041', '00000000-0000-0000-0000-000000032001', null),
+  ('00000000-0000-0000-0000-000000032082', '00000000-0000-0000-0000-000000032011', '2026-11-17', '00000000-0000-0000-0000-000000032042', '00000000-0000-0000-0000-000000032001', null),
   ('00000000-0000-0000-0000-000000032083', '00000000-0000-0000-0000-000000032011', '2026-11-16', '00000000-0000-0000-0000-000000032041', '00000000-0000-0000-0000-000000032002', null);
 
 -- ------------------------------------------------------------
@@ -64,10 +65,9 @@ select is((select file_size_limit from storage.buckets where id = 'praxis-dateie
   'Bucket praxis-dateien nimmt höchstens 50 MB je Datei an');
 select ok((select relrowsecurity from pg_class where oid = 'public.field_job_datei'::regclass),
   'RLS ist auf field_job_datei eingeschaltet');
-select is_empty(
-  $$select polname from pg_policy where polrelid = 'public.field_job_datei'::regclass and polname like '%admin%'$$,
-  'Keine Admin-Policy auf field_job_datei (SR-88)'
-);
+select policies_are('public', 'field_job_datei',
+  array['field_job_datei_eigene_lesen', 'field_job_datei_eigene_anlegen', 'field_job_datei_eigene_loeschen'],
+  'Auf field_job_datei gibt es nur die drei Policies für die eigene Person (SR-88)');
 
 select set_config('storage.allow_delete_query', 'true', true);
 
@@ -100,6 +100,36 @@ select throws_ok(
     ('praxis-dateien', '00000000-0000-0000-0000-000000032001/00000000-0000-0000-0000-000000032083/x.pdf')$$,
   '42501', null,
   'Kein Upload zu einem fremden Praxistag, auch im eigenen Ordner'
+);
+select throws_ok(
+  $$insert into storage.objects (bucket_id, name) values
+    ('praxis-dateien', '00000000-0000-0000-0000-000000032001/00000000-0000-0000-0000-000000032082/x.pdf')$$,
+  '42501', null,
+  'Kein Upload zu einem Praxistag im einfachen Ablauf'
+);
+select is(
+  (with u as (
+     update storage.objects set name = '00000000-0000-0000-0000-000000032001/00000000-0000-0000-0000-000000032081/neu.pdf'
+     where bucket_id = 'praxis-dateien'
+       and name = '00000000-0000-0000-0000-000000032001/00000000-0000-0000-0000-000000032081/a1.pdf'
+     returning 1)
+   select count(*) from u),
+  0::bigint,
+  'Dateien im Speicher lassen sich nicht überschreiben oder umbenennen'
+);
+select throws_ok(
+  $$insert into field_job_datei (organisation_id, field_job_id, learner_id, art, storage_pfad, dateiname, mime_type, groesse) values
+    ('00000000-0000-0000-0000-000000032012', '00000000-0000-0000-0000-000000032081', '00000000-0000-0000-0000-000000032001',
+     'hilfe', '00000000-0000-0000-0000-000000032001/00000000-0000-0000-0000-000000032081/o.pdf', 'o.pdf', 'application/pdf', 10)$$,
+  '42501', null,
+  'Organisation der Dateizeile muss zum Praxistag passen'
+);
+select throws_ok(
+  $$insert into field_job_datei (organisation_id, field_job_id, learner_id, art, storage_pfad, dateiname, mime_type, groesse) values
+    ('00000000-0000-0000-0000-000000032011', '00000000-0000-0000-0000-000000032081', '00000000-0000-0000-0000-000000032001',
+     'hilfe', '00000000-0000-0000-0000-000000032001/00000000-0000-0000-0000-000000032081/z.zip', 'z.zip', 'application/zip', 10)$$,
+  '23514', null,
+  'Nicht erlaubte Formate werden abgelehnt'
 );
 select lives_ok(
   $$insert into field_job_datei (organisation_id, field_job_id, learner_id, art, storage_pfad, dateiname, mime_type, groesse) values
@@ -173,6 +203,13 @@ select is(
 select set_config('request.jwt.claims',
   json_build_object('sub', '00000000-0000-0000-0000-000000032003', 'role', 'authenticated')::text, true);
 select is_empty($$select id from field_job_datei$$, 'AfCJ admin sieht in der Plattform keine Dateizeilen (SR-88)');
+select throws_ok(
+  $$insert into field_job_datei (organisation_id, field_job_id, learner_id, art, storage_pfad, dateiname, mime_type, groesse) values
+    ('00000000-0000-0000-0000-000000032011', '00000000-0000-0000-0000-000000032081', '00000000-0000-0000-0000-000000032001',
+     'hilfe', '00000000-0000-0000-0000-000000032001/00000000-0000-0000-0000-000000032081/adm.pdf', 'adm.pdf', 'application/pdf', 10)$$,
+  '42501', null,
+  'AfCJ admin legt in der Plattform keine Dateizeilen für Lernende an'
+);
 select is_empty($$select name from storage.objects where bucket_id = 'praxis-dateien'$$,
   'AfCJ admin sieht in der Plattform keine Dateien im Speicher (SR-88)');
 
