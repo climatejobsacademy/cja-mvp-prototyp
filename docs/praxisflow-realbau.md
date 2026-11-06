@@ -107,7 +107,8 @@ Jede Funktion prüft Eigentum (`learner_id = auth.uid()`), `ablauf = 'gefuehrt'`
 | `fn_praxis_plan_bestaetigen(job)` | mindestens ein Arbeitsschritt | `phase = ausfuehren`, `plan_bestaetigt_am`; „zurück zum Plan“ setzt `phase = planen` |
 | `fn_praxis_schritt_abhaken(job, schritt)` | alle früheren Schritte erledigt | `erledigt_am`; nach dem letzten `phase = kontrollieren`, `durchgefuehrt_bestaetigt_am` setzen (bestehender Trigger leitet `status` ab) |
 | `fn_praxis_kontrolle_abhaken(job, punkt)` | Reihenfolge der Kontrollschritte; Punkte unter Spannung erst nach Freigabe | `erledigt_am` |
-| `fn_praxis_gate(job, gate, codewort)` | Codewort korrekt, nicht gesperrt (SR-65); `zuschalten` nach a1–a4, `bewertung` nach Selbst- und Peer-Einschätzung | `zuschalten_freigegeben_am` bzw. `bewertung_freigegeben_am`; Versuch protokolliert |
+| `fn_praxis_gate(job, 'zuschalten', codewort)` | Codewort korrekt, nicht gesperrt (SR-65), a1–a4 erledigt | `zuschalten_freigegeben_am`; Versuch protokolliert |
+| `fn_praxis_trainer_einschaetzen(job, werte, codewort)` | Selbst und Peer vollständig, Codewort korrekt im selben Aufruf (Gate `bewertung`) | Trainer-Einschätzung genau einmal; Versuch protokolliert |
 | `fn_praxis_einschaetzen(job, rolle, werte)` | `selbst` und `peer` ohne Codewort, `trainer` nur nach Gate `bewertung` | Punkte je Kriterium auf der jeweiligen Skala |
 | `fn_praxis_abschliessen(job, naechstes_mal)` | alle Kontrollschritte erledigt, Datei `protokoll` vorhanden, drei vollständige Einschätzungen | `phase = abgeschlossen`, danach keine Änderung mehr; legt `field_capture` (phase `abschluss`) an und, wenn kein K.-o.-Kriterium in der Trainer-Einschätzung 0 ist und `field_job.instructor_id` gesetzt ist, in derselben Transaktion eine `verification` (`verified`, `verifiziert_von = instructor_id`, Kommentar „automatisch, Praxisflow“) |
 
@@ -153,6 +154,7 @@ Folge (Entscheidung Produktleitung 06.11.2026, für den Pilot): Weil Trainer:inn
 Entschieden am 06.11.2026 (Produkt-Lead, Einträge in `decisions.md`):
 - **Freigabe vor dem Zuschalten:** ja, immer, per Codewort der Trainer:in.
 - **Codewort:** am Gerät der Lernenden, ein Codewort je Kohorte für beide Gates; Trainer-Login bleibt SR-67.
+- **Codewort immer neu:** Die Trainer-Einschätzung wird nur zusammen mit dem Codewort gespeichert (`fn_praxis_trainer_einschaetzen`), es gibt keine gespeicherte Freigabe, die sie später ohne Trainer:in erlaubt.
 - **Peer:** nur die Rolle „Peer“, nicht die Person.
 - **Anrechnung:** kein Verifizierungsschritt im Pilot; das System verifiziert beim Abschluss, außer ein K.-o.-Kriterium ist in der Trainer-Einschätzung 0.
 - **Uploads:** Formate wie demo, 50 MB je Datei, sichtbar nur für die lernende Person, löschen bis zum Abschluss.

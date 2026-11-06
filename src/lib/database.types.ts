@@ -70,7 +70,14 @@ export type PraxisFortschritt = {
   kontrolle?: { id: string; am: string }[];
   zuschalten_freigegeben_am?: string;
   bewertung_freigegeben_am?: string;
+  // 0061 (SR-89, SR-03, SR-90): Einschätzungen (Punkte je Kriterium) und Abschluss.
+  einschaetzung?: Partial<Record<PraxisRolle, Record<string, number>>>;
+  naechstes_mal?: string | null;
+  abgeschlossen_am?: string;
+  ergebnis?: PraxisErgebnis;
 };
+export type PraxisRolle = "selbst" | "peer" | "trainer";
+export type PraxisErgebnis = "angerechnet" | "ko" | "ohne_trainer";
 export type PraxisGate = "zuschalten" | "bewertung";
 export type FieldJobErgebnis = "erledigt" | "problem";
 export type FieldCapturePhase = "start" | "abschluss";
@@ -1160,6 +1167,17 @@ export type Database = {
       fn_praxis_gate: { Args: { p_job: string; p_gate: "zuschalten"; p_codewort: string }; Returns: boolean };
       fn_praxis_codewort_setzen: { Args: { p_cohort: string; p_codewort: string }; Returns: undefined };
       fn_praxis_codewort_entsperren: { Args: { p_job: string; p_gate: PraxisGate }; Returns: undefined };
+      // 0061 (SR-89, SR-03): Einschätzung speichern, Abschluss mit automatischer Verifizierung.
+      fn_praxis_einschaetzen: {
+        Args: { p_job: string; p_rolle: "selbst" | "peer"; p_werte: Record<string, number> };
+        Returns: PraxisFortschritt;
+      };
+      // Trainer-Einschätzung nur mit Codewort im selben Aufruf; false = Codewort falsch.
+      fn_praxis_trainer_einschaetzen: {
+        Args: { p_job: string; p_werte: Record<string, number>; p_codewort: string };
+        Returns: boolean;
+      };
+      fn_praxis_abschliessen: { Args: { p_job: string; p_naechstes_mal: string | null }; Returns: PraxisErgebnis };
     };
   };
 };
