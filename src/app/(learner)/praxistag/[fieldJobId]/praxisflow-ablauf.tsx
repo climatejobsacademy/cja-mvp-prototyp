@@ -24,7 +24,7 @@ import { ListenEditor } from "@/components/praxisflow/listen-editor";
 import { PhasenAnzeige } from "@/components/praxisflow/phasen-anzeige";
 import { PlanUebersicht } from "@/components/praxisflow/plan-uebersicht";
 import { FOKUS, PRIMAER, SEKUNDAER, TEXT } from "@/components/praxisflow/stile";
-import type { PraxisGate, PraxisPhase, PraxisRolle } from "@/lib/database.types";
+import type { PraxisPhase, PraxisRolle } from "@/lib/database.types";
 import { jetztInBerlin } from "@/lib/date";
 import {
   BEWERTUNGSBOGEN_STANDARD as BOGEN,
@@ -46,13 +46,14 @@ import { cn } from "@/lib/utils";
 
 import {
   abschliessen,
-  codewortPruefen,
   einschaetzen,
   kontrolleAbhaken,
   phaseWeiter,
   planSpeichern,
   schrittAbhaken,
+  trainerEinschaetzen,
   zurueckZumPlan,
+  zuschaltenFreigeben,
 } from "./praxisflow-actions";
 import { DateiUpload, UnterlagenLeiste } from "./praxisflow-dateien";
 
@@ -76,7 +77,6 @@ const EDITOR: Record<Liste, { icon: LucideIcon; titel: string; einzahl: string; 
   schritte: { icon: ListOrdered, titel: "Arbeitsschritte", einzahl: "Schritt", leerText: "Noch keine Arbeitsschritte eingetragen.", platzhalter: "Arbeitsschritt eintragen …" },
 };
 
-const ROLLE_SCHRITT: Record<PraxisRolle, string> = { selbst: "selbst", peer: "peer", trainer: "trainer" };
 
 function alleSchritte(schritte: Eintrag[]): Schritt[] {
   const s = (phase: Phase, ids: string[]) => ids.map((id) => ({ id, phase }));
@@ -99,6 +99,7 @@ function alleSchritte(schritte: Eintrag[]): Schritt[] {
       ...BOGEN.map((k) => `peer:${k.id}`),
       "uebergabe-trainer",
       ...BOGEN.map((k) => `trainer:${k.id}`),
+      "trainer-codewort",
       "ergebnis",
     ]),
     { id: "fertig", phase: "bewerten" },
@@ -132,7 +133,6 @@ function startPosition(d: PraxisflowDaten): string {
     case "bewerten": {
       const e = f.einschaetzung ?? {};
       if (e.trainer) return "ergebnis";
-      if (f.bewertung_freigegeben_am) return `trainer:${BOGEN[0].id}`;
       if (e.peer) return "uebergabe-trainer";
       if (e.selbst) return "uebergabe-peer";
       return "uebergabe-selbst";
@@ -233,8 +233,7 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
     );
   }
 
-  async function gatePruefen(gate: PraxisGate, eingabe: string): Promise<GateErgebnis> {
-    const r = await codewortPruefen(daten.fieldJobId, gate, eingabe);
+  function gateErgebnis(r: AktionErgebnis<boolean>): GateErgebnis {
     if (!r.ok) return { ok: false, fehler: r.fehler };
     return r.wert ? { ok: true } : { ok: false, fehler: TEXTE.codewort.falsch };
   }
@@ -457,7 +456,7 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
                     label={TEXTE.codewort.label}
                     buttonText="Inbetriebnahme freigeben"
                     trainer={daten.trainer}
-                    pruefen={(e) => gatePruefen("zuschalten", e)}
+                    pruefen={async (e) => gateErgebnis(await zuschaltenFreigeben(daten.fieldJobId, e))}
                     onFreigabe={() => vibrieren()}
                   />
                 </Uebergabe>
@@ -487,11 +486,12 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
               const ton = rolle === "selbst" ? "weiss" : rolle === "peer" ? "brand" : "praxis";
               const beschreibung = kriterium.skala.length === 2 ? JA_NEIN_BESCHREIBUNGEN : NOTEN_BESCHREIBUNGEN;
               const wert = werte[rolle][kriterium.id];
-              const zurueckZu = nr > 0 ? `${ROLLE_SCHRITT[rolle]}:${BOGEN[nr - 1].id}` : undefined;
+              const zurueckZu = nr > 0 ? `${rolle}:${BOGEN[nr - 1].id}` : undefined;
               const waehlen = (p: number) => {
                 const neu = { ...werte[rolle], [kriterium.id]: p };
                 setWerte((w) => ({ ...w, [rolle]: neu }));
-                if (!letzter) {
+                if (!letzter || rolle === "trainer") {
+                  // Trainer:in: gespeichert wird erst mit dem Codewort im nächsten Schritt.
                   setTimeout(() => gehe(naechster()), 180);
                   return;
                 }
@@ -545,26 +545,33 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
               );
             }
             if (art === "uebergabe-trainer") {
-              if (f.bewertung_freigegeben_am) {
-                return (
-                  <Uebergabe {...k} ton="praxis" icon={KeyRound} frage="Deine Trainer:in schätzt ein" hinweis="Das Codewort ist schon eingegeben.">
-                    <button type="button" onClick={() => gehe(naechster())} className={GROSS}>
-                      Einschätzen <ArrowRight aria-hidden="true" />
-                    </button>
-                  </Uebergabe>
-                );
-              }
               return (
-                <Uebergabe {...k} ton="praxis" icon={KeyRound} frage="Jetzt ist deine Trainer:in dran" hinweis="Gib das Gerät deiner Trainer:in.">
-                  <CodewortGate
-                    id="gate-bewertung"
-                    hinweis={TEXTE.gates.bewerten}
-                    label={TEXTE.codewort.label}
-                    buttonText="Einschätzen"
-                    trainer={daten.trainer}
-                    pruefen={(e) => gatePruefen("bewertung", e)}
-                    onFreigabe={() => gehe(naechster())}
-                  />
+                <Uebergabe {...k} ton="praxis" icon={KeyRound} frage="Jetzt ist deine Trainer:in dran" hinweis="Gib das Gerät deiner Trainer:in. Sie schätzt ein und bestätigt am Ende mit ihrem Codewort.">
+                  <button type="button" onClick={() => gehe(naechster())} className={GROSS}>
+                    Ich bin die Trainer:in <ArrowRight aria-hidden="true" />
+                  </button>
+                </Uebergabe>
+              );
+            }
+            if (art === "trainer-codewort") {
+              const vollstaendig = BOGEN.every((x) => werte.trainer[x.id] !== undefined);
+              return (
+                <Uebergabe {...k} ton="praxis" icon={KeyRound} frage="Einschätzung bestätigen" hinweis="Gespeichert wird deine Einschätzung erst mit deinem Codewort.">
+                  {vollstaendig ? (
+                    <CodewortGate
+                      id="gate-bewertung"
+                      hinweis={TEXTE.gates.bewerten}
+                      label={TEXTE.codewort.label}
+                      buttonText="Einschätzung speichern"
+                      trainer={daten.trainer}
+                      pruefen={async (e) => gateErgebnis(await trainerEinschaetzen(daten.fieldJobId, werte.trainer, e))}
+                      onFreigabe={() => gehe(naechster())}
+                    />
+                  ) : (
+                    <button type="button" onClick={() => gehe(`trainer:${BOGEN[0].id}`)} className={GROSS}>
+                      Einschätzung vervollständigen <ArrowRight aria-hidden="true" />
+                    </button>
+                  )}
                 </Uebergabe>
               );
             }
@@ -645,10 +652,9 @@ const VERLAUF_TEXT: Record<string, string> = {
   "phase:bewerten": "Kontrolle und Prüfprotokoll fertig",
   "zurueck:planen": "Zurück zum Plan",
   "gate:zuschalten": "Inbetriebnahme freigegeben (Codewort der Trainer:in)",
-  "gate:bewertung": "Trainer-Einschätzung freigeschaltet (Codewort)",
   "einschaetzung:selbst": "Selbsteinschätzung abgegeben",
   "einschaetzung:peer": "Peer-Einschätzung abgegeben",
-  "einschaetzung:trainer": "Trainer-Einschätzung abgegeben",
+  "einschaetzung:trainer": "Trainer-Einschätzung mit Codewort bestätigt",
   "abgeschlossen:angerechnet": "Auftrag abgeschlossen",
   "abgeschlossen:ko": "Auftrag abgeschlossen, K.-o.-Kriterium nicht erfüllt",
   "abgeschlossen:ohne_trainer": "Auftrag abgeschlossen",

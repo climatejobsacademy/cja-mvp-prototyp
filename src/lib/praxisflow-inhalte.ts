@@ -244,7 +244,7 @@ export const TEXTE = {
     entscheiden: "Die Trainer:in nimmt deinen Plan ab und gibt ihn mit dem Codewort frei.",
     durchfuehren: "Wenn alle Schritte abgehakt sind, gibt die Trainer:in die Durchführung mit dem Codewort frei.",
     kontrolle: "Die Trainer:in prüft die Anlage und gibt die Inbetriebnahme mit dem Codewort frei.",
-    bewerten: "Die Trainer:in schaltet ihre Einschätzung mit dem Codewort frei.",
+    bewerten: "Die Trainer:in bestätigt ihre Einschätzung mit dem Codewort. Ohne Codewort wird nichts gespeichert.",
   },
   codewort: {
     label: "Codewort der Trainer:in",

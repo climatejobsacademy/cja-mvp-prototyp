@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import type { PraxisErgebnis, PraxisGate, PraxisPhase, PraxisRolle } from "@/lib/database.types";
+import type { PraxisErgebnis, PraxisPhase } from "@/lib/database.types";
 import type { AktionErgebnis } from "@/lib/praxisflow-shared";
 import { requireCurrentLearner } from "@/lib/queries/session";
 import { createClient } from "@/lib/supabase/server";
@@ -52,13 +52,20 @@ export async function kontrolleAbhaken(fieldJobId: string, punktId: string) {
   return aufrufen(fieldJobId, (s) => s.rpc("fn_praxis_kontrolle_abhaken", { p_job: fieldJobId, p_punkt: punktId }));
 }
 
-/** Codewort der Trainer:in; ok mit wert false = Codewort falsch. */
-export async function codewortPruefen(fieldJobId: string, gate: PraxisGate, codewort: string) {
-  return aufrufen<boolean>(fieldJobId, (s) => s.rpc("fn_praxis_gate", { p_job: fieldJobId, p_gate: gate, p_codewort: codewort }));
+/** Freigabe zum Zuschalten; ok mit wert false = Codewort falsch. */
+export async function zuschaltenFreigeben(fieldJobId: string, codewort: string) {
+  return aufrufen<boolean>(fieldJobId, (s) => s.rpc("fn_praxis_gate", { p_job: fieldJobId, p_gate: "zuschalten", p_codewort: codewort }));
 }
 
-export async function einschaetzen(fieldJobId: string, rolle: PraxisRolle, werte: Record<string, number>) {
+export async function einschaetzen(fieldJobId: string, rolle: "selbst" | "peer", werte: Record<string, number>) {
   return aufrufen(fieldJobId, (s) => s.rpc("fn_praxis_einschaetzen", { p_job: fieldJobId, p_rolle: rolle, p_werte: werte }));
+}
+
+/** Trainer-Einschätzung nur mit Codewort im selben Aufruf; ok mit wert false = Codewort falsch. */
+export async function trainerEinschaetzen(fieldJobId: string, werte: Record<string, number>, codewort: string) {
+  return aufrufen<boolean>(fieldJobId, (s) =>
+    s.rpc("fn_praxis_trainer_einschaetzen", { p_job: fieldJobId, p_werte: werte, p_codewort: codewort })
+  );
 }
 
 export async function abschliessen(fieldJobId: string, naechstesMal: string) {
