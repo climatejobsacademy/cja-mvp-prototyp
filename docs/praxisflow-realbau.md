@@ -144,7 +144,7 @@ Erweiterung der Zugriffsmatrix (Regel 3 in `CLAUDE.md`): `docs/access-matrix.md`
 
 Der Fortschritt abgeschlossener Praxistage wird nicht mehr geändert und nicht gelöscht; kein Code darf das tun (wie Regel 7). Dateien darf die lernende Person löschen (SR-88).
 
-Folge (Vermutung): Weil Trainer:innen die Dateien nicht sehen, prüfen sie Prüfprotokoll und Pläne am Gerät der Lernenden oder auf Papier, nicht in der Plattform.
+Folge (Entscheidung Produktleitung 06.11.2026, für den Pilot): Weil Trainer:innen die Dateien nicht sehen, prüfen sie Prüfprotokoll und Pläne am Gerät der Lernenden oder auf Papier, nicht in der Plattform.
 
 ## 8. Offene Produktfragen
 
