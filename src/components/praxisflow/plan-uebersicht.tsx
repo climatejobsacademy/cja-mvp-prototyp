@@ -1,0 +1,69 @@
+import { ListOrdered, Package, Wrench, type LucideIcon } from "lucide-react";
+
+type Eintrag = { id: string; text: string };
+
+function Kasten({ icon: Icon, titel, leerText, children }: { icon: LucideIcon; titel: string; leerText: string; children?: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-3 rounded-zeile bg-subtle p-4">
+      <h3 className="flex items-center gap-2 text-base font-bold text-ink">
+        <Icon className="size-[18px] text-praxis-text" aria-hidden="true" />
+        {titel}
+      </h3>
+      {children ?? <p className="text-sm text-ink-subtle">{leerText}</p>}
+    </div>
+  );
+}
+
+/** Entscheiden: der Plan als reine Lese-Ansicht für die Abnahme durch die Trainer:in. */
+export function PlanUebersicht({
+  werkzeuge,
+  materialien,
+  schritte,
+}: {
+  werkzeuge: Eintrag[];
+  materialien: Eintrag[];
+  schritte: Eintrag[];
+}) {
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Kasten icon={Wrench} titel={`Werkzeuge (${werkzeuge.length})`} leerText="Keine Werkzeuge eingetragen.">
+          {werkzeuge.length > 0 && (
+            <ul className="flex flex-wrap gap-1.5">
+              {werkzeuge.map((w) => (
+                <li key={w.id} className="rounded-full bg-white px-3 py-1 text-sm text-ink">
+                  {w.text}
+                </li>
+              ))}
+            </ul>
+          )}
+        </Kasten>
+        <Kasten icon={Package} titel={`Materialien (${materialien.length})`} leerText="Keine Materialien eingetragen.">
+          {materialien.length > 0 && (
+            <ul className="flex flex-wrap gap-1.5">
+              {materialien.map((m) => (
+                <li key={m.id} className="rounded-full bg-white px-3 py-1 text-sm text-ink">
+                  {m.text}
+                </li>
+              ))}
+            </ul>
+          )}
+        </Kasten>
+      </div>
+      <Kasten icon={ListOrdered} titel={`Arbeitsschritte (${schritte.length})`} leerText="Keine Arbeitsschritte eingetragen.">
+        {schritte.length > 0 && (
+          <ol className="flex flex-col">
+            {schritte.map((s, i) => (
+              <li key={s.id} className="flex gap-3 border-b border-line py-2.5 last:border-b-0">
+                <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-praxis text-sm font-bold text-ink">
+                  {i + 1}
+                </span>
+                <span className="min-w-0 pt-0.5 text-[15px] break-words text-ink">{s.text}</span>
+              </li>
+            ))}
+          </ol>
+        )}
+      </Kasten>
+    </div>
+  );
+}
