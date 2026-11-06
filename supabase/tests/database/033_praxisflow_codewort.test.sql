@@ -9,7 +9,7 @@ begin;
 
 create extension if not exists pgtap schema extensions;
 
-select plan(27);
+select plan(29);
 
 -- ------------------------------------------------------------
 -- Fixtures (als Superuser)
@@ -140,6 +140,17 @@ select is(
   fn_praxis_weiter('00000000-0000-0000-0000-000000033081', 'kontrollieren'),
   'bewerten',
   'Kontrollieren -> Bewerten mit allen Prüfpunkten und Protokoll'
+);
+-- Seit 0061 (SR-89) verlangt das Gate Bewertung Selbst- und Peer-Einschätzung.
+select lives_ok(
+  $$select fn_praxis_einschaetzen('00000000-0000-0000-0000-000000033081', 'selbst',
+    '{"funktion": 10, "ausfuehrung": 9, "schutz": 10, "protokoll": 7, "unterlagen": 10}')$$,
+  'Selbsteinschätzung vor dem Gate Bewertung'
+);
+select lives_ok(
+  $$select fn_praxis_einschaetzen('00000000-0000-0000-0000-000000033081', 'peer',
+    '{"funktion": 10, "ausfuehrung": 9, "schutz": 10, "protokoll": 7, "unterlagen": 10}')$$,
+  'Peer-Einschätzung vor dem Gate Bewertung'
 );
 select is(
   (select count(*) from generate_series(1, 5) g
