@@ -47,7 +47,9 @@ export function DateiUpload({
 }) {
   const router = useRouter();
   const [laeuft, setLaeuft] = useState(false);
-  const [fehler, setFehler] = useState<string | null>(null);
+  const [fehler, setFehlerListe] = useState<string[]>([]);
+  const setFehler = (f: string | null) => setFehlerListe(f ? [f] : []);
+  const fehlerDazu = (f: string) => setFehlerListe((l) => [...l, f]);
   const eigene = dateien.filter((d) => d.art === art);
 
   async function hochladen(liste: File[]) {
@@ -58,17 +60,17 @@ export function DateiUpload({
       for (const datei of liste) {
         const typ = dateiTyp(datei.name, datei.type, art);
         if (!typ) {
-          setFehler(`${datei.name}: Dieses Format geht hier nicht.`);
+          fehlerDazu(`${datei.name}: Dieses Format geht hier nicht.`);
           continue;
         }
         if (datei.size > MAX_DATEI_BYTES) {
-          setFehler(`${datei.name}: Die Datei ist größer als 50 MB.`);
+          fehlerDazu(`${datei.name}: Die Datei ist größer als 50 MB.`);
           continue;
         }
         const pfad = `${learnerId}/${fieldJobId}/${crypto.randomUUID()}.${endung(datei.name)}`;
         const { error: upErr } = await supabase.storage.from(BUCKET).upload(pfad, datei, { contentType: typ, upsert: false });
         if (upErr) {
-          setFehler(`${datei.name}: Hochladen hat nicht geklappt.`);
+          fehlerDazu(`${datei.name}: Hochladen hat nicht geklappt.`);
           continue;
         }
         const { error: rowErr } = await supabase.from("field_job_datei").insert({
@@ -83,8 +85,9 @@ export function DateiUpload({
         });
         if (rowErr) {
           // Datei wieder entfernen, damit nichts ohne Eintrag liegen bleibt.
+          // Scheitert auch das, bleibt sie im privaten Ordner der Person.
           await supabase.storage.from(BUCKET).remove([pfad]);
-          setFehler(`${datei.name}: Speichern hat nicht geklappt.`);
+          fehlerDazu(`${datei.name}: Speichern hat nicht geklappt.`);
         }
       }
     } finally {
@@ -98,9 +101,11 @@ export function DateiUpload({
     setFehler(null);
     setLaeuft(true);
     const supabase = createClient();
-    const { error } = await supabase.from("field_job_datei").delete().eq("id", datei.id);
-    if (error) setFehler("Löschen hat nicht geklappt.");
-    else await supabase.storage.from(BUCKET).remove([datei.storagePfad]);
+    // Erst die Datei im Speicher, dann die Zeile: bleibt etwas übrig, dann
+    // eine sichtbare Zeile, die sich erneut löschen lässt (SR-88).
+    const { error: speicherFehler } = await supabase.storage.from(BUCKET).remove([datei.storagePfad]);
+    const { error } = speicherFehler ? { error: speicherFehler } : await supabase.from("field_job_datei").delete().eq("id", datei.id);
+    if (error) setFehler("Löschen hat nicht geklappt. Bitte versuch es noch einmal.");
     setLaeuft(false);
     await dateienGeaendert(fieldJobId);
     router.refresh();
@@ -161,10 +166,15 @@ export function DateiUpload({
           />
         </label>
       )}
-      {fehler && (
-        <p role="alert" className="text-sm text-ink">
-          {fehler}
-        </p>
+      <p role="status" aria-live="polite" className="sr-only">
+        {laeuft ? "Datei wird hochgeladen" : ""}
+      </p>
+      {fehler.length > 0 && (
+        <ul role="alert" className="flex flex-col gap-1 text-sm text-ink">
+          {fehler.map((f, i) => (
+            <li key={i}>{f}</li>
+          ))}
+        </ul>
       )}
     </div>
   );
@@ -229,13 +239,12 @@ function UnterlagenFenster({ art, dateien }: { art: Art; dateien: PraxisDatei[] 
             </Dialog.Close>
           </div>
           {dateien.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto border-b border-line px-4 py-2 md:px-6" role="tablist" aria-label={art.titel}>
+            <div className="flex gap-2 overflow-x-auto border-b border-line px-4 py-2 md:px-6" role="group" aria-label={`${art.titel}: Datei wählen`}>
               {dateien.map((d, i) => (
                 <button
                   key={d.id}
                   type="button"
-                  role="tab"
-                  aria-selected={i === gewaehlt}
+                  aria-pressed={i === gewaehlt}
                   onClick={() => setGewaehlt(i)}
                   className={cn(
                     "max-w-[16rem] shrink-0 truncate rounded-full px-3 py-1.5 text-[13px] font-semibold",
@@ -247,6 +256,9 @@ function UnterlagenFenster({ art, dateien }: { art: Art; dateien: PraxisDatei[] 
                 </button>
               ))}
             </div>
+          )}
+          {datei && (
+            <p className="px-4 pt-2 text-xs text-ink-muted md:px-6">Öffnet sich die Datei nicht, lade die Seite neu.</p>
           )}
           <div className="flex min-h-0 flex-1 p-4 md:px-6">
             {!datei ? (

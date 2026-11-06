@@ -40,7 +40,9 @@ export type DiktatMeldungen = { verweigert: string; fehler: string };
  * Dienst nicht erreichbar) landen in `meldung`; nichts davon wirft.
  */
 export function useDiktat(onTexte: (texte: string[]) => void, meldungen: DiktatMeldungen) {
-  // Der Flow rendert nur im Browser, window ist hier vorhanden.
+  // Achtung: Die Seite wird auf dem Server gerendert. Vor dem Einschalten von
+  // DIKTAT_AN (Datenschutzprüfung nötig, Audio geht an den Browser-Anbieter)
+  // die Erkennung erst nach dem Mount bestimmen, sonst Hydration-Mismatch.
   const [Klasse] = useState(erkennerKlasse);
   const [hoert, setHoert] = useState(false);
   const [meldung, setMeldung] = useState<string | null>(null);

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
+import Link from "next/link";
 import {
   ArrowLeft,
   ArrowRight,
@@ -152,7 +153,7 @@ function vibrieren() {
   }
 }
 
-export function PraxisflowAblauf({ daten }: { daten: PraxisflowDaten }) {
+export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; zurueck: { href: string; label: string } }) {
   const f = daten.fortschritt;
   const [position, setPosition] = useState<string>(() => startPosition(daten));
   const [meldung, setMeldung] = useState<string | null>(null);
@@ -169,6 +170,14 @@ export function PraxisflowAblauf({ daten }: { daten: PraxisflowDaten }) {
   const [werte, setWerte] = useState<Record<PraxisRolle, Record<string, number>>>({ selbst: {}, peer: {}, trainer: {} });
   const [naechstesMal, setNaechstesMal] = useState("");
 
+  // Beim Schrittwechsel den Fokus auf die neue Frage, damit Screenreader sie ansagen.
+  const erstePosition = useRef(position);
+  useEffect(() => {
+    if (position === erstePosition.current) return;
+    erstePosition.current = "";
+    document.getElementById("frage")?.focus();
+  }, [position]);
+
   useEffect(() => {
     if (!meldung) return;
     const t = setTimeout(() => setMeldung(null), 2200);
@@ -180,7 +189,7 @@ export function PraxisflowAblauf({ daten }: { daten: PraxisflowDaten }) {
   const aktuell = schritte[index];
   const inPhase = schritte.filter((s) => s.phase === aktuell.phase && s.id !== "fertig");
   const nrInPhase = inPhase.findIndex((s) => s.id === aktuell.id) + 1;
-  const phasenIndex = daten.phase === "abgeschlossen" ? PHASEN.length : PHASEN.findIndex((p) => p.id === daten.phase);
+  const phasenIndex = daten.phase === "abgeschlossen" ? PHASEN.length - 1 : PHASEN.findIndex((p) => p.id === daten.phase);
   const offen = daten.phase !== "abgeschlossen";
 
   function gehe(id: string, phasenMeldung?: string) {
@@ -239,6 +248,9 @@ export function PraxisflowAblauf({ daten }: { daten: PraxisflowDaten }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1 print:hidden">
+        <Link href={zurueck.href} className={cn("inline-flex w-fit items-center gap-1 rounded-sm text-sm text-ink-muted hover:text-ink", FOKUS)}>
+          <ArrowLeft className="size-4" aria-hidden="true" /> {zurueck.label}
+        </Link>
         <span className="text-sm text-ink-muted">Praxistag · {daten.titel}</span>
       </div>
       <div className="flex flex-col gap-3 rounded-karte bg-card px-4 pt-4 pb-3 text-ink shadow-card md:px-6 print:hidden">
@@ -663,6 +675,7 @@ function Fertig({ daten }: { daten: PraxisflowDaten }) {
         werkzeuge={f.werkzeuge ?? []}
         materialien={f.materialien ?? []}
         schritte={f.schritte ?? []}
+        ausgefuehrt={(f.schritte ?? []).map((s) => ({ titel: s.text, erledigt: (f.erledigt ?? []).some((e) => e.id === s.id) }))}
         planDateien={namen("plan")}
         pruefungenOhneSpannung={PRUEFLISTE_STANDARD.spannungsfrei.map((p) => ({ titel: p.titel, erledigt: kontrolle.has(p.id) }))}
         unterSpannung
@@ -737,7 +750,7 @@ function Karte({
         )}
       </div>
       <div className="flex flex-col gap-2">
-        <h2 id="frage" className="font-heading text-[28px] leading-tight md:text-[36px]">
+        <h2 id="frage" tabIndex={-1} className="font-heading text-[28px] leading-tight outline-none md:text-[36px]">
           {frage}
         </h2>
         {hinweis && <p className={cn(TEXT, ton === "brand" && "text-white/90")}>{hinweis}</p>}

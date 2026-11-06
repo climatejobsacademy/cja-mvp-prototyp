@@ -9,7 +9,7 @@ export type PraxisDatei = {
   dateiname: string;
   mimeType: string;
   storagePfad: string;
-  /** Signierter Link (10 Minuten), null = nicht abrufbar */
+  /** Signierter Link (1 Stunde), null = nicht abrufbar */
   url: string | null;
 };
 

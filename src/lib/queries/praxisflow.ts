@@ -7,30 +7,36 @@ import type { PraxisflowDaten } from "@/lib/praxisflow-shared";
 // (nur eigene, SR-88) und signierte Links aus praxis-dateien. Kein
 // Service-Role-Key, keine Dateipfade im Log.
 
-const DATEI_LINK_SEKUNDEN = 600;
+// Eine Stunde wie die Profilfotos; danach Seite neu laden (Hinweis im Fenster).
+const DATEI_LINK_SEKUNDEN = 3600;
 
 /** Praxistag im geführten Ablauf; null, wenn nicht eigener Praxistag oder einfacher Ablauf. */
 export async function getPraxisflow(fieldJobId: string, learnerId: string): Promise<PraxisflowDaten | null> {
   const supabase = await createClient();
-  const { data: job } = await supabase
+  const { data: job, error: jobFehler } = await supabase
     .from("field_job")
     .select("id, organisation_id, learner_id, datum, phase, praxisflow, instructor_id, field_job_type_id")
     .eq("id", fieldJobId)
     .maybeSingle();
+  // Ein Fehler ist nicht dasselbe wie "einfacher Ablauf": nicht stillschweigend
+  // in den alten Praxistag fallen (SR-64), sondern die Fehlerseite zeigen.
+  if (jobFehler) throw new Error("Praxistag konnte nicht geladen werden");
   if (!job || job.learner_id !== learnerId) return null;
 
-  const { data: typ } = await supabase
+  const { data: typ, error: typFehler } = await supabase
     .from("field_job_type")
     .select("titel, beschreibung, ablauf")
     .eq("id", job.field_job_type_id)
     .maybeSingle();
+  if (typFehler) throw new Error("Auftrag konnte nicht geladen werden");
   if (!typ || typ.ablauf !== "gefuehrt") return null;
 
-  const { data: dateien } = await supabase
+  const { data: dateien, error: dateiFehler } = await supabase
     .from("field_job_datei")
     .select("id, art, dateiname, mime_type, storage_pfad, created_at")
     .eq("field_job_id", fieldJobId)
     .order("created_at", { ascending: true });
+  if (dateiFehler) throw new Error("Dateien konnten nicht geladen werden");
 
   const pfade = (dateien ?? []).map((d) => d.storage_pfad);
   const links = new Map<string, string>();

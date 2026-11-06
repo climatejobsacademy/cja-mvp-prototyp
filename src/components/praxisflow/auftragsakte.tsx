@@ -53,7 +53,7 @@ function DateiNamen({ dateien, leer }: { dateien: string[]; leer: string }) {
 /**
  * Digitale Auftragsakte:
  * alles zu einem abgeschlossenen Praxisauftrag auf einen Blick, als Nachweis
- * für Prüfdienst und Arbeitsagentur. In der Demo aus dem Browser-Stand;
+ * für Prüfdienst und Arbeitsagentur. Aus dem Stand auf dem Server;
  * Drucken bzw. "Als PDF sichern" über den Browser.
  */
 export function Auftragsakte({
@@ -63,6 +63,7 @@ export function Auftragsakte({
   werkzeuge,
   materialien,
   schritte,
+  ausgefuehrt,
   planDateien,
   pruefungenOhneSpannung,
   unterSpannung,
@@ -83,6 +84,8 @@ export function Auftragsakte({
   werkzeuge: Eintrag[];
   materialien: Eintrag[];
   schritte: Eintrag[];
+  /** Arbeitsschritte mit Haken aus Ausführen (SR-90) */
+  ausgefuehrt: { titel: string; erledigt: boolean }[];
   planDateien: string[];
   pruefungenOhneSpannung: { titel: string; erledigt: boolean }[];
   /** Auftrag mit Inbetriebnahme unter Spannung (sonst ohne Freigabe). */
@@ -141,6 +144,10 @@ export function Auftragsakte({
 
       <Abschnitt icon={FileText} titel="Planung und Materialliste">
         <PlanUebersicht werkzeuge={werkzeuge} materialien={materialien} schritte={schritte} />
+      </Abschnitt>
+
+      <Abschnitt icon={ClipboardCheck} titel="Ausführung">
+        {pruefListe(ausgefuehrt)}
       </Abschnitt>
 
       <Abschnitt icon={FileText} titel="Pläne und Zeichnungen">

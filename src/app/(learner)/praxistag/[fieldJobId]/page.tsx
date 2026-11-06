@@ -24,7 +24,7 @@ export default async function PraxistagPage({
   // sonst unverändert der einfache Praxistag.
   const praxisflow = await getPraxisflow(fieldJobId, learner.personId);
   if (praxisflow) {
-    return <PraxisflowAblauf daten={praxisflow} />;
+    return <PraxisflowAblauf daten={praxisflow} zurueck={zurueck} />;
   }
 
   const detail = await getFieldJobDetail(fieldJobId, learner.personId);

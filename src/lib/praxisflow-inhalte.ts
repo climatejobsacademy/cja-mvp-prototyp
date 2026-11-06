@@ -196,7 +196,7 @@ export const TEXTE = {
     /** Hinweis an einem noch gesperrten Schritt; nr = Nummer des Vorgängers. */
     gesperrt: (nr: number) => `Zuerst Schritt ${nr} abschließen.`,
     // Wird gerade nicht angezeigt ("Ich komme nicht weiter" ist ausgeblendet,
-    // siehe schritte-checkliste.tsx), bleibt für die spätere Wiederverwendung.
+    // im Prototyp), bleibt für die spätere Wiederverwendung.
     nichtWeiterStandard:
       "Halte kurz an und lies den Schritt noch einmal in deinem Plan nach. Hilft das nicht, frag die Trainer:in. (Platzhalter)",
   },
