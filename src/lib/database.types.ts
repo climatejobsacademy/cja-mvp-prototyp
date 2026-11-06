@@ -1164,7 +1164,7 @@ export type Database = {
       fn_praxis_datei_offen: { Args: { p_job: string }; Returns: boolean };
       // 0060 (SR-65): Prüfpunkte abhaken, Trainer-Gate mit Codewort, Pflege durch AfCJ admin.
       fn_praxis_kontrolle_abhaken: { Args: { p_job: string; p_punkt: string }; Returns: PraxisFortschritt };
-      fn_praxis_gate: { Args: { p_job: string; p_gate: PraxisGate; p_codewort: string }; Returns: boolean };
+      fn_praxis_gate: { Args: { p_job: string; p_gate: "zuschalten"; p_codewort: string }; Returns: boolean };
       fn_praxis_codewort_setzen: { Args: { p_cohort: string; p_codewort: string }; Returns: undefined };
       fn_praxis_codewort_entsperren: { Args: { p_job: string; p_gate: PraxisGate }; Returns: undefined };
       // 0061 (SR-89, SR-03): Einschätzung speichern, Abschluss mit automatischer Verifizierung.
