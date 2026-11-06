@@ -96,6 +96,7 @@ as $$
   from schedule_entry se
   join enrolment e on e.id = se.enrolment_id
   where se.field_job_id = p_job
+  order by (e.status = 'aktiv') desc, e.created_at desc
   limit 1;
 $$;
 
@@ -256,7 +257,11 @@ $$;
 
 -- Trainer-Gate. Gibt true zurück, wenn das Codewort stimmt (oder das Gate
 -- schon offen ist), sonst false; ein Fehlversuch wird protokolliert und
--- bleibt auch bei false gespeichert. Gesperrt: Fehler 42501.
+-- bleibt auch bei false gespeichert. Gesperrt: Fehler 55P03. Ohne gesetztes
+-- Codewort: Fehler P0002, kein Fehlversuch. Die Sperre gilt je Praxistag
+-- und Gate (N = 5, Vorschlag aus SR-65). Zeitstempel der Versuche mit
+-- clock_timestamp(), damit die Reihenfolge auch innerhalb einer Transaktion
+-- stimmt.
 -- Die Zeile des Praxistags ist für die Dauer des Aufrufs gesperrt, damit
 -- gleichzeitige Versuche die Zählung nicht umgehen.
 create or replace function fn_praxis_gate(p_job uuid, p_gate text, p_codewort text)
@@ -284,19 +289,22 @@ begin
     perform fn_praxis_pruefe_gate_bewertung(v);
   end if;
   if fn_praxis_fehlversuche(v.id, p_gate) >= 5 then
-    raise exception 'Gate gesperrt, bitte AfCJ melden' using errcode = '42501';
+    raise exception 'Gate gesperrt, bitte AfCJ melden' using errcode = '55P03';
   end if;
 
   select c.hash into v_hash from praxis_codewort c where c.cohort_id = fn_praxis_kohorte(v.id);
-  if v_hash is null
-     or extensions.crypt(lower(btrim(coalesce(p_codewort, ''))), v_hash) <> v_hash then
-    insert into praxis_codewort_versuch (organisation_id, field_job_id, gate, art, person_id)
-    values (v.organisation_id, v.id, p_gate, 'fehlversuch', auth.uid());
+  if v_hash is null then
+    -- Kein Codewort für die Kohorte gesetzt: kein Fehlversuch, Fehler an AfCJ.
+    raise exception 'Für diese Kohorte ist kein Codewort gesetzt' using errcode = 'P0002';
+  end if;
+  if extensions.crypt(lower(btrim(coalesce(p_codewort, ''))), v_hash) <> v_hash then
+    insert into praxis_codewort_versuch (created_at, organisation_id, field_job_id, gate, art, person_id)
+    values (clock_timestamp(), v.organisation_id, v.id, p_gate, 'fehlversuch', auth.uid());
     return false;
   end if;
 
-  insert into praxis_codewort_versuch (organisation_id, field_job_id, gate, art, person_id)
-  values (v.organisation_id, v.id, p_gate, 'erfolg', auth.uid());
+  insert into praxis_codewort_versuch (created_at, organisation_id, field_job_id, gate, art, person_id)
+  values (clock_timestamp(), v.organisation_id, v.id, p_gate, 'erfolg', auth.uid());
   update field_job
   set praxisflow = fn_praxis_mit_verlauf(
         v.praxisflow || jsonb_build_object(v_schluessel, now()),
@@ -338,8 +346,8 @@ begin
   if not fn_is_afcj_admin() then
     raise exception 'Nur AfCJ admin' using errcode = '42501';
   end if;
-  insert into praxis_codewort_versuch (organisation_id, field_job_id, gate, art, person_id)
-  select fj.organisation_id, fj.id, p_gate, 'entsperrt', auth.uid()
+  insert into praxis_codewort_versuch (created_at, organisation_id, field_job_id, gate, art, person_id)
+  select clock_timestamp(), fj.organisation_id, fj.id, p_gate, 'entsperrt', auth.uid()
   from field_job fj where fj.id = p_job;
   if not found then
     raise exception 'Praxistag nicht gefunden' using errcode = 'P0002';

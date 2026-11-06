@@ -9,7 +9,7 @@ begin;
 
 create extension if not exists pgtap schema extensions;
 
-select plan(27);
+select plan(30);
 
 -- ------------------------------------------------------------
 -- Fixtures (als Superuser)
@@ -18,7 +18,8 @@ select plan(27);
 -- ------------------------------------------------------------
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-000000033001', 'pc-a@example.test'),
-  ('00000000-0000-0000-0000-000000033003', 'pc-admin@example.test');
+  ('00000000-0000-0000-0000-000000033003', 'pc-admin@example.test'),
+  ('00000000-0000-0000-0000-000000033004', 'pc-t@example.test');
 
 insert into organisation (id, name, typ, status) values
   ('00000000-0000-0000-0000-000000033011', 'Betrieb', 'employer', 'aktiv'),
@@ -26,15 +27,18 @@ insert into organisation (id, name, typ, status) values
 
 insert into person (id, email, name, username, sprache) values
   ('00000000-0000-0000-0000-000000033001', 'pc-a@example.test', 'Lernende A', 'pc_a', 'DE'),
-  ('00000000-0000-0000-0000-000000033003', 'pc-admin@example.test', 'Admin', 'pc_admin', 'DE');
+  ('00000000-0000-0000-0000-000000033003', 'pc-admin@example.test', 'Admin', 'pc_admin', 'DE'),
+  ('00000000-0000-0000-0000-000000033004', 'pc-t@example.test', 'Trainer', 'pc_t', 'DE');
 
 insert into org_membership (person_id, organisation_id) values
   ('00000000-0000-0000-0000-000000033001', '00000000-0000-0000-0000-000000033011'),
-  ('00000000-0000-0000-0000-000000033003', '00000000-0000-0000-0000-000000033012');
+  ('00000000-0000-0000-0000-000000033003', '00000000-0000-0000-0000-000000033012'),
+  ('00000000-0000-0000-0000-000000033004', '00000000-0000-0000-0000-000000033011');
 
 insert into role_assignment (person_id, organisation_id, rolle) values
   ('00000000-0000-0000-0000-000000033001', '00000000-0000-0000-0000-000000033011', 'learner'),
-  ('00000000-0000-0000-0000-000000033003', '00000000-0000-0000-0000-000000033012', 'afcj_admin');
+  ('00000000-0000-0000-0000-000000033003', '00000000-0000-0000-0000-000000033012', 'afcj_admin'),
+  ('00000000-0000-0000-0000-000000033004', '00000000-0000-0000-0000-000000033011', 'trainer');
 
 insert into programme (id, name, kuerzel, status) values
   ('00000000-0000-0000-0000-000000033021', 'Programm', 'PC-P1', 'published');
@@ -71,7 +75,7 @@ select lives_ok(
   'AfCJ admin setzt das Codewort der Kohorte'
 );
 select is(
-  (select count(*) from praxis_codewort where hash not ilike '%probewort%'),
+  (select count(*) from praxis_codewort where hash like '$2%' and hash not ilike '%probewort%'),
   1::bigint,
   'Gespeichert ist nur ein Hash, nicht das Codewort'
 );
@@ -118,6 +122,11 @@ select is(
   'Falsches Codewort öffnet das Gate nicht'
 );
 select is_empty($$select id from praxis_codewort_versuch$$, 'Lernende lesen das Protokoll der Versuche nicht');
+select throws_ok(
+  $$select fn_praxis_codewort_entsperren('00000000-0000-0000-0000-000000033081', 'zuschalten')$$,
+  '42501', null,
+  'Lernende heben keine Sperre auf'
+);
 select is(
   fn_praxis_gate('00000000-0000-0000-0000-000000033081', 'zuschalten', '  PROBEWORT '),
   true,
@@ -149,7 +158,7 @@ select is(
 );
 select throws_ok(
   $$select fn_praxis_gate('00000000-0000-0000-0000-000000033081', 'bewertung', 'Probewort')$$,
-  '42501', null,
+  '55P03', null,
   'Nach fünf Fehlversuchen ist das Gate gesperrt, auch mit richtigem Codewort'
 );
 
@@ -172,6 +181,12 @@ select is(
   true,
   'Nach der Entsperrung öffnet das richtige Codewort das Gate'
 );
+
+-- Trainer:in liest weder Codewort noch Versuche.
+select set_config('request.jwt.claims',
+  json_build_object('sub', '00000000-0000-0000-0000-000000033004', 'role', 'authenticated')::text, true);
+select is_empty($$select id from praxis_codewort$$, 'Trainer:innen lesen weder Codewort noch Hash');
+select is_empty($$select id from praxis_codewort_versuch$$, 'Trainer:innen lesen das Protokoll der Versuche nicht');
 
 select * from finish();
 rollback;
