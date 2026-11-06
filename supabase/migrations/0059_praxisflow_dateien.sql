@@ -7,7 +7,8 @@
 --
 -- Nur additiv: Bucket praxis-dateien, Tabelle field_job_datei, Policies,
 -- Ersatz von fn_praxis_pruefe_informieren (0058): Informieren endet erst
--- mit mindestens einer Datei "auftrag".
+-- mit mindestens einer Datei "auftrag". Die Pflicht zum Prüfprotokoll
+-- in Kontrollieren (ebenfalls SR-88) kommt mit 0060.
 
 -- ============================================================
 -- Bucket praxis-dateien (privat)
@@ -75,7 +76,13 @@ create table field_job_datei (
   art text not null check (art in ('auftrag', 'hilfe', 'plan', 'protokoll')),
   storage_pfad text not null unique,
   dateiname text not null check (char_length(dateiname) between 1 and 255),
-  mime_type text not null,
+  mime_type text not null check (mime_type in (
+    'image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif',
+    'application/pdf',
+    'text/csv', 'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'image/vnd.dwg', 'image/vnd.dxf', 'model/gltf-binary'
+  )),
   groesse bigint not null check (groesse > 0 and groesse <= 52428800),
 
   constraint field_job_datei_pfad check (
