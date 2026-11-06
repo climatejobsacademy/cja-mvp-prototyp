@@ -490,6 +490,21 @@ type FieldJobRow = Flatten<
   }
 >;
 
+// 0060 (SR-65): nur AfCJ admin liest; geschrieben nur über fn_praxis_*.
+type PraxisCodewortRow = Flatten<
+  Timestamps & { id: string; cohort_id: string; hash: string; geaendert_von: string | null }
+>;
+type PraxisCodewortVersuchRow = Flatten<
+  Timestamps & {
+    id: string;
+    organisation_id: string;
+    field_job_id: string;
+    gate: PraxisGate;
+    art: "fehlversuch" | "erfolg" | "entsperrt";
+    person_id: string | null;
+  }
+>;
+
 // 0059 (SR-88): nur die lernende Person selbst liest, legt an und löscht.
 type FieldJobDateiRow = Flatten<
   Timestamps & {
@@ -969,6 +984,8 @@ export type Database = {
         Flatten<Partial<Timestamps> & Omit<FieldJobDateiRow, "id" | "created_at" | "updated_at"> & { id?: string }>,
         Record<string, never>
       >;
+      praxis_codewort: Table<PraxisCodewortRow, Record<string, never>, Record<string, never>>;
+      praxis_codewort_versuch: Table<PraxisCodewortVersuchRow, Record<string, never>, Record<string, never>>;
       schedule_entry: Table<
         ScheduleEntryRow,
         Flatten<
