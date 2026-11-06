@@ -45,6 +45,26 @@ export type CompetencyStepTyp = "theoretisch" | "praktisch";
 export type EnrolmentStatus = "aktiv" | "abgeschlossen" | "abgebrochen";
 export type ScheduleArt = "live" | "asynchron" | "feld";
 export type FieldJobStatus = "geplant" | "durchgeführt";
+// 0058 (SR-64): Praxisflow.
+export type FieldJobTypeAblauf = "einfach" | "gefuehrt";
+export type PraxisPhase =
+  | "informieren"
+  | "planen"
+  | "entscheiden"
+  | "ausfuehren"
+  | "kontrollieren"
+  | "bewerten"
+  | "abgeschlossen";
+export type PraxisEintrag = { id: string; text: string };
+// Inhalt von field_job.praxisflow; geschrieben nur über fn_praxis_* (0058).
+export type PraxisFortschritt = {
+  werkzeuge?: PraxisEintrag[];
+  materialien?: PraxisEintrag[];
+  schritte?: PraxisEintrag[];
+  erledigt?: { id: string; am: string }[];
+  plan_bestaetigt_am?: string;
+  verlauf?: { zeit: string; ereignis: string }[];
+};
 export type FieldJobErgebnis = "erledigt" | "problem";
 export type FieldCapturePhase = "start" | "abschluss";
 export type UnitProgressStatus = "offen" | "in Bearbeitung" | "abgeschlossen";
@@ -413,6 +433,8 @@ type FieldJobTypeRow = Flatten<
     programme_id: string | null;
     // Entschieden 2026-09-16 (SR-58/0015): analog module.reihenfolge/course.reihenfolge.
     reihenfolge: number;
+    // 0058 (SR-64): einfach = bisheriger Praxistag, gefuehrt = Praxisflow.
+    ablauf: FieldJobTypeAblauf;
   }
 >;
 
@@ -447,6 +469,10 @@ type FieldJobRow = Flatten<
     // bestätigt "erledigt" oder meldet ein "problem" mit Freitext.
     ergebnis: FieldJobErgebnis | null;
     problem_beschreibung: string | null;
+    // 0058 (SR-64): Phase und Fortschritt im Praxisflow, nur über fn_praxis_*.
+    phase: PraxisPhase;
+    phase_seit: string | null;
+    praxisflow: PraxisFortschritt;
   }
 >;
 
@@ -862,6 +888,7 @@ export type Database = {
             module_id?: string | null;
             programme_id?: string | null;
             reihenfolge: number;
+            ablauf?: FieldJobTypeAblauf;
           }
         >,
         Partial<FieldJobTypeRow>
@@ -1074,6 +1101,14 @@ export type Database = {
       fn_chat_ungelesen: { Args: { p_cohort_id: string }; Returns: { kanal: ChatKanal; anzahl: number }[] };
       // Darf die eingeloggte Person die Fotos im Ordner sehen? (0030, SR-77)
       fn_darf_foto_sehen: { Args: { p_ordner: string }; Returns: boolean };
+      // Praxisflow (0058, SR-64): nur eigener Praxistag im geführten Ablauf.
+      fn_praxis_plan_speichern: {
+        Args: { p_job: string; p_werkzeuge: string[]; p_materialien: string[]; p_schritte: string[] };
+        Returns: PraxisFortschritt;
+      };
+      fn_praxis_weiter: { Args: { p_job: string; p_von: PraxisPhase }; Returns: PraxisPhase };
+      fn_praxis_zurueck_zum_plan: { Args: { p_job: string }; Returns: PraxisPhase };
+      fn_praxis_schritt_abhaken: { Args: { p_job: string; p_schritt: string }; Returns: PraxisFortschritt };
     };
   };
 };

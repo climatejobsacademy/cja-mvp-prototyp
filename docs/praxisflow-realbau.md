@@ -1,6 +1,6 @@
 # Praxisflow-Realbau: Analyse und Migrationsentwurf
 
-Stand 06.11.2026. **Nur Analyse und Entwurf.** Es gibt dazu keine Migration im Repo, keinen Branch mit Code und keinen Datenbankzugriff. Das Dokument ersetzt die Fassung vom 13./14.10.2026 (vier Codewort-Freigaben, Foto ohne Upload, Schnitte S/M/L); die alte Fassung und ihr SQL-Entwurf stehen in der Git-Historie.
+Stand 06.11.2026. **Analyse und Entwurf.** Umgesetzt ist davon Migration 0058 (Ablauf, Phase, Fortschritt, SR-64); alles Weitere ist Entwurf. Das Dokument ersetzt die Fassung vom 13./14.10.2026 (vier Codewort-Freigaben, Foto ohne Upload, Schnitte S/M/L); die alte Fassung und ihr SQL-Entwurf stehen in der Git-Historie.
 
 Grundlagen:
 - **Matrix „Pilot, Praxistage Plochingen, Modul II, Praxisflow“** im Miro-Board der Produktleitung (Frame „User Journey“): je Phase Zweck, Zahl der Schritte, Anzeige, Eingabe, Tätigkeit, Inhalte, Gespeichertes, Verhalten bei Fehlschlag, Bestätigung.
