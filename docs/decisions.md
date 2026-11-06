@@ -444,6 +444,14 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Status:** gültig
 - **Belegt:** SR-03, SR-65, SR-66 (Stage Later), SR-89, `praxisflow-realbau.md` (Abschnitte 5 und 8)
 
+### 2026-11-06 – Praxisflow: Trainer-Einschätzung nur mit Codewort im selben Schritt
+
+- **Entscheidung:** (Produkt-Lead) Das Codewort der Trainer:in wird immer neu eingegeben; ohne Codewort wird keine Trainer-Einschätzung gespeichert. Technisch: Die Trainer:in gibt ihre Punkte ein und bestätigt am Ende mit dem Codewort, gespeichert wird beides in einem Aufruf (`fn_praxis_trainer_einschaetzen`). Es gibt keine gespeicherte Freigabe, nach der die lernende Person die Trainer-Einschätzung allein abgeben könnte. Das Gate vor dem Zuschalten der Spannung bleibt eine einmalige Freigabe (`fn_praxis_gate`).
+- **Begründung:** Aus der Trainer-Einschätzung folgt die automatische Verifizierung (Eintrag oben). Eine gespeicherte Freigabe hätte nach einem Neuladen erlaubt, die Einschätzung ohne Trainer:in abzugeben.
+- **Folgen:** Ergänzt den Eintrag „Codewort, Einschätzung und automatische Verifizierung“ vom selben Tag, Punkt (1).
+- **Status:** gültig
+- **Belegt:** Migrationen `0060`, `0061`; RLS-Tests `033`, `034`
+
 ## Offene technische Schulden
 
 Diese Punkte sind keine Entscheidungen, sondern bekannte Lücken; was daraus wird, steht in Asana.
