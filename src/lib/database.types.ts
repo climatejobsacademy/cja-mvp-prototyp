@@ -56,6 +56,8 @@ export type PraxisPhase =
   | "bewerten"
   | "abgeschlossen";
 export type PraxisEintrag = { id: string; text: string };
+// 0059 (SR-88): Art einer hochgeladenen Datei im Praxisflow.
+export type PraxisDateiArt = "auftrag" | "hilfe" | "plan" | "protokoll";
 // Inhalt von field_job.praxisflow; geschrieben nur über fn_praxis_* (0058).
 export type PraxisFortschritt = {
   werkzeuge?: PraxisEintrag[];
@@ -473,6 +475,21 @@ type FieldJobRow = Flatten<
     phase: PraxisPhase;
     phase_seit: string | null;
     praxisflow: PraxisFortschritt;
+  }
+>;
+
+// 0059 (SR-88): nur die lernende Person selbst liest, legt an und löscht.
+type FieldJobDateiRow = Flatten<
+  Timestamps & {
+    id: string;
+    organisation_id: string;
+    field_job_id: string;
+    learner_id: string;
+    art: PraxisDateiArt;
+    storage_pfad: string;
+    dateiname: string;
+    mime_type: string;
+    groesse: number;
   }
 >;
 
@@ -935,6 +952,11 @@ export type Database = {
           problem_beschreibung?: string | null;
         }
       >;
+      field_job_datei: Table<
+        FieldJobDateiRow,
+        Flatten<Partial<Timestamps> & Omit<FieldJobDateiRow, "id" | "created_at" | "updated_at"> & { id?: string }>,
+        Record<string, never>
+      >;
       schedule_entry: Table<
         ScheduleEntryRow,
         Flatten<
@@ -1109,6 +1131,8 @@ export type Database = {
       fn_praxis_weiter: { Args: { p_job: string; p_von: PraxisPhase }; Returns: PraxisPhase };
       fn_praxis_zurueck_zum_plan: { Args: { p_job: string }; Returns: PraxisPhase };
       fn_praxis_schritt_abhaken: { Args: { p_job: string; p_schritt: string }; Returns: PraxisFortschritt };
+      // 0059 (SR-88): Dateien zum Praxistag hochladen oder löschen erlaubt?
+      fn_praxis_datei_offen: { Args: { p_job: string }; Returns: boolean };
     };
   };
 };
