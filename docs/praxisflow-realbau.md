@@ -46,11 +46,11 @@ Die 19 Schritte in Bewerten passen zu demo (belegt): 5 Kriterien im Standard-Bew
 | Freigabe vor dem Arbeiten unter Spannung | nicht genannt | Codewort zwischen „spannungsfrei“ und „unter Spannung“ | SR-65 (Gate allgemein) | **klären**: Sicherheitsfrage; das Partner-Feedback verlangt die Freigabe vor dem Zuschalten |
 | Freigabe durch die Trainer:in | Codewort am Gerät der Lernenden | Codewort im Browser | SR-65 (Codewort serverseitig, Hash, Sperre); SR-67 (eigener Login, **ohne** gemeinsames Codewort, Stage Later) | Pilot: Codewort serverseitig nach SR-65; eigener Trainer-Login bleibt SR-67 |
 | Peer-Einschätzung | ein Set Items, „wer sie gemacht hat“ wird gespeichert | am selben Gerät, ohne Identität | SR-89 | ohne Login ist nur die Rolle „Peer“ speicherbar, nicht die Person (in SR-89 offen) |
-| Ergebnis „bestanden / nicht bestanden“ | offen | K.-o.-Kriterien (Funktion, Schutzmaßnahmen) führen zur Nacharbeit | SR-66: Ergebnis nur mit Codewort; Prüfprotokoll und Benotung „ausdrücklich nicht Teil der Plattform (Entscheidung 06.10.2026)“ | SR-66 widerspricht der Matrix (Prüfprotokoll-Upload, Punkte) und muss in Notion angepasst werden |
-| Dateien je Auftrag | Zusatzmaterial je Auftrag, Hilfen auch von Lernenden | Hilfen mit eigenem Upload | SR-68 (nur Lektionen; „Zuordnung zu Praxisschritten folgt“); SR-88 (Uploads der Lernenden) | Unterlagen je Auftrag von AfCJ: SR-68 in Notion erweitern |
-| Zusammenfassung als PDF | drucken oder als PDF speichern | Auftragsakte mit `window.print()` | keine | **SR folgt** (oder Teil der Uploads-/Akte-SR) |
+| Ergebnis „bestanden / nicht bestanden“ | offen | K.-o.-Kriterien (Funktion, Schutzmaßnahmen) führen zur Nacharbeit | SR-66: Ergebnis nur mit Codewort | Widerspruch zu Prüfprotokoll und Punkten ist in SR-66 gestrichen; das Ergebnis selbst hängt an Frage 3 |
+| Dateien je Auftrag | Zusatzmaterial je Auftrag, Hilfen auch von Lernenden | Hilfen mit eigenem Upload | SR-68 (Lektionen und Praxisaufgaben); SR-88 (Uploads der Lernenden) | Unterlagen je Auftrag von AfCJ nach SR-68, eigene Uploads nach SR-88 |
+| Zusammenfassung als PDF | drucken oder als PDF speichern | Auftragsakte mit `window.print()` | SR-90 | Druckfunktion des Browsers reicht für den Pilot |
 | Abschluss als Nachweis | nicht genannt | nur Auftragsakte | SR-02, SR-03, SR-82 | **klären**: zählt der Abschluss als Selbstauskunft, die verifiziert wird? |
-| Phasen-Namen | Informieren … Bewerten | ebenso | SR-64 nennt noch Analyse, Durchführen, Kontrolle | SR-64 in Notion an die Begriffe angleichen |
+| Phasen-Namen | Informieren … Bewerten | ebenso | SR-64 (angeglichen) | im Code bleiben die ids aus demo (`analyse`, `durchfuehren`, `kontrolle`) oder werden beim Bau umbenannt |
 
 ## 4. Was dev schon hat
 
@@ -163,9 +163,10 @@ Folge (Entscheidung Produktleitung 06.11.2026, für den Pilot): Weil Trainer:inn
 SR-Nummern und SR-Texte entstehen nur in Notion. Stand des Abgleichs (belegt, Notion am 06.11.2026):
 
 - **Vorhanden und tragend:** SR-64 (Phasen und Schritte in Reihenfolge, serverseitig), SR-65 (Codewort-Gate serverseitig), SR-08 (atomare Schreibvorgänge), SR-71 (praktische Teilschritte), SR-81 (Trainer:in bestätigt Anwesenheit am Praxistag).
-- **Anzupassen in Notion:** SR-64 (Phasen-Namen; Abfrage-Format ist durch die Matrix geklärt), SR-66 (Prüfprotokoll-Upload und Punkte sind jetzt Teil der Plattform), SR-68 (Dateien auch je Praxisauftrag), SR-82 (Bezug zum neuen Ablauf).
-- **Neu:** SR-88 (Uploads der Lernenden, nur für sie selbst sichtbar, löschbar), SR-89 (Selbst-, Peer- und Trainer-Einschätzung).
-- **SR folgt** für: Zusammenfassung des Auftrags zum Drucken bzw. als PDF; Import der Aufträge mit Nummer und Unterlagen.
+- **Am 06.11.2026 in Notion angepasst:** SR-64 (Phasen-Namen; Abfragen sind Listen-Eingaben, Abhaken und Punktwahl), SR-66 (Satz „Prüfprotokoll und Benotung nicht Teil der Plattform“ gestrichen; ob es ein Ergebnis „bestanden / nicht bestanden“ gibt, hängt an Frage 3), SR-68 (Dateien auch je Praxisaufgabe).
+- **Neu:** SR-88 (Uploads der Lernenden, nur für sie selbst sichtbar, löschbar), SR-89 (Selbst-, Peer- und Trainer-Einschätzung), SR-90 (Zusammenfassung des Auftrags zum Drucken bzw. als PDF).
+- **Neu zu bewerten:** SR-82 (Bezug zum neuen Ablauf).
+- **SR folgt** für: Import der Aufträge mit Nummer und Unterlagen.
 
 ## 10. Aufwand und Schnitt
 
