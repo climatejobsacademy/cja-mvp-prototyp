@@ -217,6 +217,13 @@ export const TEXTE = {
     ohneSpannungHinweis: "Bei diesem Auftrag kommt keine Spannung auf die Anlage. Eine Freigabe durch die Trainer:in ist nicht nötig.",
     weiter: "Weiter zu Bewerten",
   },
+  deuten: {
+    startTitel: "Jetzt kontrollierst du deine Messwerte",
+    startText: "Zu jedem Prüfpunkt schreibst du kurz, was dein Messwert bedeutet und welcher Grenzwert gilt. Dein Prüfprotokoll findest du links unter „Protokoll“.",
+    frage: "Was bedeutet dein Messwert? Welcher Grenzwert gilt, und hältst du ihn ein?",
+    platzhalter: "Zum Beispiel: 0,4 Ω gemessen, Grenzwert 1 Ω, also in Ordnung.",
+    leer: "Schreib ein, zwei Sätze, dann geht es weiter.",
+  },
   entscheiden: {
     bestaetigen: "Gib das Gerät deiner Trainer:in. Sie schaut sich deinen Plan an und gibt ihn mit dem Codewort frei.",
     button: "Ich fange an",

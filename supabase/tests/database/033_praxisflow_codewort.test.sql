@@ -14,7 +14,7 @@ select plan(30);
 -- ------------------------------------------------------------
 -- Fixtures (als Superuser)
 -- 33001 Lernende A, 33003 AfCJ admin. Kohorte 33051, Praxistag 33081
--- (geführt) steht in Kontrollieren.
+-- (geführt) steht in Ausführen, Arbeitsschritte erledigt (Messen, 0065).
 -- ------------------------------------------------------------
 insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-000000033001', 'pc-a@example.test'),
@@ -52,8 +52,9 @@ insert into cohort (id, programme_id, name, start_datum) values
 insert into enrolment (id, organisation_id, learner_id, cohort_id, status) values
   ('00000000-0000-0000-0000-000000033061', '00000000-0000-0000-0000-000000033011', '00000000-0000-0000-0000-000000033001', '00000000-0000-0000-0000-000000033051', 'aktiv');
 
-insert into field_job (id, organisation_id, datum, field_job_type_id, learner_id, phase) values
-  ('00000000-0000-0000-0000-000000033081', '00000000-0000-0000-0000-000000033011', '2026-11-16', '00000000-0000-0000-0000-000000033041', '00000000-0000-0000-0000-000000033001', 'kontrollieren');
+insert into field_job (id, organisation_id, datum, field_job_type_id, learner_id, phase, praxisflow) values
+  ('00000000-0000-0000-0000-000000033081', '00000000-0000-0000-0000-000000033011', '2026-11-16', '00000000-0000-0000-0000-000000033041', '00000000-0000-0000-0000-000000033001', 'ausfuehren',
+   '{"schritte": [{"id": "s1", "text": "Aufbau"}], "erledigt": [{"id": "s1", "am": "2026-11-16T09:00:00Z"}]}'::jsonb);
 
 insert into schedule_entry (organisation_id, datum, art, reihenfolge, cohort_id, enrolment_id, live_session_id, field_job_id) values
   ('00000000-0000-0000-0000-000000033011', '2026-11-16', 'feld', 1, null, '00000000-0000-0000-0000-000000033061', null, '00000000-0000-0000-0000-000000033081');
@@ -166,9 +167,9 @@ select is(
 select is(jsonb_array_length(fn_praxis_kontrolle_abhaken('00000000-0000-0000-0000-000000033081', 'c1') -> 'kontrolle'), 5, 'c1 nach der Freigabe abgehakt');
 select is(jsonb_array_length(fn_praxis_kontrolle_abhaken('00000000-0000-0000-0000-000000033081', 'c2') -> 'kontrolle'), 6, 'c2 abgehakt');
 select throws_ok(
-  $$select fn_praxis_weiter('00000000-0000-0000-0000-000000033081', 'kontrollieren')$$,
+  $$select fn_praxis_weiter('00000000-0000-0000-0000-000000033081', 'ausfuehren')$$,
   '23514', null,
-  'Ohne Prüfprotokoll geht es nicht zu Bewerten'
+  'Ohne Prüfprotokoll geht es nicht zu Kontrollieren (Variante B, 0065)'
 );
 select lives_ok(
   $$insert into field_job_datei (organisation_id, field_job_id, learner_id, art, storage_pfad, dateiname, mime_type, groesse) values
@@ -177,9 +178,9 @@ select lives_ok(
   'Prüfprotokoll als Datei'
 );
 select is(
-  fn_praxis_weiter('00000000-0000-0000-0000-000000033081', 'kontrollieren'),
-  'bewerten',
-  'Kontrollieren -> Bewerten mit allen Prüfpunkten und Protokoll'
+  fn_praxis_weiter('00000000-0000-0000-0000-000000033081', 'ausfuehren'),
+  'kontrollieren',
+  'Ausführen -> Kontrollieren mit allen Prüfpunkten und Protokoll'
 );
 
 -- Trainer:in liest weder Codewort noch Versuche.

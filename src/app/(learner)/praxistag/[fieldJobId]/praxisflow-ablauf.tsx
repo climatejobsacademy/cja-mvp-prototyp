@@ -49,6 +49,7 @@ import { cn } from "@/lib/utils";
 import {
   abschliessen,
   einschaetzen,
+  deutungSpeichern,
   kontrolleAbhaken,
   phaseWeiter,
   planFreigeben,
@@ -88,14 +89,16 @@ function alleSchritte(schritte: Eintrag[]): Schritt[] {
     // Reihenfolge wie in der Werkstatt: der Plan bestimmt Material und Werkzeug (Feedback 09.11.2026).
     ...s("planen", ["plaene", "materialien", "werkzeuge", "schritte"]),
     ...s("entscheiden", ["rueckblick"]),
-    ...s("ausfuehren", schritte.map((x) => `tun:${x.id}`)),
-    ...s("kontrollieren", [
+    // Variante B (09.11.2026): Messen gehört zu Ausführen, Kontrollieren heißt Messwerte deuten.
+    ...s("ausfuehren", [
+      ...schritte.map((x) => `tun:${x.id}`),
       "start-kontrolle",
       ...PRUEFLISTE_STANDARD.spannungsfrei.map((p) => `a:${p.id}`),
       "freigabe",
       ...PRUEFLISTE_STANDARD.unterSpannung.map((p) => `c:${p.id}`),
       "protokoll",
     ]),
+    ...s("kontrollieren", ["start-deuten", ...PRUEFPUNKTE.map((p) => `deuten:${p.id}`)]),
     ...s("bewerten", [
       "uebergabe-selbst",
       ...BOGEN.map((k) => `selbst:${k.id}`),
@@ -123,16 +126,20 @@ function startPosition(d: PraxisflowDaten): string {
     case "entscheiden":
       return "rueckblick";
     case "ausfuehren": {
-      const offen = (f.schritte ?? []).find((x) => !erledigt.has(x.id)) ?? (f.schritte ?? []).at(-1);
-      return offen ? `tun:${offen.id}` : "rueckblick";
-    }
-    case "kontrollieren": {
+      const offen = (f.schritte ?? []).find((x) => !erledigt.has(x.id));
+      if (offen) return `tun:${offen.id}`;
       if (kontrolle.size === 0) return "start-kontrolle";
       const a = PRUEFLISTE_STANDARD.spannungsfrei.find((p) => !kontrolle.has(p.id));
       if (a) return `a:${a.id}`;
       if (!f.zuschalten_freigegeben_am) return "freigabe";
       const c = PRUEFLISTE_STANDARD.unterSpannung.find((p) => !kontrolle.has(p.id));
       return c ? `c:${c.id}` : "protokoll";
+    }
+    case "kontrollieren": {
+      const gedeutet = new Set((f.deutungen ?? []).map((d) => d.id));
+      if (gedeutet.size === 0) return "start-deuten";
+      const offen = PRUEFPUNKTE.find((p) => !gedeutet.has(p.id)) ?? PRUEFPUNKTE.at(-1);
+      return `deuten:${offen?.id}`;
     }
     case "bewerten": {
       const e = f.einschaetzung ?? {};
@@ -146,6 +153,7 @@ function startPosition(d: PraxisflowDaten): string {
   }
 }
 
+const PRUEFPUNKTE = [...PRUEFLISTE_STANDARD.spannungsfrei, ...PRUEFLISTE_STANDARD.unterSpannung];
 const phasenName = (id: Phase) => PHASEN.find((p) => p.id === id)?.name ?? "";
 const GROSS = cn(PRIMAER, "min-h-14 w-full text-[17px] sm:w-full");
 
@@ -173,6 +181,10 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
   // Bewerten: Punkte der laufenden Einschätzung, beim letzten Kriterium speichern.
   const [werte, setWerte] = useState<Record<PraxisRolle, Record<string, number>>>({ selbst: {}, peer: {}, trainer: {} });
   const [naechstesMal, setNaechstesMal] = useState("");
+  // Kontrollieren: Deutungen lokal bearbeiten, je Prüfpunkt beim Weiter speichern.
+  const [deutungen, setDeutungen] = useState<Record<string, string>>(() =>
+    Object.fromEntries((f.deutungen ?? []).map((d) => [d.id, d.text]))
+  );
 
   // Ereignisse (SR-92): erster Schritt beim Öffnen, Schritt beendet beim
   // Verlassen der Seite; Wechsel meldet gehe(). Nur Kennungen, keine Inhalte.
@@ -436,12 +448,13 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
               const letzter = nrInPhase === inPhase.length;
               const schonErledigt = (f.erledigt ?? []).some((e) => e.id === id);
               return (
-                <Karte {...k} frage={s?.text ?? "Arbeitsschritt"} hinweis={letzter ? "Das ist dein letzter Arbeitsschritt." : undefined}>
+                <Karte {...k} frage={s?.text ?? "Arbeitsschritt"} hinweis={letzter ? "Das ist dein letzter Arbeitsschritt. Danach misst du." : undefined}>
                   <button
                     type="button"
                     disabled={laeuft}
                     onClick={() => {
-                      const danach = () => (letzter ? phaseAbschliessen("ausfuehren", "start-kontrolle") : gehe(naechster()));
+                      // Nach dem letzten Arbeitsschritt geht es in Ausführen mit dem Messen weiter (Variante B).
+                      const danach = () => gehe(naechster());
                       if (schonErledigt) danach();
                       else aktion(() => schrittAbhaken(daten.fieldJobId, id), danach);
                     }}
@@ -453,7 +466,7 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
               );
             }
 
-            // ----- Kontrollieren
+            // ----- Ausführen: Messen (Variante B)
             if (art === "start-kontrolle") {
               const teile = [
                 { titel: "Prüfen ohne Spannung", text: "Das machst du allein." },
@@ -461,7 +474,7 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
                 { titel: "Prüfen unter Spannung", text: "Mit Trainer:in: erst messen, dann die Funktion. Am Ende das Prüfprotokoll." },
               ];
               return (
-                <Uebergabe {...k} ton="weiss" icon={ClipboardCheck} frage="Dein Aufbau ist fertig" hinweis="Jetzt kontrollierst du deine Arbeit. Das passiert in diesen Teilen:">
+                <Uebergabe {...k} ton="weiss" icon={ClipboardCheck} frage="Dein Aufbau ist fertig" hinweis="Jetzt misst du. Das passiert in diesen Teilen:">
                   <ol className="flex flex-col gap-2">
                     {teile.map((t, i) => (
                       <li key={t.titel} className="flex items-center gap-3 rounded-zeile bg-subtle px-4 py-3">
@@ -474,7 +487,7 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
                     ))}
                   </ol>
                   <button type="button" onClick={() => gehe(naechster())} className={cn(GROSS, "mt-4")}>
-                    Kontrolle beginnen <ArrowRight aria-hidden="true" />
+                    Messen beginnen <ArrowRight aria-hidden="true" />
                   </button>
                 </Uebergabe>
               );
@@ -527,8 +540,59 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
               return (
                 <Karte {...k} frage="Lade das Prüfprotokoll hoch" hinweis={TEXTE.kontrolle.protokollText}>
                   <DateiUpload id="upload-protokoll" art="protokoll" fieldJobId={daten.fieldJobId} learnerId={daten.learnerId} organisationId={daten.organisationId} dateien={daten.dateien} offen={offen} />
-                  <button type="button" disabled={!hat || laeuft} onClick={() => phaseAbschliessen("kontrollieren", "uebergabe-selbst")} className={GROSS}>
+                  <button type="button" disabled={!hat || laeuft} onClick={() => phaseAbschliessen("ausfuehren", "start-deuten")} className={GROSS}>
                     Weiter <ArrowRight aria-hidden="true" />
+                  </button>
+                </Karte>
+              );
+            }
+
+            // ----- Kontrollieren: Messwerte deuten (Variante B)
+            if (art === "start-deuten") {
+              return (
+                <Uebergabe {...k} ton="weiss" icon={ClipboardCheck} frage={TEXTE.deuten.startTitel} hinweis={TEXTE.deuten.startText}>
+                  <button type="button" onClick={() => gehe(naechster())} className={cn(GROSS, "mt-4")}>
+                    Los geht&apos;s <ArrowRight aria-hidden="true" />
+                  </button>
+                </Uebergabe>
+              );
+            }
+            if (art === "deuten") {
+              const p = PRUEFPUNKTE.find((x) => x.id === id);
+              const nr = PRUEFPUNKTE.findIndex((x) => x.id === id);
+              const letzter = nr === PRUEFPUNKTE.length - 1;
+              const text = deutungen[id] ?? "";
+              return (
+                <Karte
+                  {...k}
+                  frage={p?.titel ?? "Prüfpunkt"}
+                  hinweis={TEXTE.deuten.frage}
+                  zurueck={nr > 0 ? () => gehe(`deuten:${PRUEFPUNKTE[nr - 1].id}`) : undefined}
+                >
+                  <label className="flex flex-col gap-2">
+                    <span className="sr-only">Deine Deutung zu {p?.titel}</span>
+                    <textarea
+                      rows={4}
+                      maxLength={1000}
+                      value={text}
+                      placeholder={TEXTE.deuten.platzhalter}
+                      onChange={(ev) => setDeutungen((d) => ({ ...d, [id]: ev.target.value }))}
+                      className={cn("rounded-zeile border border-line bg-white px-4 py-3 text-[15px] text-ink placeholder:text-ink-subtle", FOKUS)}
+                    />
+                  </label>
+                  {!text.trim() && <p className="text-sm text-ink-muted">{TEXTE.deuten.leer}</p>}
+                  <button
+                    type="button"
+                    disabled={laeuft || !text.trim()}
+                    onClick={() =>
+                      aktion(
+                        () => deutungSpeichern(daten.fieldJobId, id, text),
+                        () => (letzter ? phaseAbschliessen("kontrollieren", "uebergabe-selbst") : gehe(naechster()))
+                      )
+                    }
+                    className={GROSS}
+                  >
+                    {letzter ? "Kontrolle fertig" : "Weiter"} <ArrowRight aria-hidden="true" />
                   </button>
                 </Karte>
               );
@@ -617,9 +681,28 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
             if (art === "uebergabe-trainer") {
               return (
                 <Uebergabe {...k} ton="praxis" icon={KeyRound} frage="Jetzt ist deine Trainer:in dran" hinweis="Gib das Gerät deiner Trainer:in. Sie schätzt ein und bestätigt am Ende mit ihrem Codewort.">
-                  <button type="button" onClick={() => gehe(naechster())} className={GROSS}>
-                    Ich bin die Trainer:in <ArrowRight aria-hidden="true" />
-                  </button>
+                  <div className="flex flex-col gap-3">
+                    {/* Deutungen der Messwerte vor der Einschätzung (Variante B, SR-64) */}
+                    {(f.deutungen ?? []).length > 0 && (
+                      <section aria-labelledby="deutungen-trainer" className="flex flex-col gap-2 rounded-zeile bg-white p-4">
+                        <h3 id="deutungen-trainer" className="text-base font-bold text-ink">So deutet die lernende Person ihre Messwerte</h3>
+                        <dl className="flex flex-col gap-2">
+                          {PRUEFPUNKTE.map((p) => {
+                            const d = (f.deutungen ?? []).find((x) => x.id === p.id);
+                            return (
+                              <div key={p.id} className="flex flex-col gap-0.5">
+                                <dt className="text-sm font-semibold text-ink-muted">{p.titel}</dt>
+                                <dd className="text-[15px] break-words text-ink">{d?.text ?? "–"}</dd>
+                              </div>
+                            );
+                          })}
+                        </dl>
+                      </section>
+                    )}
+                    <button type="button" onClick={() => gehe(naechster())} className={GROSS}>
+                      Ich bin die Trainer:in <ArrowRight aria-hidden="true" />
+                    </button>
+                  </div>
                 </Uebergabe>
               );
             }
@@ -701,6 +784,7 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
                           if (ergebnis !== "ko") return gehe("fertig", "Auftrag abgeschlossen");
                           // K.-o.: derselbe Praxisauftrag beginnt neu bei Informieren (SR-89, SR-64).
                           setWerte({ selbst: {}, peer: {}, trainer: {} });
+                          setDeutungen({});
                           setNaechstesMal("");
                           gehe("auftrag", "Neuer Durchlauf");
                         }
@@ -732,8 +816,8 @@ const VERLAUF_TEXT: Record<string, string> = {
   "phase:planen": "Auftrag angenommen, Informieren erledigt",
   "phase:entscheiden": "Plan fertig",
   "phase:ausfuehren": "Ausführen begonnen",
-  "phase:kontrollieren": "Aufbau fertig",
-  "phase:bewerten": "Kontrolle und Prüfprotokoll fertig",
+  "phase:kontrollieren": "Aufbau, Messungen und Prüfprotokoll fertig",
+  "phase:bewerten": "Messwerte gedeutet",
   "zurueck:planen": "Zurück zum Plan",
   "gate:plan": "Plan freigegeben (Codewort der Trainer:in)",
   "gate:zuschalten": "Inbetriebnahme freigegeben (Codewort der Trainer:in)",
@@ -778,6 +862,7 @@ function Fertig({ daten }: { daten: PraxisflowDaten }) {
         unterSpannung
         pruefungenUnterSpannung={PRUEFLISTE_STANDARD.unterSpannung.map((p) => ({ titel: p.titel, erledigt: kontrolle.has(p.id) }))}
         protokollDateien={namen("protokoll")}
+        deutungen={PRUEFPUNKTE.map((p) => ({ titel: p.titel, text: (f.deutungen ?? []).find((d) => d.id === p.id)?.text ?? null }))}
         freigabe={ZEIT(f.zuschalten_freigegeben_am)}
         kriterien={BOGEN}
         einschaetzungen={[
