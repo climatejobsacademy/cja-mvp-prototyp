@@ -1171,6 +1171,7 @@ export type Database = {
       fn_praxis_codewort_setzen: { Args: { p_cohort: string; p_codewort: string }; Returns: undefined };
       fn_praxis_codewort_entsperren: { Args: { p_job: string; p_gate: PraxisGate }; Returns: undefined };
       // 0061 (SR-89, SR-03): Einschätzung speichern, Abschluss mit automatischer Verifizierung.
+      fn_praxis_ereignis_melden: { Args: { p_job: string; p_ereignisse: unknown }; Returns: number };
       fn_praxis_einschaetzen: {
         Args: { p_job: string; p_rolle: "selbst" | "peer"; p_werte: Record<string, number> };
         Returns: PraxisFortschritt;

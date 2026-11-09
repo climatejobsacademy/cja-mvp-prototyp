@@ -194,24 +194,30 @@ function istBild(mime: string) {
 }
 
 /** Unterlagen-Leiste: je Art ein Symbol, ein Klick öffnet die Vorschau im Fenster. */
-export function UnterlagenLeiste({ dateien }: { dateien: PraxisDatei[] }) {
+export function UnterlagenLeiste({ dateien, onGeoeffnet }: { dateien: PraxisDatei[]; onGeoeffnet?: (art: PraxisDateiArt) => void }) {
   return (
     <nav
       aria-label="Deine Unterlagen"
       className="flex gap-2 overflow-x-auto md:sticky md:top-6 md:flex-col md:overflow-visible md:rounded-karte md:bg-card md:p-2 md:shadow-card print:hidden"
     >
       {ARTEN.map((art) => (
-        <UnterlagenFenster key={art.id} art={art} dateien={dateien.filter((d) => d.art === art.id)} />
+        <UnterlagenFenster key={art.id} art={art} dateien={dateien.filter((d) => d.art === art.id)} onGeoeffnet={onGeoeffnet} />
       ))}
     </nav>
   );
 }
 
-function UnterlagenFenster({ art, dateien }: { art: Art; dateien: PraxisDatei[] }) {
+function UnterlagenFenster({ art, dateien, onGeoeffnet }: { art: Art; dateien: PraxisDatei[]; onGeoeffnet?: (art: PraxisDateiArt) => void }) {
   const [gewaehlt, setGewaehlt] = useState(0);
   const datei = dateien.length > 0 ? dateien[Math.min(gewaehlt, dateien.length - 1)] : null;
   return (
-    <Dialog.Root onOpenChange={(offen) => offen && setGewaehlt(0)}>
+    <Dialog.Root
+      onOpenChange={(offen) => {
+        if (!offen) return;
+        setGewaehlt(0);
+        onGeoeffnet?.(art.id);
+      }}
+    >
       <Dialog.Trigger
         className={cn(
           "relative flex min-h-14 min-w-16 shrink-0 flex-col items-center justify-center gap-1 rounded-zeile bg-card px-2 py-1.5 text-[12px] font-semibold shadow-card hover:bg-subtle md:shadow-none",
