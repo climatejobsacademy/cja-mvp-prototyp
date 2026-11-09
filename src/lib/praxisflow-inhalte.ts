@@ -249,7 +249,7 @@ export const TEXTE = {
     ko: "K.-o.-Kriterium",
     nacharbeitTitel: "Noch einmal von vorn",
     nacharbeitText:
-      "Bei einem K.-o.-Kriterium hat deine Trainer:in 0 Punkte gegeben. Dann zählt der Auftrag noch nicht für deine Kompetenzen. Du machst ihn noch einmal, ab Informieren. Dein Plan und deine Dateien bleiben, du kannst sie anpassen.",
+      "Bei einem K.-o.-Kriterium hat deine Trainer:in 0 Punkte gegeben. Dann zählt der Auftrag noch nicht für deine Kompetenzen. Schreib als Nächstes auf, was du beim nächsten Mal anders machst. Danach beginnt der Auftrag noch einmal bei Informieren. Dein Plan und deine Dateien bleiben, du kannst sie anpassen.",
     nacharbeitButton: "Neu beginnen",
     status: "Verifizierung durch AfCJ läuft",
   },

@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
+  CircleAlert,
   ClipboardCheck,
   KeyRound,
   ListOrdered,
@@ -310,7 +311,8 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
         )}
       </p>
       {fehler && (
-        <p role="alert" className="rounded-zeile bg-praxis-tint px-4 py-3 text-[15px] text-ink print:hidden">
+        <p role="alert" className="flex items-start gap-2 rounded-zeile border border-destructive/40 bg-destructive/10 px-4 py-3 text-[15px] text-ink print:hidden">
+          <CircleAlert className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden="true" />
           {fehler}
         </p>
       )}
@@ -436,7 +438,7 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
                 );
               }
               return (
-                <Uebergabe {...k} ton="praxis" icon={KeyRound} frage="Zeig deinen Plan deiner Trainer:in" hinweis={TEXTE.entscheiden.bestaetigen}>
+                <Uebergabe {...k} ton="trainer" icon={KeyRound} frage="Zeig deinen Plan deiner Trainer:in" hinweis={TEXTE.entscheiden.bestaetigen}>
                   <div className="flex flex-col gap-3">
                   <PlanUebersicht
                     mitPlan
@@ -547,7 +549,7 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
                 );
               }
               return (
-                <Uebergabe {...k} ton="praxis" icon={KeyRound} frage="Hol deine Trainer:in" hinweis={`${TEXTE.kontrolle.freigabeText} Gib das Gerät deiner Trainer:in.`}>
+                <Uebergabe {...k} ton="trainer" icon={KeyRound} frage="Hol deine Trainer:in" hinweis={`${TEXTE.kontrolle.freigabeText} Gib das Gerät deiner Trainer:in.`}>
                   <CodewortGate
                     id="gate-zuschalten"
                     hinweis={TEXTE.gates.kontrolle}
@@ -632,8 +634,8 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
               const letzter = nr === BOGEN.length - 1;
               const wer = { selbst: TEXTE.bewerten.selbstText, peer: TEXTE.bewerten.peerText, trainer: TEXTE.bewerten.fremdText }[rolle];
               const titel = { selbst: "Deine Einschätzung", peer: "Einschätzung Peer", trainer: "Einschätzung Trainer:in" }[rolle];
-              // Farbe nur für „du bist dran“ (Lime-Badge) und die Trainer:in (Praxis-Coral); Peer neutral mit Symbol und Name.
-              const ton = rolle === "trainer" ? "praxis" : "weiss";
+              // Karten neutral; wer dran ist, zeigt ein Badge (du: Lime, Peer: neutral, Trainer:in: Coral hell).
+              const ton = "weiss";
               const beschreibung = kriterium.skala.length === 2 ? JA_NEIN_BESCHREIBUNGEN : NOTEN_BESCHREIBUNGEN;
               const wert = werte[rolle][kriterium.id];
               const zurueckZu = nr > 0 ? `${rolle}:${BOGEN[nr - 1].id}` : undefined;
@@ -650,6 +652,7 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
               return (
                 <Karte {...k} phase={`${k.phase} · ${titel}`} frage={kriterium.titel} hinweis={wer} ton={ton} zurueck={zurueckZu ? () => gehe(zurueckZu) : undefined}>
                   <div className="flex flex-wrap gap-2">
+                    {rolle === "trainer" && <TrainerBadge />}
                     {rolle === "peer" && (
                       <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-subtle px-2.5 py-0.5 text-xs font-bold text-ink">
                         <Users className="size-3.5" aria-hidden="true" /> Peer
@@ -711,7 +714,7 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
             }
             if (art === "uebergabe-trainer") {
               return (
-                <Uebergabe {...k} ton="praxis" icon={KeyRound} frage="Jetzt ist deine Trainer:in dran" hinweis="Gib das Gerät deiner Trainer:in. Sie schätzt ein und bestätigt am Ende mit ihrem Codewort.">
+                <Uebergabe {...k} ton="trainer" icon={KeyRound} frage="Jetzt ist deine Trainer:in dran" hinweis="Gib das Gerät deiner Trainer:in. Sie schätzt ein und bestätigt am Ende mit ihrem Codewort.">
                   <div className="flex flex-col gap-3">
                     {/* Deutungen der Messwerte vor der Einschätzung (Variante B, SR-64) */}
                     {(f.deutungen ?? []).length > 0 && (
@@ -740,7 +743,7 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
             if (art === "trainer-codewort") {
               const vollstaendig = BOGEN.every((x) => werte.trainer[x.id] !== undefined);
               return (
-                <Uebergabe {...k} ton="praxis" icon={KeyRound} frage="Einschätzung bestätigen" hinweis="Gespeichert wird deine Einschätzung erst mit deinem Codewort.">
+                <Uebergabe {...k} ton="trainer" icon={KeyRound} frage="Einschätzung bestätigen" hinweis="Gespeichert wird deine Einschätzung erst mit deinem Codewort.">
                   {vollstaendig ? (
                     <CodewortGate
                       id="gate-bewertung"
@@ -784,8 +787,16 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
                   <p className="text-sm text-ink-muted">Gib das Gerät zurück an die Person, die den Auftrag gemacht hat.</p>
                   <ul className="flex flex-col gap-2">
                     {BOGEN.map((x) => (
-                      <li key={x.id} className="flex flex-col gap-1 rounded-zeile bg-subtle px-4 py-3">
-                        <span className="text-[15px] font-semibold">{x.titel}</span>
+                      <li key={x.id} className={cn("flex flex-col gap-1 rounded-zeile px-4 py-3", x.ko && trainer[x.id] === 0 ? "border border-destructive/40 bg-destructive/10" : "bg-subtle")}>
+                        <span className="flex flex-wrap items-center gap-2 text-[15px] font-semibold">
+                          {x.titel}
+                          {x.ko && <span className="rounded-full bg-white px-2 py-0.5 text-xs font-semibold text-ink">{TEXTE.bewerten.ko}</span>}
+                          {x.ko && trainer[x.id] === 0 && (
+                            <span className="inline-flex items-center gap-1 text-sm font-semibold text-ink">
+                              <CircleAlert className="size-4 text-destructive" aria-hidden="true" /> nicht erfüllt
+                            </span>
+                          )}
+                        </span>
                         <span className="flex gap-4 text-sm text-ink-muted tabular-nums">
                           <span>Du: {selbst[x.id] ?? "–"}</span>
                           <span>Peer: {peer[x.id] ?? "–"}</span>
@@ -795,7 +806,7 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
                     ))}
                   </ul>
                   <button type="button" onClick={() => gehe("reflexion")} className={GROSS}>
-                    Weiter <ArrowRight aria-hidden="true" />
+                    {ko ? "Weiter zur Erkenntnis" : "Weiter"} <ArrowRight aria-hidden="true" />
                   </button>
                 </Karte>
               );
@@ -1031,12 +1042,21 @@ function Uebergabe({
   icon: LucideIcon;
   frage: string;
   hinweis: string;
-  ton: "weiss" | "praxis" | "brand" | "lime";
+  ton: "weiss" | "trainer" | "brand" | "lime";
   phase: string;
   nr?: number;
   von?: number;
   children: React.ReactNode;
 }) {
+  // Trainer:in ist dran: weiße Karte, Coral nur als kleines Badge (Dosis, 09.11.2026).
+  if (ton === "trainer") {
+    return (
+      <Karte phase={phase} frage={frage} hinweis={hinweis}>
+        <TrainerBadge />
+        <div>{children}</div>
+      </Karte>
+    );
+  }
   return (
     <Karte phase={phase} frage={frage} hinweis={hinweis} ton={ton}>
       <span
@@ -1053,7 +1073,15 @@ function Uebergabe({
   );
 }
 
-/** Großer Moment, nur bei der Freigabe. */
+/** Einziger Coral-Akzent im Flow: „Trainer:in ist dran“ (Praxis-Farbe, hell, dunkle Schrift). */
+function TrainerBadge() {
+  return (
+    <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-praxis-tint px-3 py-1 text-sm font-bold text-ink">
+      <KeyRound className="size-4" aria-hidden="true" /> Trainer:in ist dran
+    </span>
+  );
+}
+
 const ALS_NAECHSTES: Record<Exclude<Phase, "informieren">, string> = {
   planen: "Du zeichnest deinen Plan und schreibst Material, Werkzeuge und Arbeitsschritte auf.",
   entscheiden: "Deine Trainer:in schaut sich deinen Plan an und gibt ihn frei.",

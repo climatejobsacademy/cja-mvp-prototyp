@@ -145,7 +145,7 @@ export function DateiUpload({
         <label
           htmlFor={id}
           className={cn(
-            "inline-flex min-h-11 w-fit cursor-pointer items-center gap-2 rounded-full bg-subtle px-5 text-[15px] font-semibold text-ink hover:bg-praxis-tint has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand has-[:focus-visible]:ring-offset-2",
+            "inline-flex min-h-11 w-fit cursor-pointer items-center gap-2 rounded-full bg-subtle px-5 text-[15px] font-semibold text-ink hover:bg-brand-tint has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand has-[:focus-visible]:ring-offset-2",
             laeuft && "pointer-events-none opacity-60"
           )}
         >
@@ -225,11 +225,11 @@ function UnterlagenFenster({ art, dateien, onGeoeffnet }: { art: Art; dateien: P
           FOKUS
         )}
       >
-        <art.Icon className={cn("size-5", dateien.length === 0 ? "text-ink-muted opacity-60" : "text-praxis-text")} aria-hidden="true" />
+        <art.Icon className={cn("size-5", dateien.length === 0 ? "text-ink-muted opacity-60" : "text-ink")} aria-hidden="true" />
         {art.kurz}
         <span className="sr-only">, {dateien.length} {dateien.length === 1 ? "Dokument" : "Dokumente"}</span>
         {dateien.length > 1 && (
-          <span aria-hidden="true" className="absolute top-1 right-1 rounded-full bg-praxis-tint px-1.5 text-[11px] tabular-nums">
+          <span aria-hidden="true" className="absolute top-1 right-1 rounded-full bg-subtle px-1.5 text-[11px] tabular-nums">
             {dateien.length}
           </span>
         )}
@@ -238,7 +238,7 @@ function UnterlagenFenster({ art, dateien, onGeoeffnet }: { art: Art; dateien: P
         <Dialog.Backdrop className="fixed inset-0 z-50 bg-ink/40" />
         <Dialog.Popup className="fixed inset-2 z-50 mx-auto flex max-w-5xl flex-col overflow-hidden rounded-karte bg-page text-ink shadow-card outline-none md:inset-8">
           <div className="flex items-center gap-3 border-b border-line px-4 py-3 md:px-6">
-            <art.Icon className="size-5 shrink-0 text-praxis-text" aria-hidden="true" />
+            <art.Icon className="size-5 shrink-0 text-ink-muted" aria-hidden="true" />
             <Dialog.Title className="min-w-0 flex-1 truncate text-base font-bold">{art.titel}</Dialog.Title>
             <Dialog.Close aria-label="Schließen" className={cn("flex size-10 shrink-0 items-center justify-center rounded-full bg-white shadow-card hover:bg-subtle", FOKUS)}>
               <X className="size-[18px]" aria-hidden="true" />

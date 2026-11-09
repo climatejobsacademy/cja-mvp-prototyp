@@ -73,7 +73,7 @@ export function ListenEditor({
   return (
     <section className="flex flex-col gap-3" aria-labelledby={`${id}-titel`}>
       <h3 id={`${id}-titel`} className="flex items-center gap-2 text-base font-bold text-ink">
-        <Icon className="size-[18px] text-praxis-text" aria-hidden="true" />
+        <Icon className="size-[18px] text-ink-muted" aria-hidden="true" />
         {titel}
         <span className="text-sm font-medium text-ink-subtle tabular-nums">· {eintraege.length}</span>
       </h3>
@@ -112,7 +112,7 @@ export function ListenEditor({
                   </span>
                 )}
                 {sortierbar && (
-                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-praxis text-xs font-bold text-ink">
+                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-ink text-xs font-bold text-white">
                     {i + 1}
                   </span>
                 )}

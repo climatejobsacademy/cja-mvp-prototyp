@@ -6,7 +6,7 @@ function Kasten({ icon: Icon, titel, leerText, children }: { icon: LucideIcon; t
   return (
     <div className="flex flex-col gap-3 rounded-zeile bg-subtle p-4">
       <h3 className="flex items-center gap-2 text-base font-bold text-ink">
-        <Icon className="size-[18px] text-praxis-text" aria-hidden="true" />
+        <Icon className="size-[18px] text-ink-muted" aria-hidden="true" />
         {titel}
       </h3>
       {children ?? <p className="text-sm text-ink-subtle">{leerText}</p>}
@@ -70,7 +70,7 @@ export function PlanUebersicht({
           <ol className="flex flex-col">
             {schritte.map((s, i) => (
               <li key={s.id} className="flex gap-3 border-b border-line py-2.5 last:border-b-0">
-                <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-praxis text-sm font-bold text-ink">
+                <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-ink text-sm font-bold text-white">
                   {i + 1}
                 </span>
                 <span className="min-w-0 pt-0.5 text-[15px] break-words text-ink">{s.text}</span>
