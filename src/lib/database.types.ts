@@ -73,6 +73,8 @@ export type PraxisFortschritt = {
   bewertung_freigegeben_am?: string;
   // 0061 (SR-89, SR-03, SR-90): Einschätzungen (Punkte je Kriterium) und Abschluss.
   einschaetzung?: Partial<Record<PraxisRolle, Record<string, number>>>;
+  // 0063 (SR-89, SR-64): abgelegte Durchläufe nach einem K.-o.
+  durchlaeufe?: { nr: number; ergebnis: "ko"; einschaetzung?: Partial<Record<PraxisRolle, Record<string, number>>>; naechstes_mal?: string | null; am: string }[];
   naechstes_mal?: string | null;
   abgeschlossen_am?: string;
   ergebnis?: PraxisErgebnis;

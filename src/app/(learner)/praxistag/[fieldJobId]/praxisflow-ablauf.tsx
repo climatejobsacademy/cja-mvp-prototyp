@@ -563,19 +563,29 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
             }
             if (art === "uebergabe-selbst") {
               return (
-                <Uebergabe {...k} ton="lime" icon={UserRound} frage="Jetzt bist du dran" hinweis="Schätze zuerst selbst ein, wie gut dir der Auftrag gelungen ist. Danach schätzen eine Person aus deiner Gruppe und deine Trainer:in ein.">
-                  <button type="button" onClick={() => gehe(naechster())} className={cn(GROSS, "bg-ink text-white hover:brightness-110")}>
-                    Ich schätze mich ein <ArrowRight aria-hidden="true" />
-                  </button>
+                <Uebergabe {...k} ton="lime" icon={UserRound} frage="Jetzt bist du dran" hinweis="Schätze selbst ein, wie gut dir der Auftrag gelungen ist. Das ist freiwillig. Danach kann eine Person aus deiner Gruppe einschätzen, zum Schluss deine Trainer:in.">
+                  <div className="flex flex-col gap-3">
+                    <button type="button" onClick={() => gehe(naechster())} className={cn(GROSS, "bg-ink text-white hover:brightness-110")}>
+                      Ich schätze mich ein <ArrowRight aria-hidden="true" />
+                    </button>
+                    <button type="button" onClick={() => gehe("uebergabe-peer")} className={cn(SEKUNDAER, "sm:self-center")}>
+                      Überspringen
+                    </button>
+                  </div>
                 </Uebergabe>
               );
             }
             if (art === "uebergabe-peer") {
               return (
-                <Uebergabe {...k} ton="brand" icon={Users} frage="Gib das Gerät einer Person aus deiner Gruppe" hinweis="Sie schaut sich deine Arbeit an und schätzt sie ein. Danach bekommst du das Gerät zurück.">
-                  <button type="button" onClick={() => gehe(naechster())} className={GROSS}>
-                    Ich bin dran <ArrowRight aria-hidden="true" />
-                  </button>
+                <Uebergabe {...k} ton="brand" icon={Users} frage="Gib das Gerät einer Person aus deiner Gruppe" hinweis="Sie schaut sich deine Arbeit an und schätzt sie ein. Das ist freiwillig. Danach bekommst du das Gerät zurück.">
+                  <div className="flex flex-col gap-3">
+                    <button type="button" onClick={() => gehe(naechster())} className={GROSS}>
+                      Ich bin dran <ArrowRight aria-hidden="true" />
+                    </button>
+                    <button type="button" onClick={() => gehe("uebergabe-trainer")} className="min-h-11 rounded-full px-5 text-[15px] font-semibold text-white underline-offset-4 hover:underline sm:self-center">
+                      Überspringen
+                    </button>
+                  </div>
                 </Uebergabe>
               );
             }
@@ -616,14 +626,17 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
               const peer = e.peer ?? {};
               const trainer = e.trainer ?? {};
               const ko = BOGEN.some((x) => x.ko && trainer[x.id] === 0);
-              const unterschiede = BOGEN.filter((x) => selbst[x.id] !== trainer[x.id] || peer[x.id] !== trainer[x.id]);
+              // Nur abgegebene Einschätzungen vergleichen; Selbst und Peer sind freiwillig.
+              const unterschiede = BOGEN.filter(
+                (x) => (selbst[x.id] !== undefined && selbst[x.id] !== trainer[x.id]) || (peer[x.id] !== undefined && peer[x.id] !== trainer[x.id])
+              );
               return (
                 <Karte
                   {...k}
-                  frage={ko ? "Noch nicht ganz" : "Gut gemacht"}
+                  frage={ko ? TEXTE.bewerten.nacharbeitTitel : "Gut gemacht"}
                   hinweis={
                     ko
-                      ? "Bei einem K.-o.-Kriterium hat deine Trainer:in 0 Punkte gegeben. Dann zählt der Auftrag nicht für deine Kompetenzen. Wie es weitergeht, besprichst du mit deiner Trainer:in."
+                      ? TEXTE.bewerten.nacharbeitText
                       : unterschiede.length === 0
                         ? "Ihr wart euch überall einig."
                         : "Hier wart ihr euch nicht einig. Sprich mit deiner Trainer:in darüber."
@@ -656,10 +669,21 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
                   <button
                     type="button"
                     disabled={laeuft}
-                    onClick={() => aktion(() => abschliessen(daten.fieldJobId, naechstesMal), () => gehe("fertig", "Auftrag abgeschlossen"))}
+                    onClick={() =>
+                      aktion(
+                        () => abschliessen(daten.fieldJobId, naechstesMal),
+                        (ergebnis) => {
+                          if (ergebnis !== "ko") return gehe("fertig", "Auftrag abgeschlossen");
+                          // K.-o.: derselbe Praxisauftrag beginnt neu bei Informieren (SR-89, SR-64).
+                          setWerte({ selbst: {}, peer: {}, trainer: {} });
+                          setNaechstesMal("");
+                          gehe("auftrag", "Neuer Durchlauf");
+                        }
+                      )
+                    }
                     className={GROSS}
                   >
-                    Auftrag abschließen <Check aria-hidden="true" />
+                    {ko ? TEXTE.bewerten.nacharbeitButton : "Auftrag abschließen"} {ko ? <ArrowRight aria-hidden="true" /> : <Check aria-hidden="true" />}
                   </button>
                 </Karte>
               );
@@ -693,6 +717,7 @@ const VERLAUF_TEXT: Record<string, string> = {
   "einschaetzung:trainer": "Trainer-Einschätzung mit Codewort bestätigt",
   "abgeschlossen:angerechnet": "Auftrag abgeschlossen",
   "abgeschlossen:ko": "Auftrag abgeschlossen, K.-o.-Kriterium nicht erfüllt",
+  "ko:informieren": "K.-o.-Kriterium nicht erfüllt, neuer Durchlauf ab Informieren",
   "abgeschlossen:ohne_trainer": "Auftrag abgeschlossen",
 };
 
