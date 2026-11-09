@@ -168,12 +168,12 @@ select is(
   'Wiederholter Abschluss ändert nichts (SR-08)'
 );
 select is(
-  fn_praxis_abschliessen('00000000-0000-0000-0000-000000034082', null),
+  fn_praxis_abschliessen('00000000-0000-0000-0000-000000034082', 'Funktion prüfen'),
   'ko',
   'K.-o.-Kriterium mit 0 in der Trainer-Einschätzung: keine Anrechnung (Rücksprung prüft 036)'
 );
 select is(
-  fn_praxis_abschliessen('00000000-0000-0000-0000-000000034083', null),
+  fn_praxis_abschliessen('00000000-0000-0000-0000-000000034083', 'Sauberer arbeiten'),
   'ohne_trainer',
   'Ohne zugeordnete Trainer:in: keine Verifizierung'
 );

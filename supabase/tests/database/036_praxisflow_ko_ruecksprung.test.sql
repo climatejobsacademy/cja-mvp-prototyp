@@ -10,7 +10,7 @@ begin;
 
 create extension if not exists pgtap schema extensions;
 
-select plan(16);
+select plan(17);
 
 -- ------------------------------------------------------------
 -- Fixtures (als Superuser)
@@ -155,8 +155,13 @@ select is(
   true,
   'Neue Trainer-Einschätzung im zweiten Durchlauf'
 );
+select throws_ok(
+  $$select fn_praxis_abschliessen('00000000-0000-0000-0000-000000036081', '  ')$$,
+  '23514', null,
+  'Ohne Reflexion kein Abschluss (SR-90, 0066)'
+);
 select is(
-  fn_praxis_abschliessen('00000000-0000-0000-0000-000000036081', null),
+  fn_praxis_abschliessen('00000000-0000-0000-0000-000000036081', 'Diesmal vorher gemessen'),
   'angerechnet',
   'Erfolgreicher Wiederholungsdurchlauf wird angerechnet'
 );

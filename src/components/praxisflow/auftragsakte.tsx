@@ -218,7 +218,7 @@ export function Auftragsakte({
             <li key={k.id} className="grid items-center gap-x-2 rounded-zeile bg-subtle px-3 py-2" style={raster}>
               <span className="min-w-0 text-[15px]">
                 {k.titel}
-                {k.ko && <span className="ml-1.5 text-xs font-semibold text-praxis-text">K.-o.</span>}
+                {k.ko && <span className="ml-1.5 text-xs font-semibold text-ink-muted">K.-o.</span>}
               </span>
               {vorher && (
                 <span className="text-center tabular-nums text-ink-muted" aria-label={`Vorher (${vorher.bezug}): ${vorher.werte[k.id] ?? "–"} Punkte`}>
@@ -235,7 +235,7 @@ export function Auftragsakte({
                   >
                     {e.werte[k.id] ?? "–"}
                     {delta && delta !== "±0" && (
-                      <span className={cn("text-xs font-semibold", delta.startsWith("+") ? "text-progress" : "text-praxis-text")}>{delta}</span>
+                      <span className={cn("text-xs font-semibold", delta.startsWith("+") ? "text-progress" : "text-ink-muted")}>{delta}</span>
                     )}
                   </span>
                 );
