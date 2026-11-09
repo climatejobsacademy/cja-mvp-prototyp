@@ -54,7 +54,7 @@ export function CodewortGate({
 
   return (
     <form onSubmit={absenden} className="flex flex-col gap-3 rounded-zeile bg-subtle p-4">
-      <p className="flex items-start gap-3 rounded-xl bg-brand-tint p-3 text-[15px] text-ink">
+      <p className="flex items-start gap-3 rounded-xl bg-white p-3 text-[15px] text-ink">
         {trainer && <PersonAvatar name={trainer.name} fotoUrl={trainer.fotoUrl} className="size-10 shrink-0" />}
         <span className="flex flex-col gap-0.5">
           {trainer && <span className="text-[13px] font-semibold text-ink-muted">{trainer.name} · Trainer:in</span>}
@@ -86,7 +86,7 @@ export function CodewortGate({
       <p id={`${id}-info`} className="text-sm" role={fehler ? "alert" : undefined}>
         {fehler && (
           <span className="flex items-center gap-1.5 text-ink">
-            <CircleAlert className="size-4 text-praxis-text" aria-hidden="true" />
+            <CircleAlert className="size-4 text-destructive" aria-hidden="true" />
             {fehler}
           </span>
         )}

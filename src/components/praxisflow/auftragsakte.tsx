@@ -20,7 +20,7 @@ function Abschnitt({ icon: Icon, titel, children }: { icon: LucideIcon; titel: s
   return (
     <section className="flex flex-col gap-3 border-t border-line pt-5 first:border-t-0 first:pt-0 break-inside-avoid">
       <h3 className={cn(UEBERSCHRIFT, "flex items-center gap-2")}>
-        <Icon className="size-[18px] text-praxis-text" aria-hidden="true" />
+        <Icon className="size-[18px] text-ink-muted" aria-hidden="true" />
         {titel}
       </h3>
       {children}
@@ -171,7 +171,7 @@ export function Auftragsakte({
         {unterSpannung ? (
           <>
             <p className="inline-flex items-center gap-2 text-[15px] text-ink">
-              <UserCheck className="size-4 text-praxis-text" aria-hidden="true" />
+              <UserCheck className="size-4 text-ink-muted" aria-hidden="true" />
               {freigabe
                 ? `Inbetriebnahme freigegeben durch ${auftrag.trainer} am ${zeitAnzeige(freigabe)}`
                 : "Keine Freigabe zur Inbetriebnahme"}
