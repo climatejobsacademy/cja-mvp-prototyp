@@ -91,7 +91,8 @@
     89,
     90,
     91,
-    92
+    92,
+    93
   ],
   "legacyFiles": [
     "supabase/migrations/**"

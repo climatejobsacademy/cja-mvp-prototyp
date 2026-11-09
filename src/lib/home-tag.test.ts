@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 // @ts-expect-error TS5097: .ts-Endung für node:test nötig
-import { getDayState, type TagesAktivitaeten } from "./home-tag.ts";
+import { begruessungText, getDayState, istAbend, istWochenende, type TagesAktivitaeten } from "./home-tag.ts";
 
 const DATUM = "2026-10-09";
 const jetzt = (hhmm: string) => `${DATUM}T${hhmm}:00`;
@@ -88,4 +88,33 @@ test("Mehrere Live-Sessions: die nächste bevorstehende wird gewählt", () => {
   const frueh = { ...live, id: "l0", start: "08:00:00", ende: "09:30:00" };
   const z = getDayState(jetzt("10:00"), tag({ live: [live, frueh] }));
   assert.ok(z.zustand === "A" && z.live.id === "l1");
+});
+
+test("E (SR-93): mehrere Praxisaufträge, Fokus auf den nächsten offenen", () => {
+  const p1 = { ...praxis, id: "p1", fieldJobId: "fj-1", phase: "abgeschlossen" };
+  const p2 = { ...praxis, id: "p2", fieldJobId: "fj-2", phase: "planen" };
+  const p3 = { ...praxis, id: "p3", fieldJobId: "fj-3", phase: "informieren" };
+  const z = getDayState(jetzt("10:00"), tag({ praxis: [p1, p2, p3] }));
+  assert.ok(z.zustand === "E" && z.praxis.id === "p2" && z.alle.length === 3 && !z.alleFertig);
+});
+
+test("E (SR-93): alle Praxisaufträge abgeschlossen", () => {
+  const fertig = { ...praxis, phase: "abgeschlossen" };
+  const z = getDayState(jetzt("16:00"), tag({ praxis: [fertig, { ...fertig, id: "p2", fieldJobId: "fj-2" }] }));
+  assert.ok(z.zustand === "E" && z.alleFertig && z.praxis.id === "p1");
+});
+
+test("Begrüßung nach Tageszeit (SR-93)", () => {
+  assert.equal(begruessungText("Kim", jetzt("10:59")), "Guten Morgen Kim");
+  assert.equal(begruessungText("Kim", jetzt("11:00")), "Hallo Kim");
+  assert.equal(begruessungText("Kim", jetzt("16:59")), "Hallo Kim");
+  assert.equal(begruessungText("", jetzt("17:00")), "Guten Abend");
+  assert.equal(istAbend(jetzt("17:00")), true);
+  assert.equal(istAbend(jetzt("16:59")), false);
+});
+
+test("Wochenende (SR-93)", () => {
+  assert.equal(istWochenende("2026-11-14"), true);
+  assert.equal(istWochenende("2026-11-15"), true);
+  assert.equal(istWochenende("2026-11-16"), false);
 });

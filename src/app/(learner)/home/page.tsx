@@ -1,7 +1,7 @@
-import { heuteInBerlin, jetztInBerlin, montagDerWoche, plusTage } from "@/lib/date";
+import { heuteInBerlin, jetztInBerlin, montagDerWoche, plusTage, tageZwischen } from "@/lib/date";
 import { FachspracheKaestchen } from "@/components/fachsprache/einstieg-kaestchen";
 import { freiText, wochenrueckblick, zaehlText } from "@/lib/home-frei";
-import { getDayState } from "@/lib/home-tag";
+import { begruessungText, getDayState, istAbend, istWochenende } from "@/lib/home-tag";
 import { getKompetenzFortschritt } from "@/lib/queries/competencies";
 import { getEinstiegeJeTag } from "@/lib/queries/fachsprache";
 import { getHeutigeKompetenzen, getNachholLektion } from "@/lib/queries/home";
@@ -18,7 +18,7 @@ import { DeinTag, type StaerktFn } from "./dein-tag";
 import { AlleKompetenzen, FreiKarte, FreiZeilen } from "./freier-tag";
 import { aktivitaeten } from "./home-hilfen";
 import { ModulFortschritt, type RingKompetenz } from "./kompetenz-bereich";
-import type { GestaerkteKompetenz } from "./tages-karten";
+import { FokusFlex, type GestaerkteKompetenz } from "./tages-karten";
 
 // Home (docs/design_handoff_home_v6; SR-73): lädt die Daten und setzt
 // Begrüßung, "Dein Tag" und Kompetenzbereich zusammen. Seit Paket D auf der
@@ -101,7 +101,10 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   const stil = { modul: modul ? { ueberzeile: modul.ueberzeile, name: modul.name } : null };
 
   const vorname = learner.rufname.trim();
-  const begruessung = <Begruessung vorname={vorname} programmName={learner.programmeName} heute={heute} />;
+  const begruessung = (
+    <Begruessung gruss={begruessungText(vorname, jetzt)} programmName={learner.programmeName} heute={heute} />
+  );
+  const abends = istAbend(jetzt);
 
   // SR-79: heute nichts geplant (Zustand F) → Karte "Heute frei" mit
   // Rückblick auf die laufende Woche (Montag bis gestern), zwei Zeilen
@@ -125,6 +128,10 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       getNachholLektion(learner.organisationId, learner.cohortId, learner.enrolmentId, learner.personId, heute, true),
     ]);
     const rueckblick = wochenrueckblick(plan, heute);
+    // SR-93: Am Wochenende zuerst offene Selbstlern-Lektionen der vorangegangenen Woche.
+    const wochenende = istWochenende(heute);
+    const offenAusDerWoche =
+      wochenende && zustand.nachholen && tageZwischen(zustand.nachholen.datum, heute) <= 7 ? zustand.nachholen : null;
     const text = freiText(rueckblick, vorname, heute, naechster?.datum ?? null, !!kohortenStart && kohortenStart < heute);
     return (
       <div data-breit className="flex flex-col gap-9">
@@ -132,7 +139,20 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         {begruessung}
         <div className={cn("grid items-start gap-12", modul && ringe.length > 0 && "min-[960px]:grid-cols-[2fr_1fr]")}>
           <section aria-label="Dein Tag" className="flex min-w-0 flex-col gap-4">
-            <FreiKarte text={text} zaehlung={zaehlText(rueckblick)} tage={rueckblick?.tage ?? []} />
+            {offenAusDerWoche ? (
+              <FokusFlex
+                lektion={{ ...offenAusDerWoche, thema: null, festigt: false }}
+                etikett="Noch offen aus der Woche"
+                stil={stil}
+              />
+            ) : (
+              <FreiKarte
+                text={text}
+                zaehlung={zaehlText(rueckblick)}
+                tage={rueckblick?.tage ?? []}
+                etikett={wochenende ? "Wochenende" : "Heute frei"}
+              />
+            )}
             <FreiZeilen naechster={naechster} offen={aeltesteOffene} heute={heute} />
           </section>
           {modul && ringe.length > 0 && <AlleKompetenzen modul={modul} kompetenzen={ringe} />}
@@ -155,6 +175,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         gestaerkt={heuteRinge.length > 0 ? [] : gestaerkt}
         trainer={trainer}
         stil={stil}
+        abends={abends}
       />
       <FachspracheKaestchen einheiten={fachsprache.get(tag.datum) ?? []} />
       {modul && <ModulFortschritt modul={modul} kompetenzen={ringe} />}

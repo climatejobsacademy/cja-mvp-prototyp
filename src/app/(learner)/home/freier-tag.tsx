@@ -25,11 +25,22 @@ const ZEILE =
  * Karte "Heute frei": Label, Headline, Unterzeile, Zählzeile (nur mit
  * Aktivität), ggf. Wochenreihe (nur Zustand 1 und 2).
  */
-export function FreiKarte({ text, zaehlung, tage }: { text: FreiText; zaehlung: string | null; tage: WochenTag[] }) {
+export function FreiKarte({
+  text,
+  zaehlung,
+  tage,
+  etikett = "Heute frei",
+}: {
+  text: FreiText;
+  zaehlung: string | null;
+  tage: WochenTag[];
+  /** „Wochenende“ am Samstag und Sonntag (SR-93) */
+  etikett?: string;
+}) {
   return (
     <article className="flex flex-col gap-7 rounded-karte bg-anchor-brand px-6 py-7 text-white shadow-anchor-brand md:px-10 md:py-9">
       <div className="flex flex-col gap-3">
-        <span className="self-start rounded-full bg-white/15 px-3 py-[5px] text-xs font-semibold">Heute frei</span>
+        <span className="self-start rounded-full bg-white/15 px-3 py-[5px] text-xs font-semibold">{etikett}</span>
         <h3 className="text-[24px] leading-tight font-bold md:text-[26px]">{text.headline}</h3>
         <p className="text-[17px] text-white/85">{text.unterzeile}</p>
         {zaehlung && <p className="text-sm font-semibold text-white">{zaehlung}</p>}
