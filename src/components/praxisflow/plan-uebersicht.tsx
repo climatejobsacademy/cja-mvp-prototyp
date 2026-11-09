@@ -1,4 +1,4 @@
-import { ListOrdered, Package, Wrench, type LucideIcon } from "lucide-react";
+import { ListOrdered, Package, PencilRuler, Wrench, type LucideIcon } from "lucide-react";
 
 type Eintrag = { id: string; text: string };
 
@@ -14,36 +14,51 @@ function Kasten({ icon: Icon, titel, leerText, children }: { icon: LucideIcon; t
   );
 }
 
-/** Entscheiden: der Plan als reine Lese-Ansicht für die Abnahme durch die Trainer:in. */
+/**
+ * Entscheiden: der Plan als reine Lese-Ansicht für die Abnahme durch die
+ * Trainer:in, alles auf einen Blick in der Reihenfolge Plan (Vorschau der
+ * hochgeladenen Dateien), Material, Werkzeuge, Arbeitsschritte (SR-65).
+ */
 export function PlanUebersicht({
   werkzeuge,
   materialien,
   schritte,
+  plan,
+  mitPlan = false,
 }: {
   werkzeuge: Eintrag[];
   materialien: Eintrag[];
   schritte: Eintrag[];
+  /** Vorschau der hochgeladenen Plan-Dateien; fehlt sie, steht dort ein Hinweis */
+  plan?: React.ReactNode;
+  /** Kasten „Plan“ zeigen (Plan-Freigabe); die Auftragsakte listet Pläne selbst */
+  mitPlan?: boolean;
 }) {
   return (
     <div className="flex flex-col gap-3">
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Kasten icon={Wrench} titel={`Werkzeuge (${werkzeuge.length})`} leerText="Keine Werkzeuge eingetragen.">
-          {werkzeuge.length > 0 && (
-            <ul className="flex flex-wrap gap-1.5">
-              {werkzeuge.map((w) => (
-                <li key={w.id} className="rounded-full bg-white px-3 py-1 text-sm text-ink">
-                  {w.text}
-                </li>
-              ))}
-            </ul>
-          )}
+      {mitPlan && (
+        <Kasten icon={PencilRuler} titel="Plan" leerText="Kein Plan hochgeladen.">
+          {plan}
         </Kasten>
+      )}
+      <div className="grid gap-3 sm:grid-cols-2">
         <Kasten icon={Package} titel={`Materialien (${materialien.length})`} leerText="Keine Materialien eingetragen.">
           {materialien.length > 0 && (
             <ul className="flex flex-wrap gap-1.5">
               {materialien.map((m) => (
                 <li key={m.id} className="rounded-full bg-white px-3 py-1 text-sm text-ink">
                   {m.text}
+                </li>
+              ))}
+            </ul>
+          )}
+        </Kasten>
+        <Kasten icon={Wrench} titel={`Werkzeuge (${werkzeuge.length})`} leerText="Keine Werkzeuge eingetragen.">
+          {werkzeuge.length > 0 && (
+            <ul className="flex flex-wrap gap-1.5">
+              {werkzeuge.map((w) => (
+                <li key={w.id} className="rounded-full bg-white px-3 py-1 text-sm text-ink">
+                  {w.text}
                 </li>
               ))}
             </ul>

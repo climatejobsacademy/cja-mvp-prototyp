@@ -57,7 +57,7 @@ import {
   zurueckZumPlan,
   zuschaltenFreigeben,
 } from "./praxisflow-actions";
-import { DateiUpload, UnterlagenLeiste } from "./praxisflow-dateien";
+import { DateiUpload, DateiVorschau, UnterlagenLeiste } from "./praxisflow-dateien";
 
 // Geführter Praxisflow (SR-64, SR-65, SR-88, SR-89, SR-90): die Ansicht
 // "Jetzt dran" aus dem Prototyp auf `demo`, mit Stand auf dem Server. Jeder
@@ -383,10 +383,13 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
               return (
                 <Uebergabe {...k} ton="praxis" icon={KeyRound} frage="Zeig deinen Plan deiner Trainer:in" hinweis={TEXTE.entscheiden.bestaetigen}>
                   <div className="flex flex-col gap-3">
-                  <PlanUebersicht werkzeuge={f.werkzeuge ?? []} materialien={f.materialien ?? []} schritte={f.schritte ?? []} />
-                  <p className="text-sm text-ink-muted">
-                    {planDateien.length > 0 ? `Plan: ${planDateien.map((x) => x.dateiname).join(", ")}` : "Kein Plan hochgeladen."}
-                  </p>
+                  <PlanUebersicht
+                    mitPlan
+                    plan={planDateien.length > 0 ? <DateiVorschau dateien={planDateien} /> : undefined}
+                    werkzeuge={f.werkzeuge ?? []}
+                    materialien={f.materialien ?? []}
+                    schritte={f.schritte ?? []}
+                  />
                   <CodewortGate
                     id="gate-plan"
                     hinweis={TEXTE.gates.entscheiden}

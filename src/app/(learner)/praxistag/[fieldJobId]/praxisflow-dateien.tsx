@@ -281,3 +281,32 @@ function UnterlagenFenster({ art, dateien }: { art: Art; dateien: PraxisDatei[] 
     </Dialog.Root>
   );
 }
+
+/**
+ * Vorschau direkt auf der Seite, ohne Fenster: für die Plan-Freigabe, damit
+ * die Trainer:in alles auf einen Blick sieht (SR-65). Bilder und PDF werden
+ * angezeigt, andere Formate (z. B. CAD) als Link zum Herunterladen.
+ */
+export function DateiVorschau({ dateien }: { dateien: PraxisDatei[] }) {
+  return (
+    <div className="flex flex-col gap-3">
+      {dateien.map((d) => (
+        <figure key={d.id} className="flex flex-col gap-1.5 rounded-zeile bg-white p-2">
+          {!d.url ? (
+            <p className="p-4 text-center text-sm text-ink-muted">Die Datei lässt sich gerade nicht öffnen. Lade die Seite neu.</p>
+          ) : istBild(d.mimeType) ? (
+            // eslint-disable-next-line @next/next/no-img-element -- signierter Link aus Supabase Storage, kein Bildoptimierer
+            <img src={d.url} alt={d.dateiname} className="mx-auto max-h-[70vh] w-auto max-w-full rounded-sm object-contain" />
+          ) : d.mimeType === "application/pdf" ? (
+            <iframe src={d.url} title={`Vorschau: ${d.dateiname}`} className="h-[70vh] w-full rounded-sm bg-white" />
+          ) : (
+            <a href={d.url} download={d.dateiname} className={cn("m-auto inline-flex min-h-11 items-center gap-2 rounded-full bg-subtle px-5 text-[15px] font-semibold hover:bg-line", FOKUS)}>
+              {d.dateiname} herunterladen
+            </a>
+          )}
+          <figcaption className="truncate px-1 text-xs text-ink-muted">{d.dateiname}</figcaption>
+        </figure>
+      ))}
+    </div>
+  );
+}
