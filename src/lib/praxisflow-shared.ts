@@ -1,4 +1,5 @@
 import type { PraxisDateiArt, PraxisFortschritt, PraxisPhase } from "@/lib/database.types";
+import type { Pruefpunkt } from "@/lib/praxisflow-inhalte";
 
 // Typen des geführten Praxisflows ohne Server-Import, damit Server-Query und
 // Client-Komponente sie gemeinsam nutzen (wie praxistag-shared.ts).
@@ -25,6 +26,8 @@ export type PraxisflowDaten = {
   dateien: PraxisDatei[];
   /** Trainer:in des Praxistags (SR-78), null = nicht zugeordnet */
   trainer: { name: string; fotoUrl: string | null } | null;
+  /** Prüfliste des Auftrags (SR-91): Variante aus der Datenbank, sonst Standard */
+  pruefliste: { spannungsfrei: Pruefpunkt[]; unterSpannung: Pruefpunkt[] };
   /** Nächster offener Praxisauftrag desselben Tages (SR-90), null = keiner */
   naechster: { fieldJobId: string; titel: string } | null;
 };

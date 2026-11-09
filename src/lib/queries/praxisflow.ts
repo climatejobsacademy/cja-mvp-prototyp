@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getMeineTrainer } from "@/lib/queries/trainer";
+import { PRUEFLISTE_STANDARD, type Pruefpunkt } from "@/lib/praxisflow-inhalte";
 import type { PraxisflowDaten } from "@/lib/praxisflow-shared";
 
 // Geführter Praxisflow (SR-64, SR-88, SR-89, SR-90). Liest nur mit der
@@ -15,7 +16,7 @@ export async function getPraxisflow(fieldJobId: string, learnerId: string): Prom
   const supabase = await createClient();
   const { data: job, error: jobFehler } = await supabase
     .from("field_job")
-    .select("id, organisation_id, learner_id, datum, phase, praxisflow, instructor_id, field_job_type_id")
+    .select("id, organisation_id, learner_id, datum, phase, praxisflow, instructor_id, field_job_type_id, pruefprotokoll_id")
     .eq("id", fieldJobId)
     .maybeSingle();
   // Ein Fehler ist nicht dasselbe wie "einfacher Ablauf": nicht stillschweigend
@@ -43,6 +44,28 @@ export async function getPraxisflow(fieldJobId: string, learnerId: string): Prom
   if (pfade.length > 0) {
     const { data } = await supabase.storage.from("praxis-dateien").createSignedUrls(pfade, DATEI_LINK_SEKUNDEN);
     for (const e of data ?? []) if (e.path && e.signedUrl && !e.error) links.set(e.path, e.signedUrl);
+  }
+
+  // Prüfliste der Variante (SR-91); ohne Zuordnung die Standardliste.
+  let pruefliste = PRUEFLISTE_STANDARD;
+  if (job.pruefprotokoll_id) {
+    const { data: punkte, error: punktFehler } = await supabase
+      .from("pruefprotokoll_punkt")
+      .select("kennung, nr, teil, titel, text, hinweis, punkte")
+      .eq("pruefprotokoll_id", job.pruefprotokoll_id)
+      .order("nr", { ascending: true });
+    if (punktFehler) throw new Error("Prüfprotokoll konnte nicht geladen werden");
+    const zu = (p: NonNullable<typeof punkte>[number]): Pruefpunkt => ({
+      id: p.kennung,
+      titel: p.titel,
+      text: p.text ?? "",
+      ...(p.punkte?.length ? { punkte: p.punkte } : {}),
+      ...(p.hinweis ? { hinweis: p.hinweis } : {}),
+    });
+    pruefliste = {
+      spannungsfrei: (punkte ?? []).filter((p) => p.teil === "spannungsfrei").map(zu),
+      unterSpannung: (punkte ?? []).filter((p) => p.teil === "unter_spannung").map(zu),
+    };
   }
 
   const trainer = job.instructor_id ? ((await getMeineTrainer()).get(job.instructor_id) ?? null) : null;
@@ -82,6 +105,7 @@ export async function getPraxisflow(fieldJobId: string, learnerId: string): Prom
       url: links.get(d.storage_pfad) ?? null,
     })),
     trainer: trainer ? { name: trainer.name, fotoUrl: trainer.fotoUrl } : null,
+    pruefliste,
     naechster: offen && offenTyp ? { fieldJobId: offen.id, titel: offenTyp.titel } : null,
   };
 }

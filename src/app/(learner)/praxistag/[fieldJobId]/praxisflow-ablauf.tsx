@@ -32,7 +32,6 @@ import {
   JA_NEIN_BESCHREIBUNGEN,
   NOTEN_BESCHREIBUNGEN,
   PHASEN,
-  PRUEFLISTE_STANDARD,
   TEXTE,
 } from "@/lib/praxisflow-inhalte";
 import {
@@ -83,7 +82,7 @@ const EDITOR: Record<Liste, { icon: LucideIcon; titel: string; einzahl: string; 
 };
 
 
-function alleSchritte(schritte: Eintrag[]): Schritt[] {
+function alleSchritte(schritte: Eintrag[], liste: Pruefliste): Schritt[] {
   const s = (phase: Phase, ids: string[]) => ids.map((id) => ({ id, phase }));
   return [
     ...s("informieren", ["auftrag", "hilfen"]),
@@ -94,12 +93,13 @@ function alleSchritte(schritte: Eintrag[]): Schritt[] {
     ...s("ausfuehren", [
       ...schritte.map((x) => `tun:${x.id}`),
       "start-kontrolle",
-      ...PRUEFLISTE_STANDARD.spannungsfrei.map((p) => `a:${p.id}`),
-      "freigabe",
-      ...PRUEFLISTE_STANDARD.unterSpannung.map((p) => `c:${p.id}`),
+      ...liste.spannungsfrei.map((p) => `a:${p.id}`),
+      // Freigabe zum Zuschalten nur, wenn die Variante Prüfungen unter Spannung hat (SR-91).
+      ...(liste.unterSpannung.length > 0 ? ["freigabe"] : []),
+      ...liste.unterSpannung.map((p) => `c:${p.id}`),
       "protokoll",
     ]),
-    ...s("kontrollieren", ["start-deuten", ...PRUEFPUNKTE.map((p) => `deuten:${p.id}`)]),
+    ...s("kontrollieren", ["start-deuten", ...allePunkte(liste).map((p) => `deuten:${p.id}`)]),
     ...s("bewerten", [
       "uebergabe-selbst",
       ...BOGEN.map((k) => `selbst:${k.id}`),
@@ -120,6 +120,7 @@ function startPosition(d: PraxisflowDaten): string {
   const f = d.fortschritt;
   const erledigt = new Set((f.erledigt ?? []).map((e) => e.id));
   const kontrolle = new Set((f.kontrolle ?? []).map((e) => e.id));
+  const liste = d.pruefliste;
   switch (d.phase) {
     case "informieren":
       return d.dateien.some((x) => x.art === "auftrag") ? "hilfen" : "auftrag";
@@ -131,16 +132,16 @@ function startPosition(d: PraxisflowDaten): string {
       const offen = (f.schritte ?? []).find((x) => !erledigt.has(x.id));
       if (offen) return `tun:${offen.id}`;
       if (kontrolle.size === 0) return "start-kontrolle";
-      const a = PRUEFLISTE_STANDARD.spannungsfrei.find((p) => !kontrolle.has(p.id));
+      const a = liste.spannungsfrei.find((p) => !kontrolle.has(p.id));
       if (a) return `a:${a.id}`;
-      if (!f.zuschalten_freigegeben_am) return "freigabe";
-      const c = PRUEFLISTE_STANDARD.unterSpannung.find((p) => !kontrolle.has(p.id));
+      if (liste.unterSpannung.length > 0 && !f.zuschalten_freigegeben_am) return "freigabe";
+      const c = liste.unterSpannung.find((p) => !kontrolle.has(p.id));
       return c ? `c:${c.id}` : "protokoll";
     }
     case "kontrollieren": {
       const gedeutet = new Set((f.deutungen ?? []).map((d) => d.id));
       if (gedeutet.size === 0) return "start-deuten";
-      const offen = PRUEFPUNKTE.find((p) => !gedeutet.has(p.id)) ?? PRUEFPUNKTE.at(-1);
+      const offen = allePunkte(liste).find((p) => !gedeutet.has(p.id)) ?? allePunkte(liste).at(-1);
       return `deuten:${offen?.id}`;
     }
     case "bewerten": {
@@ -155,7 +156,8 @@ function startPosition(d: PraxisflowDaten): string {
   }
 }
 
-const PRUEFPUNKTE = [...PRUEFLISTE_STANDARD.spannungsfrei, ...PRUEFLISTE_STANDARD.unterSpannung];
+type Pruefliste = PraxisflowDaten["pruefliste"];
+const allePunkte = (liste: Pruefliste) => [...liste.spannungsfrei, ...liste.unterSpannung];
 const phasenName = (id: Phase) => PHASEN.find((p) => p.id === id)?.name ?? "";
 const GROSS = cn(PRIMAER, "min-h-14 w-full text-[17px] sm:w-full");
 
@@ -221,7 +223,8 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
     return () => clearTimeout(t);
   }, [meldung]);
 
-  const schritte = alleSchritte(f.schritte ?? []);
+  const PUNKTE = allePunkte(daten.pruefliste);
+  const schritte = alleSchritte(f.schritte ?? [], daten.pruefliste);
   const index = Math.max(0, schritte.findIndex((s) => s.id === position));
   const aktuell = schritte[index];
   const inPhase = schritte.filter((s) => s.phase === aktuell.phase && s.id !== "fertig");
@@ -513,7 +516,7 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
               );
             }
             if (art === "a" || art === "c") {
-              const p = (art === "a" ? PRUEFLISTE_STANDARD.spannungsfrei : PRUEFLISTE_STANDARD.unterSpannung).find((x) => x.id === id);
+              const p = (art === "a" ? daten.pruefliste.spannungsfrei : daten.pruefliste.unterSpannung).find((x) => x.id === id);
               const schonErledigt = (f.kontrolle ?? []).some((e) => e.id === id);
               return (
                 <Karte {...k} frage={p?.titel ?? "Prüfung"} hinweis={p?.text}>
@@ -585,16 +588,16 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
               );
             }
             if (art === "deuten") {
-              const p = PRUEFPUNKTE.find((x) => x.id === id);
-              const nr = PRUEFPUNKTE.findIndex((x) => x.id === id);
-              const letzter = nr === PRUEFPUNKTE.length - 1;
+              const p = PUNKTE.find((x) => x.id === id);
+              const nr = PUNKTE.findIndex((x) => x.id === id);
+              const letzter = nr === PUNKTE.length - 1;
               const text = deutungen[id] ?? "";
               return (
                 <Karte
                   {...k}
                   frage={p?.titel ?? "Prüfpunkt"}
                   hinweis={TEXTE.deuten.frage}
-                  zurueck={nr > 0 ? () => gehe(`deuten:${PRUEFPUNKTE[nr - 1].id}`) : undefined}
+                  zurueck={nr > 0 ? () => gehe(`deuten:${PUNKTE[nr - 1].id}`) : undefined}
                 >
                   <label className="flex flex-col gap-2">
                     <span className="sr-only">Deine Deutung zu {p?.titel}</span>
@@ -721,7 +724,7 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
                       <section aria-labelledby="deutungen-trainer" className="flex flex-col gap-2 rounded-zeile bg-white p-4">
                         <h3 id="deutungen-trainer" className="text-base font-bold text-ink">So deutet die lernende Person ihre Messwerte</h3>
                         <dl className="flex flex-col gap-2">
-                          {PRUEFPUNKTE.map((p) => {
+                          {PUNKTE.map((p) => {
                             const d = (f.deutungen ?? []).find((x) => x.id === p.id);
                             return (
                               <div key={p.id} className="flex flex-col gap-0.5">
@@ -902,6 +905,7 @@ function Fertig({ daten, zurueck }: { daten: PraxisflowDaten; zurueck: { href: s
   const kontrolle = new Set((f.kontrolle ?? []).map((e) => e.id));
   const namen = (art: string) => daten.dateien.filter((d) => d.art === art).map((d) => d.dateiname);
   const e = f.einschaetzung ?? {};
+  const PUNKTE = allePunkte(daten.pruefliste);
   // Letzter K.-o.-Durchlauf zum Vergleich (SR-90).
   const letzterKo = (f.durchlaeufe ?? []).at(-1);
   const vorher = letzterKo?.einschaetzung?.trainer
@@ -939,11 +943,11 @@ function Fertig({ daten, zurueck }: { daten: PraxisflowDaten; zurueck: { href: s
         schritte={f.schritte ?? []}
         ausgefuehrt={(f.schritte ?? []).map((s) => ({ titel: s.text, erledigt: (f.erledigt ?? []).some((e) => e.id === s.id) }))}
         planDateien={namen("plan")}
-        pruefungenOhneSpannung={PRUEFLISTE_STANDARD.spannungsfrei.map((p) => ({ titel: p.titel, erledigt: kontrolle.has(p.id) }))}
-        unterSpannung
-        pruefungenUnterSpannung={PRUEFLISTE_STANDARD.unterSpannung.map((p) => ({ titel: p.titel, erledigt: kontrolle.has(p.id) }))}
+        pruefungenOhneSpannung={daten.pruefliste.spannungsfrei.map((p) => ({ titel: p.titel, erledigt: kontrolle.has(p.id) }))}
+        unterSpannung={daten.pruefliste.unterSpannung.length > 0}
+        pruefungenUnterSpannung={daten.pruefliste.unterSpannung.map((p) => ({ titel: p.titel, erledigt: kontrolle.has(p.id) }))}
         protokollDateien={namen("protokoll")}
-        deutungen={PRUEFPUNKTE.map((p) => ({ titel: p.titel, text: (f.deutungen ?? []).find((d) => d.id === p.id)?.text ?? null }))}
+        deutungen={PUNKTE.map((p) => ({ titel: p.titel, text: (f.deutungen ?? []).find((d) => d.id === p.id)?.text ?? null }))}
         freigabe={ZEIT(f.zuschalten_freigegeben_am)}
         kriterien={BOGEN}
         einschaetzungen={[
