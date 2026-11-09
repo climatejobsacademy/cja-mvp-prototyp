@@ -42,6 +42,7 @@ import {
   eintragVerschieben,
   type Eintrag,
 } from "@/lib/praxisflow-liste";
+import { ereignisseMelden } from "@/lib/praxisflow-ereignis";
 import type { AktionErgebnis, PraxisflowDaten } from "@/lib/praxisflow-shared";
 import { cn } from "@/lib/utils";
 
@@ -173,6 +174,20 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
   const [werte, setWerte] = useState<Record<PraxisRolle, Record<string, number>>>({ selbst: {}, peer: {}, trainer: {} });
   const [naechstesMal, setNaechstesMal] = useState("");
 
+  // Ereignisse (SR-92): erster Schritt beim Öffnen, Schritt beendet beim
+  // Verlassen der Seite; Wechsel meldet gehe(). Nur Kennungen, keine Inhalte.
+  const positionRef = useRef(position);
+  useEffect(() => {
+    const abbruch = new AbortController();
+    ereignisseMelden(daten.fieldJobId, [{ art: "schritt_geoeffnet", schritt: positionRef.current }], abbruch.signal);
+    const verlassen = () => ereignisseMelden(daten.fieldJobId, [{ art: "schritt_beendet", schritt: positionRef.current }]);
+    window.addEventListener("pagehide", verlassen);
+    return () => {
+      abbruch.abort();
+      window.removeEventListener("pagehide", verlassen);
+    };
+  }, [daten.fieldJobId]);
+
   // Beim Schrittwechsel den Fokus auf die neue Frage, damit Screenreader sie ansagen.
   const erstePosition = useRef(position);
   useEffect(() => {
@@ -196,6 +211,13 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
   const offen = daten.phase !== "abgeschlossen";
 
   function gehe(id: string, phasenMeldung?: string) {
+    if (id !== positionRef.current) {
+      ereignisseMelden(daten.fieldJobId, [
+        { art: "schritt_beendet", schritt: positionRef.current },
+        { art: "schritt_geoeffnet", schritt: id },
+      ]);
+      positionRef.current = id;
+    }
     vibrieren();
     if (phasenMeldung) setMeldung(phasenMeldung);
     setFehler(null);
@@ -271,7 +293,10 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
         </p>
       )}
       <div className="flex flex-col gap-4 md:flex-row md:items-start">
-        <UnterlagenLeiste dateien={daten.dateien} />
+        <UnterlagenLeiste
+          dateien={daten.dateien}
+          onGeoeffnet={(art) => ereignisseMelden(daten.fieldJobId, [{ art: art === "hilfe" ? "hilfe_geoeffnet" : "vorschau_geoeffnet", schritt: art }])}
+        />
         <div key={aktuell.id} className="min-w-0 flex-1 md:order-first">
           {(() => {
             const [art, id] = aktuell.id.includes(":") ? aktuell.id.split(":") : [aktuell.id, ""];
