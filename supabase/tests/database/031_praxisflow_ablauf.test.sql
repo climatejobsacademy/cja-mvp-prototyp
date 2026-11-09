@@ -8,7 +8,7 @@ begin;
 
 create extension if not exists pgtap schema extensions;
 
-select plan(29);
+select plan(30);
 
 -- ------------------------------------------------------------
 -- Fixtures (als Superuser)
@@ -148,6 +148,16 @@ select is(
   'entscheiden',
   'erneut Planen -> Entscheiden'
 );
+select throws_ok(
+  $$select fn_praxis_weiter('00000000-0000-0000-0000-000000031081', 'entscheiden')$$,
+  '23514', null,
+  'Ohne Plan-Freigabe der Trainer:in geht es nicht zu Ausführen (0062)'
+);
+-- Die Plan-Freigabe selbst (Codewort) prüft 035; hier nur der Stand danach.
+reset role;
+update field_job set praxisflow = praxisflow || jsonb_build_object('plan_freigegeben_am', now())
+where id = '00000000-0000-0000-0000-000000031081';
+set local role authenticated;
 select is(
   fn_praxis_weiter('00000000-0000-0000-0000-000000031081', 'entscheiden'),
   'ausfuehren',

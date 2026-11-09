@@ -52,6 +52,11 @@ export async function kontrolleAbhaken(fieldJobId: string, punktId: string) {
   return aufrufen(fieldJobId, (s) => s.rpc("fn_praxis_kontrolle_abhaken", { p_job: fieldJobId, p_punkt: punktId }));
 }
 
+/** Plan-Freigabe der Trainer:in in Entscheiden (SR-65); ok mit wert false = Codewort falsch. */
+export async function planFreigeben(fieldJobId: string, codewort: string) {
+  return aufrufen<boolean>(fieldJobId, (s) => s.rpc("fn_praxis_gate", { p_job: fieldJobId, p_gate: "plan", p_codewort: codewort }));
+}
+
 /** Freigabe zum Zuschalten; ok mit wert false = Codewort falsch. */
 export async function zuschaltenFreigeben(fieldJobId: string, codewort: string) {
   return aufrufen<boolean>(fieldJobId, (s) => s.rpc("fn_praxis_gate", { p_job: fieldJobId, p_gate: "zuschalten", p_codewort: codewort }));

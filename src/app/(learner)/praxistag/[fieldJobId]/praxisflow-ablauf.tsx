@@ -36,6 +36,7 @@ import {
 } from "@/lib/praxisflow-inhalte";
 import {
   eintraegeAnhaengen,
+  eintragAnPosition,
   eintragBearbeiten,
   eintragLoeschen,
   eintragVerschieben,
@@ -49,13 +50,14 @@ import {
   einschaetzen,
   kontrolleAbhaken,
   phaseWeiter,
+  planFreigeben,
   planSpeichern,
   schrittAbhaken,
   trainerEinschaetzen,
   zurueckZumPlan,
   zuschaltenFreigeben,
 } from "./praxisflow-actions";
-import { DateiUpload, UnterlagenLeiste } from "./praxisflow-dateien";
+import { DateiUpload, DateiVorschau, UnterlagenLeiste } from "./praxisflow-dateien";
 
 // Geführter Praxisflow (SR-64, SR-65, SR-88, SR-89, SR-90): die Ansicht
 // "Jetzt dran" aus dem Prototyp auf `demo`, mit Stand auf dem Server. Jeder
@@ -82,7 +84,8 @@ function alleSchritte(schritte: Eintrag[]): Schritt[] {
   const s = (phase: Phase, ids: string[]) => ids.map((id) => ({ id, phase }));
   return [
     ...s("informieren", ["auftrag", "hilfen"]),
-    ...s("planen", ["werkzeuge", "materialien", "schritte", "plaene"]),
+    // Reihenfolge wie in der Werkstatt: der Plan bestimmt Material und Werkzeug (Feedback 09.11.2026).
+    ...s("planen", ["plaene", "materialien", "werkzeuge", "schritte"]),
     ...s("entscheiden", ["rueckblick"]),
     ...s("ausfuehren", schritte.map((x) => `tun:${x.id}`)),
     ...s("kontrollieren", [
@@ -115,7 +118,7 @@ function startPosition(d: PraxisflowDaten): string {
     case "informieren":
       return d.dateien.some((x) => x.art === "auftrag") ? "hilfen" : "auftrag";
     case "planen":
-      return "werkzeuge";
+      return "plaene";
     case "entscheiden":
       return "rueckblick";
     case "ausfuehren": {
@@ -294,7 +297,7 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
                     <span className="text-sm text-ink-muted">Lade es hier dazu, zum Beispiel das Handbuch eines Schalters. Das ist freiwillig.</span>
                     <DateiUpload id="upload-hilfe" art="hilfe" fieldJobId={daten.fieldJobId} learnerId={daten.learnerId} organisationId={daten.organisationId} dateien={daten.dateien} offen={offen} />
                   </div>
-                  <button type="button" disabled={laeuft} onClick={() => phaseAbschliessen("informieren", "werkzeuge")} className={GROSS}>
+                  <button type="button" disabled={laeuft} onClick={() => phaseAbschliessen("informieren", "plaene")} className={GROSS}>
                     Weiter zum Planen <ArrowRight aria-hidden="true" />
                   </button>
                 </Karte>
@@ -311,14 +314,17 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
               };
               const hinweise: Record<Liste, string> = {
                 werkzeuge: "Schreib jedes Werkzeug in eine Zeile.",
-                materialien: "Das wird deine Materialliste für das Lager.",
+                materialien: "Schau in deinen Plan. Das wird deine Materialliste für das Lager.",
                 schritte: "Bring die Schritte in die Reihenfolge, in der du arbeitest.",
               };
               const aendern = (fn: (l: Eintrag[]) => Eintrag[]) => setListen((l) => ({ ...l, [name]: fn(l[name]) }));
               const gesperrt = name === "schritte" && listen.schritte.length === 0;
-              const zurueckZu = name === "werkzeuge" ? undefined : name === "materialien" ? "werkzeuge" : "materialien";
+              const zurueckZu = name === "materialien" ? "plaene" : name === "werkzeuge" ? "materialien" : "werkzeuge";
+              // Der letzte Teil von Planen speichert den Plan und schließt die Phase ab.
+              const weiter = () =>
+                name === "schritte" ? planSichern(() => phaseAbschliessen("planen", "rueckblick")) : planSichern(() => gehe(naechster()));
               return (
-                <Karte {...k} frage={fragen[name]} hinweis={hinweise[name]} zurueck={zurueckZu ? () => gehe(zurueckZu) : undefined}>
+                <Karte {...k} frage={fragen[name]} hinweis={hinweise[name]} zurueck={() => gehe(zurueckZu)}>
                   <ListenEditor
                     id={name}
                     {...EDITOR[name]}
@@ -327,10 +333,11 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
                     onBearbeiten={(eid, t) => aendern((l) => eintragBearbeiten(l, eid, t))}
                     onLoeschen={(eid) => aendern((l) => eintragLoeschen(l, eid))}
                     onVerschieben={name === "schritte" ? (eid, r) => aendern((l) => eintragVerschieben(l, eid, r)) : undefined}
+                    onAnordnen={name === "schritte" ? (eid, ziel) => aendern((l) => eintragAnPosition(l, eid, ziel)) : undefined}
                     eingabeTexte={TEXTE.eingabe}
                   />
-                  <button type="button" disabled={gesperrt || laeuft} onClick={() => planSichern(() => gehe(naechster()))} className={GROSS}>
-                    Weiter <ArrowRight aria-hidden="true" />
+                  <button type="button" disabled={gesperrt || laeuft} onClick={weiter} className={GROSS}>
+                    {name === "schritte" ? "Plan fertig" : "Weiter"} <ArrowRight aria-hidden="true" />
                   </button>
                   {gesperrt && <p className="text-center text-sm text-ink-muted">{TEXTE.planen.gesperrt}</p>}
                 </Karte>
@@ -339,9 +346,9 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
             if (art === "plaene") {
               const hat = daten.dateien.some((x) => x.art === "plan");
               return (
-                <Karte {...k} frage="Hast du einen Plan gezeichnet?" hinweis="Auf Papier oder mit einem Programm? Dann mach ein Foto oder lade die Datei hoch." zurueck={() => gehe("schritte")}>
+                <Karte {...k} frage="Zeichne deinen Plan" hinweis="Auf Papier oder mit einem Programm. Mach ein Foto oder lade die Datei hoch. Aus dem Plan ergibt sich dein Material.">
                   <DateiUpload id="upload-plan" art="plan" fieldJobId={daten.fieldJobId} learnerId={daten.learnerId} organisationId={daten.organisationId} dateien={daten.dateien} offen={offen} />
-                  <button type="button" disabled={laeuft} onClick={() => phaseAbschliessen("planen", "rueckblick")} className={GROSS}>
+                  <button type="button" disabled={laeuft} onClick={() => gehe("materialien")} className={GROSS}>
                     {hat ? "Weiter" : "Ohne Plan weiter"} <ArrowRight aria-hidden="true" />
                   </button>
                 </Karte>
@@ -351,22 +358,50 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
             // ----- Entscheiden
             if (art === "rueckblick") {
               const erster = (f.schritte ?? [])[0];
+              const planDateien = daten.dateien.filter((x) => x.art === "plan");
+              const planAendern = (
+                <button
+                  type="button"
+                  disabled={laeuft}
+                  onClick={() => aktion(() => zurueckZumPlan(daten.fieldJobId), () => gehe("plaene"))}
+                  className={cn(SEKUNDAER, "sm:self-center")}
+                >
+                  Plan ändern
+                </button>
+              );
+              if (f.plan_freigegeben_am) {
+                return (
+                  <Moment
+                    icon={ShieldCheck}
+                    titel="Plan freigegeben"
+                    text="Deine Trainer:in hat deinen Plan abgenommen. Du kannst anfangen."
+                    knopf={TEXTE.entscheiden.button}
+                    onWeiter={() => erster && phaseAbschliessen("entscheiden", `tun:${erster.id}`)}
+                  />
+                );
+              }
               return (
-                <Karte {...k} frage="Hast du alles?" hinweis="Schau dir deinen Plan an. Wenn alles passt, entscheidest du selbst, dass du anfangen kannst.">
-                  <PlanUebersicht werkzeuge={f.werkzeuge ?? []} materialien={f.materialien ?? []} schritte={f.schritte ?? []} />
-                  <p className="text-center text-sm text-ink-muted">{TEXTE.entscheiden.bestaetigen}</p>
-                  <button type="button" disabled={laeuft || !erster} onClick={() => phaseAbschliessen("entscheiden", erster ? `tun:${erster.id}` : "rueckblick")} className={GROSS}>
-                    {TEXTE.entscheiden.button} <ArrowRight aria-hidden="true" />
-                  </button>
-                  <button
-                    type="button"
-                    disabled={laeuft}
-                    onClick={() => aktion(() => zurueckZumPlan(daten.fieldJobId), () => gehe("werkzeuge"))}
-                    className={cn(SEKUNDAER, "sm:self-center")}
-                  >
-                    Plan ändern
-                  </button>
-                </Karte>
+                <Uebergabe {...k} ton="praxis" icon={KeyRound} frage="Zeig deinen Plan deiner Trainer:in" hinweis={TEXTE.entscheiden.bestaetigen}>
+                  <div className="flex flex-col gap-3">
+                  <PlanUebersicht
+                    mitPlan
+                    plan={planDateien.length > 0 ? <DateiVorschau dateien={planDateien} /> : undefined}
+                    werkzeuge={f.werkzeuge ?? []}
+                    materialien={f.materialien ?? []}
+                    schritte={f.schritte ?? []}
+                  />
+                  <CodewortGate
+                    id="gate-plan"
+                    hinweis={TEXTE.gates.entscheiden}
+                    label={TEXTE.codewort.label}
+                    buttonText="Plan freigeben"
+                    trainer={daten.trainer}
+                    pruefen={async (e) => gateErgebnis(await planFreigeben(daten.fieldJobId, e))}
+                    onFreigabe={() => vibrieren()}
+                  />
+                  {planAendern}
+                  </div>
+                </Uebergabe>
               );
             }
 
@@ -647,10 +682,11 @@ const ZEIT = (iso: string | undefined | null) => (iso ? jetztInBerlin(new Date(i
 const VERLAUF_TEXT: Record<string, string> = {
   "phase:planen": "Auftrag angenommen, Informieren erledigt",
   "phase:entscheiden": "Plan fertig",
-  "phase:ausfuehren": "Plan bestätigt, Ausführen begonnen",
+  "phase:ausfuehren": "Ausführen begonnen",
   "phase:kontrollieren": "Aufbau fertig",
   "phase:bewerten": "Kontrolle und Prüfprotokoll fertig",
   "zurueck:planen": "Zurück zum Plan",
+  "gate:plan": "Plan freigegeben (Codewort der Trainer:in)",
   "gate:zuschalten": "Inbetriebnahme freigegeben (Codewort der Trainer:in)",
   "einschaetzung:selbst": "Selbsteinschätzung abgegeben",
   "einschaetzung:peer": "Peer-Einschätzung abgegeben",

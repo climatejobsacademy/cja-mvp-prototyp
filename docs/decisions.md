@@ -452,6 +452,14 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Status:** gültig
 - **Belegt:** Migrationen `0060`, `0061`; RLS-Tests `033`, `034`
 
+### 2026-11-09 – Praxisflow nach dem Feedback der Trainer:innen
+
+- **Entscheidung:** (Produkt-Lead) (1) Phasen nach Variante B: Informieren, Planen, Entscheiden, Ausführen (mit Messen), Kontrollieren (Messwerte deuten), Bewerten (Einschätzung). (2) Planen in der Reihenfolge Plan, Material und Werkzeuge, Arbeitsschritte; Arbeitsschritte lassen sich umsortieren. (3) Drei Codewort-Freigaben: Plan-Freigabe am Ende von Entscheiden, Zuschalten der Spannung, Trainer-Einschätzung; das Codewort wird jedes Mal neu eingegeben. Wer den Plan nach der Freigabe noch einmal ändert, braucht eine neue Freigabe. (4) Selbst- und Peer-Einschätzung sind optional, die Trainer-Einschätzung ist Pflicht. (5) Nur ein K.-o. in der Trainer-Einschätzung führt denselben Praxisauftrag zurück zu Informieren; Dateien und Verlauf bleiben. (6) Interaktionen im Praxisflow werden als Ereignisse ohne Inhalte gespeichert und täglich nur aggregiert ausgewertet. (7) Ein Praxisauftrag ist die Bearbeitung einer Praxisaufgabe durch eine lernende Person; an einem Praxistag können mehrere liegen.
+- **Begründung:** Feedback-Gespräch mit den Trainer:innen am 09.11.2026 (Zusammenfassung in Notion, „Feedback zum Praxisflow“): Der Plan bestimmt das Material; ein Fehler im Plan soll vor dem Aufbau auffallen; Messen und Deuten getrennt prüfen das Verständnis.
+- **Folgen:** Ersetzt im Eintrag „Codewort, Einschätzung und automatische Verifizierung“ vom 06.11.2026 die zwei Gates durch drei und die Pflicht zu drei Einschätzungen. Technisch: Plan-Freigabe in Migration `0062`.
+- **Status:** gültig
+- **Belegt:** SR-64, SR-65, SR-89, SR-91, SR-92
+
 ## Offene technische Schulden
 
 Diese Punkte sind keine Entscheidungen, sondern bekannte Lücken; was daraus wird, steht in Asana.

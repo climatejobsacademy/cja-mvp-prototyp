@@ -65,6 +65,7 @@ export type PraxisFortschritt = {
   schritte?: PraxisEintrag[];
   erledigt?: { id: string; am: string }[];
   plan_bestaetigt_am?: string;
+  plan_freigegeben_am?: string;
   verlauf?: { zeit: string; ereignis: string }[];
   // 0060 (SR-65): abgehakte Prüfpunkte und Freigaben der Trainer:in.
   kontrolle?: { id: string; am: string }[];
@@ -78,7 +79,7 @@ export type PraxisFortschritt = {
 };
 export type PraxisRolle = "selbst" | "peer" | "trainer";
 export type PraxisErgebnis = "angerechnet" | "ko" | "ohne_trainer";
-export type PraxisGate = "zuschalten" | "bewertung";
+export type PraxisGate = "plan" | "zuschalten" | "bewertung";
 export type FieldJobErgebnis = "erledigt" | "problem";
 export type FieldCapturePhase = "start" | "abschluss";
 export type UnitProgressStatus = "offen" | "in Bearbeitung" | "abgeschlossen";
@@ -1164,7 +1165,7 @@ export type Database = {
       fn_praxis_datei_offen: { Args: { p_job: string }; Returns: boolean };
       // 0060 (SR-65): Prüfpunkte abhaken, Trainer-Gate mit Codewort, Pflege durch AfCJ admin.
       fn_praxis_kontrolle_abhaken: { Args: { p_job: string; p_punkt: string }; Returns: PraxisFortschritt };
-      fn_praxis_gate: { Args: { p_job: string; p_gate: "zuschalten"; p_codewort: string }; Returns: boolean };
+      fn_praxis_gate: { Args: { p_job: string; p_gate: "plan" | "zuschalten"; p_codewort: string }; Returns: boolean };
       fn_praxis_codewort_setzen: { Args: { p_cohort: string; p_codewort: string }; Returns: undefined };
       fn_praxis_codewort_entsperren: { Args: { p_job: string; p_gate: PraxisGate }; Returns: undefined };
       // 0061 (SR-89, SR-03): Einschätzung speichern, Abschluss mit automatischer Verifizierung.
