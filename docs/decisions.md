@@ -468,6 +468,14 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Status:** gültig
 - **Belegt:** SR-90, `design-specifications.md` (Abschnitt 1, Farbregeln im Praxis-Flow)
 
+### 2026-11-09 – Praxisflow: einfacher Ablauf entfällt
+
+- **Entscheidung:** (Produkt-Lead) Alle Praxisaufgaben laufen im geführten Ablauf; der frühere einfache Praxistag-Ablauf wird aus dem Code entfernt. Aufträge, die vorher im einfachen Ablauf bestätigt wurden, laufen ebenfalls im geführten Ablauf (keine Sonderanzeige). In Texten für Lernende heißt der einzelne Auftrag „Praxisauftrag“, der Tag „Praxistag“.
+- **Begründung:** Alle Aufgaben haben dieselben sechs Phasen; ein zweiter Ablauf wäre nur Pflegeaufwand. Auf Production war vor dem Start der Praxiswochen ein Auftrag im alten Ablauf bestätigt.
+- **Folgen:** Migration `0068` setzt alle Aufgabentypen auf `gefuehrt` (Spalte bleibt technisch); SR-64 am 09.11.2026 in Notion angepasst. Ersetzt den Punkt „Schalter erst am Ende der Woche entfernen“ aus dem Gespräch vom 09.11.2026.
+- **Status:** gültig
+- **Belegt:** SR-64, Migration `0068`
+
 ## Offene technische Schulden
 
 Diese Punkte sind keine Entscheidungen, sondern bekannte Lücken; was daraus wird, steht in Asana.

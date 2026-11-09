@@ -301,7 +301,7 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
         <Link href={zurueck.href} className={cn("inline-flex w-fit items-center gap-1 rounded-sm text-sm text-ink-muted hover:text-ink", FOKUS)}>
           <ArrowLeft className="size-4" aria-hidden="true" /> {zurueck.label}
         </Link>
-        <span className="text-sm text-ink-muted">Praxistag · {daten.titel}</span>
+        <span className="text-sm text-ink-muted">Praxisauftrag · {daten.titel}</span>
       </div>
       <div className="flex flex-col gap-3 rounded-karte bg-card px-4 pt-4 pb-3 text-ink shadow-card md:px-6 print:hidden">
         <PhasenAnzeige phasen={PHASEN} aktuell={phasenIndex} hell />

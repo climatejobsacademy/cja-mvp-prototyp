@@ -11,7 +11,7 @@ import type { PraxisflowDaten } from "@/lib/praxisflow-shared";
 // Eine Stunde wie die Profilfotos; danach Seite neu laden (Hinweis im Fenster).
 const DATEI_LINK_SEKUNDEN = 3600;
 
-/** Praxistag im geführten Ablauf; null, wenn nicht eigener Praxistag oder einfacher Ablauf. */
+/** Praxisauftrag im geführten Ablauf; null, wenn nicht eigener Praxisauftrag (oder Altwert einfach, seit 0068 nicht mehr vergeben). */
 export async function getPraxisflow(fieldJobId: string, learnerId: string): Promise<PraxisflowDaten | null> {
   const supabase = await createClient();
   const { data: job, error: jobFehler } = await supabase
@@ -21,7 +21,7 @@ export async function getPraxisflow(fieldJobId: string, learnerId: string): Prom
     .maybeSingle();
   // Ein Fehler ist nicht dasselbe wie "einfacher Ablauf": nicht stillschweigend
   // in den alten Praxistag fallen (SR-64), sondern die Fehlerseite zeigen.
-  if (jobFehler) throw new Error("Praxistag konnte nicht geladen werden");
+  if (jobFehler) throw new Error("Praxisauftrag konnte nicht geladen werden");
   if (!job || job.learner_id !== learnerId) return null;
 
   const { data: typ, error: typFehler } = await supabase

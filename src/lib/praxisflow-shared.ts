@@ -2,7 +2,7 @@ import type { PraxisDateiArt, PraxisFortschritt, PraxisPhase } from "@/lib/datab
 import type { Pruefpunkt } from "@/lib/praxisflow-inhalte";
 
 // Typen des geführten Praxisflows ohne Server-Import, damit Server-Query und
-// Client-Komponente sie gemeinsam nutzen (wie praxistag-shared.ts).
+// Client-Komponente sie gemeinsam nutzen.
 
 export type PraxisDatei = {
   id: string;
