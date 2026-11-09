@@ -54,6 +54,9 @@ insert into field_job (id, organisation_id, datum, field_job_type_id, learner_id
    '00000000-0000-0000-0000-000000035041', '00000000-0000-0000-0000-000000035001', 'entscheiden',
    '{"schritte": [{"id": "s1", "text": "Leitung abmanteln"}, {"id": "s2", "text": "Klemmen setzen"}]}'::jsonb);
 
+insert into schedule_entry (organisation_id, datum, art, reihenfolge, cohort_id, enrolment_id, live_session_id, field_job_id) values
+  ('00000000-0000-0000-0000-000000035011', '2026-11-16', 'feld', 1, null, '00000000-0000-0000-0000-000000035061', null, '00000000-0000-0000-0000-000000035081');
+
 set local role authenticated;
 
 -- ------------------------------------------------------------
