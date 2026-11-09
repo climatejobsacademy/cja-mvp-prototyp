@@ -18,11 +18,12 @@ export function TestzeitHinweis({ heute, jetzt }: { heute: string; jetzt: string
 }
 
 export function Begruessung({
-  vorname,
+  gruss,
   programmName,
   heute,
 }: {
-  vorname: string;
+  /** „Guten Morgen Kim“ / „Hallo Kim“ / „Guten Abend Kim“ (SR-93, begruessungText) */
+  gruss: string;
   /** Home zeigt, in welchem Programm man ist (Anna 2026-10-12). */
   programmName: string;
   heute: string;
@@ -31,7 +32,7 @@ export function Begruessung({
     <section className="flex flex-col gap-2.5">
       <ProgrammZeile name={programmName} />
       <h1 className="font-heading text-[40px] leading-none text-ink md:text-[52px]">
-        {vorname ? `Hallo ${vorname}` : "Hallo"}
+        {gruss}
       </h1>
       <p className="text-sm text-ink-subtle">{datumLang(heute)}</p>
     </section>

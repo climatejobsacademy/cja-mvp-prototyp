@@ -18,6 +18,9 @@ export type FeldEintrag = {
   status: "geplant" | "durchgeführt";
   /** Begleitende Person (field_job.instructor_id, SR-78), sonst null */
   trainerId: string | null;
+  /** Phase im Praxisflow (0058) und Ergebnis beim Abschluss (SR-93) */
+  phase: string;
+  ergebnis: string | null;
 };
 
 export type TheorieEintrag = {
@@ -110,7 +113,7 @@ export async function getAgendaZeitraum(
       const fieldJobIds = feldEntries.map((r) => r.field_job_id!) as string[];
       const { data: fieldJobs } = await supabase
         .from("field_job")
-        .select("id, status, standort, start, ende, field_job_type_id, instructor_id")
+        .select("id, status, standort, start, ende, field_job_type_id, instructor_id, phase, praxisflow")
         .in("id", fieldJobIds);
 
       const typeIds = [...new Set((fieldJobs ?? []).map((j) => j.field_job_type_id))];
@@ -136,6 +139,8 @@ export async function getAgendaZeitraum(
             ende: job.ende,
             status: job.status,
             trainerId: job.instructor_id,
+            phase: job.phase,
+            ergebnis: job.praxisflow?.ergebnis ?? null,
           });
         }
       }

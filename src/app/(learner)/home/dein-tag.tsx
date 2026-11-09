@@ -35,7 +35,8 @@ function karten(
   staerkt: StaerktFn,
   gestaerkt: GestaerkteKompetenz[],
   trainer: Map<string, TrainerAnzeige>,
-  stil: TitelStil
+  stil: TitelStil,
+  abends: boolean
 ): { fokus: ReactNode; leiste: ReactNode } {
   const person = (id: string | null) => (id ? (trainer.get(id) ?? null) : null);
   switch (zustand.zustand) {
@@ -82,7 +83,13 @@ function karten(
     }
     case "D":
       return {
-        fokus: <FokusErledigt naechsterTag={naechster ? naechsterTagText(naechster) : null} gestaerkt={gestaerkt} />,
+        fokus: (
+          <FokusErledigt
+            naechsterTag={naechster ? naechsterTagText(naechster, heute) : null}
+            gestaerkt={gestaerkt}
+            abends={abends}
+          />
+        ),
         leiste: <HeuteErledigtLeiste erledigt={zustand.erledigt} />,
       };
     case "E":
@@ -90,6 +97,8 @@ function karten(
         fokus: (
           <FokusPraxis
             praxis={zustand.praxis}
+            alle={zustand.alle}
+            alleFertig={zustand.alleFertig}
             staerkt={staerkt("praxis", zustand.praxis.fieldJobId)}
             trainer={person(zustand.praxis.trainerId)}
             stil={stil}
@@ -121,6 +130,7 @@ export function DeinTag({
   gestaerkt,
   trainer,
   stil,
+  abends,
 }: {
   zustand: Tageszustand;
   heute: string;
@@ -131,17 +141,14 @@ export function DeinTag({
   trainer: Map<string, TrainerAnzeige>;
   /** Modul für die kleine Zeile über dem Titel (Modul-Ebene, 0028) */
   stil: TitelStil;
+  /** Ab 17 Uhr (SR-93): bei erledigtem Tag wird „Als Nächstes“ zum Fokus */
+  abends: boolean;
 }) {
-  const { fokus, leiste } = karten(zustand, heute, naechster, staerkt, gestaerkt, trainer, stil);
-  // Home v13: steht sonst nichts unter der Fokus-Karte, eine dezente Zeile mit
-  // dem nächsten Tag. Nicht in D und F -- dort nennt die Karte ihn schon.
-  // Nicht "Morgen: Praxistag" neben der großen Praxistag-Karte (Anna
-  // 2026-10-20: doppelt); die Karte nimmt dann die volle Breite.
-  const praxisDoppelt = zustand.zustand === "E" && naechster?.art === "feld";
+  const { fokus, leiste } = karten(zustand, heute, naechster, staerkt, gestaerkt, trainer, stil, abends);
+  // SR-93: „Als Nächstes“ ist immer sichtbar -- als Zeile neben der Fokus-Karte,
+  // außer in D und F, wo die Karte den nächsten Tag selbst nennt.
   const naechsterZeile =
-    !leiste && naechster && zustand.zustand !== "D" && zustand.zustand !== "F" && !praxisDoppelt
-      ? naechsterTagZeile(naechster, heute)
-      : null;
+    naechster && zustand.zustand !== "D" && zustand.zustand !== "F" ? naechsterTagZeile(naechster, heute) : null;
   const rechts = !!(leiste || naechsterZeile);
   return (
     <section aria-labelledby="dein-tag" className="flex min-w-0 flex-col gap-4">

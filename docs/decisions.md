@@ -476,6 +476,14 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Status:** gültig
 - **Belegt:** SR-64, Migration `0068`
 
+### 2026-11-09 – Home: eine Lage, ein Fokus, ein Call to Action
+
+- **Entscheidung:** (Produkt-Lead) Home folgt festen Vorrangregeln (läuft jetzt, kommt heute, offen heute, Als Nächstes) und zeigt je Lage genau einen Fokus mit einem Call to Action. Abends heißt nach dem Stundenplan, ab 17 Uhr; Begrüßung „Guten Morgen“ bis 11 Uhr, „Hallo“ bis 17 Uhr, „Guten Abend“ ab 17 Uhr. Am Wochenende sind offene Selbstlern-Lektionen der vorangegangenen Woche der Fokus, sonst eine lockere Wochenend-Ansicht mit „Als Nächstes“. Selbstlern-Lektionen (SCORM) haben Vorrang vor Fachsprache, Fachsprache ist Zusatzangebot und nur Nebeninfo. Kein Hinweis auf verpasste Live-Termine, solange die Plattform die Teilnahme nicht zeitnah kennt. Die Woche (Theorie oder Praxis) ist keine eigene Dimension. „Als Nächstes“ ist immer sichtbar, auch neben der Praxistag-Karte (ersetzt die Regel vom 20.10.2026, die das als doppelt ausblendete).
+- **Begründung:** Home reagierte nur in sechs Zuständen; viele reale Lagen fielen zufällig auf einen davon. Grundlage: Zählung der Tagesarten im Pilot (Miro-Board, Frame „Home - Zustände“).
+- **Folgen:** SR-93; Umsetzung in `src/lib/home-tag.ts` und `src/app/(learner)/home/`.
+- **Status:** gültig
+- **Belegt:** SR-93
+
 ## Offene technische Schulden
 
 Diese Punkte sind keine Entscheidungen, sondern bekannte Lücken; was daraus wird, steht in Asana.

@@ -42,7 +42,14 @@ export type PraxisAktivitaet = {
   durchgefuehrt: boolean;
   /** field_job.instructor_id (SR-78), sonst null */
   trainerId: string | null;
+  /** Phase im Praxisflow (0058); "abgeschlossen" = fertig (SR-93) */
+  phase?: string;
+  /** Ergebnis beim Abschluss (angerechnet, ohne_trainer), sonst null */
+  ergebnis?: string | null;
 };
+
+/** Praxisauftrag fertig (SR-93): im Praxisflow abgeschlossen. */
+export const praxisFertig = (p: PraxisAktivitaet) => p.phase === "abgeschlossen";
 
 /** Offene Selbstlern-Lektion von einem früheren Tag (getNachholLektion). */
 export type NachholLektion = {
@@ -77,8 +84,19 @@ export type Tageszustand =
   | { zustand: "C"; fokus: FlexAktivitaet; erledigt: ErledigtEintrag[] }
   /** D – alles von heute erledigt */
   | { zustand: "D"; erledigt: ErledigtEintrag[] }
-  /** E – Praxistag (offen oder schon durchgeführt); `nachholen` nur, wenn heute nichts Flexibles offen ist */
-  | { zustand: "E"; praxis: PraxisAktivitaet; danach: FlexAktivitaet | null; nachholen: NachholLektion | null }
+  /**
+   * E – Praxistag: alle Praxisaufträge des Tages (SR-93), Fokus auf den
+   * nächsten offenen; `alleFertig`, wenn alle abgeschlossen sind.
+   * `nachholen` nur, wenn heute nichts Flexibles offen ist.
+   */
+  | {
+      zustand: "E";
+      praxis: PraxisAktivitaet;
+      alle: PraxisAktivitaet[];
+      alleFertig: boolean;
+      danach: FlexAktivitaet | null;
+      nachholen: NachholLektion | null;
+    }
   /** F – heute nichts geplant; ggf. offene Lektion von früher zum Weiterlernen */
   | { zustand: "F"; nachholen: NachholLektion | null };
 
@@ -101,11 +119,18 @@ export function getDayState(jetzt: string, tag: TagesAktivitaeten): Tageszustand
   const live = [...tag.live].sort((a, b) => a.start.localeCompare(b.start));
   const ersteOffeneFlex = tag.flex.find((f) => !f.erledigt) ?? null;
 
-  // Offener Praxistag zuerst, sonst der erste (schon durchgeführte) des Tages.
-  const praxisHeute = tag.praxis.find((p) => !p.durchgefuehrt) ?? tag.praxis[0];
+  // Praxistag (SR-93): Fokus auf den nächsten offenen Praxisauftrag, sonst den ersten des Tages.
+  const praxisHeute = tag.praxis.find((p) => !praxisFertig(p)) ?? tag.praxis[0];
   const nachholen = tag.nachholen ?? null;
   if (praxisHeute) {
-    return { zustand: "E", praxis: praxisHeute, danach: ersteOffeneFlex, nachholen: ersteOffeneFlex ? null : nachholen };
+    return {
+      zustand: "E",
+      praxis: praxisHeute,
+      alle: tag.praxis,
+      alleFertig: tag.praxis.every(praxisFertig),
+      danach: ersteOffeneFlex,
+      nachholen: ersteOffeneFlex ? null : nachholen,
+    };
   }
 
   const laufend = live.find((l) => zeit(l.start) <= jetzt && jetzt < zeit(l.ende));
@@ -123,4 +148,23 @@ export function getDayState(jetzt: string, tag: TagesAktivitaeten): Tageszustand
   if (ersteOffeneFlex) return { zustand: "C", fokus: ersteOffeneFlex, erledigt };
   if (erledigt.length > 0) return { zustand: "D", erledigt };
   return { zustand: "F", nachholen };
+}
+
+/** Stunde aus "JJJJ-MM-TTTHH:MM:SS" (Berliner Zeit). */
+const stunde = (jetzt: string) => Number(jetzt.slice(11, 13));
+
+/** SR-93: Begrüßung nach Tageszeit -- bis 11 Uhr Morgen, ab 17 Uhr Abend. */
+export function begruessungText(vorname: string, jetzt: string): string {
+  const h = stunde(jetzt);
+  const gruss = h < 11 ? "Guten Morgen" : h >= 17 ? "Guten Abend" : "Hallo";
+  return vorname ? `${gruss} ${vorname}` : gruss;
+}
+
+/** SR-93: abends = nach dem Stundenplan, ab 17 Uhr. */
+export const istAbend = (jetzt: string) => stunde(jetzt) >= 17;
+
+/** SR-93: Samstag oder Sonntag ("JJJJ-MM-TT", Kalenderdatum ohne Zeitzone). */
+export function istWochenende(datum: string): boolean {
+  const tag = new Date(`${datum}T12:00:00Z`).getUTCDay();
+  return tag === 0 || tag === 6;
 }
