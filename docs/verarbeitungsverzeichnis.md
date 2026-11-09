@@ -65,7 +65,7 @@ Seit Migration 0058–0068 (SR-64, SR-65, SR-88 bis SR-92, SR-03). Technischer S
   - Ereignisse und Codewort-Versuche: nur Team der Akademie (AfCJ admin); Ereignisse werden nur aggregiert ausgewertet (`scripts/sql/praxis_auswertung.sql`), Ergebnisse als Häufigkeiten.
 - **Speicherort:** Supabase, Datenbank und Speicher in Frankfurt (wie oben).
 - **Löschfrist:** wie Tätigkeit 3. Dateien kann die lernende Person bis zum Abschluss des Praxisauftrags selbst löschen. Beim Löschen des Kontos werden Fortschritt, Dateizeilen, Ereignisse und Codewort-Versuche mitgelöscht; die Dateien im Speicher werden von Hand entfernt (`loeschweg.md`, Schritt 6).
-- **Offen:** Frist für die Ereignisse (z. B. Ende der Pilotauswertung); Hinweis an Lernende, auf Fotos keine Personen abzubilden; ob Trainer:innen den Fortschritt technisch lesen sollen (Rechte enger fassen oder in der Erklärung nennen).
+- **Entschieden 09.11.2026 (Produkt-Lead):** Ereignisse werden nach Abschluss der Pilotauswertung gelöscht, spätestens zwölf Monate nach Ende der Qualifizierung; eine automatische Löschung ist technisch noch nicht eingerichtet (von Hand, `loeschweg.md`). Lernende werden gebeten, auf Fotos keine Personen abzubilden. Das technische Leserecht der Trainer:innen der Kohorte auf den Fortschritt bleibt und wird in der Datenschutzerklärung genannt.
 
 ### 4. Profilfoto und Kohortenansicht
 
@@ -151,4 +151,4 @@ Seit Migration 0058–0068 (SR-64, SR-65, SR-88 bis SR-92, SR-03). Technischer S
 - Teams: gemeinsame Verantwortlichkeit mit dem Partner klären (Abschnitt 9).
 - Aufbewahrungspflichten (AZAV) für Nachweise: Die Geschäftsführung fragt beim Partner nach.
 - Keine rechtliche Prüfinstanz.
-- Datenschutzerklärung an den Praxisflow anpassen (Abschnitt „Uploads“ sagt noch, dass außer dem Profilfoto keine Uploads möglich sind; Tätigkeit 3a).
+- Ereignisse aus dem Praxisflow (Tätigkeit 3a): automatische Löschung nach zwölf Monaten einrichten.

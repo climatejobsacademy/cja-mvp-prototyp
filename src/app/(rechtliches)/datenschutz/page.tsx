@@ -14,6 +14,10 @@ export default function DatenschutzPage() {
   // Chat genauer, Fragen-Thread an Live-Lektionen, Fachsprache-Übungen mit
   // Vorlesen, Anwesenheit und Kompetenzfortschritt, Trainer-Bereich,
   // Anonymisieren beim Löschen eines Kontos. Datum „Stand“ im Release setzen.
+  // Entwurf 2026-11-09 für den Praxisflow (SR-64, SR-65, SR-88 bis SR-92,
+  // SR-03; Fakten in docs/verarbeitungsverzeichnis.md, Tätigkeit 3a):
+  // Abschnitt „Praxisaufträge“, „Uploads“ neu, Hinweise zu Protokollen,
+  // automatischer Anrechnung und Speicherdauer. Nicht rechtlich geprüft.
   return (
     <main className="prose mx-auto px-4 py-12">
       <h1>Datenschutzerklärung</h1>
@@ -85,6 +89,50 @@ export default function DatenschutzPage() {
         sie nicht. Sie tragen dort die Anwesenheit ein und
         können Praxisberichte prüfen, also bestätigen oder mit Kommentar
         zurückgeben. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO.
+      </p>
+
+      <h2>Praxisaufträge</h2>
+      <p>
+        An Praxistagen bearbeiten Sie Praxisaufträge Schritt für Schritt auf
+        der Plattform: Sie informieren sich, planen (Plan, Material,
+        Werkzeuge, Arbeitsschritte), führen den Auftrag aus und messen,
+        kontrollieren Ihre Messwerte und bewerten das Ergebnis. Dabei speichern
+        wir Ihre Eingaben (Plan, abgehakte Schritte und Messungen mit Uhrzeit,
+        Ihre Deutungen der Messwerte, Einschätzungen mit Punkten, Ihre
+        Antwort auf die Frage, was Sie beim nächsten Mal anders machen), die
+        Freigaben Ihrer Trainerin oder Ihres Trainers mit Uhrzeit und den
+        Verlauf des Auftrags. Schätzt eine mitlernende Person Ihre Arbeit ein,
+        speichern wir nur, dass es eine Einschätzung durch eine Mitlernende
+        oder einen Mitlernenden war, nicht von wem.
+      </p>
+      <p>
+        An drei Stellen gibt Ihre Trainerin oder Ihr Trainer an Ihrem Gerät
+        ein Codewort ein (Freigabe des Plans, Zuschalten der Spannung,
+        Einschätzung). Wir speichern das Codewort nur verschlüsselt (als Hash)
+        und protokollieren jeden Versuch mit Zeitpunkt und Ergebnis, um
+        Missbrauch zu verhindern; nach mehreren Fehlversuchen wird die Freigabe
+        gesperrt.
+      </p>
+      <p>
+        Ihre Trainerin oder Ihr Trainer sieht Ihren Plan, Ihre Deutungen und
+        die Einschätzungen an Ihrem Gerät, wenn sie oder er freigibt oder
+        einschätzt. Trainerinnen und Trainer Ihrer Kohorte können diese
+        Angaben auf der Plattform technisch abrufen; die Plattform zeigt sie
+        ihnen derzeit nicht an. Am Ende sehen Sie eine Zusammenfassung, die
+        Sie drucken oder als PDF speichern können.
+      </p>
+      <p>
+        Um den Praxisablauf zu verbessern, speichern wir außerdem, welche
+        Schritte Sie wann öffnen und abschließen, ob Sie Unterlagen öffnen oder
+        hochladen und ob Freigaben gelingen, jeweils mit Zeitpunkt, aber ohne
+        Inhalte, Dateinamen oder Freitexte. Diese Angaben werten wir nur
+        zusammengefasst für alle Lernenden aus (zum Beispiel: wie lange ein
+        Schritt im Mittel dauert), nicht für einzelne Personen.
+      </p>
+      <p>
+        Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO; für die zusammengefasste
+        Auswertung Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an der
+        Verbesserung der Qualifizierung).
       </p>
 
       <h2>Fragen und Antworten zu Lektionen</h2>
@@ -223,9 +271,17 @@ export default function DatenschutzPage() {
 
       <h2>Uploads</h2>
       <p>
-        Außer dem Profilfoto können Lernende derzeit keine Dateien oder Medien
-        auf die Plattform hochladen. Sollte sich das ändern, ergänzen wir diese
-        Erklärung vorab.
+        Außer dem Profilfoto können Sie in Praxisaufträgen Dateien hochladen:
+        Ihren Arbeitsauftrag, Hilfsunterlagen, Pläne und das Prüfprotokoll
+        (Bilder, PDF, Tabellen, technische Zeichnungen, je Datei bis 50 MB).
+        Auf der Plattform sieht diese Dateien nur Sie selbst, weder andere
+        Lernende noch Trainerinnen und Trainer. Zugriff hat sonst nur das
+        technische Team der Akademie über den Zugang zu unserem
+        Datenbankdienst, etwa bei einer Störung oder einer Löschanfrage. Bis
+        zum Abschluss eines Praxisauftrags können Sie Ihre Dateien selbst
+        löschen; danach bleiben sie Teil Ihres Nachweises. Bitte bilden Sie
+        auf Fotos keine Personen ab. Rechtsgrundlage: Art. 6 Abs. 1 lit. b
+        DSGVO.
       </p>
 
       <h2>E-Mail-Versand</h2>
@@ -296,14 +352,20 @@ export default function DatenschutzPage() {
         Authentifizierungsdienst technische Daten (IP-Adresse, Zeitpunkt,
         aufgerufene Seite, Browser und Betriebssystem), um Betrieb und
         Sicherheit zu gewährleisten. Die Speicherdauer richtet sich nach den
-        Vorgaben dieser Anbieter. Eigene Zugriffsprotokolle führen wir nicht.
+        Vorgaben dieser Anbieter. Eigene Zugriffsprotokolle führen wir nicht;
+        im Praxisablauf speichern wir die oben unter „Praxisaufträge“
+        beschriebenen Nutzungsereignisse ohne Inhalte.
         Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO.
       </p>
 
       <h2>Keine automatisierte Entscheidung, keine KI-Dienste</h2>
       <p>
         Es findet derzeit keine automatisierte Entscheidungsfindung statt, und
-        wir setzen auf der Plattform keine KI-Dienste ein. Ändert sich das,
+        wir setzen auf der Plattform keine KI-Dienste ein. Wenn ein
+        Praxisauftrag auf Ihre Kompetenzen angerechnet wird, legt die Plattform
+        den Nachweis zwar selbst an; die Entscheidung trifft aber Ihre
+        Trainerin oder Ihr Trainer mit der Einschätzung, die Plattform setzt
+        sie nur um. Ändert sich das,
         aktualisieren wir diese Erklärung vorab.
       </p>
 
@@ -338,6 +400,13 @@ export default function DatenschutzPage() {
         beschrieben. Gelöschte Daten und Beiträge können bis
         zu sieben Tage in den täglichen Sicherungskopien (Backups) unseres
         Datenbankdienstes enthalten sein.
+      </p>
+      <p>
+        Die Nutzungsereignisse aus dem Praxisablauf (ohne Inhalte) löschen wir
+        nach Abschluss der Auswertung des Pilots, spätestens zwölf Monate nach
+        dem Ende Ihrer Qualifizierung. Ihre Eingaben und Dateien in
+        Praxisaufträgen gehören zu Ihren Nachweisen und werden wie diese
+        aufbewahrt.
       </p>
 
       <h2>Weitergabe an Dritte</h2>
