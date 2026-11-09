@@ -101,11 +101,11 @@ select throws_ok(
   'Leere Deutung wird abgelehnt'
 );
 select lives_ok(
-  $$do $d$ declare p text; begin
+  $t$do $d$ declare p text; begin
       foreach p in array array['a1', 'a2', 'a3', 'a4', 'c1', 'c2'] loop
         perform fn_praxis_deutung_speichern('00000000-0000-0000-0000-000000038082', p, 'Grenzwert eingehalten');
       end loop;
-    end $d$$$,
+    end $d$$t$,
   'Zu jedem Prüfpunkt eine Deutung speichern'
 );
 select is(
