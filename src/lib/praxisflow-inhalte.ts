@@ -254,3 +254,10 @@ export const TEXTE = {
   },
 };
 
+
+/** Veränderung der Punkte gegenüber einem früheren Durchlauf (SR-90), z. B. "+10", "±0", "−2". */
+export function punkteVeraenderung(vorher: number | undefined, jetzt: number | undefined): string | null {
+  if (vorher === undefined || jetzt === undefined) return null;
+  const d = jetzt - vorher;
+  return d > 0 ? `+${d}` : d < 0 ? `−${-d}` : "±0";
+}

@@ -726,6 +726,11 @@ function Fertig({ daten }: { daten: PraxisflowDaten }) {
   const kontrolle = new Set((f.kontrolle ?? []).map((e) => e.id));
   const namen = (art: string) => daten.dateien.filter((d) => d.art === art).map((d) => d.dateiname);
   const e = f.einschaetzung ?? {};
+  // Letzter K.-o.-Durchlauf zum Vergleich (SR-90).
+  const letzterKo = (f.durchlaeufe ?? []).at(-1);
+  const vorher = letzterKo?.einschaetzung?.trainer
+    ? { durchlauf: letzterKo.nr, werte: letzterKo.einschaetzung.trainer, bezug: "Trainer:in" }
+    : undefined;
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-4 rounded-karte bg-progress p-5 text-white shadow-card md:p-6 print:hidden">
@@ -755,6 +760,7 @@ function Fertig({ daten }: { daten: PraxisflowDaten }) {
           { name: "Peer", werte: e.peer ?? {} },
           { name: "Trainer:in", werte: e.trainer ?? {} },
         ]}
+        vorher={vorher}
         abgabe={ZEIT(f.abgeschlossen_am)}
         status={
           f.ergebnis === "angerechnet"
