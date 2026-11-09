@@ -8,7 +8,7 @@ begin;
 
 create extension if not exists pgtap schema extensions;
 
-select plan(30);
+select plan(31);
 
 -- ------------------------------------------------------------
 -- Fixtures (als Superuser)
@@ -202,10 +202,24 @@ select is(
   'Zweiter Arbeitsschritt abgehakt'
 );
 
+select throws_ok(
+  $$select fn_praxis_weiter('00000000-0000-0000-0000-000000031081', 'ausfuehren')$$,
+  '23514', null,
+  'Ausführen endet erst nach dem Messen (Variante B, 0065)'
+);
+-- Messen selbst prüfen 033 und 038; hier nur der Stand danach.
+reset role;
+update field_job set praxisflow = praxisflow || jsonb_build_object('kontrolle',
+  (select jsonb_agg(jsonb_build_object('id', p.id, 'am', now())) from fn_praxis_pruefliste() p))
+where id = '00000000-0000-0000-0000-000000031081';
+insert into field_job_datei (organisation_id, field_job_id, learner_id, art, storage_pfad, dateiname, mime_type, groesse) values
+  ('00000000-0000-0000-0000-000000031011', '00000000-0000-0000-0000-000000031081', '00000000-0000-0000-0000-000000031001',
+   'protokoll', '00000000-0000-0000-0000-000000031001/00000000-0000-0000-0000-000000031081/protokoll.pdf', 'protokoll.pdf', 'application/pdf', 1000);
+set local role authenticated;
 select is(
   fn_praxis_weiter('00000000-0000-0000-0000-000000031081', 'ausfuehren'),
   'kontrollieren',
-  'Ausführen -> Kontrollieren, wenn alle Arbeitsschritte abgehakt sind'
+  'Ausführen -> Kontrollieren mit Arbeitsschritten, Messungen und Prüfprotokoll'
 );
 select is(
   (select status from field_job where id = '00000000-0000-0000-0000-000000031081'),
@@ -215,7 +229,7 @@ select is(
 select throws_ok(
   $$select fn_praxis_weiter('00000000-0000-0000-0000-000000031081', 'kontrollieren')$$,
   '23514', null,
-  'Kontrollieren endet erst mit allen Prüfpunkten (seit 0060)'
+  'Kontrollieren endet erst mit einer Deutung zu jedem Prüfpunkt (seit 0065)'
 );
 select throws_ok(
   $$select fn_praxis_weiter('00000000-0000-0000-0000-000000031083', 'informieren')$$,

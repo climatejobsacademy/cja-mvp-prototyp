@@ -70,6 +70,7 @@ export function Auftragsakte({
   unterSpannung,
   pruefungenUnterSpannung,
   protokollDateien,
+  deutungen,
   freigabe,
   kriterien,
   einschaetzungen,
@@ -94,6 +95,8 @@ export function Auftragsakte({
   unterSpannung: boolean;
   pruefungenUnterSpannung: { titel: string; erledigt: boolean }[];
   protokollDateien: string[];
+  /** Kontrollieren (Variante B): Deutung je Prüfpunkt */
+  deutungen?: { titel: string; text: string | null }[];
   freigabe: string | null;
   kriterien: Kriterium[];
   einschaetzungen: { name: string; werte: Record<string, number> }[];
@@ -162,7 +165,7 @@ export function Auftragsakte({
         <DateiNamen dateien={planDateien} leer="Keine Pläne hochgeladen." />
       </Abschnitt>
 
-      <Abschnitt icon={ClipboardCheck} titel="Kontrolle und Prüfprotokoll">
+      <Abschnitt icon={ClipboardCheck} titel="Messen und Prüfprotokoll">
         <span className="text-sm font-semibold text-ink-muted">Ohne Spannung</span>
         {pruefListe(pruefungenOhneSpannung)}
         {unterSpannung ? (
@@ -181,6 +184,19 @@ export function Auftragsakte({
         )}
         <DateiNamen dateien={protokollDateien} leer="Kein Prüfprotokoll hochgeladen." />
       </Abschnitt>
+
+      {deutungen && deutungen.length > 0 && (
+        <Abschnitt icon={ClipboardCheck} titel="Deutung der Messwerte">
+          <dl className="flex flex-col gap-2">
+            {deutungen.map((d) => (
+              <div key={d.titel} className="flex flex-col gap-0.5">
+                <dt className="text-sm font-semibold text-ink-muted">{d.titel}</dt>
+                <dd className="text-[15px] break-words text-ink">{d.text ?? "–"}</dd>
+              </div>
+            ))}
+          </dl>
+        </Abschnitt>
+      )}
 
       <Abschnitt icon={Star} titel="Einschätzungen">
         {vorher && (

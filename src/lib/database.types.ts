@@ -73,6 +73,8 @@ export type PraxisFortschritt = {
   bewertung_freigegeben_am?: string;
   // 0061 (SR-89, SR-03, SR-90): Einschätzungen (Punkte je Kriterium) und Abschluss.
   einschaetzung?: Partial<Record<PraxisRolle, Record<string, number>>>;
+  // 0065 (SR-64, Variante B): Deutung der Messwerte je Prüfpunkt in Kontrollieren.
+  deutungen?: { id: string; text: string; am: string }[];
   // 0063 (SR-89, SR-64): abgelegte Durchläufe nach einem K.-o.
   durchlaeufe?: { nr: number; ergebnis: "ko"; einschaetzung?: Partial<Record<PraxisRolle, Record<string, number>>>; naechstes_mal?: string | null; am: string }[];
   naechstes_mal?: string | null;
@@ -1167,6 +1169,7 @@ export type Database = {
       fn_praxis_datei_offen: { Args: { p_job: string }; Returns: boolean };
       // 0060 (SR-65): Prüfpunkte abhaken, Trainer-Gate mit Codewort, Pflege durch AfCJ admin.
       fn_praxis_kontrolle_abhaken: { Args: { p_job: string; p_punkt: string }; Returns: PraxisFortschritt };
+      fn_praxis_deutung_speichern: { Args: { p_job: string; p_punkt: string; p_text: string }; Returns: PraxisFortschritt };
       fn_praxis_gate: { Args: { p_job: string; p_gate: "plan" | "zuschalten"; p_codewort: string }; Returns: boolean };
       fn_praxis_codewort_setzen: { Args: { p_cohort: string; p_codewort: string }; Returns: undefined };
       fn_praxis_codewort_entsperren: { Args: { p_job: string; p_gate: PraxisGate }; Returns: undefined };

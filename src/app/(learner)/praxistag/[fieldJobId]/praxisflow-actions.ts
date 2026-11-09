@@ -52,6 +52,11 @@ export async function kontrolleAbhaken(fieldJobId: string, punktId: string) {
   return aufrufen(fieldJobId, (s) => s.rpc("fn_praxis_kontrolle_abhaken", { p_job: fieldJobId, p_punkt: punktId }));
 }
 
+/** Kontrollieren (Variante B, SR-64): Deutung des Messwerts zu einem Prüfpunkt. */
+export async function deutungSpeichern(fieldJobId: string, punktId: string, text: string) {
+  return aufrufen(fieldJobId, (s) => s.rpc("fn_praxis_deutung_speichern", { p_job: fieldJobId, p_punkt: punktId, p_text: text }));
+}
+
 /** Plan-Freigabe der Trainer:in in Entscheiden (SR-65); ok mit wert false = Codewort falsch. */
 export async function planFreigeben(fieldJobId: string, codewort: string) {
   return aufrufen<boolean>(fieldJobId, (s) => s.rpc("fn_praxis_gate", { p_job: fieldJobId, p_gate: "plan", p_codewort: codewort }));
