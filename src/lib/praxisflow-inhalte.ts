@@ -217,6 +217,13 @@ export const TEXTE = {
     ohneSpannungHinweis: "Bei diesem Auftrag kommt keine Spannung auf die Anlage. Eine Freigabe durch die Trainer:in ist nicht nötig.",
     weiter: "Weiter zu Bewerten",
   },
+  reflexion: {
+    titel: "Deine Erkenntnis",
+    frage: "Was machst du beim nächsten Mal anders?",
+    anfaenge: ["Gut lief …", "Nächstes Mal …"],
+    platzhalter: "Gut lief … Nächstes Mal …",
+    hinweis: "Ein, zwei Sätze reichen. Das steht danach in deiner Zusammenfassung.",
+  },
   deuten: {
     startTitel: "Jetzt kontrollierst du deine Messwerte",
     startText: "Zu jedem Prüfpunkt schreibst du kurz, was dein Messwert bedeutet und welcher Grenzwert gilt. Dein Prüfprotokoll findest du links unter „Protokoll“.",

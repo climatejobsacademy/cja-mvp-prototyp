@@ -47,6 +47,23 @@ export async function getPraxisflow(fieldJobId: string, learnerId: string): Prom
 
   const trainer = job.instructor_id ? ((await getMeineTrainer()).get(job.instructor_id) ?? null) : null;
 
+  // Nächster offener Praxisauftrag desselben Tages (SR-90): geführt und nicht
+  // abgeschlossen bzw. einfach und noch nicht durchgeführt. Fehler hier
+  // blenden nur den Knopf aus.
+  const { data: andere } = await supabase
+    .from("field_job")
+    .select("id, phase, status, start, created_at, field_job_type:field_job_type_id (titel, ablauf)")
+    .eq("learner_id", learnerId)
+    .eq("datum", job.datum)
+    .neq("id", job.id)
+    .order("start", { ascending: true, nullsFirst: false })
+    .order("created_at", { ascending: true });
+  const offen = (andere ?? []).find((a) => {
+    const t = Array.isArray(a.field_job_type) ? a.field_job_type[0] : a.field_job_type;
+    return t?.ablauf === "gefuehrt" ? a.phase !== "abgeschlossen" : a.status !== "durchgeführt";
+  });
+  const offenTyp = offen ? (Array.isArray(offen.field_job_type) ? offen.field_job_type[0] : offen.field_job_type) : null;
+
   return {
     fieldJobId: job.id,
     learnerId: job.learner_id,
@@ -65,5 +82,6 @@ export async function getPraxisflow(fieldJobId: string, learnerId: string): Prom
       url: links.get(d.storage_pfad) ?? null,
     })),
     trainer: trainer ? { name: trainer.name, fotoUrl: trainer.fotoUrl } : null,
+    naechster: offen && offenTyp ? { fieldJobId: offen.id, titel: offenTyp.titel } : null,
   };
 }

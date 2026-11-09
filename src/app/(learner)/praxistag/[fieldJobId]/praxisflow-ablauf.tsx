@@ -108,6 +108,7 @@ function alleSchritte(schritte: Eintrag[]): Schritt[] {
       ...BOGEN.map((k) => `trainer:${k.id}`),
       "trainer-codewort",
       "ergebnis",
+      "reflexion",
     ]),
     { id: "fertig", phase: "bewerten" },
   ];
@@ -169,6 +170,8 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
   const f = daten.fortschritt;
   const [position, setPosition] = useState<string>(() => startPosition(daten));
   const [meldung, setMeldung] = useState<string | null>(null);
+  // Ende einer Phase: immer derselbe große Moment, dann weiter (ein Muster für alle Phasen).
+  const [phasenMoment, setPhasenMoment] = useState<{ von: Phase; ziel: string } | null>(null);
   const [fehler, setFehler] = useState<string | null>(null);
   const [laeuft, starten] = useTransition();
 
@@ -199,6 +202,9 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
       window.removeEventListener("pagehide", verlassen);
     };
   }, [daten.fieldJobId]);
+  useEffect(() => {
+    positionRef.current = position;
+  }, [position]);
 
   // Beim Schrittwechsel den Fokus auf die neue Frage, damit Screenreader sie ansagen.
   const erstePosition = useRef(position);
@@ -223,12 +229,11 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
   const offen = daten.phase !== "abgeschlossen";
 
   function gehe(id: string, phasenMeldung?: string) {
-    if (id !== positionRef.current) {
+    if (id !== position) {
       ereignisseMelden(daten.fieldJobId, [
-        { art: "schritt_beendet", schritt: positionRef.current },
+        { art: "schritt_beendet", schritt: position },
         { art: "schritt_geoeffnet", schritt: id },
       ]);
-      positionRef.current = id;
     }
     vibrieren();
     if (phasenMeldung) setMeldung(phasenMeldung);
@@ -255,7 +260,12 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
   function phaseAbschliessen(von: Phase, ziel: string) {
     aktion(
       () => phaseWeiter(daten.fieldJobId, von),
-      () => gehe(ziel, `${phasenName(von)} erledigt`)
+      () => {
+        vibrieren();
+        setFehler(null);
+        setPhasenMoment({ von, ziel });
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
     );
   }
 
@@ -309,8 +319,17 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
           dateien={daten.dateien}
           onGeoeffnet={(art) => ereignisseMelden(daten.fieldJobId, [{ art: art === "hilfe" ? "hilfe_geoeffnet" : "vorschau_geoeffnet", schritt: art }])}
         />
-        <div key={aktuell.id} className="min-w-0 flex-1 md:order-first">
-          {(() => {
+        <div key={phasenMoment ? `moment-${phasenMoment.von}` : aktuell.id} className="min-w-0 flex-1 md:order-first">
+          {phasenMoment ? (
+            <PhasenMoment
+              von={phasenMoment.von}
+              onWeiter={() => {
+                const ziel = phasenMoment.ziel;
+                setPhasenMoment(null);
+                gehe(ziel);
+              }}
+            />
+          ) : (() => {
             const [art, id] = aktuell.id.includes(":") ? aktuell.id.split(":") : [aktuell.id, ""];
 
             // ----- Informieren
@@ -408,13 +427,12 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
               );
               if (f.plan_freigegeben_am) {
                 return (
-                  <Moment
-                    icon={ShieldCheck}
-                    titel="Plan freigegeben"
-                    text="Deine Trainer:in hat deinen Plan abgenommen. Du kannst anfangen."
-                    knopf={TEXTE.entscheiden.button}
-                    onWeiter={() => erster && phaseAbschliessen("entscheiden", `tun:${erster.id}`)}
-                  />
+                  <Karte {...k} frage="Dein Plan ist freigegeben" hinweis="Deine Trainer:in hat deinen Plan abgenommen. Du kannst anfangen.">
+                    <Freigegeben am={f.plan_freigegeben_am} />
+                    <button type="button" disabled={laeuft || !erster} onClick={() => erster && phaseAbschliessen("entscheiden", `tun:${erster.id}`)} className={GROSS}>
+                      {TEXTE.entscheiden.button} <ArrowRight aria-hidden="true" />
+                    </button>
+                  </Karte>
                 );
               }
               return (
@@ -519,7 +537,14 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
             }
             if (art === "freigabe") {
               if (f.zuschalten_freigegeben_am) {
-                return <Moment icon={ShieldCheck} titel="Freigegeben" text="Du darfst die Spannung zuschalten. Deine Trainer:in bleibt dabei." knopf="Weiter prüfen" onWeiter={() => gehe(naechster())} />;
+                return (
+                  <Karte {...k} frage="Du darfst zuschalten" hinweis="Deine Trainer:in hat die Anlage geprüft und bleibt dabei.">
+                    <Freigegeben am={f.zuschalten_freigegeben_am} />
+                    <button type="button" onClick={() => gehe(naechster())} className={GROSS}>
+                      Weiter messen <ArrowRight aria-hidden="true" />
+                    </button>
+                  </Karte>
+                );
               }
               return (
                 <Uebergabe {...k} ton="praxis" icon={KeyRound} frage="Hol deine Trainer:in" hinweis={`${TEXTE.kontrolle.freigabeText} Gib das Gerät deiner Trainer:in.`}>
@@ -607,7 +632,8 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
               const letzter = nr === BOGEN.length - 1;
               const wer = { selbst: TEXTE.bewerten.selbstText, peer: TEXTE.bewerten.peerText, trainer: TEXTE.bewerten.fremdText }[rolle];
               const titel = { selbst: "Deine Einschätzung", peer: "Einschätzung Peer", trainer: "Einschätzung Trainer:in" }[rolle];
-              const ton = rolle === "selbst" ? "weiss" : rolle === "peer" ? "brand" : "praxis";
+              // Farbe nur für „du bist dran“ (Lime-Badge) und die Trainer:in (Praxis-Coral); Peer neutral mit Symbol und Name.
+              const ton = rolle === "trainer" ? "praxis" : "weiss";
               const beschreibung = kriterium.skala.length === 2 ? JA_NEIN_BESCHREIBUNGEN : NOTEN_BESCHREIBUNGEN;
               const wert = werte[rolle][kriterium.id];
               const zurueckZu = nr > 0 ? `${rolle}:${BOGEN[nr - 1].id}` : undefined;
@@ -624,12 +650,17 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
               return (
                 <Karte {...k} phase={`${k.phase} · ${titel}`} frage={kriterium.titel} hinweis={wer} ton={ton} zurueck={zurueckZu ? () => gehe(zurueckZu) : undefined}>
                   <div className="flex flex-wrap gap-2">
+                    {rolle === "peer" && (
+                      <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-subtle px-2.5 py-0.5 text-xs font-bold text-ink">
+                        <Users className="size-3.5" aria-hidden="true" /> Peer
+                      </span>
+                    )}
                     {rolle === "selbst" && (
                       <span className="inline-flex w-fit items-center gap-1.5 rounded-full bg-lime px-2.5 py-0.5 text-xs font-bold text-on-lime">
                         <UserRound className="size-3.5" aria-hidden="true" /> Du bist dran
                       </span>
                     )}
-                    {kriterium.ko && <span className="w-fit rounded-full bg-white/70 px-2.5 py-0.5 text-xs font-semibold text-praxis-text">{TEXTE.bewerten.ko}</span>}
+                    {kriterium.ko && <span className="w-fit rounded-full bg-white/70 px-2.5 py-0.5 text-xs font-semibold text-ink">{TEXTE.bewerten.ko}</span>}
                   </div>
                   <ul className="flex flex-col gap-2">
                     {kriterium.skala.map((p) => (
@@ -666,12 +697,12 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
             }
             if (art === "uebergabe-peer") {
               return (
-                <Uebergabe {...k} ton="brand" icon={Users} frage="Gib das Gerät einer Person aus deiner Gruppe" hinweis="Sie schaut sich deine Arbeit an und schätzt sie ein. Das ist freiwillig. Danach bekommst du das Gerät zurück.">
+                <Uebergabe {...k} ton="weiss" icon={Users} frage="Gib das Gerät einer Person aus deiner Gruppe" hinweis="Sie schaut sich deine Arbeit an und schätzt sie ein. Das ist freiwillig. Danach bekommst du das Gerät zurück.">
                   <div className="flex flex-col gap-3">
                     <button type="button" onClick={() => gehe(naechster())} className={GROSS}>
                       Ich bin dran <ArrowRight aria-hidden="true" />
                     </button>
-                    <button type="button" onClick={() => gehe("uebergabe-trainer")} className="min-h-11 rounded-full px-5 text-[15px] font-semibold text-white underline-offset-4 hover:underline sm:self-center">
+                    <button type="button" onClick={() => gehe("uebergabe-trainer")} className={cn(SEKUNDAER, "sm:self-center")}>
                       Überspringen
                     </button>
                   </div>
@@ -763,25 +794,50 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
                       </li>
                     ))}
                   </ul>
+                  <button type="button" onClick={() => gehe("reflexion")} className={GROSS}>
+                    Weiter <ArrowRight aria-hidden="true" />
+                  </button>
+                </Karte>
+              );
+            }
+
+            // Reflexion: eigene Karte, Pflicht (SR-90, 09.11.2026), auch nach einem K.-o.
+            if (art === "reflexion") {
+              const ko = BOGEN.some((x) => x.ko && (f.einschaetzung?.trainer ?? {})[x.id] === 0);
+              const genug = naechstesMal.trim().length >= 3;
+              const anfang = (t: string) => setNaechstesMal((v) => `${v.trim() ? `${v.trimEnd()}\n` : ""}${t.replace(/\s*…$/, "")} `);
+              return (
+                <Karte {...k} frage={TEXTE.reflexion.titel} hinweis={TEXTE.reflexion.frage} zurueck={() => gehe("ergebnis")}>
+                  <div className="flex flex-wrap gap-2" role="group" aria-label="Satzanfänge">
+                    {TEXTE.reflexion.anfaenge.map((t) => (
+                      <button key={t} type="button" onClick={() => anfang(t)} className={cn("rounded-full bg-subtle px-3 py-1.5 text-sm font-semibold text-ink hover:bg-brand-tint", FOKUS)}>
+                        {t}
+                      </button>
+                    ))}
+                  </div>
                   <label className="flex flex-col gap-2">
-                    <span className="text-[15px] font-semibold">Was machst du nächstes Mal anders?</span>
-                    <span className="text-sm text-ink-muted">Freiwillig, ein, zwei Sätze. Das steht danach in deiner Zusammenfassung.</span>
+                    <span className="sr-only">{TEXTE.reflexion.frage}</span>
                     <textarea
-                      rows={3}
+                      rows={5}
                       maxLength={2000}
                       value={naechstesMal}
+                      placeholder={TEXTE.reflexion.platzhalter}
                       onChange={(ev) => setNaechstesMal(ev.target.value)}
-                      className={cn("rounded-zeile border border-line bg-white px-4 py-3 text-[15px] text-ink placeholder:text-ink-subtle", FOKUS)}
+                      className={cn("rounded-zeile border border-line bg-white px-4 py-3 text-[16px] text-ink placeholder:text-ink-subtle", FOKUS)}
                     />
                   </label>
+                  <p className="text-sm text-ink-muted">{TEXTE.reflexion.hinweis}</p>
                   <button
                     type="button"
-                    disabled={laeuft}
+                    disabled={laeuft || !genug}
                     onClick={() =>
                       aktion(
                         () => abschliessen(daten.fieldJobId, naechstesMal),
                         (ergebnis) => {
-                          if (ergebnis !== "ko") return gehe("fertig", "Auftrag abgeschlossen");
+                          if (ergebnis !== "ko") {
+                            vibrieren();
+                            return gehe("fertig");
+                          }
                           // K.-o.: derselbe Praxisauftrag beginnt neu bei Informieren (SR-89, SR-64).
                           setWerte({ selbst: {}, peer: {}, trainer: {} });
                           setDeutungen({});
@@ -800,7 +856,7 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
 
             // ----- Ende: Zusammenfassung (SR-90)
             if (art === "fertig") {
-              return <Fertig daten={daten} />;
+              return <Fertig daten={daten} zurueck={zurueck} />;
             }
             return null;
           })()}
@@ -830,7 +886,7 @@ const VERLAUF_TEXT: Record<string, string> = {
   "abgeschlossen:ohne_trainer": "Auftrag abgeschlossen",
 };
 
-function Fertig({ daten }: { daten: PraxisflowDaten }) {
+function Fertig({ daten, zurueck }: { daten: PraxisflowDaten; zurueck: { href: string; label: string } }) {
   const f = daten.fortschritt;
   const kontrolle = new Set((f.kontrolle ?? []).map((e) => e.id));
   const namen = (art: string) => daten.dateien.filter((d) => d.art === art).map((d) => d.dateiname);
@@ -842,13 +898,27 @@ function Fertig({ daten }: { daten: PraxisflowDaten }) {
     : undefined;
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-4 rounded-karte bg-progress p-5 text-white shadow-card md:p-6 print:hidden">
-        <PartyPopper className="size-8 shrink-0" aria-hidden="true" />
-        <div className="flex flex-col">
-          <h2 className="font-heading text-[26px] leading-tight md:text-[32px]">Auftrag fertig!</h2>
-          <p className="text-[15px]">Hier ist alles, was du gemacht hast. Du kannst es drucken oder als PDF sichern.</p>
+      {/* Abschluss: ein klarer nächster Schritt (SR-90); Drucken/PDF bleibt Nebenaktion in der Akte. */}
+      <section aria-labelledby="frage" className="flex flex-col gap-4 rounded-karte bg-progress p-5 text-white shadow-card md:p-7 print:hidden">
+        <div className="flex items-center gap-4">
+          <PartyPopper className="size-8 shrink-0" aria-hidden="true" />
+          <div className="flex flex-col">
+            <h2 id="frage" tabIndex={-1} className="font-heading text-[26px] leading-tight outline-none md:text-[32px]">
+              Auftrag fertig!
+            </h2>
+            <p className="text-[15px]">Unten steht alles, was du gemacht hast.</p>
+          </div>
         </div>
-      </div>
+        {daten.naechster ? (
+          <Link href={`/praxistag/${daten.naechster.fieldJobId}`} className={cn(GROSS, "sm:w-auto sm:self-start")}>
+            Weiter zum nächsten Auftrag: {daten.naechster.titel} <ArrowRight aria-hidden="true" />
+          </Link>
+        ) : (
+          <Link href={zurueck.href} className={cn(GROSS, "sm:w-auto sm:self-start")}>
+            Zurück zum {zurueck.label} <ArrowRight aria-hidden="true" />
+          </Link>
+        )}
+      </section>
       <Auftragsakte
         auftrag={{ titel: daten.titel, ausgabe: daten.datum.split("-").reverse().join("."), trainer: daten.trainer?.name ?? "–" }}
         auftragDateien={namen("auftrag")}
@@ -932,6 +1002,12 @@ function Karte({
           </button>
         )}
       </div>
+      {/* Fortschritt innerhalb der Phase: klein und neutral (Phasenwechsel bekommt den großen Moment). */}
+      {nr && von && von > 1 ? (
+        <div className="-mt-3 h-1.5 w-full overflow-hidden rounded-full bg-progress-track" aria-hidden="true">
+          <div className="h-full rounded-full bg-progress" style={{ width: `${Math.round((nr / von) * 100)}%` }} />
+        </div>
+      ) : null}
       <div className="flex flex-col gap-2">
         <h2 id="frage" tabIndex={-1} className="font-heading text-[28px] leading-tight outline-none md:text-[36px]">
           {frage}
@@ -978,17 +1054,45 @@ function Uebergabe({
 }
 
 /** Großer Moment, nur bei der Freigabe. */
-function Moment({ icon: Icon, titel, text, knopf, onWeiter }: { icon: LucideIcon; titel: string; text: string; knopf: string; onWeiter: () => void }) {
+const ALS_NAECHSTES: Record<Exclude<Phase, "informieren">, string> = {
+  planen: "Du zeichnest deinen Plan und schreibst Material, Werkzeuge und Arbeitsschritte auf.",
+  entscheiden: "Deine Trainer:in schaut sich deinen Plan an und gibt ihn frei.",
+  ausfuehren: "Du baust auf und misst danach.",
+  kontrollieren: "Du deutest deine Messwerte.",
+  bewerten: "Ihr schätzt deine Arbeit ein.",
+};
+
+/** Ende einer Phase: immer derselbe große Moment (dunkelgrün, Häkchen, was als Nächstes kommt, ein Knopf). */
+function PhasenMoment({ von, onWeiter }: { von: Phase; onWeiter: () => void }) {
+  const nr = PHASEN.findIndex((p) => p.id === von);
+  const naechste = PHASEN[nr + 1];
   return (
-    <section className="flex flex-col items-center gap-4 rounded-karte bg-progress p-7 text-center text-white shadow-card">
+    <section aria-labelledby="frage" className="flex flex-col items-center gap-4 rounded-karte bg-progress p-7 text-center text-white shadow-card md:p-10">
       <span className="flex size-20 items-center justify-center rounded-full bg-white/15" aria-hidden="true">
-        <Icon className="size-10" />
+        <Check className="size-10" strokeWidth={3} />
       </span>
-      <h2 className="font-heading text-[36px] leading-none md:text-[44px]">{titel}</h2>
-      <p className="max-w-sm text-[16px] text-white/90">{text}</p>
+      <span className="text-sm font-semibold text-white/85">Phase {nr + 1} von {PHASEN.length}</span>
+      <h2 id="frage" tabIndex={-1} className="font-heading text-[36px] leading-none outline-none md:text-[44px]">
+        {phasenName(von)} geschafft
+      </h2>
+      {naechste && naechste.id !== "informieren" && (
+        <p className="max-w-sm text-[16px] text-white/90">
+          Als Nächstes: <strong>{naechste.name}</strong>. {ALS_NAECHSTES[naechste.id]}
+        </p>
+      )}
       <button type="button" onClick={onWeiter} className={cn(GROSS, "max-w-sm")}>
-        {knopf} <ArrowRight aria-hidden="true" />
+        {naechste ? `Weiter zu ${naechste.name}` : "Weiter"} <ArrowRight aria-hidden="true" />
       </button>
     </section>
+  );
+}
+
+/** Freigabe der Trainer:in: schlichte Bestätigung auf der Karte, kein großer Moment. */
+function Freigegeben({ am }: { am: string | undefined }) {
+  return (
+    <p className="flex items-center gap-2 rounded-zeile bg-subtle px-4 py-3 text-[15px] font-semibold text-ink">
+      <ShieldCheck className="size-5 shrink-0 text-progress" aria-hidden="true" />
+      Freigegeben mit dem Codewort der Trainer:in{am ? `, ${jetztInBerlin(new Date(am)).slice(11, 16)} Uhr` : ""}
+    </p>
   );
 }

@@ -125,7 +125,7 @@ select is(
 );
 
 -- K.-o. leert die Deutungen
-select is(fn_praxis_abschliessen('00000000-0000-0000-0000-000000038083', null), 'ko', 'K.-o. in der Trainer-Einschätzung');
+select is(fn_praxis_abschliessen('00000000-0000-0000-0000-000000038083', 'Funktion prüfen'), 'ko', 'K.-o. in der Trainer-Einschätzung');
 reset role;
 select ok(
   (select not (praxisflow ? 'deutungen') and praxisflow #>> '{durchlaeufe,0,ergebnis}' = 'ko'

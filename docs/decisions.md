@@ -460,6 +460,14 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Status:** gültig
 - **Belegt:** SR-64, SR-65, SR-89, SR-91, SR-92
 
+### 2026-11-09 – Praxisflow: Fortschritt, Farben, Reflexion und nächster Schritt
+
+- **Entscheidung:** (Produkt-Lead) (1) Fortschritt innerhalb einer Phase bleibt klein (Zähler und dünner Balken in Eco Deep Green); das Ende jeder Phase bekommt immer denselben großen Moment („… geschafft“, was als Nächstes kommt, ein Lime-Knopf). Freigaben der Trainer:in sind eine schlichte Bestätigung auf der Karte, kein großer Moment. (2) Farben nach dem visuellen Update vom 11./12.10.2026: Übergaben an andere Personen über Symbol und Bezeichnung; Peer neutral (weiß), Trainer:in Praxis-Coral; K.-o.-Hinweise und gesunkene Punkte neutral statt Coral, damit Coral im Flow nur die Trainer:in bzw. Praxis bedeutet. (3) „Was machst du beim nächsten Mal anders?“ ist eine eigene Karte nach dem Ergebnis und Pflicht, auch nach einem K.-o. (4) Am Ende führt ein Hauptknopf zum nächsten offenen Praxisauftrag desselben Tages, sonst zurück zum Stundenplan; Drucken/PDF ist Nebenaktion.
+- **Begründung:** Durchklicken auf Staging am 09.11.2026: Phasenabschlüsse fühlten sich nicht nach Erfolg an, Zwischenfreigaben dagegen schon; Lila für Peer und Coral für Warnungen wichen von der Bedeutung der Farben auf der übrigen Plattform ab; die optionale Reflexion ging unter; am Ende fehlte ein verbindlicher nächster Schritt.
+- **Folgen:** SR-90 (Acceptance Check am 09.11.2026 ergänzt). Technisch: Migration `0066` (Reflexion Pflicht beim Abschluss), Oberfläche des Praxisflows.
+- **Status:** gültig
+- **Belegt:** SR-90, `design-specifications.md` (Abschnitt 1, Farbregeln im Praxis-Flow)
+
 ## Offene technische Schulden
 
 Diese Punkte sind keine Entscheidungen, sondern bekannte Lücken; was daraus wird, steht in Asana.

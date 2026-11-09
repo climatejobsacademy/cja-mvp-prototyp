@@ -25,6 +25,8 @@ export type PraxisflowDaten = {
   dateien: PraxisDatei[];
   /** Trainer:in des Praxistags (SR-78), null = nicht zugeordnet */
   trainer: { name: string; fotoUrl: string | null } | null;
+  /** Nächster offener Praxisauftrag desselben Tages (SR-90), null = keiner */
+  naechster: { fieldJobId: string; titel: string } | null;
 };
 
 /** Antwort der Server-Aktionen: ok oder eine Meldung für die Oberfläche. */
