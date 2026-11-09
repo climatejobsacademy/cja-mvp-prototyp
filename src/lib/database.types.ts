@@ -454,6 +454,8 @@ type FieldJobTypeRow = Flatten<
     reihenfolge: number;
     // 0058 (SR-64): einfach = bisheriger Praxistag, gefuehrt = Praxisflow.
     ablauf: FieldJobTypeAblauf;
+    // 0067 (SR-91): Prüfprotokoll-Variante der Aufgabe, leer = Standard-Prüfliste.
+    pruefprotokoll_id: string | null;
   }
 >;
 
@@ -492,6 +494,26 @@ type FieldJobRow = Flatten<
     phase: PraxisPhase;
     phase_seit: string | null;
     praxisflow: PraxisFortschritt;
+    // 0067 (SR-91): Prüfprotokoll-Variante, beim Anlegen vom Typ übernommen.
+    pruefprotokoll_id: string | null;
+  }
+>;
+
+// 0067 (SR-91): Prüfprotokoll-Varianten und ihre Punkte (AfCJ pflegt, Lernende lesen veröffentlichte).
+type PruefprotokollRow = Flatten<
+  Timestamps & { id: string; kennung: string; titel: string; beschreibung: string | null; status: "published" | "unpublished" }
+>;
+type PruefprotokollPunktRow = Flatten<
+  Timestamps & {
+    id: string;
+    pruefprotokoll_id: string;
+    kennung: string;
+    nr: number;
+    teil: "spannungsfrei" | "unter_spannung";
+    titel: string;
+    text: string | null;
+    hinweis: string | null;
+    punkte: string[];
   }
 >;
 
@@ -990,6 +1012,8 @@ export type Database = {
         Record<string, never>
       >;
       praxis_codewort: Table<PraxisCodewortRow, Record<string, never>, Record<string, never>>;
+      pruefprotokoll: Table<PruefprotokollRow, Record<string, never>, Record<string, never>>;
+      pruefprotokoll_punkt: Table<PruefprotokollPunktRow, Record<string, never>, Record<string, never>>;
       praxis_codewort_versuch: Table<PraxisCodewortVersuchRow, Record<string, never>, Record<string, never>>;
       schedule_entry: Table<
         ScheduleEntryRow,
