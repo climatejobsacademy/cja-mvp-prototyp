@@ -86,10 +86,9 @@ set local role authenticated;
 select set_config('request.jwt.claims',
   json_build_object('sub', '00000000-0000-0000-0000-000000034001', 'role', 'authenticated')::text, true);
 
-select throws_ok(
+select lives_ok(
   $$select fn_praxis_einschaetzen('00000000-0000-0000-0000-000000034081', 'peer', '{"funktion": 10, "ausfuehrung": 9, "schutz": 10, "protokoll": 7, "unterlagen": 10}')$$,
-  '23514', null,
-  'Peer-Einschätzung erst nach der Selbsteinschätzung'
+  'Peer-Einschätzung geht auch ohne Selbsteinschätzung (beide optional, 0063)'
 );
 select throws_ok(
   $$select fn_praxis_einschaetzen('00000000-0000-0000-0000-000000034081', 'selbst', '{"funktion": 10, "ausfuehrung": 9}')$$,
@@ -113,9 +112,9 @@ select lives_ok(
   'Selbsteinschätzung speichern'
 );
 select throws_ok(
-  $$select fn_praxis_trainer_einschaetzen('00000000-0000-0000-0000-000000034081', '{"funktion": 10, "ausfuehrung": 9, "schutz": 10, "protokoll": 7, "unterlagen": 10}', 'probewort')$$,
+  $$select fn_praxis_trainer_einschaetzen('00000000-0000-0000-0000-000000034081', '{"funktion": 10, "ausfuehrung": 9}', 'probewort')$$,
   '23514', null,
-  'Trainer-Einschätzung erst nach Selbst- und Peer-Einschätzung'
+  'Unvollständige Trainer-Einschätzung wird abgelehnt'
 );
 select lives_ok(
   $$select fn_praxis_einschaetzen('00000000-0000-0000-0000-000000034081', 'peer', '{"funktion": 10, "ausfuehrung": 9, "schutz": 10, "protokoll": 7, "unterlagen": 10}')$$,
@@ -171,7 +170,7 @@ select is(
 select is(
   fn_praxis_abschliessen('00000000-0000-0000-0000-000000034082', null),
   'ko',
-  'K.-o.-Kriterium mit 0 in der Trainer-Einschätzung: keine Anrechnung'
+  'K.-o.-Kriterium mit 0 in der Trainer-Einschätzung: keine Anrechnung (Rücksprung prüft 036)'
 );
 select is(
   fn_praxis_abschliessen('00000000-0000-0000-0000-000000034083', null),

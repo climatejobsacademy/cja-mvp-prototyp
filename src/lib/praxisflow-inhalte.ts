@@ -233,10 +233,10 @@ export const TEXTE = {
     fremdTitel: "Einschätzung durch die Trainer:in",
     fremdText: "Die Trainer:in prüft dein Ergebnis und wählt je Kriterium die Punkte.",
     ko: "K.-o.-Kriterium",
-    nacharbeitTitel: "Zurück zur Nacharbeit",
+    nacharbeitTitel: "Noch einmal von vorn",
     nacharbeitText:
-      "Bei einem K.-o.-Kriterium hat die Trainer:in 0 Punkte gegeben. Der Auftrag ist noch nicht abgeschlossen: Bessere nach und prüfe danach noch einmal.",
-    nacharbeitButton: "Zur Nacharbeit",
+      "Bei einem K.-o.-Kriterium hat deine Trainer:in 0 Punkte gegeben. Dann zählt der Auftrag noch nicht für deine Kompetenzen. Du machst ihn noch einmal, ab Informieren. Dein Plan und deine Dateien bleiben, du kannst sie anpassen.",
+    nacharbeitButton: "Neu beginnen",
     status: "Verifizierung durch AfCJ läuft",
   },
   // Hinweis direkt am jeweiligen Codewort-Feld
@@ -254,3 +254,10 @@ export const TEXTE = {
   },
 };
 
+
+/** Veränderung der Punkte gegenüber einem früheren Durchlauf (SR-90), z. B. "+10", "±0", "−2". */
+export function punkteVeraenderung(vorher: number | undefined, jetzt: number | undefined): string | null {
+  if (vorher === undefined || jetzt === undefined) return null;
+  const d = jetzt - vorher;
+  return d > 0 ? `+${d}` : d < 0 ? `−${-d}` : "±0";
+}

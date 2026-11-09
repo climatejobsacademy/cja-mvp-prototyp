@@ -11,6 +11,7 @@ import {
   PHASEN,
   PRUEFLISTE_STANDARD,
   dateiTyp,
+  punkteVeraenderung,
   // @ts-expect-error TS5097: .ts-Endung für node:test nötig
 } from "./praxisflow-inhalte.ts";
 
@@ -46,4 +47,12 @@ test("Dateityp: Browser-Typ, sonst nach Endung; CAD nur als Plan; Unbekanntes ab
   assert.equal(dateiTyp("modell.glb", "application/octet-stream", "plan"), "model/gltf-binary");
   assert.equal(dateiTyp("liste.xlsx", "", "hilfe"), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
   assert.equal(dateiTyp("archiv.zip", "application/zip", "hilfe"), null);
+});
+
+test("Veränderung der Punkte gegenüber dem K.-o.-Durchlauf (SR-90)", () => {
+  assert.equal(punkteVeraenderung(0, 10), "+10");
+  assert.equal(punkteVeraenderung(9, 7), "−2");
+  assert.equal(punkteVeraenderung(7, 7), "±0");
+  assert.equal(punkteVeraenderung(undefined, 7), null);
+  assert.equal(punkteVeraenderung(7, undefined), null);
 });

@@ -2,6 +2,7 @@
 
 import { CalendarClock, ClipboardCheck, FileText, History, Printer, Star, UserCheck, type LucideIcon } from "lucide-react";
 
+import { punkteVeraenderung } from "@/lib/praxisflow-inhalte";
 import { cn } from "@/lib/utils";
 
 import { PlanUebersicht } from "./plan-uebersicht";
@@ -76,6 +77,7 @@ export function Auftragsakte({
   status,
   naechstesMal,
   verlauf,
+  vorher,
 }: {
   /** Abgabefrist entfällt. */
   auftrag: { titel: string; ausgabe: string; trainer: string };
@@ -101,8 +103,14 @@ export function Auftragsakte({
   /** "Was machst du beim nächsten Mal anders?" (SR-90) */
   naechstesMal: string | null;
   verlauf: { zeit: string; text: string }[];
+  /**
+   * Trainer-Punkte des letzten K.-o.-Durchlaufs (SR-90): erscheinen als Spalte
+   * „Vorher“, die Spalte `bezug` zeigt die Veränderung dazu.
+   */
+  vorher?: { durchlauf: number; werte: Record<string, number>; bezug: string };
 }) {
-  const raster = { gridTemplateColumns: `1fr repeat(${einschaetzungen.length}, 4.5rem)` };
+  const spalten = einschaetzungen.length + (vorher ? 1 : 0);
+  const raster = { gridTemplateColumns: `1fr repeat(${spalten}, 4.5rem)` };
   const pruefListe = (liste: { titel: string; erledigt: boolean }[]) => (
     <ul className="flex flex-col gap-1">
       {liste.map((p) => (
@@ -174,10 +182,16 @@ export function Auftragsakte({
         <DateiNamen dateien={protokollDateien} leer="Kein Prüfprotokoll hochgeladen." />
       </Abschnitt>
 
-      <Abschnitt icon={Star} titel="Drei Einschätzungen">
+      <Abschnitt icon={Star} titel="Einschätzungen">
+        {vorher && (
+          <p className="rounded-zeile bg-progress/10 px-3 py-2 text-[15px] font-semibold text-progress">
+            Im {vorher.durchlauf + 1}. Durchlauf geschafft. Daneben siehst du, was sich seit dem letzten Mal verbessert hat.
+          </p>
+        )}
         <ul className="flex flex-col gap-1.5">
           <li className="grid gap-x-2 text-xs font-semibold text-ink-muted" style={raster} aria-hidden="true">
             <span>Kriterium</span>
+            {vorher && <span className="text-center">Vorher</span>}
             {einschaetzungen.map((e) => (
               <span key={e.name} className="text-center">
                 {e.name}
@@ -190,11 +204,26 @@ export function Auftragsakte({
                 {k.titel}
                 {k.ko && <span className="ml-1.5 text-xs font-semibold text-praxis-text">K.-o.</span>}
               </span>
-              {einschaetzungen.map((e) => (
-                <span key={e.name} className="text-center font-bold tabular-nums" aria-label={`${e.name}: ${e.werte[k.id] ?? "–"} Punkte`}>
-                  {e.werte[k.id] ?? "–"}
+              {vorher && (
+                <span className="text-center tabular-nums text-ink-muted" aria-label={`Vorher (${vorher.bezug}): ${vorher.werte[k.id] ?? "–"} Punkte`}>
+                  {vorher.werte[k.id] ?? "–"}
                 </span>
-              ))}
+              )}
+              {einschaetzungen.map((e) => {
+                const delta = vorher && e.name === vorher.bezug ? punkteVeraenderung(vorher.werte[k.id], e.werte[k.id]) : null;
+                return (
+                  <span
+                    key={e.name}
+                    className="flex flex-col items-center font-bold tabular-nums"
+                    aria-label={`${e.name}: ${e.werte[k.id] ?? "–"} Punkte${delta ? `, ${delta} gegenüber vorher` : ""}`}
+                  >
+                    {e.werte[k.id] ?? "–"}
+                    {delta && delta !== "±0" && (
+                      <span className={cn("text-xs font-semibold", delta.startsWith("+") ? "text-progress" : "text-praxis-text")}>{delta}</span>
+                    )}
+                  </span>
+                );
+              })}
             </li>
           ))}
         </ul>
