@@ -1,6 +1,6 @@
 # Praxisflow-Realbau: Analyse und Migrationsentwurf
 
-Stand 06.11.2026. **Analyse und Entwurf.** Umgesetzt ist davon Migration 0058 (Ablauf, Phase, Fortschritt, SR-64); alles Weitere ist Entwurf. Das Dokument ersetzt die Fassung vom 13./14.10.2026 (vier Codewort-Freigaben, Foto ohne Upload, Schnitte S/M/L); die alte Fassung und ihr SQL-Entwurf stehen in der Git-Historie.
+Analyse und Entwurf vom 06.11.2026 (Abschnitte 1–10). **Gebaut ist inzwischen eine abweichende Fassung; sie steht in Abschnitt 0 und gilt, wo sich beide unterscheiden.** Das Dokument ersetzt die Fassung vom 13./14.10.2026.
 
 Grundlagen:
 - **Matrix „Pilot, Praxistage Plochingen, Modul II, Praxisflow“** im Miro-Board der Produktleitung (Frame „User Journey“): je Phase Zweck, Zahl der Schritte, Anzeige, Eingabe, Tätigkeit, Inhalte, Gespeichertes, Verhalten bei Fehlschlag, Bestätigung.
@@ -8,6 +8,20 @@ Grundlagen:
 - `dev` mit den Migrationen bis 0057 und die SRs aus Notion (Auszug `docs/requirements.md`).
 
 Kennzeichnung: **belegt** heißt im Code, in der Matrix oder in Notion gelesen; **Vorschlag** und **Vermutung** heißen nicht geprüft und nicht abgestimmt. Alle Stunden sind geschätzt, nicht gemessen.
+
+## 0. Gebaute Fassung (Migrationen 0058–0068)
+
+Technischer Stand nach den Entscheidungen vom 06. und 09.11.2026 (`decisions.md`). SRs: SR-64, SR-65, SR-88 bis SR-92, SR-03 (Auszug `requirements.md`).
+
+- **Ein Ablauf für alle:** Alle Praxisaufgaben laufen im geführten Ablauf (`0068`); der frühere einfache Praxistag ist aus dem Code entfernt. `field_job_type.ablauf` bleibt technisch bestehen, Standard und alle Werte `gefuehrt`. Der einzelne Auftrag heißt in Texten für Lernende „Praxisauftrag“, der Tag „Praxistag“.
+- **Phasen (Variante B):** Informieren (Arbeitsauftrag hochladen, Pflicht) → Planen (Plan hochladen, Material, Werkzeuge, Arbeitsschritte umsortierbar) → Entscheiden (Plan-Freigabe der Trainer:in mit Codewort, Vorschau des ganzen Plans; `0062`) → Ausführen (Arbeitsschritte, danach Messen: Punkte ohne Spannung, Freigabe zum Zuschalten mit Codewort, Punkte unter Spannung, Prüfprotokoll hochladen; `0065`) → Kontrollieren (je Prüfpunkt eine Deutung des Messwerts, Pflicht; `0065`) → Bewerten (Selbst und Peer optional, Trainer-Einschätzung Pflicht und nur mit Codewort; danach Reflexion als Pflicht; `0063`, `0066`).
+- **Codewort:** eines je Kohorte, drei Freigaben (Plan, Zuschalten, Trainer-Einschätzung), jedes Mal neu eingegeben; Fehlversuche protokolliert, Sperre nach 5 (`0060`, `0062`).
+- **K.-o.:** 0 bei einem K.-o.-Kriterium der Trainer-Einschätzung führt denselben Auftrag zurück zu Informieren; Plan, Dateien und Verlauf bleiben, der Durchlauf liegt unter `praxisflow.durchlaeufe`; Abschluss und automatische Verifizierung erst beim erfolgreichen Durchlauf, die Zusammenfassung zeigt die Veränderung zum K.-o.-Durchlauf (`0063`).
+- **Prüfprotokolle:** Variante je Aufgabe, vom Auftrag beim Anlegen übernommen; ohne Zuordnung die Standardliste (`0067`, `import-pruefprotokolle.md`).
+- **Ereignisse:** `praxis_ereignis` ohne Inhalte, Auswertung nur aggregiert (`0064`, `scripts/sql/praxis_auswertung.sql`).
+- **Testdaten auf Staging:** `scripts/sql/praxisflow_testauftrag.sql`.
+- **Link aus Stundenplan, Home, Programm und Kompetenzen** hängt am Funktionsschalter `PRAXISAUFGABE_LINK` (`schalter.ts`); die Seite selbst ist immer über `/praxistag/<id>` erreichbar.
+- **Abweichend von den Abschnitten unten:** kein Einschalten je Auftrag mehr (5.1, 5.2, 10.2 „Rückfall“), zwei statt vier bzw. jetzt drei Freigaben, Bewerten ohne Pflicht für Selbst und Peer, Prüfliste je Variante statt fest.
 
 ## 1. Ausgangslage
 

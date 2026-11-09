@@ -1,13 +1,13 @@
 import { notFound } from "next/navigation";
 
 import { requireCurrentLearner } from "@/lib/queries/session";
-import { getFieldJobDetail } from "@/lib/queries/praxistag";
 import { getPraxisflow } from "@/lib/queries/praxisflow";
 
 import { PraxisflowAblauf } from "./praxisflow-ablauf";
-import { PraxistagFlow } from "./praxistag-flow";
 
-export default async function PraxistagPage({
+// Praxisauftrag im geführten Praxisflow (SR-64). Seit 0068 laufen alle
+// Praxisaufgaben im geführten Ablauf; der frühere einfache Ablauf ist entfernt.
+export default async function PraxisauftragPage({
   params,
   searchParams,
 }: {
@@ -19,18 +19,7 @@ export default async function PraxistagPage({
   // Aus dem Reiter Programm zurück dorthin, sonst zum Stundenplan.
   const zurueck = von === "programm" ? { href: "/content", label: "Programm" } : { href: "/schedule", label: "Stundenplan" };
   const learner = await requireCurrentLearner();
-
-  // Geführter Ablauf (SR-64), wenn der Auftrag ihn eingeschaltet hat;
-  // sonst unverändert der einfache Praxistag.
   const praxisflow = await getPraxisflow(fieldJobId, learner.personId);
-  if (praxisflow) {
-    return <PraxisflowAblauf daten={praxisflow} zurueck={zurueck} />;
-  }
-
-  const detail = await getFieldJobDetail(fieldJobId, learner.personId);
-  if (!detail) notFound();
-
-  return (
-    <PraxistagFlow detail={detail} organisationId={learner.organisationId} zurueck={zurueck} />
-  );
+  if (!praxisflow) notFound();
+  return <PraxisflowAblauf daten={praxisflow} zurueck={zurueck} />;
 }

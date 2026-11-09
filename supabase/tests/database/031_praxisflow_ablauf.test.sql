@@ -13,7 +13,7 @@ select plan(31);
 -- ------------------------------------------------------------
 -- Fixtures (als Superuser)
 -- 31001 Lernende A, 31002 Lernende B.
--- Typ G (gefuehrt), Typ E (einfach, Standard).
+-- Typ G (gefuehrt, seit 0068 Standard), Typ E (einfach, Altwert).
 -- 31081 Praxistag A/G, 31082 Praxistag A/E, 31083 Praxistag B/G.
 -- ------------------------------------------------------------
 insert into auth.users (id, email) values
@@ -40,8 +40,9 @@ insert into programme (id, name, kuerzel, status) values
 
 insert into field_job_type (id, titel, programme_id, reihenfolge, status, ablauf) values
   ('00000000-0000-0000-0000-000000031041', 'Auftrag geführt', '00000000-0000-0000-0000-000000031021', 1, 'published', 'gefuehrt');
-insert into field_job_type (id, titel, programme_id, reihenfolge, status) values
-  ('00000000-0000-0000-0000-000000031042', 'Auftrag einfach', '00000000-0000-0000-0000-000000031021', 2, 'published');
+-- Seit 0068 ist gefuehrt der Standard; einfach nur noch als Altwert für den Test.
+insert into field_job_type (id, titel, programme_id, reihenfolge, status, ablauf) values
+  ('00000000-0000-0000-0000-000000031042', 'Auftrag einfach', '00000000-0000-0000-0000-000000031021', 2, 'published', 'einfach');
 
 insert into field_job (id, organisation_id, datum, field_job_type_id, learner_id) values
   ('00000000-0000-0000-0000-000000031081', '00000000-0000-0000-0000-000000031011', '2026-11-16', '00000000-0000-0000-0000-000000031041', '00000000-0000-0000-0000-000000031001'),
@@ -57,9 +58,10 @@ insert into field_job_datei (organisation_id, field_job_id, learner_id, art, sto
 -- Schema und Standardwerte
 -- ------------------------------------------------------------
 select is(
-  (select ablauf from field_job_type where id = '00000000-0000-0000-0000-000000031042'),
-  'einfach',
-  'Ablauf ist ohne Angabe einfach (bisheriger Praxistag)'
+  (select column_default from information_schema.columns
+    where table_schema = 'public' and table_name = 'field_job_type' and column_name = 'ablauf'),
+  '''gefuehrt''::text',
+  'Ablauf ist ohne Angabe geführt (seit 0068)'
 );
 select is(
   (select phase from field_job where id = '00000000-0000-0000-0000-000000031081'),
