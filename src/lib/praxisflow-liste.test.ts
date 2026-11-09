@@ -9,6 +9,7 @@ import {
   eintraegeAnhaengen,
   eintragBearbeiten,
   eintragHinzufuegen,
+  eintragAnPosition,
   eintragLoeschen,
   eintragVerschieben,
   zeilenZuTexten,
@@ -78,3 +79,12 @@ test("Diktat: Texte werden unten angehängt und sind danach wie getippte Einträ
 });
 
 // ---------- Durchführen ----------
+
+test("Eintrag an eine Position ziehen (SR-64, Umsortieren)", () => {
+  assert.equal(ids(eintragAnPosition(drei, "a", 2)), "bca");
+  assert.equal(ids(eintragAnPosition(drei, "c", 0)), "cab");
+  assert.equal(ids(eintragAnPosition(drei, "b", 9)), "acb");
+  assert.equal(ids(eintragAnPosition(drei, "b", -3)), "bac");
+  assert.equal(eintragAnPosition(drei, "b", 1), drei);
+  assert.equal(eintragAnPosition(drei, "x", 0), drei);
+});

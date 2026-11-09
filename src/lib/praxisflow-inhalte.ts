@@ -218,7 +218,7 @@ export const TEXTE = {
     weiter: "Weiter zu Bewerten",
   },
   entscheiden: {
-    bestaetigen: "Meine Planung ist vollständig. Ich bin bereit, mit der Ausführung zu beginnen.",
+    bestaetigen: "Gib das Gerät deiner Trainer:in. Sie schaut sich deinen Plan an und gibt ihn mit dem Codewort frei.",
     button: "Ich fange an",
   },
   ausfuehren: {

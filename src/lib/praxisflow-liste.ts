@@ -29,6 +29,18 @@ export function eintragVerschieben(liste: Eintrag[], id: string, richtung: "hoch
   return neu;
 }
 
+/** Eintrag an eine Position ziehen (Drag-and-drop); ziel ist der neue Index, wird auf die Liste begrenzt. */
+export function eintragAnPosition(liste: Eintrag[], id: string, ziel: number): Eintrag[] {
+  const i = liste.findIndex((e) => e.id === id);
+  if (i < 0) return liste;
+  const j = Math.max(0, Math.min(ziel, liste.length - 1));
+  if (i === j) return liste;
+  const neu = [...liste];
+  const [e] = neu.splice(i, 1);
+  neu.splice(j, 0, e);
+  return neu;
+}
+
 /** Getippter Text → Texte für Listeneinträge: eine Zeile je Eintrag, leere Zeilen entfallen. */
 export function zeilenZuTexten(text: string): string[] {
   return text
