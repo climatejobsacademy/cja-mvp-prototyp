@@ -45,6 +45,28 @@ Gilt für die Lernplattform learn.climatejobsacademy.com (Production, Supabase F
 - **Empfänger:** die lernende Person selbst; Trainer:innen der Kohorte (Name, Termine, Anwesenheit, Praxisberichte, kein Foto, keine E-Mail); Team der Akademie. **Partnerorganisation (Bildungsträger):** erhält Anwesenheit und Lernfortschritt außerhalb der Plattform (Begleitung, Nachweis gegenüber Fördergebern), hat auf der Plattform keinen Zugriff darauf; Rechtsgrundlage Art. 6 Abs. 1 lit. b, soweit förderrechtlich vorgeschrieben lit. c DSGVO.
 - **Löschfrist:** wie Tätigkeit 1. Anwesenheit und Prüfungen werden als unveränderlich behandelt; bei einer Löschanfrage Fall für Fall (Aufbewahrungspflicht klären, `docs/loeschweg.md`, E1).
 
+### 3a. Praxisflow: Praxisaufträge, Uploads, Codewort, Ereignisse
+
+Seit Migration 0058–0068 (SR-64, SR-65, SR-88 bis SR-92, SR-03). Technischer Stand, rechtlich nicht geprüft.
+
+- **Zweck:** Durchführung und Nachweis der Praxisaufträge nach der vollständigen Handlung (Informieren bis Bewerten); Auswertung des Pilots in aggregierter Form.
+- **Betroffene:** Lernende; Trainer:innen (Zuordnung zum Praxisauftrag, Prüfer:in der automatischen Verifizierung, Eingabe des Codeworts am Gerät der Lernenden). Mitlernende (Peer) nur als Rolle, ohne Personenbezug.
+- **Daten:**
+  - *Fortschritt je Praxisauftrag* (`field_job.praxisflow`): Plan (Werkzeuge, Material, Arbeitsschritte als Freitext), Haken und Freigaben mit Zeitpunkt, Deutungen der Messwerte (Freitext), Einschätzungen (Punkte je Kriterium mit Rolle selbst, Peer, Trainer:in), Reflexion (Freitext), abgelegte Durchläufe nach einem K.-o., Verlauf mit Zeitpunkten.
+  - *Dateien* (`field_job_datei`, Speicher `praxis-dateien`): Arbeitsauftrag, Hilfsunterlagen, Pläne, Prüfprotokoll; Bilder, PDF, Tabellen, CAD; bis 50 MB; Dateiname, Typ, Größe, Zeitpunkt. Fotos können Räume, Geräte oder Personen zeigen.
+  - *Codewort* (`praxis_codewort`): nur als Hash je Kohorte. *Versuche* (`praxis_codewort_versuch`): Zeitpunkt, Praxisauftrag, Freigabe, Ergebnis (Erfolg, Fehlversuch, Entsperrung), angemeldete Person (in der Regel die lernende Person, weil am Gerät der Lernenden eingegeben).
+  - *Ereignisse* (`praxis_ereignis`): Zeitpunkt, Praxisauftrag, Phase, Schritt-Kennung, Art (z. B. Schritt geöffnet, Datei hochgeladen, Freigabe fehlgeschlagen); keine Inhalte, keine Dateinamen, kein Freitext.
+  - *Abschluss:* Praxisbericht (`field_capture`, Phase Abschluss, mit dem Reflexionstext) und, ohne K.-o. und mit zugeordneter Trainer:in, eine automatisch angelegte Verifizierung mit der Trainer:in als Prüfer:in; daraus Kompetenznachweise wie Tätigkeit 3. Die Entscheidung trifft die Trainer:in mit ihrer Einschätzung; das System setzt sie nur um.
+- **Rechtsgrundlage (Vorschlag, nicht geprüft):** Art. 6 Abs. 1 lit. b DSGVO für Durchführung und Nachweis; für die aggregierte Auswertung der Ereignisse Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse an der Verbesserung der Qualifizierung).
+- **Empfänger und Sichtbarkeit:**
+  - Die lernende Person selbst: alles, einschließlich Zusammenfassung zum Drucken.
+  - Dateien: in der Plattform nur die lernende Person; sonst nur über den Supabase-Zugang des Projekts (Entscheidung 06.11.2026, SR-88).
+  - Fortschritt je Praxisauftrag: technisch lesbar für Trainer:innen der Kohorte und für Rollen der Organisation laut `access-matrix.md` (Zeile „Field job“); die Oberfläche für Trainer:innen zeigt ihn derzeit nicht. Trainer:innen sehen Plan, Deutungen und Einschätzungen am Gerät der Lernenden, wenn sie freigeben oder einschätzen.
+  - Ereignisse und Codewort-Versuche: nur Team der Akademie (AfCJ admin); Ereignisse werden nur aggregiert ausgewertet (`scripts/sql/praxis_auswertung.sql`), Ergebnisse als Häufigkeiten.
+- **Speicherort:** Supabase, Datenbank und Speicher in Frankfurt (wie oben).
+- **Löschfrist:** wie Tätigkeit 3. Dateien kann die lernende Person bis zum Abschluss des Praxisauftrags selbst löschen. Beim Löschen des Kontos werden Fortschritt, Dateizeilen, Ereignisse und Codewort-Versuche mitgelöscht; die Dateien im Speicher werden von Hand entfernt (`loeschweg.md`, Schritt 6).
+- **Offen:** Frist für die Ereignisse (z. B. Ende der Pilotauswertung); Hinweis an Lernende, auf Fotos keine Personen abzubilden; ob Trainer:innen den Fortschritt technisch lesen sollen (Rechte enger fassen oder in der Erklärung nennen).
+
 ### 4. Profilfoto und Kohortenansicht
 
 - **Zweck:** Gruppe kennt sich, gemeinsames Lernen.
@@ -129,3 +151,4 @@ Gilt für die Lernplattform learn.climatejobsacademy.com (Production, Supabase F
 - Teams: gemeinsame Verantwortlichkeit mit dem Partner klären (Abschnitt 9).
 - Aufbewahrungspflichten (AZAV) für Nachweise: Die Geschäftsführung fragt beim Partner nach.
 - Keine rechtliche Prüfinstanz.
+- Datenschutzerklärung an den Praxisflow anpassen (Abschnitt „Uploads“ sagt noch, dass außer dem Profilfoto keine Uploads möglich sind; Tätigkeit 3a).
