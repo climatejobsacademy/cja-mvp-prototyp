@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { getPraxisaufgabeHilfen } from "@/lib/queries/praxisaufgabe-hilfen";
+import { getPraxistag, naechsterOffener, type PraxistagAuftrag } from "@/lib/queries/praxistag";
 import { getMeineTrainer } from "@/lib/queries/trainer";
 import { PRUEFLISTE_STANDARD, type Pruefpunkt } from "@/lib/praxisflow-inhalte";
 import type { PraxisflowDaten } from "@/lib/praxisflow-shared";
@@ -74,23 +75,14 @@ export async function getPraxisflow(fieldJobId: string, learnerId: string): Prom
 
   const trainer = job.instructor_id ? ((await getMeineTrainer()).get(job.instructor_id) ?? null) : null;
 
-  // Nächster offener Praxisauftrag desselben Tages (SR-90): geführt und nicht
-  // abgeschlossen bzw. einfach und noch nicht durchgeführt. Fehler hier
-  // blenden nur den Knopf aus.
-  const { data: andere } = await supabase
-    .from("field_job")
-    .select("id, phase, status, start, created_at, field_job_type:field_job_type_id (titel, ablauf)")
-    .eq("learner_id", learnerId)
-    .eq("datum", job.datum)
-    .neq("id", job.id)
-    .order("start", { ascending: true, nullsFirst: false })
-    .order("created_at", { ascending: true });
-  const offen = (andere ?? []).find((a) => {
-    const t = Array.isArray(a.field_job_type) ? a.field_job_type[0] : a.field_job_type;
-    // Labortage (SR-94) haben keinen Flow und zählen hier nicht.
-    return t?.ablauf === "gefuehrt" && a.phase !== "abgeschlossen";
-  });
-  const offenTyp = offen ? (Array.isArray(offen.field_job_type) ? offen.field_job_type[0] : offen.field_job_type) : null;
+  // Nächster offener Praxisauftrag desselben Tages in fester Reihenfolge
+  // (SR-64, SR-90); Labortage zählen nicht. Fehler hier blenden nur den Knopf aus.
+  let naechster: PraxistagAuftrag | null = null;
+  try {
+    naechster = naechsterOffener(await getPraxistag(learnerId, job.datum), job.id);
+  } catch {
+    naechster = null;
+  }
 
   return {
     fieldJobId: job.id,
@@ -112,6 +104,6 @@ export async function getPraxisflow(fieldJobId: string, learnerId: string): Prom
     hilfeLinks: hilfen.links,
     trainer: trainer ? { name: trainer.name, fotoUrl: trainer.fotoUrl } : null,
     pruefliste,
-    naechster: offen && offenTyp ? { fieldJobId: offen.id, titel: offenTyp.titel } : null,
+    naechster: naechster ? { fieldJobId: naechster.fieldJobId, titel: naechster.titel } : null,
   };
 }

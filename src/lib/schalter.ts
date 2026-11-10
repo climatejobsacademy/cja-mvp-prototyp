@@ -36,6 +36,11 @@ export function praxisaufgabeHref(fieldJobId: string, von?: string, an: boolean 
   return von ? `/praxistag/${fieldJobId}?von=${von}` : `/praxistag/${fieldJobId}`;
 }
 
+/** Tagesübersicht eines Praxistags mit mehreren Praxisaufträgen (SR-13) oder null, wenn der Link aus ist. */
+export function praxistagHref(datum: string, an: boolean = PRAXISAUFGABE_LINK): string | null {
+  return an ? `/praxistag/tag/${datum}` : null;
+}
+
 /**
  * Native Selbstlern-Ansicht (SR-85): Selbstlern-Lektionen mit Elephant-Paket
  * erscheinen Schritt für Schritt im Plattform-Design statt im SCORM-Player;
