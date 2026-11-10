@@ -40,7 +40,7 @@ node scripts/import-plan.mjs --datei "$DATEI" --ziel production --production-fre
 
 - Migrationen 0025–0030 (und 0031 für die Kann-Sätze) sind auf Production angewendet.
 - **Die Teilschritte ohne jede Zuordnung sind in der Excel korrigiert** (Stand 13.10.: 9, Liste mit `--nur-analyse`). Solange es welche gibt, bricht das Skript gegen Production ab. Abschalten nur bewusst mit `--ohne-zuordnung-erlauben`.
-- Die Tagesplanung des Praxisblocks Modul II steht in der Excel (seit 16.10.). Production läuft deshalb **mit** Praxis Modul II. Meldet der Probelauf trotzdem „VORLÄUFIG“ (Aufträge ohne Tagesbindung), vor dem echten Lauf mit der Fachlichen Leitung Praxis klären.
+- Die Tagesplanung des Praxisblocks Modul II steht in der Excel (seit 16.10.). Production läuft deshalb **mit** Praxis Modul II. Stehen an einem Praxistermin mehrere Aufträge, liegen alle an diesem Tag (siehe „Mehrere Aufträge, Labortag, zweite Trainer:in“).
 - Die Kohorte und ihr Betrieb gibt es schon (nur lesend geprüft am 18.10.): die Pilot-Kohorte mit 20 Stundenplan-Einträgen, alle am Betrieb des Partners. Der Import legt keine Kohorte an. Er nimmt den Betrieb aus den vorhandenen Stundenplan-Einträgen, sonst aus den Einschreibungen; ist er nicht eindeutig, bricht er ab. Lernende müssen für den ersten Import also noch nicht angelegt sein.
 - Trainer-Konten sind im Dashboard angelegt, `trainer-production.csv` ist gepflegt.
 
@@ -97,7 +97,7 @@ Das Skript legt **keine Auth-Konten** an und schreibt nie in `auth.users`.
 | Kompetenzen | `competency` (Name = Kurztitel, Kann-Satz in `kann_satz`, sobald Migration 0031 angewendet ist), `competency_programme`, `modul_competency` mit Kürzel = Kennung (M02-K03). Ein bisheriges Kürzel (M2.03) wird umgestellt, ohne Dublette |
 | Teilschritte | `competency_step` und `competency_competency_step` (Reihenfolge). Theoretisch: `content_competency_mapping` zu den Live-Lektionen der genannten Theorietage. Praktisch: `field_job_type_competency_mapping` zu den Aufträgen |
 | Aufträge | `field_job_type` mit `kategorie` = Auftragsnummer, Woche des ersten Termins |
-| Trainer | `person` mit Rolle `trainer` (AfCJ) am vorhandenen Auth-Konto (siehe „Trainer-Konten“). Eine Trainer:in je Termin, bei „Trainer:in A, Trainer:in C“ die erste |
+| Trainer | `person` mit Rolle `trainer` (AfCJ) am vorhandenen Auth-Konto (siehe „Trainer-Konten“). Zuständig ist je Termin die erste, bei „Trainer:in A, Trainer:in C“ Trainer:in A; an Praxis- und Labortagen wird die zweite nur angezeigt (`field_job.zweit_trainer_id`, SR-78) |
 
 Nicht importiert werden: die Spalte „Offen“, SCORM, PDFs, Zoom-Links und Ort bei Live-Terminen (`live_session` hat kein Ortsfeld). Gelöscht wird nichts, außer Lektion-Zuordnungen eines Teilschritts, dessen Typ laut Excel auf „praktisch“ wechselt (und umgekehrt). Sonst würden sie gegen SR-71 verstoßen. Die Excel ist führend (Entscheidung 13.10.): In Modul I betrifft das 8 Lektion-Zuordnungen. Jede Löschung steht in den Meldungen.
 
@@ -128,9 +128,12 @@ Praxistage bekommen den Ort aus der Spalte „Ort“ in `field_job.standort` (se
 
 Die Ausgabe listet, was bewusst nicht in die Datenbank geht, mit Grund (u. a. Modulabschluss aus dem Tab Module, Coaching-Ort, Spalte „Offen“, SCORM/PDF/Zoom). Termine, deren Spalte „Offen“ ein „prüfen“ enthält (z. B. M02-S002 mit drei Theorietagen), werden wie in der Datei importiert und unter `offen` gemeldet.
 
-### Praxisblock ohne Tagesbindung (Modul II, 16.–24.11.): vorläufig
+### Mehrere Aufträge, Labortag, zweite Trainer:in (seit 10.11.2026)
 
-**Vorläufig, die Tagesplanung der Fachlichen Leitung Praxis fehlt.** `field_job` hat genau ein Datum, und Home zeigt die offene Praxisaufgabe von heute („Zur Praxisaufgabe“). Als Platzhalter verteilt das Skript die Aufträge der Reihe nach auf die Blocktage: zwei pro Tag, am letzten Tag einer, ganztägig ohne Uhrzeit. Die Ausgabe kennzeichnet das als „VORLÄUFIG“. Seit dem 16.10. hat die Excel die Tagesplanung; der Platzhalter greift nur noch für Aufträge ohne Tagesbindung. Taucht „VORLÄUFIG“ im Production-Probelauf auf, vorher mit der Fachlichen Leitung Praxis klären. Achtung: Wurden Platzhalter-Praxistage schon gespeichert (Staging), legt ein Lauf mit neuer Verteilung die neuen Tage zusätzlich an (Schlüssel ist das Datum). Die alten Platzhalter dann vorher entfernen oder verschieben.
+- **Mehrere Aufträge an einem Praxistermin** (SR-13, SR-64): Alle Aufträge der Spalte Auftragsnummer liegen an diesem Tag, im Zeitslot des Termins (von, bis), in der Reihenfolge der Spalte (`schedule_entry.reihenfolge`). Der Stundenplan zeigt dafür einen Block „Praxistag“. Die frühere Verteilung auf Blocktage („VORLÄUFIG“) entfällt. Ein neuer Lauf setzt die Reihenfolge schon angelegter Einträge nach. Praxistage, die ein früherer Lauf an anderen Tagen angelegt hat, entfernt das Skript nicht.
+- **Labortag** (SR-94): Spalte Theorie/Praxis = „Labor“. Sonst wie ein Praxistermin, mit Auftragsnummer aus dem Tab Aufträge. Diese Aufträge werden Labortage (`field_job_type.ablauf = labor`, kein Praxisflow). Ein Auftrag steht entweder an Praxis- oder an Labor-Terminen, sonst bricht das Skript ab. Die Unterlagen kommen über `scripts/praxis-hilfen.mjs` (`praxis-hilfen-einspielen.md`).
+- **Zweite Trainer:in** (SR-78): Bei „Trainer:in A, Trainer:in C“ an einem Praxis- oder Labortermin ist A zuständig (Rechte, Freigaben, Anrechnung), C wird nur angezeigt.
+- Voraussetzung: Migrationen `0070` und `0071` im Ziel, sonst bricht der Lauf ab.
 
 ## Fachsprache-Einheiten
 

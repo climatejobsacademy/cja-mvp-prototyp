@@ -75,14 +75,32 @@ test("Eine Trainer:in je Termin, nur benutzte werden angelegt", () => {
   assert.deepEqual(plan.trainer.map((t) => t.kennung), ["TR-01", "TR-02"]);
 });
 
-test("Praxisblock ohne Tagesbindung: der Reihe nach verteilt, ohne Uhrzeit", () => {
+test("SR-13, SR-64: mehrere Aufträge an einem Tag im Zeitslot, Reihenfolge wie in der Spalte", () => {
   const plan = erstellePlan(vorlage(), { module: ["II"] });
   const praxis = plan.termine.filter((t) => t.art === "praxis");
-  assert.deepEqual(praxis.map((t) => [t.datum, t.auftraege]), [
-    ["2026-11-09", ["M02-A01", "M02-A02"]],
-    ["2026-11-10", ["M02-A03"]],
+  assert.deepEqual(praxis.map((t) => [t.datum, t.auftraege, t.start, t.ende]), [
+    ["2026-11-09", ["M02-A01", "M02-A02", "M02-A03"], "08:00", "17:00"],
+    ["2026-11-10", ["M02-A01", "M02-A02", "M02-A03"], "08:00", "17:00"],
   ]);
-  assert.ok(praxis.every((t) => t.start === null && t.ende === null));
+  assert.ok(!plan.meldungen.some((m) => m.art === "praxisblock"));
+});
+
+test("SR-78: zweite Trainer:in an Praxistagen nur zur Anzeige", () => {
+  const plan = erstellePlan(vorlage(), { module: ["II"] });
+  const praxis = plan.termine.filter((t) => t.art === "praxis");
+  assert.ok(praxis.every((t) => t.trainer === "TR-02" && t.trainer2 === "TR-01"));
+  assert.ok(plan.termine.filter((t) => t.art !== "praxis").every((t) => !t.trainer2));
+});
+
+test("SR-94: Termintyp Labor macht die Aufträge zu Labortagen", () => {
+  const v = vorlage();
+  v.Stundenplan[3]["Theorie/Praxis"] = "Labor";
+  v.Stundenplan[4]["Theorie/Praxis"] = "Labor";
+  const plan = erstellePlan(v, { module: ["II"] });
+  assert.ok(plan.termine.filter((t) => t.art === "praxis").every((t) => t.labor === true));
+  assert.ok(plan.auftraege.every((a) => a.labor === true));
+  v.Stundenplan[4]["Theorie/Praxis"] = "Praxis";
+  assert.throws(() => erstellePlan(v, { module: ["II"] }), /Praxis- und an Labor-Terminen/);
 });
 
 test("Ohne Datum und außerhalb des Umfangs: übersprungen und gemeldet", () => {
@@ -113,11 +131,6 @@ test("Option ohnePraxis: Praxistermine des Moduls entfallen, Aufträge bleiben",
   assert.equal(plan.auftraege.length, 3);
   assert.ok(plan.meldungen.some((m) => m.art === "ohne-praxis"));
   assert.ok(!plan.meldungen.some((m) => m.art === "praxisblock"));
-});
-
-test("Praxisblock wird als vorläufig gemeldet", () => {
-  const plan = erstellePlan(vorlage(), { module: ["II"] });
-  assert.ok(plan.meldungen.some((m) => m.art === "praxisblock" && m.text.includes("VORLÄUFIG")));
 });
 
 test("Kann-Satz wird übernommen", () => {
