@@ -21,6 +21,8 @@ export type FeldEintrag = {
   /** Phase im Praxisflow (0058) und Ergebnis beim Abschluss (SR-93) */
   phase: string;
   ergebnis: string | null;
+  /** Labortag (SR-94, field_job_type.ablauf = labor): kein Praxisflow, nur Unterlagen */
+  labor: boolean;
 };
 
 export type TheorieEintrag = {
@@ -119,7 +121,7 @@ export async function getAgendaZeitraum(
       const typeIds = [...new Set((fieldJobs ?? []).map((j) => j.field_job_type_id))];
       const { data: fieldJobTypes } = await supabase
         .from("field_job_type")
-        .select("id, titel, beschreibung, bild_oder_icon")
+        .select("id, titel, beschreibung, bild_oder_icon, ablauf")
         .in("id", typeIds.length > 0 ? typeIds : ["00000000-0000-0000-0000-000000000000"]);
 
       for (const entry of feldEntries) {
@@ -141,6 +143,7 @@ export async function getAgendaZeitraum(
             trainerId: job.instructor_id,
             phase: job.phase,
             ergebnis: job.praxisflow?.ergebnis ?? null,
+            labor: type.ablauf === "labor",
           });
         }
       }

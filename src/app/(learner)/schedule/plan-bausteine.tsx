@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, Check, Play, Video, Wrench } from "lucide-react";
+import { ArrowRight, BookOpen, Check, FlaskConical, Play, Video, Wrench } from "lucide-react";
 
 import { spuren, stunden, type Tagestyp } from "@/lib/stundenplan";
 import { TrainerZeile } from "@/components/trainer-zeile";
@@ -153,7 +153,7 @@ export function FlexLeiste({ chip, gross }: { chip: Chip; gross: boolean }) {
  */
 export function GanztagsLeiste({ tag: g, gross }: { tag: Ganztag; gross: boolean }) {
   const zurueck = g.status !== "offen";
-  const label = `Praxisauftrag, ganztägig, ${g.titel}${g.ort ? `, ${g.ort}` : ""}${g.trainer ? `, Praxis mit ${g.trainer.rufname}` : ""}, ${g.status === "erledigt" ? "erledigt" : g.status === "vorbei" ? "vorbei" : "offen"}`;
+  const label = `${g.labor ? "Labortag" : "Praxisauftrag"}, ganztägig, ${g.titel}${g.ort ? `, ${g.ort}` : ""}${g.trainer ? `, Praxis mit ${g.trainer.rufname}` : ""}, ${g.status === "erledigt" ? "erledigt" : g.status === "vorbei" ? "vorbei" : "offen"}`;
   const klasse = cn(
     "flex min-w-0 items-start gap-2 rounded-xl px-3 py-2 font-semibold outline-none",
     g.href && "transition-[box-shadow] duration-150 hover:shadow-card focus-visible:ring-2 focus-visible:ring-brand motion-reduce:transition-none",
@@ -162,10 +162,14 @@ export function GanztagsLeiste({ tag: g, gross }: { tag: Ganztag; gross: boolean
   );
   const inhalt = (
     <>
-      <Wrench className="mt-px size-4 shrink-0 text-praxis-text" aria-hidden="true" />
+      {g.labor ? (
+        <FlaskConical className="mt-px size-4 shrink-0 text-praxis-text" aria-hidden="true" />
+      ) : (
+        <Wrench className="mt-px size-4 shrink-0 text-praxis-text" aria-hidden="true" />
+      )}
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="hyphens-auto break-words">{g.titel}</span>
-        <span className="text-xs font-normal text-ink-muted">Ganztägig{g.ort ? ` · ${g.ort}` : ""}</span>
+        <span className="text-xs font-normal text-ink-muted">{g.labor ? "Labortag · ganztägig" : "Ganztägig"}{g.ort ? ` · ${g.ort}` : ""}</span>
         {/* Begleitende Person des Praxistags (SR-78). */}
         {g.trainer && <TrainerZeile art="praxis" trainer={g.trainer} klein className="mt-1 font-normal text-ink-muted" />}
       </span>
@@ -277,16 +281,16 @@ export function MonatsTags({ tag }: { tag: TagModell }) {
   const tags = [
     ...tag.bloecke.map((b) => ({
       id: b.id,
-      text: b.art === "live" ? `${b.start.slice(0, 5)} Live` : "Praxis",
-      lang: `${b.art === "live" ? "Live-Unterricht" : "Praxisauftrag"}: ${b.titel}`,
+      text: b.art === "live" ? `${b.start.slice(0, 5)} Live` : b.labor ? "Labor" : "Praxis",
+      lang: `${b.art === "live" ? "Live-Unterricht" : b.labor ? "Labortag" : "Praxisauftrag"}: ${b.titel}`,
       erledigt: b.status === "erledigt",
       vorbei: b.status !== "offen",
       punkt: b.art === "live" ? "bg-brand" : "bg-praxis",
     })),
     ...tag.ganztags.map((g) => ({
       id: g.id,
-      text: "Praxis",
-      lang: `Praxisauftrag, ganztägig: ${g.titel}`,
+      text: g.labor ? "Labor" : "Praxis",
+      lang: `${g.labor ? "Labortag" : "Praxisauftrag"}, ganztägig: ${g.titel}`,
       erledigt: g.status === "erledigt",
       vorbei: g.status !== "offen",
       punkt: "bg-praxis",

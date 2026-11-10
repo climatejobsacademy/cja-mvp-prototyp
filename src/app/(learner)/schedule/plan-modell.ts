@@ -41,6 +41,8 @@ export type Block = {
   fieldJobId: string | null;
   /** "Live mit …" / "Praxis mit …" (SR-78), null = niemand eingetragen */
   trainer: TrainerAnzeige | null;
+  /** Labortag (SR-94): Praxis-Farbe, eigener Name, führt zu den Unterlagen */
+  labor: boolean;
 };
 
 export type Chip = {
@@ -68,6 +70,8 @@ export type Ganztag = {
   fieldJobId: string;
   /** "Praxis mit …" (SR-78), null = niemand eingetragen */
   trainer: TrainerAnzeige | null;
+  /** Labortag (SR-94) */
+  labor: boolean;
 };
 
 
@@ -133,6 +137,7 @@ export function planModell(
           lessonId: e.lessonId,
           fieldJobId: null,
           trainer: trainerVon(s.trainerId),
+          labor: false,
         },
       ];
     });
@@ -162,6 +167,7 @@ export function planModell(
               lessonId: null,
               fieldJobId: e.fieldJobId,
               trainer: trainerVon(e.trainerId),
+              labor: e.labor,
             },
           ]
         : []
@@ -176,6 +182,7 @@ export function planModell(
         href: praxisaufgabeHref(e.fieldJobId),
         fieldJobId: e.fieldJobId,
         trainer: trainerVon(e.trainerId),
+        labor: e.labor,
       }));
 
     // Brief 2.4/5: Selbstlernen nur in "Flexibel", nie mit Uhrzeit.

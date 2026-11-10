@@ -111,6 +111,7 @@ export function aktivitaeten(tag: TagesAgenda): TagesAktivitaeten {
       trainerId: e.trainerId,
       phase: e.phase,
       ergebnis: e.ergebnis,
+      labor: e.labor,
     })),
   };
 }

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Check, Video, Wrench } from "lucide-react";
+import { ArrowRight, Check, FlaskConical, Video, Wrench } from "lucide-react";
 
 import { TrainerZeile } from "@/components/trainer-zeile";
 import { cn } from "@/lib/utils";
@@ -21,12 +21,14 @@ import { zeitText, type Block } from "./plan-modell";
 const ART = {
   live: { text: "Live-Unterricht", Icon: Video, flaeche: "bg-brand-tint", streifen: "border-l-brand-2", icon: "text-brand", anker: "bg-anchor-brand text-white shadow-anchor-brand", ankerIcon: "text-white", inhalt: "Zur Lektion" },
   praxis: { text: "Praxisauftrag", Icon: Wrench, flaeche: "bg-praxis-tint", streifen: "border-l-praxis", icon: "text-praxis-text", anker: "bg-anchor-praxis text-ink shadow-anchor-praxis", ankerIcon: "text-ink", inhalt: "Zum Praxisauftrag" },
+  // Labortag (SR-94): Farben wie Praxis, eigener Name und Ziel.
+  labor: { text: "Labortag", Icon: FlaskConical, flaeche: "bg-praxis-tint", streifen: "border-l-praxis", icon: "text-praxis-text", anker: "bg-anchor-praxis text-ink shadow-anchor-praxis", ankerIcon: "text-ink", inhalt: "Zu den Unterlagen" },
 } as const;
 
 const STATUS_TEXT = { erledigt: "erledigt", vorbei: "vorbei", offen: "offen" } as const;
 
 export function TerminBlock({ block, gross, style }: { block: Block; gross: boolean; style: React.CSSProperties }) {
-  const art = ART[block.art];
+  const art = ART[block.labor ? "labor" : block.art];
   // Punkt 3 der Änderungsliste: Vergangenes weiß mit feinem Rand und grauem Text.
   const zurueck = !block.naechster && block.status !== "offen";
   const label = [

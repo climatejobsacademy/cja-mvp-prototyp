@@ -118,3 +118,17 @@ test("Wochenende (SR-93)", () => {
   assert.equal(istWochenende("2026-11-15"), true);
   assert.equal(istWochenende("2026-11-16"), false);
 });
+
+test("SR-94: Labortag ist Fokus, wenn kein Praxisauftrag offen ist, und nie 'geschafft'", () => {
+  const labor = { ...praxis, id: "l1", fieldJobId: "fj-l", titel: "Labor", labor: true, phase: "informieren" };
+  const allein = getDayState("2026-11-18T09:00:00", { datum: "2026-11-18", live: [], flex: [], praxis: [labor] });
+  assert.equal(allein.zustand, "E");
+  if (allein.zustand === "E") {
+    assert.equal(allein.praxis.id, "l1");
+    assert.equal(allein.alleFertig, false);
+  }
+  const offen = { ...praxis, phase: "planen" };
+  const gemischt = getDayState("2026-11-18T09:00:00", { datum: "2026-11-18", live: [], flex: [], praxis: [labor, offen] });
+  if (gemischt.zustand === "E") assert.equal(gemischt.praxis.id, "p1");
+  else assert.fail("E erwartet");
+});

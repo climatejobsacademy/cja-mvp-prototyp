@@ -72,6 +72,8 @@ export async function getContentLibrary(
       .from("field_job_type")
       .select("id, titel, beschreibung, vorbereitung_text, reihenfolge, module_id")
       .eq("programme_id", programmeId)
+      // Labortage (SR-94) sind keine Praxisaufgaben im Programm; sie stehen nur im Stundenplan.
+      .neq("ablauf", "labor")
       .order("reihenfolge", { ascending: true }),
   ]);
 
@@ -97,6 +99,7 @@ export async function getContentLibrary(
           .from("field_job_type")
           .select("id, titel, beschreibung, vorbereitung_text, reihenfolge, module_id")
           .in("module_id", moduleIds)
+          .neq("ablauf", "labor")
           .order("reihenfolge", { ascending: true }),
       ])
     : [{ data: [] as KursZeile[] }, { data: [] as AuftragZeile[] }];
