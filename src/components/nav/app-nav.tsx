@@ -33,7 +33,7 @@ export function Wortmarke({ href = "/home" }: { href?: string }) {
   return (
     <Link
       href={href}
-      aria-label="The Academy for Climate Jobs – zur Startseite"
+      aria-label="Academy for Climate Jobs – zu Home"
       className={cn("flex min-h-11 shrink-0 items-center rounded-lg", FOKUS)}
     >
       <span aria-hidden="true" className="font-heading text-[10px] leading-[1.05] text-ink uppercase">

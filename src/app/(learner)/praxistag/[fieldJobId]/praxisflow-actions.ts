@@ -15,8 +15,8 @@ import { createClient } from "@/lib/supabase/server";
 type Fehler = { code?: string; message: string } | null;
 
 function meldung(error: NonNullable<Fehler>): string {
-  if (error.code === "55P03") return "Zu viele falsche Versuche. Bitte AfCJ melden, damit die Sperre aufgehoben wird.";
-  if (error.code === "P0002" && /Codewort/.test(error.message)) return "Für deine Gruppe ist noch kein Codewort eingerichtet. Bitte AfCJ melden.";
+  if (error.code === "55P03") return "Zu viele falsche Versuche. Bitte melde dich bei der Academy for Climate Jobs, damit die Sperre aufgehoben wird.";
+  if (error.code === "P0002" && /Codewort/.test(error.message)) return "Für deine Kohorte ist noch kein Codewort eingerichtet. Bitte AfCJ melden.";
   if (["23514", "42501", "P0002", "23505", "22023"].includes(error.code ?? "")) return error.message;
   return "Das hat nicht geklappt. Bitte versuch es noch einmal.";
 }

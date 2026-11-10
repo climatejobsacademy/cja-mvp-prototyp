@@ -87,7 +87,7 @@ test("Wochentitel aus Nummer im Modul, Typ und Lage -- ohne Datum aus dem Namen"
     w.map((x) => x.titel),
     ["Woche 1 · Theorie · online", "Woche 2 · Theorie · Präsenz"]
   );
-  assert.equal(wochenTitel(4, "praxis", "betrieb"), "Woche 4 · Praxis · im Betrieb");
+  assert.equal(wochenTitel(4, "praxis", "betrieb"), "Woche 4 · Praxis · am Praxisort");
   assert.equal(wochenTitel(1, null, null), "Woche 1");
 });
 

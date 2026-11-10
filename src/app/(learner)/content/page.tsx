@@ -109,7 +109,7 @@ export default async function ProgrammPage({
   const kacheln: Kachel[] = [
     imModul.length > 0 ? { wert: String(imModul.length), label: imModul.length === 1 ? "Kompetenz" : "Kompetenzen" } : null,
     steps.size > 0 ? { wert: `${stepsErreicht} / ${steps.size}`, label: "Kompetenzschritte erreicht" } : null,
-    lernTage.length > 0 ? { wert: `${lernTage.filter(tagErledigt).length} / ${lernTage.length}`, label: "Lerntage absolviert" } : null,
+    lernTage.length > 0 ? { wert: `${lernTage.filter(tagErledigt).length} / ${lernTage.length}`, label: "Lerntage erledigt" } : null,
   ].filter((k): k is Kachel => !!k);
 
   // Brief 2.2, angepasst (Anna 2026-10-11): "Start {Datum} · Ende {Datum} · {n} Module".

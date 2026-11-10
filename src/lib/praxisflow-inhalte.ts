@@ -241,8 +241,8 @@ export const TEXTE = {
   bewerten: {
     selbstTitel: "Deine Einschätzung",
     selbstText: "Prüfe dein Ergebnis und wähle je Kriterium die Punkte.",
-    peerTitel: "Einschätzung durch eine:n Mitlernende:n",
-    peerText: "Gib das Gerät einer Person aus deiner Gruppe. Sie prüft dein Ergebnis und wählt je Kriterium die Punkte.",
+    peerTitel: "Einschätzung durch einen Peer",
+    peerText: "Gib das Gerät einer Person aus deiner Kohorte. Sie prüft dein Ergebnis und wählt je Kriterium die Punkte.",
     peerWeiter: "Weiter zur Trainer:in",
     fremdTitel: "Einschätzung durch die Trainer:in",
     fremdText: "Die Trainer:in prüft dein Ergebnis und wählt je Kriterium die Punkte.",
@@ -251,7 +251,7 @@ export const TEXTE = {
     nacharbeitText:
       "Bei einem K.-o.-Kriterium hat deine Trainer:in 0 Punkte gegeben. Dann zählt der Auftrag noch nicht für deine Kompetenzen. Schreib als Nächstes auf, was du beim nächsten Mal anders machst. Danach beginnt der Auftrag noch einmal bei Informieren. Dein Plan und deine Dateien bleiben, du kannst sie anpassen.",
     nacharbeitButton: "Neu beginnen",
-    status: "Verifizierung durch AfCJ läuft",
+    status: "Wird von der Academy for Climate Jobs bestätigt",
   },
   // Hinweis direkt am jeweiligen Codewort-Feld
   gates: {

@@ -398,7 +398,7 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
                     eingabeTexte={TEXTE.eingabe}
                   />
                   <button type="button" disabled={gesperrt || laeuft} onClick={weiter} className={GROSS}>
-                    {name === "schritte" ? "Plan fertig" : "Weiter"} <ArrowRight aria-hidden="true" />
+                    {name === "schritte" ? "Plan abschließen" : "Weiter"} <ArrowRight aria-hidden="true" />
                   </button>
                   {gesperrt && <p className="text-center text-sm text-ink-muted">{TEXTE.planen.gesperrt}</p>}
                 </Karte>
@@ -497,7 +497,7 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
                 { titel: "Prüfen unter Spannung", text: "Mit Trainer:in: erst messen, dann die Funktion. Am Ende das Prüfprotokoll." },
               ];
               return (
-                <Uebergabe {...k} ton="weiss" icon={ClipboardCheck} frage="Dein Aufbau ist fertig" hinweis="Jetzt misst du. Das passiert in diesen Teilen:">
+                <Uebergabe {...k} ton="weiss" icon={ClipboardCheck} frage="Dein Aufbau ist erledigt" hinweis="Jetzt misst du. Das passiert in diesen Teilen:">
                   <ol className="flex flex-col gap-2">
                     {teile.map((t, i) => (
                       <li key={t.titel} className="flex items-center gap-3 rounded-zeile bg-subtle px-4 py-3">
@@ -622,7 +622,7 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
                     }
                     className={GROSS}
                   >
-                    {letzter ? "Kontrolle fertig" : "Weiter"} <ArrowRight aria-hidden="true" />
+                    {letzter ? "Kontrolle abschließen" : "Weiter"} <ArrowRight aria-hidden="true" />
                   </button>
                 </Karte>
               );
@@ -703,7 +703,7 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
             }
             if (art === "uebergabe-peer") {
               return (
-                <Uebergabe {...k} ton="weiss" icon={Users} frage="Gib das Gerät einer Person aus deiner Gruppe" hinweis="Sie schaut sich deine Arbeit an und schätzt sie ein. Das ist freiwillig. Danach bekommst du das Gerät zurück.">
+                <Uebergabe {...k} ton="weiss" icon={Users} frage="Gib das Gerät einer Person aus deiner Kohorte" hinweis="Sie schaut sich deine Arbeit an und schätzt sie ein. Das ist freiwillig. Danach bekommst du das Gerät zurück.">
                   <div className="flex flex-col gap-3">
                     <button type="button" onClick={() => gehe(naechster())} className={GROSS}>
                       Ich bin dran <ArrowRight aria-hidden="true" />
@@ -884,16 +884,16 @@ const ZEIT = (iso: string | undefined | null) => (iso ? jetztInBerlin(new Date(i
 
 const VERLAUF_TEXT: Record<string, string> = {
   "phase:planen": "Auftrag angenommen, Informieren erledigt",
-  "phase:entscheiden": "Plan fertig",
+  "phase:entscheiden": "Plan erledigt",
   "phase:ausfuehren": "Ausführen begonnen",
-  "phase:kontrollieren": "Aufbau, Messungen und Prüfprotokoll fertig",
+  "phase:kontrollieren": "Aufbau, Messungen und Prüfprotokoll erledigt",
   "phase:bewerten": "Messwerte gedeutet",
   "zurueck:planen": "Zurück zum Plan",
   "gate:plan": "Plan freigegeben (Codewort der Trainer:in)",
   "gate:zuschalten": "Inbetriebnahme freigegeben (Codewort der Trainer:in)",
   "einschaetzung:selbst": "Selbsteinschätzung abgegeben",
   "einschaetzung:peer": "Peer-Einschätzung abgegeben",
-  "einschaetzung:trainer": "Trainer-Einschätzung mit Codewort bestätigt",
+  "einschaetzung:trainer": "Einschätzung der Trainer:in mit Codewort bestätigt",
   "abgeschlossen:angerechnet": "Auftrag abgeschlossen",
   "abgeschlossen:ko": "Auftrag abgeschlossen, K.-o.-Kriterium nicht erfüllt",
   "ko:informieren": "K.-o.-Kriterium nicht erfüllt, neuer Durchlauf ab Informieren",
@@ -919,7 +919,7 @@ function Fertig({ daten, zurueck }: { daten: PraxisflowDaten; zurueck: { href: s
           <PartyPopper className="size-8 shrink-0" aria-hidden="true" />
           <div className="flex flex-col">
             <h2 id="frage" tabIndex={-1} className="font-heading text-[26px] leading-tight outline-none md:text-[32px]">
-              Auftrag fertig!
+              Praxisauftrag geschafft!
             </h2>
             <p className="text-[15px]">Unten steht alles, was du gemacht hast.</p>
           </div>
@@ -962,7 +962,7 @@ function Fertig({ daten, zurueck }: { daten: PraxisflowDaten; zurueck: { href: s
             ? "Abgeschlossen, zählt für deine Kompetenzen"
             : f.ergebnis === "ko"
               ? "Abgeschlossen, zählt nicht (K.-o.-Kriterium)"
-              : "Abgeschlossen, Bestätigung durch die Akademie folgt"
+              : "Abgeschlossen, Bestätigung durch die Academy for Climate Jobs folgt"
         }
         naechstesMal={f.naechstes_mal ?? null}
         verlauf={(f.verlauf ?? []).map((v) => ({ zeit: jetztInBerlin(new Date(v.zeit)), text: VERLAUF_TEXT[v.ereignis] ?? v.ereignis }))}

@@ -30,6 +30,6 @@ test("Selbstlernen: heute flexibel, offen, erledigt", () => {
 test("Praxis: ohne Uhrzeit, durchgeführt, ohne eigenen Termin", () => {
   const praxis = { art: "praxis" as const, start: null, erledigt: false };
   assert.equal(aktivitaetMeta({ ...praxis, datum: "2026-10-12" }, HEUTE), "Montag");
-  assert.equal(aktivitaetMeta({ ...praxis, datum: "2026-10-12", erledigt: true }, HEUTE), "durchgeführt");
+  assert.equal(aktivitaetMeta({ ...praxis, datum: "2026-10-12", erledigt: true }, HEUTE), "erledigt");
   assert.equal(aktivitaetMeta({ ...praxis, datum: null }, HEUTE), "");
 });

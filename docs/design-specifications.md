@@ -78,6 +78,36 @@ Die Bewertung der heutigen Dienste (Hosting, Datenbank, Mailversand) steht in
 - Es werden keine proprietären Dienste des Hosting-Anbieters genutzt (Regel 11 in
   `CLAUDE.md`), damit ein Wechsel des Hosters möglich bleibt.
 
+## 1.3 Sprache und Begriffe
+
+Entschieden 2026-11-10 (Produkt-Lead, `decisions.md`). Ein Begriff je Sache, in allen Texten für Lernende und Trainer:innen gleich. Anrede in der App: du; Rechtsseiten: Sie. Gendern mit Doppelpunkt (Trainer:in, Trainer:innen).
+
+| Sache | Begriff | Nicht verwenden |
+|---|---|---|
+| Vorlage, die geübt wird (Programm, Kompetenzen) | Praxisaufgabe | – |
+| Bearbeitung einer Praxisaufgabe durch eine lernende Person | Praxisauftrag (im Praxisflow kurz „Auftrag“) | Praxisaufgabe, Praxistag (für den Auftrag) |
+| Tag mit Praxisaufträgen | Praxistag | – |
+| Papier-Dokument zu Beginn eines Praxisauftrags | Arbeitsauftrag | – |
+| Live-Veranstaltung | Live-Unterricht; Kurzlabel „Live“; der Teams-Link heißt „Live-Raum“ | Live-Termin, Live-Lektion, Live-Session |
+| Selbstlern-Inhalt | Selbstlern-Lektion; Kategorie „Selbstlernen“ | Selbstlernmodul, Selbstlern-Einheit, Einheit, SCORM-Paket |
+| Status eines Eintrags (Haken, Stundenplan, Prüfpunkt) | erledigt | fertig, absolviert, besucht, durchgeführt |
+| Lektion oder Praxisauftrag dauerhaft fertig | abgeschlossen | fertig |
+| Überschrift im Erfolgsmoment | geschafft | – |
+| Zählt für die Kompetenzen | angerechnet | – |
+| Kompetenzschritt fertig | erreicht | – |
+| Prüfung durch Akademie oder Trainer:in | bestätigt / wird bestätigt | verifiziert, Verifizierung |
+| Kompetenz und ihre Teile | Kompetenz, Kompetenzschritt | „Schritt“ allein |
+| Lerngruppe | Kohorte | Gruppe |
+| Mitlernende Person bei der Einschätzung | Peer, beim ersten Mal erklärt als „eine Person aus deiner Kohorte“ | Mitlernende:r, lernende Person |
+| Einschätzung der Trainer:in | Einschätzung der Trainer:in | Trainer-Einschätzung |
+| Fragen-Thread einer Lektion | Fragen zur Lektion | Chat (Chat heißt nur der Kohorten-Chat) |
+| Bereiche | Home, Stundenplan, Kompetenzen, Programm; Verweise mit diesen Namen („Zum Stundenplan“) | Startseite |
+| Anmelden | anmelden, abmelden, Anmeldelink | einloggen, Login-Link |
+| Absender | Academy for Climate Jobs | AfCJ, Akademie, das Team |
+| Pläne im Praxisflow | Pläne und Zeichnungen | Pläne und Skizzen |
+| Ort der Ausbildung im Pilot | nicht „Betrieb“ (Pilot-Regel, CLAUDE.md) | Betrieb |
+| Zeit und Datum | „13:00“ ohne „Uhr“; in Listen „Mo, 19.10.“, in Sätzen „Montag, 19.10.“ | – |
+
 ## 2. Kritische Flows
 
 Priorisierung entschieden am 2026-09-09: 1. Praxistag-Flow — 2. Learner Day

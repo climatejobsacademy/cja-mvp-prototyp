@@ -73,7 +73,7 @@ export function zaehlText(r: Wochenrueckblick | null): string | null {
   const lektionen = lektionenAbgeschlossen(r);
   const teile = [
     lektionen > 0 ? `${lektionen} ${lektionen === 1 ? "Lektion" : "Lektionen"} abgeschlossen` : null,
-    r.liveErledigt > 0 ? `${r.liveErledigt} ${r.liveErledigt === 1 ? "Live-Termin" : "Live-Termine"} besucht` : null,
+    r.liveErledigt > 0 ? `${r.liveErledigt}× Live-Unterricht erledigt` : null,
   ].filter(Boolean);
   return teile.length > 0 ? `Diese Woche: ${teile.join(" · ")}` : null;
 }
@@ -112,8 +112,8 @@ export function freiText(
     const lob =
       liveGesamt > 0 && liveErledigt === liveGesamt
         ? liveGesamt === 1
-          ? "Deinen Live-Termin geschafft."
-          : `Alle ${liveGesamt} Live-Termine geschafft.`
+          ? "Deinen Live-Unterricht geschafft."
+          : `${liveGesamt}× Live-Unterricht geschafft.`
         : "Fast alles geschafft.";
     return { zustand: 1, headline: `Starke Woche, ${vorname}.`, unterzeile: `${lob} Genieß deinen ${heuteName}.`, wochenreihe: true };
   }
@@ -129,7 +129,7 @@ export function freiText(
   return {
     zustand: 3,
     headline: naechsterName ? `${naechsterName} geht’s weiter.` : "Bald geht’s weiter.",
-    unterzeile: `Genieß deinen ${heuteName}. Die offenen Einheiten warten auf dich, wenn du so weit bist.`,
+    unterzeile: `Genieß deinen ${heuteName}. Die offenen Lektionen warten auf dich, wenn du so weit bist.`,
     wochenreihe: false,
   };
 }

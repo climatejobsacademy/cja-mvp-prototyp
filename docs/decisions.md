@@ -484,6 +484,14 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Status:** gültig
 - **Belegt:** SR-93
 
+### 2026-11-10 – Sprache: ein Begriff je Sache
+
+- **Entscheidung:** (Produkt-Lead) Für Texte an Lernende und Trainer:innen gilt die Begriffsliste in `design-specifications.md`, Abschnitt 1.3. Dabei: Lerngruppe heißt „Kohorte“; das Papier-Dokument heißt weiter „Arbeitsauftrag“; Prüfungen durch Akademie oder Trainer:in heißen „bestätigt“ statt „verifiziert“; Absender ist „Academy for Climate Jobs“. Praxisaufgabe = Vorlage, Praxisauftrag = Bearbeitung; Live-Unterricht für alles Live; erledigt, abgeschlossen, geschafft, angerechnet je mit eigener Bedeutung.
+- **Begründung:** Inventar aller Oberflächentexte am 10.11.2026: fünf Namen für den Praxisauftrag, drei für Live, mehrere für Selbstlernen und für „fertig“.
+- **Folgen:** Texte angeglichen; neue Texte folgen der Liste. Meldungen aus Datenbankfunktionen werden angepasst, wenn die jeweilige Funktion das nächste Mal ersetzt wird.
+- **Status:** gültig
+- **Belegt:** `design-specifications.md` Abschnitt 1.3
+
 ## Offene technische Schulden
 
 Diese Punkte sind keine Entscheidungen, sondern bekannte Lücken; was daraus wird, steht in Asana.

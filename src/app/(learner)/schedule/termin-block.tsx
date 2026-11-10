@@ -8,7 +8,7 @@ import { zeitText, type Block } from "./plan-modell";
 
 // Stundenplan v2 (SR-13, SR-73): Termin im Zeitraster. Wunsch Anna 2026-10-11:
 // kein Klick-Fenster -- "Zur Lektion →" steht direkt im Block, der ganze
-// Block öffnet die Lektion (bzw. Praxisaufgabe). Ab 15 Min. vor Beginn bis
+// Block öffnet die Lektion (bzw. Praxisauftrag). Ab 15 Min. vor Beginn bis
 // zum Ende eines Live-Termins stattdessen der Live-Raum. Titel immer
 // vollständig. Bei Live ist der Titel das Thema der Lektion (lesson.thema,
 // 0029), ohne den Lektionsnamen darüber (Anna 2026-10-16, wie demo); der volle
@@ -20,7 +20,7 @@ import { zeitText, type Block } from "./plan-modell";
 // Anna 2026-10-12, Kontrast Weiß auf Coral nur 1.93:1).
 const ART = {
   live: { text: "Live-Unterricht", Icon: Video, flaeche: "bg-brand-tint", streifen: "border-l-brand-2", icon: "text-brand", anker: "bg-anchor-brand text-white shadow-anchor-brand", ankerIcon: "text-white", inhalt: "Zur Lektion" },
-  praxis: { text: "Praxisaufgabe", Icon: Wrench, flaeche: "bg-praxis-tint", streifen: "border-l-praxis", icon: "text-praxis-text", anker: "bg-anchor-praxis text-ink shadow-anchor-praxis", ankerIcon: "text-ink", inhalt: "Zur Praxisaufgabe" },
+  praxis: { text: "Praxisauftrag", Icon: Wrench, flaeche: "bg-praxis-tint", streifen: "border-l-praxis", icon: "text-praxis-text", anker: "bg-anchor-praxis text-ink shadow-anchor-praxis", ankerIcon: "text-ink", inhalt: "Zum Praxisauftrag" },
 } as const;
 
 const STATUS_TEXT = { erledigt: "erledigt", vorbei: "vorbei", offen: "offen" } as const;
@@ -74,7 +74,7 @@ export function TerminBlock({ block, gross, style }: { block: Block; gross: bool
       </span>
       {/* Immer genau eine Aktion (wie Veras Stundenplan, Anna 2026-10-11): ab
           15 Min. vor Beginn bis zum Ende führt der ganze Block in den Live-Raum,
-          sonst zur Lektion bzw. Praxisaufgabe. */}
+          sonst zur Lektion bzw. Praxisauftrag. */}
       {block.liveRaum ? (
         <a
           href={block.liveRaum}
