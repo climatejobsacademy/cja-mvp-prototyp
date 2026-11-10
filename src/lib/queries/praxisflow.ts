@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { getPraxisaufgabeHilfen } from "@/lib/queries/praxisaufgabe-hilfen";
 import { getMeineTrainer } from "@/lib/queries/trainer";
 import { PRUEFLISTE_STANDARD, type Pruefpunkt } from "@/lib/praxisflow-inhalte";
 import type { PraxisflowDaten } from "@/lib/praxisflow-shared";
@@ -68,6 +69,9 @@ export async function getPraxisflow(fieldJobId: string, learnerId: string): Prom
     };
   }
 
+  // Hilfsunterlagen von AfCJ zur Praxisaufgabe (SR-68), vor den eigenen.
+  const hilfen = await getPraxisaufgabeHilfen(job.field_job_type_id);
+
   const trainer = job.instructor_id ? ((await getMeineTrainer()).get(job.instructor_id) ?? null) : null;
 
   // Nächster offener Praxisauftrag desselben Tages (SR-90): geführt und nicht
@@ -96,14 +100,15 @@ export async function getPraxisflow(fieldJobId: string, learnerId: string): Prom
     datum: job.datum,
     phase: job.phase,
     fortschritt: job.praxisflow ?? {},
-    dateien: (dateien ?? []).map((d) => ({
+    dateien: [...hilfen.dateien, ...(dateien ?? []).map((d) => ({
       id: d.id,
       art: d.art,
       dateiname: d.dateiname,
       mimeType: d.mime_type,
       storagePfad: d.storage_pfad,
       url: links.get(d.storage_pfad) ?? null,
-    })),
+    }))],
+    hilfeLinks: hilfen.links,
     trainer: trainer ? { name: trainer.name, fotoUrl: trainer.fotoUrl } : null,
     pruefliste,
     naechster: offen && offenTyp ? { fieldJobId: offen.id, titel: offenTyp.titel } : null,
