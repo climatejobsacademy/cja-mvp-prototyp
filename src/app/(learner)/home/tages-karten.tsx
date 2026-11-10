@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { kompetenzHref, StaerktPills, type StaerktKompetenz } from "@/components/staerkt-pills";
 import { PRAXISAUFGABE_LINK } from "@/lib/schalter";
-import { ArrowRight, BookOpen, CalendarDays, Check, Video, Wrench } from "lucide-react";
+import { ArrowRight, BookOpen, CalendarDays, Check, FlaskConical, Video, Wrench } from "lucide-react";
 
 import type { ErledigtEintrag, LiveAktivitaet, PraxisAktivitaet } from "@/lib/home-tag";
 import { PHASEN } from "@/lib/praxisflow-inhalte";
@@ -327,6 +327,7 @@ export function FokusErledigt({
 
 /** Phase eines Praxisauftrags in Worten (SR-93). */
 function praxisStand(p: PraxisAktivitaet): string {
+  if (p.labor) return "Labortag";
   if (p.phase === "abgeschlossen") return p.ergebnis === "angerechnet" ? "Geschafft, angerechnet" : "Geschafft";
   const nr = PHASEN.findIndex((x) => x.id === p.phase);
   return nr >= 0 ? `${PHASEN[nr].name} · Phase ${nr + 1} von ${PHASEN.length}` : "Noch nicht begonnen";
@@ -383,9 +384,12 @@ export function FokusPraxis({
         </>
       }
     >
+      {/* Labortag (SR-94): kein Flow, nur Unterlagen. */}
       <span className="inline-flex items-center gap-2 text-sm text-ink">
-        <Wrench className="size-4 flex-none" aria-hidden="true" />
-        {praxis.standort ? `Praxisauftrag · ${praxis.standort}` : "Praxisauftrag"} · {praxisStand(praxis)}
+        {praxis.labor ? <FlaskConical className="size-4 flex-none" aria-hidden="true" /> : <Wrench className="size-4 flex-none" aria-hidden="true" />}
+        {praxis.labor
+          ? praxis.standort ? `Labortag · ${praxis.standort}` : "Labortag"
+          : `${praxis.standort ? `Praxisauftrag · ${praxis.standort}` : "Praxisauftrag"} · ${praxisStand(praxis)}`}
       </span>
       <FokusTitel titel={praxis.titel} stil={stil} aufCoral />
       <FokusTrainer art="praxis" trainer={trainer} />
@@ -408,7 +412,7 @@ export function FokusPraxis({
       )}
       {PRAXISAUFGABE_LINK && (
         <PrimaerAktion href={`/praxistag/${praxis.fieldJobId}?von=home`}>
-          {praxis.phase === "informieren" ? "Praxisauftrag starten" : "Praxisauftrag fortsetzen"}
+          {praxis.labor ? "Unterlagen öffnen" : praxis.phase === "informieren" ? "Praxisauftrag starten" : "Praxisauftrag fortsetzen"}
         </PrimaerAktion>
       )}
     </FokusRahmen>

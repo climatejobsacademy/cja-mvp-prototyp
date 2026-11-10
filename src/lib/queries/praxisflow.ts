@@ -87,7 +87,8 @@ export async function getPraxisflow(fieldJobId: string, learnerId: string): Prom
     .order("created_at", { ascending: true });
   const offen = (andere ?? []).find((a) => {
     const t = Array.isArray(a.field_job_type) ? a.field_job_type[0] : a.field_job_type;
-    return t?.ablauf === "gefuehrt" ? a.phase !== "abgeschlossen" : a.status !== "durchgeführt";
+    // Labortage (SR-94) haben keinen Flow und zählen hier nicht.
+    return t?.ablauf === "gefuehrt" && a.phase !== "abgeschlossen";
   });
   const offenTyp = offen ? (Array.isArray(offen.field_job_type) ? offen.field_job_type[0] : offen.field_job_type) : null;
 

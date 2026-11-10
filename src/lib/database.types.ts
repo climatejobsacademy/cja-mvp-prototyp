@@ -46,7 +46,7 @@ export type EnrolmentStatus = "aktiv" | "abgeschlossen" | "abgebrochen";
 export type ScheduleArt = "live" | "asynchron" | "feld";
 export type FieldJobStatus = "geplant" | "durchgeführt";
 // 0058 (SR-64): Praxisflow.
-export type FieldJobTypeAblauf = "einfach" | "gefuehrt";
+export type FieldJobTypeAblauf = "einfach" | "gefuehrt" | "labor";
 export type PraxisPhase =
   | "informieren"
   | "planen"

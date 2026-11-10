@@ -46,6 +46,8 @@ export type PraxisAktivitaet = {
   phase?: string;
   /** Ergebnis beim Abschluss (angerechnet, ohne_trainer), sonst null */
   ergebnis?: string | null;
+  /** Labortag (SR-94): kein Praxisflow, wird nie „abgeschlossen“ */
+  labor?: boolean;
 };
 
 /** Praxisauftrag fertig (SR-93): im Praxisflow abgeschlossen. */
@@ -119,15 +121,18 @@ export function getDayState(jetzt: string, tag: TagesAktivitaeten): Tageszustand
   const live = [...tag.live].sort((a, b) => a.start.localeCompare(b.start));
   const ersteOffeneFlex = tag.flex.find((f) => !f.erledigt) ?? null;
 
-  // Praxistag (SR-93): Fokus auf den nächsten offenen Praxisauftrag, sonst den ersten des Tages.
-  const praxisHeute = tag.praxis.find((p) => !praxisFertig(p)) ?? tag.praxis[0];
+  // Praxistag (SR-93): Fokus auf den nächsten offenen Praxisauftrag, sonst den
+  // ersten des Tages. Ein Labortag (SR-94) hat keinen Flow und wird nie
+  // abgeschlossen: Fokus nur, wenn kein Praxisauftrag offen ist.
+  const auftraege = tag.praxis.filter((p) => !p.labor);
+  const praxisHeute = auftraege.find((p) => !praxisFertig(p)) ?? tag.praxis.find((p) => p.labor) ?? tag.praxis[0];
   const nachholen = tag.nachholen ?? null;
   if (praxisHeute) {
     return {
       zustand: "E",
       praxis: praxisHeute,
       alle: tag.praxis,
-      alleFertig: tag.praxis.every(praxisFertig),
+      alleFertig: auftraege.length > 0 && !praxisHeute.labor && auftraege.every(praxisFertig),
       danach: ersteOffeneFlex,
       nachholen: ersteOffeneFlex ? null : nachholen,
     };
