@@ -23,18 +23,26 @@ const ART = {
   praxis: { text: "Praxisauftrag", Icon: Wrench, flaeche: "bg-praxis-tint", streifen: "border-l-praxis", icon: "text-praxis-text", anker: "bg-anchor-praxis text-ink shadow-anchor-praxis", ankerIcon: "text-ink", inhalt: "Zum Praxisauftrag" },
   // Labortag (SR-94): Farben wie Praxis, eigener Name und Ziel.
   labor: { text: "Labortag", Icon: FlaskConical, flaeche: "bg-praxis-tint", streifen: "border-l-praxis", icon: "text-praxis-text", anker: "bg-anchor-praxis text-ink shadow-anchor-praxis", ankerIcon: "text-ink", inhalt: "Zu den Unterlagen" },
+  // Mehrere Praxisaufträge an einem Tag (SR-13): ein Block für den Tag.
+  praxistag: { text: "Praxistag", Icon: Wrench, flaeche: "bg-praxis-tint", streifen: "border-l-praxis", icon: "text-praxis-text", anker: "bg-anchor-praxis text-ink shadow-anchor-praxis", ankerIcon: "text-ink", inhalt: "Zum Praxistag" },
 } as const;
+
+/** "3 Praxisaufträge · 1 abgeschlossen" (SR-13) */
+export function sammelText(s: { anzahl: number; fertig: number }): string {
+  return `${s.anzahl} Praxisaufträge · ${s.fertig} abgeschlossen`;
+}
 
 const STATUS_TEXT = { erledigt: "erledigt", vorbei: "vorbei", offen: "offen" } as const;
 
 export function TerminBlock({ block, gross, style }: { block: Block; gross: boolean; style: React.CSSProperties }) {
-  const art = ART[block.labor ? "labor" : block.art];
+  const art = ART[block.labor ? "labor" : block.sammel ? "praxistag" : block.art];
   // Punkt 3 der Änderungsliste: Vergangenes weiß mit feinem Rand und grauem Text.
   const zurueck = !block.naechster && block.status !== "offen";
   const label = [
     art.text,
     `${zeitText(block)} Uhr`,
     block.volltitel,
+    block.sammel ? sammelText(block.sammel) : null,
     block.trainer ? `${block.art === "live" ? "Live" : "Praxis"} mit ${block.trainer.rufname}` : null,
     block.ort,
     // Der Anker bleibt nach dem letzten Termin des Tages stehen (Anna 2026-10-12): dann "vorbei", nicht "als Nächstes".
@@ -93,6 +101,9 @@ export function TerminBlock({ block, gross, style }: { block: Block; gross: bool
         </Link>
       ) : (
         <span aria-label={label}>{titel}</span>
+      )}
+      {block.sammel && (
+        <span className={cn("pointer-events-none", gross ? "text-[13px]" : "text-[11px]")}>{sammelText(block.sammel)}</span>
       )}
       {/* Trainer:in des Termins (SR-78); steht auch im aria-label des Links. */}
       {block.trainer && (

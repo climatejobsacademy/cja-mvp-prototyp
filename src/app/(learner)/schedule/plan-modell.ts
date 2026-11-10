@@ -3,7 +3,7 @@
 // "Flexibel", Tagestyp. Reine Funktionen, keine Datenbank.
 
 import type { EinstiegEintrag } from "@/lib/fachsprache-einstiege";
-import { praxisaufgabeHref } from "@/lib/schalter";
+import { praxisaufgabeHref, praxistagHref } from "@/lib/schalter";
 import type { Plantag } from "@/lib/queries/stundenplan";
 import type { TrainerAnzeige } from "@/lib/queries/trainer";
 import { hatUhrzeit, naechsterTerminId, tagestypAus, type Tagestyp } from "@/lib/stundenplan";
@@ -43,7 +43,11 @@ export type Block = {
   trainer: TrainerAnzeige | null;
   /** Labortag (SR-94): Praxis-Farbe, eigener Name, führt zu den Unterlagen */
   labor: boolean;
+  /** Praxistag mit mehreren Praxisaufträgen (SR-13): ein Block, Zahl gesamt und abgeschlossen */
+  sammel: Sammel | null;
 };
+
+export type Sammel = { anzahl: number; fertig: number };
 
 export type Chip = {
   id: string;
@@ -72,6 +76,8 @@ export type Ganztag = {
   trainer: TrainerAnzeige | null;
   /** Labortag (SR-94) */
   labor: boolean;
+  /** Mehrere Praxisaufträge (SR-13) */
+  sammel: Sammel | null;
 };
 
 
@@ -138,6 +144,7 @@ export function planModell(
           fieldJobId: null,
           trainer: trainerVon(s.trainerId),
           labor: false,
+          sammel: null,
         },
       ];
     });
@@ -146,7 +153,49 @@ export function planModell(
     // ohne Uhrzeit -- keine Platzhalterzeit. Ziel ist der Praxistag-Ablauf.
     const praxisStatus = (status: string): BlockStatus =>
       status === "durchgeführt" ? "erledigt" : tag.datum < heute ? "vorbei" : "offen";
-    const praxis: Block[] = tag.feld.flatMap((e) =>
+
+    // Mehrere Praxisaufträge an einem Tag (SR-13): ein Block „Praxistag“ mit
+    // dem Zeitslot des Tages und der Zahl der Aufträge; Klick öffnet die
+    // Tagesübersicht. Labortage (SR-94) bleiben eigene Einträge.
+    const auftraege = tag.feld.filter((e) => !e.labor);
+    const einzeln = auftraege.length > 1 ? tag.feld.filter((e) => e.labor) : tag.feld;
+    const sammelBloecke: Block[] = [];
+    const sammelGanztags: Ganztag[] = [];
+    if (auftraege.length > 1) {
+      const fertig = auftraege.filter((e) => e.phase === "abgeschlossen" || e.status === "durchgeführt").length;
+      const mitZeit = auftraege.filter(hatUhrzeit);
+      const mitTrainer = auftraege.find((e) => e.trainerId) ?? auftraege[0];
+      const gemeinsam = {
+        id: `praxistag-${tag.datum}`,
+        titel: "Praxistag",
+        ort: auftraege.find((e) => e.standort)?.standort ?? null,
+        status: (fertig === auftraege.length ? "erledigt" : tag.datum < heute ? "vorbei" : "offen") as BlockStatus,
+        href: praxistagHref(tag.datum),
+        trainer: trainerVon(mitTrainer.trainerId),
+        labor: false,
+        sammel: { anzahl: auftraege.length, fertig },
+      };
+      if (mitZeit.length > 0) {
+        sammelBloecke.push({
+          ...gemeinsam,
+          art: "praxis",
+          volltitel: `Praxistag: ${auftraege.map((e) => e.titel).join(", ")}`,
+          datum: tag.datum,
+          start: mitZeit.map((e) => e.start).sort()[0],
+          ende: mitZeit.map((e) => e.ende).sort().at(-1)!,
+          naechster: false,
+          extern: false,
+          liveRaum: null,
+          inhalt: gemeinsam.href,
+          lessonId: null,
+          fieldJobId: null,
+        });
+      } else {
+        sammelGanztags.push({ ...gemeinsam, fieldJobId: auftraege[0].fieldJobId });
+      }
+    }
+
+    const praxis: Block[] = [...sammelBloecke, ...einzeln.flatMap((e) =>
       hatUhrzeit(e)
         ? [
             {
@@ -168,11 +217,12 @@ export function planModell(
               fieldJobId: e.fieldJobId,
               trainer: trainerVon(e.trainerId),
               labor: e.labor,
+              sammel: null,
             },
           ]
         : []
-    );
-    const ganztags: Ganztag[] = tag.feld
+    )];
+    const ganztags: Ganztag[] = [...sammelGanztags, ...einzeln
       .filter((e) => !hatUhrzeit(e))
       .map((e) => ({
         id: e.scheduleEntryId,
@@ -183,7 +233,8 @@ export function planModell(
         fieldJobId: e.fieldJobId,
         trainer: trainerVon(e.trainerId),
         labor: e.labor,
-      }));
+        sammel: null,
+      }))];
 
     // Brief 2.4/5: Selbstlernen nur in "Flexibel", nie mit Uhrzeit.
     // Gehört die Selbstlern-Lektion zum Live-Unterricht desselben Tages, heißt
