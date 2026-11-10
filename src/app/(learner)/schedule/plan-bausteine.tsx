@@ -153,7 +153,7 @@ export function FlexLeiste({ chip, gross }: { chip: Chip; gross: boolean }) {
  */
 export function GanztagsLeiste({ tag: g, gross }: { tag: Ganztag; gross: boolean }) {
   const zurueck = g.status !== "offen";
-  const label = `Praxisaufgabe, ganztägig, ${g.titel}${g.ort ? `, ${g.ort}` : ""}${g.trainer ? `, Praxis mit ${g.trainer.rufname}` : ""}, ${g.status === "erledigt" ? "erledigt" : g.status === "vorbei" ? "vorbei" : "offen"}`;
+  const label = `Praxisauftrag, ganztägig, ${g.titel}${g.ort ? `, ${g.ort}` : ""}${g.trainer ? `, Praxis mit ${g.trainer.rufname}` : ""}, ${g.status === "erledigt" ? "erledigt" : g.status === "vorbei" ? "vorbei" : "offen"}`;
   const klasse = cn(
     "flex min-w-0 items-start gap-2 rounded-xl px-3 py-2 font-semibold outline-none",
     g.href && "transition-[box-shadow] duration-150 hover:shadow-card focus-visible:ring-2 focus-visible:ring-brand motion-reduce:transition-none",
@@ -278,7 +278,7 @@ export function MonatsTags({ tag }: { tag: TagModell }) {
     ...tag.bloecke.map((b) => ({
       id: b.id,
       text: b.art === "live" ? `${b.start.slice(0, 5)} Live` : "Praxis",
-      lang: `${b.art === "live" ? "Live-Unterricht" : "Praxisaufgabe"}: ${b.titel}`,
+      lang: `${b.art === "live" ? "Live-Unterricht" : "Praxisauftrag"}: ${b.titel}`,
       erledigt: b.status === "erledigt",
       vorbei: b.status !== "offen",
       punkt: b.art === "live" ? "bg-brand" : "bg-praxis",
@@ -286,7 +286,7 @@ export function MonatsTags({ tag }: { tag: TagModell }) {
     ...tag.ganztags.map((g) => ({
       id: g.id,
       text: "Praxis",
-      lang: `Praxisaufgabe, ganztägig: ${g.titel}`,
+      lang: `Praxisauftrag, ganztägig: ${g.titel}`,
       erledigt: g.status === "erledigt",
       vorbei: g.status !== "offen",
       punkt: "bg-praxis",

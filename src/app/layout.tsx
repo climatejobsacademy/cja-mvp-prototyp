@@ -25,10 +25,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AfCJ Qualifizierungsplattform",
+  title: "Academy for Climate Jobs – Qualifizierungsplattform",
   description: "Lernplattform für Elektrofachkraft Erneuerbare Energien",
   openGraph: {
-    title: "AfCJ Qualifizierungsplattform",
+    title: "Academy for Climate Jobs – Qualifizierungsplattform",
     description: "Deine Lernplattform der Academy for Climate Jobs",
     // Logo zentriert auf Off-White (#F5F5F0, design-specifications.md
     // Abschnitt 1) freigestellt auf das Social-Media-Standardmaß 1200x630.

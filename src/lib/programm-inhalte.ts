@@ -41,10 +41,10 @@ export type PanelWoche = {
   themen: PanelThema[];
 };
 
-const LABEL: Record<string, string | null> = { live: "Live-Termin", scorm: "Selbstlernmodul", repository: null };
+const LABEL: Record<string, string | null> = { live: "Live-Unterricht", scorm: "Selbstlern-Lektion", repository: null };
 
 const WOCHENTYP: Record<string, string> = { theorie: "Theorie", praxis: "Praxis" };
-const LAGE: Record<string, string> = { online: "online", praesenz: "Präsenz", betrieb: "im Betrieb" };
+const LAGE: Record<string, string> = { online: "online", praesenz: "Präsenz", betrieb: "am Praxisort" };
 
 /** "Woche 2 · Theorie · online" -- Nummer im Modul; fehlt Typ oder Lage, entfällt der Teil. */
 export function wochenTitel(nummer: number, wochentyp: string | null, lage: string | null): string {

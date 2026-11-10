@@ -63,8 +63,8 @@ const CAPTURE_STATUS: Record<
   CaptureUiStatus,
   { label: string; icon: LucideIcon; variant: BadgeVariant }
 > = {
-  pending: { label: "Wird verifiziert", icon: Clock, variant: "info" },
-  verified: { label: "Verifiziert", icon: CheckCircle2, variant: "success" },
+  pending: { label: "Wird bestätigt", icon: Clock, variant: "info" },
+  verified: { label: "Bestätigt", icon: CheckCircle2, variant: "success" },
   rejected: { label: "Abgelehnt", icon: ThumbsDown, variant: "warning" },
 };
 

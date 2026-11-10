@@ -35,8 +35,8 @@ test("wochenrueckblick: nur die laufende Woche -- am freien Montag null, ohne Pl
 });
 
 test("zaehlText: abgeschlossene Lektionen und besuchte Live-Termine, ohne Aktivität null", () => {
-  assert.equal(zaehlText(wochenrueckblick(woche(true, true) as never, "2026-10-11")), "Diese Woche: 2 Lektionen abgeschlossen · 4 Live-Termine besucht");
-  assert.equal(zaehlText(wochenrueckblick(woche(false, false) as never, "2026-10-11")), "Diese Woche: 1 Lektion abgeschlossen · 3 Live-Termine besucht");
+  assert.equal(zaehlText(wochenrueckblick(woche(true, true) as never, "2026-10-11")), "Diese Woche: 2 Lektionen abgeschlossen · 4× Live-Unterricht erledigt");
+  assert.equal(zaehlText(wochenrueckblick(woche(false, false) as never, "2026-10-11")), "Diese Woche: 1 Lektion abgeschlossen · 3× Live-Unterricht erledigt");
   const nichts = [tag("2026-10-05", [live("a"), selbst(false)])];
   assert.equal(zaehlText(wochenrueckblick(nichts as never, "2026-10-11")), null);
   assert.equal(zaehlText(null), null);
@@ -57,7 +57,7 @@ test("freiText: Zustand 1 bis 4", () => {
   const stark = freiText(wochenrueckblick(woche(true, true) as never, "2026-10-11"), "Anna", "2026-10-11", "2026-10-12", true);
   assert.equal(stark.zustand, 1);
   assert.equal(stark.headline, "Starke Woche, Anna.");
-  assert.equal(stark.unterzeile, "Alle 4 Live-Termine geschafft. Genieß deinen Sonntag.");
+  assert.equal(stark.unterzeile, "4× Live-Unterricht geschafft. Genieß deinen Sonntag.");
 
   // 4 von 6 erledigt = 67 % → Zustand 2
   const gut = freiText(wochenrueckblick(woche(false, false) as never, "2026-10-11"), "Anna", "2026-10-11", "2026-10-12", true);

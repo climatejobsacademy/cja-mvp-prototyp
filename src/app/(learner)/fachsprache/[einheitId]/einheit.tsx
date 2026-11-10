@@ -188,7 +188,7 @@ function Quiz({
   const frage = einheit.quiz[Math.min(zustand.nr, anzahl - 1)];
   const gruppe = `frage-${zustand.nr}`;
   const letzteFrage = zustand.nr === anzahl - 1 && (zustand.status === "richtig" || zustand.fertig);
-  const weiterKnopf = letzteFrage ? (hatSaetze ? "Weiter zu den Sätzen" : "Fertig") : weiterText(zustand, anzahl);
+  const weiterKnopf = letzteFrage ? (hatSaetze ? "Weiter zu den Sätzen" : "Abschließen") : weiterText(zustand, anzahl);
   return (
     <section className={KARTE} aria-labelledby={gruppe}>
       <div key={zustand.nr} className={cn("flex flex-col gap-4 rounded-zeile bg-self-tint p-5 md:p-6", EIN)}>

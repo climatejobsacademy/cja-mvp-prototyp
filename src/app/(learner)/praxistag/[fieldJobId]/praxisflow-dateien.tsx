@@ -185,7 +185,7 @@ type Art = { id: PraxisDateiArt; titel: string; kurz: string; Icon: LucideIcon; 
 const ARTEN: Art[] = [
   { id: "auftrag", titel: "Dein Auftrag", kurz: "Auftrag", Icon: ClipboardList, leer: "Lade deinen Auftrag im ersten Schritt hoch, dann findest du ihn hier." },
   { id: "hilfe", titel: "Hilfsunterlagen", kurz: "Hilfen", Icon: Library, leer: "Eigene Hilfsunterlagen kannst du im zweiten Schritt hochladen." },
-  { id: "plan", titel: "Pläne und Skizzen", kurz: "Pläne", Icon: PencilRuler, leer: "Deine Pläne und Skizzen lädst du beim Planen hoch." },
+  { id: "plan", titel: "Pläne und Zeichnungen", kurz: "Pläne", Icon: PencilRuler, leer: "Deine Pläne und Zeichnungen lädst du beim Planen hoch." },
   { id: "protokoll", titel: "Prüfprotokoll", kurz: "Protokoll", Icon: FileCheck2, leer: "Das Prüfprotokoll lädst du am Ende der Kontrolle hoch." },
 ];
 

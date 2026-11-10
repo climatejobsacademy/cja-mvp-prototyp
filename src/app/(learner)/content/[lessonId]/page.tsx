@@ -34,7 +34,7 @@ import { TerminKarte } from "./termin-karte";
 // eigenen Kohorte als Anker-Karte mit "Beitreten", "Wissen festigen" und
 // Trainer:in (SR-15, SR-78), darunter Materialien (SR-68) und Fragen-Thread
 // (SR-74). Selbstlernen nativ statt im SCORM-Player (SR-85).
-const TYP_LABEL: Record<string, string> = { live: "Live-Termin", scorm: "Selbstlernmodul" };
+const TYP_LABEL: Record<string, string> = { live: "Live-Unterricht", scorm: "Selbstlern-Lektion" };
 const TYP_PILL: Record<string, string> = { live: "bg-brand-tint text-brand", scorm: "bg-self-tint text-self" };
 
 /**
@@ -173,7 +173,7 @@ export default async function LessonPage({
               />
             ) : (
               <p className="text-sm text-muted-foreground">
-                Für diese Lektion ist noch kein SCORM-Paket hinterlegt.
+                Für diese Lektion ist noch kein Inhalt hinterlegt.
               </p>
             )}
           </CardContent>

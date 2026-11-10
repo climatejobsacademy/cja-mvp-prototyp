@@ -144,19 +144,19 @@ export function ScormPlayer({ lessonId, entryPointPfad, zipSignedUrl, done }: Pr
   if (status === "fehler") {
     return (
       <p className="text-sm text-destructive" role="alert">
-        SCORM-Paket konnte nicht geladen werden{errorMessage ? `: ${errorMessage}` : "."}
+        Die Lektion konnte nicht geladen werden{errorMessage ? `: ${errorMessage}` : "."}
       </p>
     );
   }
 
   if (status === "laedt") {
-    return <p className="text-sm text-muted-foreground">SCORM-Paket wird geladen …</p>;
+    return <p className="text-sm text-muted-foreground">Lektion wird geladen …</p>;
   }
 
   return (
     <iframe
       src={`/scorm-assets/${lessonId}/${entryPointPfad}`}
-      title="SCORM-Lerninhalt"
+      title="Selbstlern-Lektion"
       className="h-[600px] w-full rounded-md border"
       sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
     />

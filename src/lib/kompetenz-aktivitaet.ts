@@ -26,7 +26,7 @@ export const AKTIVITAET_ART: Record<AktivitaetFuerMeta["art"], string> = {
  * Symbol zeigt sie schon). Leer, wenn es nichts zu sagen gibt.
  */
 export function aktivitaetMeta(a: AktivitaetFuerMeta, heute: string): string {
-  if (a.erledigt) return a.art === "praxis" ? "durchgeführt" : "erledigt";
+  if (a.erledigt) return "erledigt";
   if (!a.datum) return a.art === "selbst" ? "offen" : "";
   if (a.datum < heute) return a.art === "selbst" ? "offen" : "vorbei";
   const zeit = a.start ? `, ${a.start.slice(0, 5)}` : "";

@@ -498,7 +498,7 @@ export function ErledigtLeiste({ erledigt }: { erledigt: ErledigtEintrag[] }) {
 const ERLEDIGT_TEXT: Record<ErledigtEintrag["typ"], string> = {
   live: "Live-Unterricht",
   flex: "Wissen festigen",
-  praxis: "Praxisaufgabe",
+  praxis: "Praxisauftrag",
 };
 
 /** D: was heute erledigt wurde, mit Weg zur Woche. */

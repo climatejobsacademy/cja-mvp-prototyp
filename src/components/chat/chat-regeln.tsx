@@ -12,7 +12,7 @@ const ABSCHNITTE: { titel: string; punkte: string[] }[] = [
   {
     titel: "So nutzen wir den Chat",
     punkte: [
-      "Ankündigungen: Hier schreiben deine Trainer:innen und das Team der Akademie. Du kannst mitlesen.",
+      "Ankündigungen: Hier schreiben deine Trainer:innen und die Academy for Climate Jobs. Du kannst mitlesen.",
       "Treffpunkt: Hier schreiben alle aus deiner Kohorte. Für Fragen, Absprachen und Austausch.",
       "Fragen zur Lektion stellst du am besten im Fragen-Thread unter der Lektion. Dann finden alle die Antwort an der richtigen Stelle.",
     ],
@@ -24,14 +24,14 @@ const ABSCHNITTE: { titel: string; punkte: string[] }[] = [
       "Teile keine privaten Daten: keine Telefonnummern, Adressen, Ausweise oder Fotos von anderen Personen.",
       "Keine Werbung und keine Links zu Seiten, die nichts mit dem Lernen zu tun haben.",
       "Sicherheit geht vor: Antworten im Chat ersetzen keine Anweisung deiner Trainer:in. Arbeite an elektrischen Anlagen nur so, wie es im Unterricht und im Betrieb vorgegeben ist.",
-      "Deine Nachrichten sehen alle Teilnehmenden deiner Kohorte und das Team der Akademie.",
+      "Deine Nachrichten sehen alle in deiner Kohorte und die Academy for Climate Jobs.",
     ],
   },
   {
     titel: "Wenn etwas nicht passt",
     punkte: [
       "Über „Melden“ an einer Chat-Nachricht gibst du dem Team Bescheid. Die Person, deren Nachricht du meldest, erfährt nicht, wer gemeldet hat.",
-      "Trainer:innen und das Team können Nachrichten löschen, die gegen diese Regeln verstoßen.",
+      "Trainer:innen und die Academy for Climate Jobs können Nachrichten löschen, die gegen diese Regeln verstoßen.",
       "Eigene Nachrichten kannst du selbst löschen.",
       "Bei Fragen oder wenn du Daten löschen lassen möchtest: info@climatejobsacademy.com.",
     ],
