@@ -7,7 +7,7 @@
 --     und daran der Aufgabentyp „Test Praxisflow (geführt)“ (ablauf
 --     gefuehrt). Weil keine Kohorte dieses Programm hat, erscheint der Typ
 --     in keinem Reiter Programm;
---     echte Aufgabentypen bleiben unverändert auf „einfach“;
+--     seit 0068 laufen ohnehin alle Aufgabentypen im geführten Ablauf;
 --   - je Aufruf ein neuer Praxisauftrag für die einzige aktive Person der
 --     Kohorte :kohorte, heute (Berlin), mit Trainer:in, plus Eintrag im
 --     Stundenplan. Für einen neuen Testlauf das Skript erneut ausführen,
@@ -93,7 +93,10 @@ $$;
 
 commit;
 
--- Codewort setzen (Produkt-Lead, Supabase-Dashboard → SQL Editor, Staging):
+-- Codewort setzen (Produkt-Lead, Supabase-Dashboard → SQL Editor, Staging).
+-- Der dokumentierte Weg ist fn_praxis_codewort_setzen (nur AfCJ admin,
+-- access-matrix.md); im SQL Editor gibt es keine angemeldete Person, deshalb
+-- hier direkt, mit derselben Hash-Form wie die Funktion:
 --   insert into praxis_codewort (cohort_id, hash)
 --   select c.id, extensions.crypt(lower(btrim('HIER_CODEWORT')), extensions.gen_salt('bf'))
 --   from cohort c where c.name = 'Test-Kohorte (Dev)'

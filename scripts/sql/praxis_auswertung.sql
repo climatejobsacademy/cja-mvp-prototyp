@@ -3,10 +3,10 @@
 -- aggregiert: Häufigkeiten, Mediane, keine Personen, keine Inhalte.
 -- Grundlage: praxis_ereignis (0064), field_job.phase / praxisflow (0058 ff.).
 --
--- Aufruf (Beispiel Production, nur mit Freigabe; Passwort aus dem
+-- Aufruf (Beispiel Production, Ref vqfnmkcfjsudsujiuoqm, nur mit Freigabe; Passwort aus dem
 -- Schlüsselbund, nie im Klartext):
 --   PGPASSWORD="$(security find-generic-password -s cja-db-fra -w)" psql \
---     "host=<Session-Pooler> port=5432 dbname=postgres user=postgres.<ref> sslmode=require" \
+--     "host=<Session-Pooler> port=5432 dbname=postgres user=postgres.vqfnmkcfjsudsujiuoqm sslmode=require" \
 --     -X -A -F ' | ' -v ON_ERROR_STOP=1 \
 --     -v kohorte='<Name der Kohorte>' -v traeger='<Domain-Muster der Trainer-Konten, sonst ->' \
 --     -f scripts/sql/praxis_auswertung.sql
