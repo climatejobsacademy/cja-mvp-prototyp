@@ -10,6 +10,8 @@ export type LabortagDaten = {
   ende: string | null;
   standort: string | null;
   trainer: TrainerAnzeige | null;
+  /** Zweite begleitende Trainer:in (SR-78, 0071) */
+  trainer2: TrainerAnzeige | null;
   unterlagen: PraxisaufgabeHilfen;
 };
 
@@ -22,7 +24,7 @@ export async function getLabortag(fieldJobId: string, learnerId: string): Promis
   const supabase = await createClient();
   const { data: job, error } = await supabase
     .from("field_job")
-    .select("id, learner_id, datum, start, ende, standort, instructor_id, field_job_type_id")
+    .select("id, learner_id, datum, start, ende, standort, instructor_id, zweit_trainer_id, field_job_type_id")
     .eq("id", fieldJobId)
     .maybeSingle();
   if (error) throw new Error("Labortag konnte nicht geladen werden");
@@ -45,6 +47,7 @@ export async function getLabortag(fieldJobId: string, learnerId: string): Promis
     ende: job.ende,
     standort: job.standort,
     trainer: job.instructor_id ? (trainerListe.get(job.instructor_id) ?? null) : null,
+    trainer2: job.zweit_trainer_id ? (trainerListe.get(job.zweit_trainer_id) ?? null) : null,
     unterlagen,
   };
 }

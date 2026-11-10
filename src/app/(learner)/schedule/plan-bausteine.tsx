@@ -153,7 +153,7 @@ export function FlexLeiste({ chip, gross }: { chip: Chip; gross: boolean }) {
  */
 export function GanztagsLeiste({ tag: g, gross }: { tag: Ganztag; gross: boolean }) {
   const zurueck = g.status !== "offen";
-  const label = `${g.labor ? "Labortag" : g.sammel ? "Praxistag" : "Praxisauftrag"}, ganztägig, ${g.sammel ? sammelText(g.sammel) : g.titel}${g.ort ? `, ${g.ort}` : ""}${g.trainer ? `, Praxis mit ${g.trainer.rufname}` : ""}, ${g.status === "erledigt" ? "erledigt" : g.status === "vorbei" ? "vorbei" : "offen"}`;
+  const label = `${g.labor ? "Labortag" : g.sammel ? "Praxistag" : "Praxisauftrag"}, ganztägig, ${g.sammel ? sammelText(g.sammel) : g.titel}${g.ort ? `, ${g.ort}` : ""}${g.trainer ? `, Praxis mit ${g.trainer.rufname}${g.trainer2 ? ` und ${g.trainer2.rufname}` : ""}` : ""}, ${g.status === "erledigt" ? "erledigt" : g.status === "vorbei" ? "vorbei" : "offen"}`;
   const klasse = cn(
     "flex min-w-0 items-start gap-2 rounded-xl px-3 py-2 font-semibold outline-none",
     g.href && "transition-[box-shadow] duration-150 hover:shadow-card focus-visible:ring-2 focus-visible:ring-brand motion-reduce:transition-none",
@@ -172,7 +172,7 @@ export function GanztagsLeiste({ tag: g, gross }: { tag: Ganztag; gross: boolean
         {g.sammel && <span className="text-xs font-normal">{sammelText(g.sammel)}</span>}
         <span className="text-xs font-normal text-ink-muted">{g.labor ? "Labortag · ganztägig" : "Ganztägig"}{g.ort ? ` · ${g.ort}` : ""}</span>
         {/* Begleitende Person des Praxistags (SR-78). */}
-        {g.trainer && <TrainerZeile art="praxis" trainer={g.trainer} klein className="mt-1 font-normal text-ink-muted" />}
+        {g.trainer && <TrainerZeile art="praxis" trainer={g.trainer} zweite={g.trainer2} klein className="mt-1 font-normal text-ink-muted" />}
       </span>
       {g.status === "erledigt" && <Check className="mt-0.5 size-3.5 shrink-0 text-progress" strokeWidth={3} aria-hidden="true" />}
     </>

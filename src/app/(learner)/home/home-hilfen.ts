@@ -109,6 +109,7 @@ export function aktivitaeten(tag: TagesAgenda): TagesAktivitaeten {
       ende: e.ende,
       durchgefuehrt: e.status === "durchgeführt",
       trainerId: e.trainerId,
+      zweitTrainerId: e.zweitTrainerId,
       phase: e.phase,
       ergebnis: e.ergebnis,
       labor: e.labor,

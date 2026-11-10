@@ -497,6 +497,8 @@ type FieldJobRow = Flatten<
     field_job_type_id: string;
     learner_id: string;
     instructor_id: string | null;
+    /** SR-78 (0071): zweite begleitende Trainer:in, nur Anzeige */
+    zweit_trainer_id: string | null;
     status: FieldJobStatus;
     durchgefuehrt_bestaetigt_am: string | null;
     // Entschieden 2026-09-11 (0011_field_job_praxistag_erfassung.sql): Learner

@@ -41,6 +41,8 @@ export type Block = {
   fieldJobId: string | null;
   /** "Live mit …" / "Praxis mit …" (SR-78), null = niemand eingetragen */
   trainer: TrainerAnzeige | null;
+  /** Zweite begleitende Trainer:in (SR-78, 0071), nur Praxis */
+  trainer2: TrainerAnzeige | null;
   /** Labortag (SR-94): Praxis-Farbe, eigener Name, führt zu den Unterlagen */
   labor: boolean;
   /** Praxistag mit mehreren Praxisaufträgen (SR-13): ein Block, Zahl gesamt und abgeschlossen */
@@ -74,6 +76,8 @@ export type Ganztag = {
   fieldJobId: string;
   /** "Praxis mit …" (SR-78), null = niemand eingetragen */
   trainer: TrainerAnzeige | null;
+  /** Zweite begleitende Trainer:in (SR-78, 0071) */
+  trainer2: TrainerAnzeige | null;
   /** Labortag (SR-94) */
   labor: boolean;
   /** Mehrere Praxisaufträge (SR-13) */
@@ -143,6 +147,7 @@ export function planModell(
           lessonId: e.lessonId,
           fieldJobId: null,
           trainer: trainerVon(s.trainerId),
+          trainer2: null,
           labor: false,
           sammel: null,
         },
@@ -172,6 +177,7 @@ export function planModell(
         status: (fertig === auftraege.length ? "erledigt" : tag.datum < heute ? "vorbei" : "offen") as BlockStatus,
         href: praxistagHref(tag.datum),
         trainer: trainerVon(mitTrainer.trainerId),
+        trainer2: trainerVon(mitTrainer.zweitTrainerId),
         labor: false,
         sammel: { anzahl: auftraege.length, fertig },
       };
@@ -216,6 +222,7 @@ export function planModell(
               lessonId: null,
               fieldJobId: e.fieldJobId,
               trainer: trainerVon(e.trainerId),
+              trainer2: trainerVon(e.zweitTrainerId),
               labor: e.labor,
               sammel: null,
             },
@@ -232,6 +239,7 @@ export function planModell(
         href: praxisaufgabeHref(e.fieldJobId),
         fieldJobId: e.fieldJobId,
         trainer: trainerVon(e.trainerId),
+        trainer2: trainerVon(e.zweitTrainerId),
         labor: e.labor,
         sammel: null,
       }))];
