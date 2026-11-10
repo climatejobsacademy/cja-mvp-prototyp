@@ -9,13 +9,18 @@
 // - Typ-Regel SR-71: theoretische Teilschritte nur an Lektionen (über den
 //   Theorietag), praktische nur an Aufträge (Field-Job-Typen). Alles andere
 //   wird gemeldet und nicht importiert.
-// - Eine Trainer:in je Termin: bei "Trainer:in A, Trainer:in C" die erste.
+// - Trainer:in je Termin: bei "Trainer:in A, Trainer:in C" ist die erste
+//   zuständig; an Praxis- und Labortagen wird die zweite nur angezeigt
+//   (SR-78, 2026-11-10).
 // - Zeilen ohne Datum werden übersprungen und gemeldet; Spalte "Offen",
 //   SCORM, PDFs und Zoom-Links werden nicht gelesen.
-// - Aufträge eines Praxisblocks ohne Tagesbindung werden der Reihe nach auf
-//   die Blocktage verteilt -- vorläufig, Platzhalter bis zur Tagesplanung
-//   von Malte (ganztägig ohne Uhrzeit). Mit ohnePraxis: ["II"] entfallen die
-//   Praxistermine eines Moduls ganz (Production, bis die Planung da ist).
+// - Mehrere Aufträge an einem Praxistermin (SR-13, SR-64, 2026-11-10): alle
+//   liegen an diesem Tag im Zeitslot des Termins, in der Reihenfolge der
+//   Spalte Auftragsnummer. Die frühere Verteilung auf Blocktage entfällt.
+// - Termintyp "Labor" (SR-94): wie Praxis; die Aufträge dieser Termine
+//   werden Labortage (field_job_type.ablauf = labor, kein Praxisflow).
+// - Mit ohnePraxis: ["II"] entfallen Praxis- und Labortermine eines Moduls
+//   ganz.
 
 const ROEMISCH = { I: 1, II: 2, III: 3, IV: 4, V: 5, Abschluss: 6 };
 
@@ -146,7 +151,8 @@ export function erstellePlan(tabs, optionen = {}) {
       melde("ohne-datum", `${z["Kennung"]} übersprungen: kein gültiges Datum.`);
       continue;
     }
-    const trainerName = liste(z["Trainer:in"])[0] ?? null;
+    const trainerNamen = liste(z["Trainer:in"]);
+    const trainerName = trainerNamen[0] ?? null;
     if (trainerName && trainerName.includes("&")) teamTermine.push(`${z["Kennung"]} (${datum.slice(8)}.${datum.slice(5, 7)}.)`);
     if (/prüfen/i.test(z["Offen"] ?? "")) {
       melde("offen", `${z["Kennung"]}: importiert wie in der Datei, offen (${z["Offen"].replace(/^Fehlt:[^.]*\.\s*/, "")})`);
@@ -157,12 +163,23 @@ export function erstellePlan(tabs, optionen = {}) {
       if (!trainer) melde("trainer", `${z["Kennung"]}: Trainer:in nicht im Tab Trainer, Termin ohne Trainer:in.`);
       else trainerBenutzt.add(trainer);
     }
+    // Zweite Trainer:in (SR-78): nur an Praxis- und Labortagen, nur Anzeige.
+    const praxisOderLabor = /^(praxis|labor)/i.test(z["Theorie/Praxis"] ?? "");
+    let trainer2 = null;
+    if (trainerNamen[1] && praxisOderLabor) {
+      trainer2 = trainerNachName.get(trainerNamen[1]) ?? null;
+      if (!trainer2) melde("trainer", `${z["Kennung"]}: zweite Trainer:in nicht im Tab Trainer, wird nicht angezeigt.`);
+      else trainerBenutzt.add(trainer2);
+    }
+    const labor = /^labor/i.test(z["Theorie/Praxis"] ?? "");
     termineRoh.push({
       kennung: z["Kennung"],
       datum,
       modul: z["Modul"],
       woche: zahl(z["Woche im Modul"]),
-      art: z["Theorie/Praxis"],
+      // "Labor" (SR-94) läuft intern wie Praxis, mit Kennzeichen.
+      art: labor ? "Praxis" : z["Theorie/Praxis"],
+      labor,
       lage: z["online/Präsenz"],
       start: uhrzeit(z["von"]),
       ende: uhrzeit(z["bis"]),
@@ -172,6 +189,7 @@ export function erstellePlan(tabs, optionen = {}) {
       auftraege: liste(z["Auftragsnummer"]),
       ort: z["Ort"] && z["Ort"] !== "online" ? z["Ort"] : null,
       trainer,
+      trainer2,
     });
   }
   for (const [modul, anzahl] of ausserhalb) {
@@ -244,6 +262,13 @@ export function erstellePlan(tabs, optionen = {}) {
   const ersteWoche = new Map();
   for (const t of termineRoh.filter((x) => x.art === "Praxis")) {
     for (const a of t.auftraege) if (!ersteWoche.has(a)) ersteWoche.set(a, { modul: t.modul, woche: t.woche });
+  }
+  // Labortage (SR-94): Aufträge, die an Labor-Terminen stehen.
+  const laborAuftraege = new Set(termineRoh.filter((x) => x.labor).flatMap((x) => x.auftraege));
+  for (const a of laborAuftraege) {
+    if (termineRoh.some((x) => !x.labor && x.art === "Praxis" && x.auftraege.includes(a))) {
+      throw new Error(`${a}: steht an Praxis- und an Labor-Terminen; ein Auftrag ist entweder Praxisauftrag oder Labortag.`);
+    }
   }
   const zaehlerJeModul = new Map();
   const auftraege = auftraegeTab.map((z) => {
@@ -327,32 +352,9 @@ export function erstellePlan(tabs, optionen = {}) {
   // ---------- Termine (je Kohorte in import.sql) ----------
   const begleitkurse = [];
   const termine = [];
-  const praxisTermine = termineRoh.filter((t) => t.art === "Praxis" && t.auftraege.length > 0);
-
-  // Praxisblöcke: aufeinanderfolgende Termine mit derselben Liste mehrerer Aufträge
-  const bloecke = [];
-  for (const t of praxisTermine.filter((x) => x.auftraege.length > 1)) {
-    const letzter = bloecke.at(-1);
-    if (letzter && letzter.schluessel === t.auftraege.join(",")) letzter.termine.push(t);
-    else bloecke.push({ schluessel: t.auftraege.join(","), termine: [t] });
-  }
-  const verteilung = new Map();
   for (const m of ohnePraxis) {
     const anzahl = termineRoh.filter((t) => t.modul === m && t.art === "Praxis").length;
     if (anzahl) melde("ohne-praxis", `Modul ${m}: ${anzahl} Praxistermine weggelassen (Option ohne Praxis).`);
-  }
-  for (const b of bloecke.filter((x) => !ohnePraxis.has(x.termine[0].modul))) {
-    const auftr = b.termine[0].auftraege;
-    const tage = b.termine.length;
-    auftr.forEach((a, i) => {
-      const t = b.termine[Math.floor((i * tage) / auftr.length)];
-      verteilung.set(t.kennung, [...(verteilung.get(t.kennung) ?? []), a]);
-    });
-    melde(
-      "praxisblock",
-      `Block ${b.termine[0].kennung}–${b.termine.at(-1).kennung}: ${auftr.length} Aufträge ohne Tagesbindung auf ${tage} Tage verteilt, VORLÄUFIG (Platzhalter, Tagesplanung von Malte fehlt; ganztägig): ` +
-        b.termine.map((t) => `${t.datum.slice(8)}.${t.datum.slice(5, 7)}. ${(verteilung.get(t.kennung) ?? []).join("+") || "–"}`).join("; ")
-    );
   }
 
   for (const t of termineRoh) {
@@ -372,13 +374,7 @@ export function erstellePlan(tabs, optionen = {}) {
         melde("praxis", `${t.kennung} übersprungen: keine Auftragsnummer.`);
         continue;
       }
-      const verteilt = verteilung.get(t.kennung);
-      if (t.auftraege.length > 1) {
-        if (!verteilt) continue;
-        termine.push({ ...basis, start: null, ende: null, art: "praxis", auftraege: verteilt, ort: t.ort });
-      } else {
-        termine.push({ ...basis, art: "praxis", auftraege: t.auftraege, ort: t.ort });
-      }
+      termine.push({ ...basis, art: "praxis", auftraege: t.auftraege, ort: t.ort, labor: t.labor, trainer2: t.trainer2 });
     } else {
       melde("termintyp", `${t.kennung} übersprungen: Termintyp "${t.art}" wird in diesem Lauf nicht importiert.`);
     }
@@ -402,7 +398,7 @@ export function erstellePlan(tabs, optionen = {}) {
     trainerAlle,
     kompetenzen,
     teilschritte: teilschritte.map(({ kennung, kompetenz, modul, reihenfolge, name, typ }) => ({ kennung, kompetenz, modul, reihenfolge, name, typ })),
-    auftraege: auftraege.map(({ kennung, titel, modul, woche, reihenfolge, sichtbar }) => ({ kennung, titel, modul, woche, reihenfolge, sichtbar })),
+    auftraege: auftraege.map(({ kennung, titel, modul, woche, reihenfolge, sichtbar }) => ({ kennung, titel, modul, woche, reihenfolge, sichtbar, labor: laborAuftraege.has(kennung) })),
     kurse: kurse.map(({ schluessel, modul, woche, name, lektion, thema, reihenfolge }) => ({ schluessel, modul, woche, name, lektion, thema, reihenfolge })),
     begleitkurse,
     lektionZuordnungen,
