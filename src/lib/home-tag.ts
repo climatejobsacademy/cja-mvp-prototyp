@@ -42,6 +42,8 @@ export type PraxisAktivitaet = {
   durchgefuehrt: boolean;
   /** field_job.instructor_id (SR-78), sonst null */
   trainerId: string | null;
+  /** field_job.zweit_trainer_id (SR-78, 0071), sonst null */
+  zweitTrainerId?: string | null;
   /** Phase im Praxisflow (0058); "abgeschlossen" = fertig (SR-93) */
   phase?: string;
   /** Ergebnis beim Abschluss (angerechnet, ohne_trainer), sonst null */

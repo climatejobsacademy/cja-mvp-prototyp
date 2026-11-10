@@ -43,7 +43,7 @@ export function TerminBlock({ block, gross, style }: { block: Block; gross: bool
     `${zeitText(block)} Uhr`,
     block.volltitel,
     block.sammel ? sammelText(block.sammel) : null,
-    block.trainer ? `${block.art === "live" ? "Live" : "Praxis"} mit ${block.trainer.rufname}` : null,
+    block.trainer ? `${block.art === "live" ? "Live" : "Praxis"} mit ${block.trainer.rufname}${block.trainer2 ? ` und ${block.trainer2.rufname}` : ""}` : null,
     block.ort,
     // Der Anker bleibt nach dem letzten Termin des Tages stehen (Anna 2026-10-12): dann "vorbei", nicht "als Nächstes".
     block.naechster && block.status === "offen" ? "als Nächstes" : STATUS_TEXT[block.status],
@@ -110,6 +110,7 @@ export function TerminBlock({ block, gross, style }: { block: Block; gross: bool
         <TrainerZeile
           art={block.art}
           trainer={block.trainer}
+          zweite={block.trainer2}
           klein={!gross}
           className={cn("pointer-events-none", block.naechster ? art.ankerIcon : undefined)}
         />

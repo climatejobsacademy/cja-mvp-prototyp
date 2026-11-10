@@ -18,7 +18,7 @@ export async function getPraxisflow(fieldJobId: string, learnerId: string): Prom
   const supabase = await createClient();
   const { data: job, error: jobFehler } = await supabase
     .from("field_job")
-    .select("id, organisation_id, learner_id, datum, phase, praxisflow, instructor_id, field_job_type_id, pruefprotokoll_id")
+    .select("id, organisation_id, learner_id, datum, phase, praxisflow, instructor_id, zweit_trainer_id, field_job_type_id, pruefprotokoll_id")
     .eq("id", fieldJobId)
     .maybeSingle();
   // Ein Fehler ist nicht dasselbe wie "einfacher Ablauf": nicht stillschweigend
@@ -73,7 +73,9 @@ export async function getPraxisflow(fieldJobId: string, learnerId: string): Prom
   // Hilfsunterlagen von AfCJ zur Praxisaufgabe (SR-68), vor den eigenen.
   const hilfen = await getPraxisaufgabeHilfen(job.field_job_type_id);
 
-  const trainer = job.instructor_id ? ((await getMeineTrainer()).get(job.instructor_id) ?? null) : null;
+  const trainerListe = await getMeineTrainer();
+  const trainer = job.instructor_id ? (trainerListe.get(job.instructor_id) ?? null) : null;
+  const trainer2 = job.zweit_trainer_id ? (trainerListe.get(job.zweit_trainer_id) ?? null) : null;
 
   // Nächster offener Praxisauftrag desselben Tages in fester Reihenfolge
   // (SR-64, SR-90); Labortage zählen nicht. Fehler hier blenden nur den Knopf aus.
@@ -103,6 +105,7 @@ export async function getPraxisflow(fieldJobId: string, learnerId: string): Prom
     }))],
     hilfeLinks: hilfen.links,
     trainer: trainer ? { name: trainer.name, fotoUrl: trainer.fotoUrl } : null,
+    trainer2: trainer2 ? { name: trainer2.name, fotoUrl: trainer2.fotoUrl } : null,
     pruefliste,
     naechster: naechster ? { fieldJobId: naechster.fieldJobId, titel: naechster.titel } : null,
   };

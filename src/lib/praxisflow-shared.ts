@@ -30,6 +30,8 @@ export type PraxisflowDaten = {
   hilfeLinks: { id: string; titel: string; url: string }[];
   /** Trainer:in des Praxistags (SR-78), null = nicht zugeordnet */
   trainer: { name: string; fotoUrl: string | null } | null;
+  /** Zweite begleitende Trainer:in (SR-78, 0071), nur Anzeige; Freigaben bleiben bei der zuständigen */
+  trainer2: { name: string; fotoUrl: string | null } | null;
   /** Prüfliste des Auftrags (SR-91): Variante aus der Datenbank, sonst Standard */
   pruefliste: { spannungsfrei: Pruefpunkt[]; unterSpannung: Pruefpunkt[] };
   /** Nächster offener Praxisauftrag desselben Tages (SR-90), null = keiner */

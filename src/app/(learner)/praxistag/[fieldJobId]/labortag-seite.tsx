@@ -35,7 +35,7 @@ export function LabortagSeite({ daten, zurueck }: { daten: LabortagDaten; zuruec
           {datumLang(daten.datum)} · {zeit}
           {daten.standort ? ` · ${daten.standort}` : ""}
         </p>
-        {daten.trainer && <TrainerZeile art="praxis" trainer={daten.trainer} />}
+        {daten.trainer && <TrainerZeile art="praxis" trainer={daten.trainer} zweite={daten.trainer2} />}
         {daten.beschreibung && <p className="text-[15px]">{daten.beschreibung}</p>}
       </section>
       <section aria-labelledby="labortag-unterlagen" className="flex flex-col gap-3">

@@ -101,6 +101,7 @@ function karten(
             alleFertig={zustand.alleFertig}
             staerkt={staerkt("praxis", zustand.praxis.fieldJobId)}
             trainer={person(zustand.praxis.trainerId)}
+            trainer2={person(zustand.praxis.zweitTrainerId ?? null)}
             stil={stil}
           />
         ),

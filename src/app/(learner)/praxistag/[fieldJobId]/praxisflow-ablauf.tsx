@@ -936,7 +936,7 @@ function Fertig({ daten, zurueck }: { daten: PraxisflowDaten; zurueck: { href: s
         )}
       </section>
       <Auftragsakte
-        auftrag={{ titel: daten.titel, ausgabe: daten.datum.split("-").reverse().join("."), trainer: daten.trainer?.name ?? "–" }}
+        auftrag={{ titel: daten.titel, ausgabe: daten.datum.split("-").reverse().join("."), trainer: [daten.trainer?.name, daten.trainer2?.name].filter(Boolean).join(" und ") || "–" }}
         auftragDateien={namen("auftrag")}
         hilfeDateien={namen("hilfe")}
         werkzeuge={f.werkzeuge ?? []}

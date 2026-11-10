@@ -161,9 +161,9 @@ function FokusTitel({
 }
 
 /** "Live mit …" / "Praxis mit …" mit Foto (SR-78); ohne eingetragene Person nichts. */
-function FokusTrainer({ art, trainer }: { art: "live" | "praxis"; trainer?: TrainerAnzeige | null }) {
+function FokusTrainer({ art, trainer, zweite }: { art: "live" | "praxis"; trainer?: TrainerAnzeige | null; zweite?: TrainerAnzeige | null }) {
   if (!trainer) return null;
-  return <TrainerZeile art={art} trainer={trainer} className={cn("mt-1", art === "praxis" ? "text-ink" : "text-white/85")} />;
+  return <TrainerZeile art={art} trainer={trainer} zweite={zweite} className={cn("mt-1", art === "praxis" ? "text-ink" : "text-white/85")} />;
 }
 
 /** A (bevorstehend) und B (läuft gerade). */
@@ -345,6 +345,7 @@ export function FokusPraxis({
   alleFertig,
   staerkt,
   trainer,
+  trainer2,
   stil,
 }: {
   praxis: PraxisAktivitaet;
@@ -352,6 +353,8 @@ export function FokusPraxis({
   alleFertig: boolean;
   staerkt?: StaerktKompetenz[];
   trainer?: TrainerAnzeige | null;
+  /** Zweite begleitende Trainer:in (SR-78, 0071) */
+  trainer2?: TrainerAnzeige | null;
   stil?: TitelStil;
 }) {
   const mehrere = alle.length > 1;
@@ -392,7 +395,7 @@ export function FokusPraxis({
           : `${praxis.standort ? `Praxisauftrag · ${praxis.standort}` : "Praxisauftrag"} · ${praxisStand(praxis)}`}
       </span>
       <FokusTitel titel={praxis.titel} stil={stil} aufCoral />
-      <FokusTrainer art="praxis" trainer={trainer} />
+      <FokusTrainer art="praxis" trainer={trainer} zweite={trainer2} />
       <StaerktPills kompetenzen={staerkt} aufCoral />
       {mehrere && (
         <ul aria-label="Alle Praxisaufträge heute" className="mt-1 flex flex-col gap-1 text-[14px]">
