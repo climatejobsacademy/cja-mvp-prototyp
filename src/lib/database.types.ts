@@ -336,6 +336,19 @@ type LessonResourceRow = Flatten<
   }
 >;
 
+/** SR-68 (0069): Hilfsunterlagen je Praxisaufgabe, gepflegt von AfCJ. */
+type FieldJobTypeResourceRow = Flatten<
+  Timestamps & {
+    id: string;
+    field_job_type_id: string;
+    reihenfolge: number;
+    typ: LessonResourceTyp;
+    titel: string;
+    file_asset_id: string | null;
+    external_url: string | null;
+  }
+>;
+
 type CompetencyRow = Flatten<
   Timestamps & {
     id: string;
@@ -1014,6 +1027,7 @@ export type Database = {
       praxis_codewort: Table<PraxisCodewortRow, Record<string, never>, Record<string, never>>;
       pruefprotokoll: Table<PruefprotokollRow, Record<string, never>, Record<string, never>>;
       pruefprotokoll_punkt: Table<PruefprotokollPunktRow, Record<string, never>, Record<string, never>>;
+      field_job_type_resource: Table<FieldJobTypeResourceRow, Record<string, never>, Record<string, never>>;
       praxis_codewort_versuch: Table<PraxisCodewortVersuchRow, Record<string, never>, Record<string, never>>;
       schedule_entry: Table<
         ScheduleEntryRow,

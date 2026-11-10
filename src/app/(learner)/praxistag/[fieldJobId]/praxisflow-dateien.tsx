@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog } from "@base-ui/react/dialog";
-import { Check, ClipboardList, FileCheck2, FileUp, Library, PencilRuler, Trash2, X, type LucideIcon } from "lucide-react";
+import { Check, ClipboardList, FileCheck2, FileText, FileUp, Library, Link2, PencilRuler, Trash2, X, type LucideIcon } from "lucide-react";
 
 import { FOKUS } from "@/components/praxisflow/stile";
 import type { PraxisDateiArt } from "@/lib/database.types";
@@ -50,7 +50,8 @@ export function DateiUpload({
   const [fehler, setFehlerListe] = useState<string[]>([]);
   const setFehler = (f: string | null) => setFehlerListe(f ? [f] : []);
   const fehlerDazu = (f: string) => setFehlerListe((l) => [...l, f]);
-  const eigene = dateien.filter((d) => d.art === art);
+  // Hilfsunterlagen von AfCJ (SR-68) stehen nicht in der eigenen Liste und sind nicht löschbar.
+  const eigene = dateien.filter((d) => d.art === art && !d.vonAfcj);
 
   async function hochladen(liste: File[]) {
     setFehler(null);
@@ -176,6 +177,46 @@ export function DateiUpload({
           ))}
         </ul>
       )}
+    </div>
+  );
+}
+
+/**
+ * Hilfsunterlagen von AfCJ zur Praxisaufgabe (SR-68): Dateien und Links,
+ * nur ansehen. Gleiche Zeilen wie die eigenen Dateien, öffnen im neuen Tab.
+ */
+export function AfcjHilfen({ dateien, links }: { dateien: PraxisDatei[]; links: { id: string; titel: string; url: string }[] }) {
+  const afcj = dateien.filter((d) => d.vonAfcj);
+  if (afcj.length === 0 && links.length === 0) return null;
+  const zeile = "flex items-center gap-3 rounded-zeile bg-subtle px-4 py-2.5 text-[15px] text-ink";
+  const link = cn("min-w-0 flex-1 truncate underline-offset-2 hover:underline", FOKUS);
+  return (
+    <div className="flex flex-col gap-2">
+      <span className="text-[15px] font-semibold text-ink">Unterlagen zu deinem Auftrag</span>
+      <ul className="flex flex-col gap-2">
+        {afcj.map((d) => (
+          <li key={d.id} className={zeile}>
+            <FileText className="size-4 shrink-0 text-ink-muted" aria-hidden="true" />
+            {d.url ? (
+              <a href={d.url} target="_blank" rel="noopener noreferrer" className={link}>
+                {d.dateiname}
+                <span className="sr-only"> (öffnet in neuem Tab)</span>
+              </a>
+            ) : (
+              <span className="min-w-0 flex-1 truncate">{d.dateiname}</span>
+            )}
+          </li>
+        ))}
+        {links.map((l) => (
+          <li key={l.id} className={zeile}>
+            <Link2 className="size-4 shrink-0 text-ink-muted" aria-hidden="true" />
+            <a href={l.url} target="_blank" rel="noopener noreferrer" className={link}>
+              {l.titel}
+              <span className="sr-only"> (externer Link, öffnet in neuem Tab)</span>
+            </a>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

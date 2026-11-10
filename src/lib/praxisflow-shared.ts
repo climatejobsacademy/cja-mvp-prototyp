@@ -12,6 +12,8 @@ export type PraxisDatei = {
   storagePfad: string;
   /** Signierter Link (1 Stunde), null = nicht abrufbar */
   url: string | null;
+  /** Hilfsunterlage von AfCJ zur Praxisaufgabe (SR-68): nicht löschbar */
+  vonAfcj?: boolean;
 };
 
 export type PraxisflowDaten = {
@@ -24,6 +26,8 @@ export type PraxisflowDaten = {
   phase: PraxisPhase;
   fortschritt: PraxisFortschritt;
   dateien: PraxisDatei[];
+  /** Links zur Praxisaufgabe von AfCJ (SR-68), nur https */
+  hilfeLinks: { id: string; titel: string; url: string }[];
   /** Trainer:in des Praxistags (SR-78), null = nicht zugeordnet */
   trainer: { name: string; fotoUrl: string | null } | null;
   /** Prüfliste des Auftrags (SR-91): Variante aus der Datenbank, sonst Standard */

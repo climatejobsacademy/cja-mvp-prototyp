@@ -59,7 +59,7 @@ import {
   zurueckZumPlan,
   zuschaltenFreigeben,
 } from "./praxisflow-actions";
-import { DateiUpload, DateiVorschau, UnterlagenLeiste } from "./praxisflow-dateien";
+import { AfcjHilfen, DateiUpload, DateiVorschau, UnterlagenLeiste } from "./praxisflow-dateien";
 
 // Geführter Praxisflow (SR-64, SR-65, SR-88, SR-89, SR-90): die Ansicht
 // "Jetzt dran" aus dem Prototyp auf `demo`, mit Stand auf dem Server. Jeder
@@ -353,6 +353,7 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
               return (
                 <Karte {...k} frage="Deine Hilfsunterlagen" hinweis="Damit planst du dein Material und deine Arbeit." zurueck={() => gehe("auftrag")}>
                   {daten.beschreibung && <p className="rounded-zeile bg-subtle p-4 text-[15px] text-ink">{daten.beschreibung}</p>}
+                  <AfcjHilfen dateien={daten.dateien} links={daten.hilfeLinks} />
                   <div className="flex flex-col gap-2">
                     <span className="text-[15px] font-semibold text-ink">Hast du noch etwas, das dir hilft?</span>
                     <span className="text-sm text-ink-muted">Lade es hier dazu, zum Beispiel das Handbuch eines Schalters. Das ist freiwillig.</span>
