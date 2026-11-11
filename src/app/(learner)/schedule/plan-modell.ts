@@ -6,6 +6,7 @@ import type { EinstiegEintrag } from "@/lib/fachsprache-einstiege";
 import { praxisaufgabeHref, praxistagHref } from "@/lib/schalter";
 import type { Plantag } from "@/lib/queries/stundenplan";
 import type { TrainerAnzeige } from "@/lib/queries/trainer";
+import { praxistagFortschritt, praxistagTitel, type PraxistagFortschritt } from "@/lib/praxistag-kachel";
 import { hatUhrzeit, naechsterTerminId, tagestypAus, type Tagestyp } from "@/lib/stundenplan";
 
 /** "Grundlagen der Elektrotechnik: Der Transistor" bzw. nur der Titel ohne Thema. */
@@ -45,11 +46,11 @@ export type Block = {
   trainer2: TrainerAnzeige | null;
   /** Labortag (SR-94): Praxis-Farbe, eigener Name, führt zu den Unterlagen */
   labor: boolean;
-  /** Praxistag mit mehreren Praxisaufträgen (SR-13): ein Block, Zahl gesamt und abgeschlossen */
+  /** Praxistag (SR-13): ein Block je Tag mit Praxisaufträgen, Fortschritt je Auftrag */
   sammel: Sammel | null;
 };
 
-export type Sammel = { anzahl: number; fertig: number };
+export type Sammel = PraxistagFortschritt;
 
 export type Chip = {
   id: string;
@@ -80,7 +81,7 @@ export type Ganztag = {
   trainer2: TrainerAnzeige | null;
   /** Labortag (SR-94) */
   labor: boolean;
-  /** Mehrere Praxisaufträge (SR-13) */
+  /** Praxistag (SR-13): Fortschritt je Auftrag */
   sammel: Sammel | null;
 };
 
@@ -159,33 +160,35 @@ export function planModell(
     const praxisStatus = (status: string): BlockStatus =>
       status === "durchgeführt" ? "erledigt" : tag.datum < heute ? "vorbei" : "offen";
 
-    // Mehrere Praxisaufträge an einem Tag (SR-13): ein Block „Praxistag“ mit
-    // dem Zeitslot des Tages und der Zahl der Aufträge; Klick öffnet die
-    // Tagesübersicht. Labortage (SR-94) bleiben eigene Einträge.
+    // Jeder Tag mit Praxisaufträgen (SR-13): ein gleich aufgebauter Block
+    // „Praxistag“ mit dem Zeitslot des Tages und dem Fortschritt je Auftrag.
+    // Ein Auftrag: sein Titel, Klick direkt hinein. Mehrere: die Zahl, Klick
+    // öffnet die Tagesübersicht. Labortage (SR-94) bleiben eigene Einträge.
     const auftraege = tag.feld.filter((e) => !e.labor);
-    const einzeln = auftraege.length > 1 ? tag.feld.filter((e) => e.labor) : tag.feld;
+    const einzeln = tag.feld.filter((e) => e.labor);
     const sammelBloecke: Block[] = [];
     const sammelGanztags: Ganztag[] = [];
-    if (auftraege.length > 1) {
-      const fertig = auftraege.filter((e) => e.phase === "abgeschlossen" || e.status === "durchgeführt").length;
+    if (auftraege.length > 0) {
+      const fortschritt = praxistagFortschritt(auftraege);
+      const einer = auftraege.length === 1 ? auftraege[0] : null;
       const mitZeit = auftraege.filter(hatUhrzeit);
       const mitTrainer = auftraege.find((e) => e.trainerId) ?? auftraege[0];
       const gemeinsam = {
-        id: `praxistag-${tag.datum}`,
-        titel: "Praxistag",
+        id: einer ? einer.scheduleEntryId : `praxistag-${tag.datum}`,
+        titel: praxistagTitel(auftraege),
         ort: auftraege.find((e) => e.standort)?.standort ?? null,
-        status: (fertig === auftraege.length ? "erledigt" : tag.datum < heute ? "vorbei" : "offen") as BlockStatus,
-        href: praxistagHref(tag.datum),
+        status: (fortschritt.fertig === fortschritt.anzahl ? "erledigt" : tag.datum < heute ? "vorbei" : "offen") as BlockStatus,
+        href: einer ? praxisaufgabeHref(einer.fieldJobId) : praxistagHref(tag.datum),
         trainer: trainerVon(mitTrainer.trainerId),
         trainer2: trainerVon(mitTrainer.zweitTrainerId),
         labor: false,
-        sammel: { anzahl: auftraege.length, fertig },
+        sammel: fortschritt,
       };
       if (mitZeit.length > 0) {
         sammelBloecke.push({
           ...gemeinsam,
           art: "praxis",
-          volltitel: `Praxistag: ${auftraege.map((e) => e.titel).join(", ")}`,
+          volltitel: einer ? einer.titel : `Praxistag: ${auftraege.map((e) => e.titel).join(", ")}`,
           datum: tag.datum,
           start: mitZeit.map((e) => e.start).sort()[0],
           ende: mitZeit.map((e) => e.ende).sort().at(-1)!,
@@ -194,7 +197,7 @@ export function planModell(
           liveRaum: null,
           inhalt: gemeinsam.href,
           lessonId: null,
-          fieldJobId: null,
+          fieldJobId: einer ? einer.fieldJobId : null,
         });
       } else {
         sammelGanztags.push({ ...gemeinsam, fieldJobId: auftraege[0].fieldJobId });

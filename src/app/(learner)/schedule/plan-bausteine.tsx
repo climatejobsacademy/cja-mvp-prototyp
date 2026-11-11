@@ -3,11 +3,12 @@ import { ArrowRight, BookOpen, Check, FlaskConical, Play, Video, Wrench } from "
 
 import { spuren, stunden, type Tagestyp } from "@/lib/stundenplan";
 import { TrainerZeile } from "@/components/trainer-zeile";
+import { fortschrittKurz, fortschrittText } from "@/lib/praxistag-kachel";
 import { cn } from "@/lib/utils";
 
 import { JetztLinie } from "./jetzt-linie";
 import type { Chip, Ganztag, TagModell } from "./plan-modell";
-import { sammelText, TerminBlock } from "./termin-block";
+import { FortschrittZeile, TerminBlock } from "./termin-block";
 
 // Stundenplan v2 (SR-13, SR-73): gemeinsame
 // Bausteine von Woche, Tag und Monat. Aktivitätsfarben wie Home und
@@ -153,7 +154,7 @@ export function FlexLeiste({ chip, gross }: { chip: Chip; gross: boolean }) {
  */
 export function GanztagsLeiste({ tag: g, gross }: { tag: Ganztag; gross: boolean }) {
   const zurueck = g.status !== "offen";
-  const label = `${g.labor ? "Labortag" : g.sammel ? "Praxistag" : "Praxisauftrag"}, ganztägig, ${g.sammel ? sammelText(g.sammel) : g.titel}${g.ort ? `, ${g.ort}` : ""}${g.trainer ? `, Praxis mit ${g.trainer.rufname}${g.trainer2 ? ` und ${g.trainer2.rufname}` : ""}` : ""}, ${g.status === "erledigt" ? "erledigt" : g.status === "vorbei" ? "vorbei" : "offen"}`;
+  const label = `${g.labor ? "Labortag" : g.sammel ? "Praxistag" : "Praxisauftrag"}, ganztägig, ${g.titel}${g.sammel ? `, ${fortschrittText(g.sammel)}` : ""}${g.ort ? `, ${g.ort}` : ""}${g.trainer ? `, Praxis mit ${g.trainer.rufname}${g.trainer2 ? ` und ${g.trainer2.rufname}` : ""}` : ""}, ${g.status === "erledigt" ? "erledigt" : g.status === "vorbei" ? "vorbei" : "offen"}`;
   const klasse = cn(
     "flex min-w-0 items-start gap-2 rounded-xl px-3 py-2 font-semibold outline-none",
     g.href && "transition-[box-shadow] duration-150 hover:shadow-card focus-visible:ring-2 focus-visible:ring-brand motion-reduce:transition-none",
@@ -169,7 +170,7 @@ export function GanztagsLeiste({ tag: g, gross }: { tag: Ganztag; gross: boolean
       )}
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="hyphens-auto break-words">{g.titel}</span>
-        {g.sammel && <span className="text-xs font-normal">{sammelText(g.sammel)}</span>}
+        {g.sammel && <FortschrittZeile f={g.sammel} klein className="my-0.5" />}
         <span className="text-xs font-normal text-ink-muted">{g.labor ? "Labortag · ganztägig" : "Ganztägig"}{g.ort ? ` · ${g.ort}` : ""}</span>
         {/* Begleitende Person des Praxistags (SR-78). */}
         {g.trainer && <TrainerZeile art="praxis" trainer={g.trainer} zweite={g.trainer2} klein className="mt-1 font-normal text-ink-muted" />}
@@ -282,16 +283,16 @@ export function MonatsTags({ tag }: { tag: TagModell }) {
   const tags = [
     ...tag.bloecke.map((b) => ({
       id: b.id,
-      text: b.art === "live" ? `${b.start.slice(0, 5)} Live` : b.labor ? "Labor" : "Praxis",
-      lang: `${b.art === "live" ? "Live-Unterricht" : b.labor ? "Labortag" : "Praxisauftrag"}: ${b.titel}`,
+      text: b.art === "live" ? `${b.start.slice(0, 5)} Live` : b.labor ? "Labor" : b.sammel ? `Praxis ${fortschrittKurz(b.sammel)}` : "Praxis",
+      lang: `${b.art === "live" ? "Live-Unterricht" : b.labor ? "Labortag" : b.sammel ? "Praxistag" : "Praxisauftrag"}: ${b.titel}${b.sammel ? `, ${fortschrittText(b.sammel)}` : ""}`,
       erledigt: b.status === "erledigt",
       vorbei: b.status !== "offen",
       punkt: b.art === "live" ? "bg-brand" : "bg-praxis",
     })),
     ...tag.ganztags.map((g) => ({
       id: g.id,
-      text: g.labor ? "Labor" : "Praxis",
-      lang: `${g.labor ? "Labortag" : "Praxisauftrag"}, ganztägig: ${g.titel}`,
+      text: g.labor ? "Labor" : g.sammel ? `Praxis ${fortschrittKurz(g.sammel)}` : "Praxis",
+      lang: `${g.labor ? "Labortag" : g.sammel ? "Praxistag" : "Praxisauftrag"}, ganztägig: ${g.titel}${g.sammel ? `, ${fortschrittText(g.sammel)}` : ""}`,
       erledigt: g.status === "erledigt",
       vorbei: g.status !== "offen",
       punkt: "bg-praxis",
