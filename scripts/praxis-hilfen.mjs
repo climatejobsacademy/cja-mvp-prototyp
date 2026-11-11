@@ -4,7 +4,8 @@
 // Spielt Hilfsunterlagen je Praxisaufgabe ein (SR-68, Migration 0069; auch
 // die Unterlagen des Labortags, SR-94): lädt die Dateien in den Bucket
 // lesson-resources (Ordner praxis-hilfen/) und legt file_asset und
-// field_job_type_resource an. Anleitung: docs/praxis-hilfen-einspielen.md.
+// field_job_type_resource an. Dateien als "Datei" oder "Ordner/Datei"
+// relativ zu --ordner. Anleitung: docs/praxis-hilfen-einspielen.md.
 //
 //   node scripts/praxis-hilfen.mjs --datei <zuordnung.csv> --ordner <dateien> --ziel staging              (Probelauf)
 //   node scripts/praxis-hilfen.mjs --datei <zuordnung.csv> --ordner <dateien> --ziel staging --ausfuehren
@@ -72,7 +73,7 @@ const mitDatei = eintraege.filter((e) => e.datei);
 if (mitDatei.length && !arg.ordner) abbruch("--ordner fehlt (Ordner mit den Dateien der Liste).");
 const objekte = new Map(); // objekt -> { lokal, mime, groesse }
 for (const e of mitDatei) {
-  const lokal = join(resolve(arg.ordner), e.datei);
+  const lokal = join(resolve(arg.ordner), ...e.datei.split("/"));
   if (!existsSync(lokal)) abbruch(`Zeile ${e.zeile}: Datei „${e.datei}“ nicht im Ordner.`);
   const groesse = statSync(lokal).size;
   if (groesse > MAX_BYTES) abbruch(`Zeile ${e.zeile}: „${e.datei}“ ist größer als 50 MB.`);
@@ -174,7 +175,7 @@ const zeilen = eintraege.map((e) => ({
   reihenfolge: e.reihenfolge,
   titel: e.titel,
   objekt: e.objekt,
-  dateiname: e.datei,
+  dateiname: e.anzeige,
   mime: e.mime,
   link: e.link,
 }));
