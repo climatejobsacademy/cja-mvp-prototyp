@@ -218,7 +218,7 @@ export const TEXTE = {
     weiter: "Weiter zu Bewerten",
   },
   reflexion: {
-    titel: "Deine Erkenntnis",
+    titel: "Das nehme ich mit",
     frage: "Was machst du beim nächsten Mal anders?",
     anfaenge: ["Gut lief …", "Nächstes Mal …"],
     platzhalter: "Gut lief … Nächstes Mal …",
@@ -256,9 +256,9 @@ export const TEXTE = {
   // Hinweis direkt am jeweiligen Codewort-Feld
   gates: {
     entscheiden: "Eine Trainer:in nimmt deinen Plan ab und gibt ihn mit dem Codewort frei.",
-    durchfuehren: "Wenn alle Schritte abgehakt sind, gibt die Trainer:in die Durchführung mit dem Codewort frei.",
-    kontrolle: "Die Trainer:in prüft die Anlage und gibt die Inbetriebnahme mit dem Codewort frei.",
-    bewerten: "Die Trainer:in bestätigt ihre Einschätzung mit dem Codewort. Ohne Codewort wird nichts gespeichert.",
+    durchfuehren: "Wenn alle Schritte abgehakt sind, gibt eine Trainer:in die Durchführung mit dem Codewort frei.",
+    kontrolle: "Eine Trainer:in prüft die Anlage und gibt die Inbetriebnahme mit dem Codewort frei.",
+    bewerten: "Eine Trainer:in bestätigt ihre Einschätzung mit dem Codewort. Ohne Codewort wird nichts gespeichert.",
   },
   codewort: {
     label: "Codewort der Trainer:in",

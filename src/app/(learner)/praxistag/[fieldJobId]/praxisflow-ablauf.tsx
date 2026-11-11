@@ -813,7 +813,7 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
                     ))}
                   </ul>
                   <button type="button" onClick={() => gehe("reflexion")} className={GROSS}>
-                    {ko ? "Weiter zur Erkenntnis" : "Weiter"} <ArrowRight aria-hidden="true" />
+                    Weiter <ArrowRight aria-hidden="true" />
                   </button>
                 </Karte>
               );
