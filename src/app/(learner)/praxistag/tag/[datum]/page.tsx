@@ -52,7 +52,7 @@ export default async function PraxistagPage({ params }: { params: Promise<{ datu
           return (
             <li key={a.fieldJobId}>
               <Link
-                href={`/praxistag/${a.fieldJobId}`}
+                href={`/praxistag/${a.fieldJobId}?von=tagesuebersicht`}
                 className={cn(
                   "flex items-center gap-3 rounded-karte p-4 text-ink shadow-card md:px-6",
                   istNaechster ? "border-l-[3px] border-l-praxis bg-praxis-tint hover:brightness-[0.98]" : "bg-card hover:bg-subtle",
