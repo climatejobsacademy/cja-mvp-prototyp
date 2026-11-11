@@ -457,6 +457,7 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
                     label={TEXTE.codewort.label}
                     buttonText="Plan freigeben"
                     trainer={daten.trainer}
+                    trainer2={daten.trainer2}
                     pruefen={async (e) => gateErgebnis(await planFreigeben(daten.fieldJobId, e))}
                     onFreigabe={() => vibrieren()}
                   />
@@ -560,6 +561,7 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
                     label={TEXTE.codewort.label}
                     buttonText="Inbetriebnahme freigeben"
                     trainer={daten.trainer}
+                    trainer2={daten.trainer2}
                     pruefen={async (e) => gateErgebnis(await zuschaltenFreigeben(daten.fieldJobId, e))}
                     onFreigabe={() => vibrieren()}
                   />
@@ -755,6 +757,7 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
                       label={TEXTE.codewort.label}
                       buttonText="Einschätzung speichern"
                       trainer={daten.trainer}
+                      trainer2={daten.trainer2}
                       pruefen={async (e) => gateErgebnis(await trainerEinschaetzen(daten.fieldJobId, werte.trainer, e))}
                       onFreigabe={() => gehe(naechster())}
                     />
