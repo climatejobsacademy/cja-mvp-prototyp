@@ -23,14 +23,19 @@ export function praxistagFortschritt(auftraege: Pick<Auftrag, "phase" | "status"
   return { anzahl: auftraege.length, fertig: erledigt.filter(Boolean).length, erledigt };
 }
 
-/** Titel der Kachel: bei einem Auftrag sein Titel, sonst die Zahl. */
-export function praxistagTitel(auftraege: Pick<Auftrag, "titel">[]): string {
-  return auftraege.length === 1 ? auftraege[0].titel : `${auftraege.length} Praxisaufträge`;
+/** Titel der Kachel: immer die Zahl, "1 Praxisauftrag" bzw. "3 Praxisaufträge". */
+export function praxistagTitel(auftraege: unknown[]): string {
+  return auftraege.length === 1 ? "1 Praxisauftrag" : `${auftraege.length} Praxisaufträge`;
 }
 
 /** "1 von 3 erledigt" */
 export function fortschrittText(f: Pick<PraxistagFortschritt, "anzahl" | "fertig">): string {
   return `${f.fertig} von ${f.anzahl} erledigt`;
+}
+
+/** Kurzform für die Wochenansicht: "1 von 3" */
+export function fortschrittMittel(f: Pick<PraxistagFortschritt, "anzahl" | "fertig">): string {
+  return `${f.fertig} von ${f.anzahl}`;
 }
 
 /** Kurzform für die Monatsansicht: "1/3" */

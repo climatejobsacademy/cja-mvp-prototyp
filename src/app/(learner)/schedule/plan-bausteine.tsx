@@ -170,7 +170,7 @@ export function GanztagsLeiste({ tag: g, gross }: { tag: Ganztag; gross: boolean
       )}
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="hyphens-auto break-words">{g.titel}</span>
-        {g.sammel && <FortschrittZeile f={g.sammel} klein className="my-0.5" />}
+        {g.sammel && <FortschrittZeile f={g.sammel} klein={!gross} className="my-0.5" />}
         <span className="text-xs font-normal text-ink-muted">{g.labor ? "Labortag · ganztägig" : "Ganztägig"}{g.ort ? ` · ${g.ort}` : ""}</span>
         {/* Begleitende Person des Praxistags (SR-78). */}
         {g.trainer && <TrainerZeile art="praxis" trainer={g.trainer} zweite={g.trainer2} klein className="mt-1 font-normal text-ink-muted" />}

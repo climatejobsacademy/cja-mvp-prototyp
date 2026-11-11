@@ -161,9 +161,10 @@ export function planModell(
       status === "durchgeführt" ? "erledigt" : tag.datum < heute ? "vorbei" : "offen";
 
     // Jeder Tag mit Praxisaufträgen (SR-13): ein gleich aufgebauter Block
-    // „Praxistag“ mit dem Zeitslot des Tages und dem Fortschritt je Auftrag.
-    // Ein Auftrag: sein Titel, Klick direkt hinein. Mehrere: die Zahl, Klick
-    // öffnet die Tagesübersicht. Labortage (SR-94) bleiben eigene Einträge.
+    // „Praxistag“ mit dem Zeitslot des Tages, der Zahl der Aufträge („1
+    // Praxisauftrag“) und dem Fortschritt je Auftrag. Ein Auftrag: Klick direkt
+    // hinein (Titel im Tooltip). Mehrere: Klick öffnet die Tagesübersicht.
+    // Labortage (SR-94) bleiben eigene Einträge.
     const auftraege = tag.feld.filter((e) => !e.labor);
     const einzeln = tag.feld.filter((e) => e.labor);
     const sammelBloecke: Block[] = [];
@@ -188,7 +189,7 @@ export function planModell(
         sammelBloecke.push({
           ...gemeinsam,
           art: "praxis",
-          volltitel: einer ? einer.titel : `Praxistag: ${auftraege.map((e) => e.titel).join(", ")}`,
+          volltitel: `Praxistag: ${auftraege.map((e) => e.titel).join(", ")}`,
           datum: tag.datum,
           start: mitZeit.map((e) => e.start).sort()[0],
           ende: mitZeit.map((e) => e.ende).sort().at(-1)!,
