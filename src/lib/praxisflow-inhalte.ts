@@ -255,7 +255,7 @@ export const TEXTE = {
   },
   // Hinweis direkt am jeweiligen Codewort-Feld
   gates: {
-    entscheiden: "Die Trainer:in nimmt deinen Plan ab und gibt ihn mit dem Codewort frei.",
+    entscheiden: "Eine Trainer:in nimmt deinen Plan ab und gibt ihn mit dem Codewort frei.",
     durchfuehren: "Wenn alle Schritte abgehakt sind, gibt die Trainer:in die Durchführung mit dem Codewort frei.",
     kontrolle: "Die Trainer:in prüft die Anlage und gibt die Inbetriebnahme mit dem Codewort frei.",
     bewerten: "Die Trainer:in bestätigt ihre Einschätzung mit dem Codewort. Ohne Codewort wird nichts gespeichert.",
