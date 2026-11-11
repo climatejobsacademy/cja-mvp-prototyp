@@ -21,6 +21,7 @@ export function CodewortGate({
   label,
   buttonText,
   trainer,
+  trainer2,
   pruefen,
   onFreigabe,
 }: {
@@ -30,9 +31,13 @@ export function CodewortGate({
   buttonText: string;
   /** Trainer:in des Praxistags, wenn zugeordnet (SR-78). */
   trainer: { name: string; fotoUrl: string | null } | null;
+  /** Zweite Trainer:in vor Ort (SR-78, 0071): wird mit angezeigt, beide kennen das Codewort. */
+  trainer2?: { name: string; fotoUrl: string | null } | null;
   pruefen: (eingabe: string) => Promise<GateErgebnis>;
   onFreigabe: () => void;
 }) {
+  // Beide Trainer:innen vor Ort (SR-78): beide können freigeben.
+  const personen = [trainer, trainer2].filter((p): p is { name: string; fotoUrl: string | null } => !!p);
   const [eingabe, setEingabe] = useState("");
   const [fehler, setFehler] = useState<string | null>(null);
   const [laeuft, setLaeuft] = useState(false);
@@ -55,9 +60,20 @@ export function CodewortGate({
   return (
     <form onSubmit={absenden} className="flex flex-col gap-3 rounded-zeile bg-subtle p-4">
       <p className="flex items-start gap-3 rounded-xl bg-white p-3 text-[15px] text-ink">
-        {trainer && <PersonAvatar name={trainer.name} fotoUrl={trainer.fotoUrl} className="size-10 shrink-0" />}
+        {personen.length > 0 && (
+          <span className="flex shrink-0">
+            {/* Überlappend wie in der Trainer-Zeile (SR-78). */}
+            {personen.map((p, i) => (
+              <PersonAvatar key={p.name} name={p.name} fotoUrl={p.fotoUrl} className={cn("size-10 shrink-0", i > 0 && "-ml-2.5")} />
+            ))}
+          </span>
+        )}
         <span className="flex flex-col gap-0.5">
-          {trainer && <span className="text-[13px] font-semibold text-ink-muted">{trainer.name} · Trainer:in</span>}
+          {personen.length > 0 && (
+            <span className="text-[13px] font-semibold text-ink-muted">
+              {personen.map((p) => p.name).join(" und ")} · {personen.length > 1 ? "Trainer:innen" : "Trainer:in"}
+            </span>
+          )}
           <span>{hinweis}</span>
         </span>
       </p>
