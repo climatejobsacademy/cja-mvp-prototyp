@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Check, FlaskConical, Video, Wrench } from "lucide-react";
 
 import { TrainerZeile } from "@/components/trainer-zeile";
-import { fortschrittText, type PraxistagFortschritt } from "@/lib/praxistag-kachel";
+import { fortschrittMittel, fortschrittText, type PraxistagFortschritt } from "@/lib/praxistag-kachel";
 import { cn } from "@/lib/utils";
 
 import { zeitText, type Block } from "./plan-modell";
@@ -29,15 +29,19 @@ const ART = {
 } as const;
 
 /**
- * Fortschritt eines Praxistags (SR-13): ein Kreis je Auftrag in fester
- * Reihenfolge, erledigte gefüllt mit Haken, dazu „1 von 3 erledigt“. Farbe
- * wie aller Fortschritt (Eco Deep Green, --progress). Die Kreise sind nur
- * Schmuck; Bildschirmleser lesen den Text.
+ * Fortschritt eines Praxistags (SR-13): immer genau eine Zeile, bricht nie um,
+ * damit die Trainer-Zeile in allen Praxistagen gleich hoch steht. Text vorne
+ * ("2 von 6" schmal, "2 von 6 erledigt" breit), dahinter ein Kreis je Auftrag
+ * in fester Reihenfolge, erledigte gefüllt mit Haken; bei sehr vielen
+ * Aufträgen werden die Kreise rechts abgeschnitten, nie der Text. Farbe wie
+ * aller Fortschritt (--progress). Bildschirmleser lesen die lange Form.
  */
 export function FortschrittZeile({ f, klein, className }: { f: PraxistagFortschritt; klein?: boolean; className?: string }) {
   return (
-    <span className={cn("flex flex-wrap items-center gap-x-1.5 gap-y-1 font-semibold", klein ? "text-[11px]" : "text-[13px]", className)}>
-      <span aria-hidden="true" className="flex items-center gap-1">
+    <span className={cn("flex min-w-0 items-center gap-1.5 overflow-hidden font-semibold whitespace-nowrap", klein ? "text-[11px]" : "text-[13px]", className)}>
+      <span aria-hidden="true" className="shrink-0">{klein ? fortschrittMittel(f) : fortschrittText(f)}</span>
+      <span className="sr-only">{fortschrittText(f)}</span>
+      <span aria-hidden="true" className="flex min-w-0 items-center gap-1 overflow-hidden">
         {f.erledigt.map((ok, i) => (
           <span
             key={i}
@@ -51,7 +55,6 @@ export function FortschrittZeile({ f, klein, className }: { f: PraxistagFortschr
           </span>
         ))}
       </span>
-      {fortschrittText(f)}
     </span>
   );
 }

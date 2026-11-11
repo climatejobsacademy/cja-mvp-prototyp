@@ -3,11 +3,11 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 // @ts-expect-error TS5097: .ts-Endung für node:test nötig
-import { fortschrittKurz, fortschrittText, praxistagFortschritt, praxistagTitel } from "./praxistag-kachel.ts";
+import { fortschrittKurz, fortschrittMittel, fortschrittText, praxistagFortschritt, praxistagTitel } from "./praxistag-kachel.ts";
 
-test("SR-13: ein Auftrag zeigt seinen Titel und 0 von 1 erledigt", () => {
+test("SR-13: ein Auftrag zeigt „1 Praxisauftrag“ und 0 von 1 erledigt", () => {
   const a = [{ titel: "Ausschaltung mit Steckdose", phase: "planen", status: "geplant" }];
-  assert.equal(praxistagTitel(a), "Ausschaltung mit Steckdose");
+  assert.equal(praxistagTitel(a), "1 Praxisauftrag");
   assert.equal(fortschrittText(praxistagFortschritt(a)), "0 von 1 erledigt");
 });
 
@@ -21,5 +21,6 @@ test("SR-13: mehrere Aufträge zeigen die Zahl und je Auftrag den Stand in feste
   assert.equal(praxistagTitel(a), "3 Praxisaufträge");
   assert.deepEqual(f.erledigt, [true, false, true]);
   assert.equal(fortschrittText(f), "2 von 3 erledigt");
+  assert.equal(fortschrittMittel(f), "2 von 3");
   assert.equal(fortschrittKurz(f), "2/3");
 });
