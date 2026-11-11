@@ -33,19 +33,9 @@ export function mimeTyp(name) {
   return FORMATE[endung(name)] ?? null;
 }
 
-/**
- * Objektname im Bucket: "praxis-hilfen/<name>", nur a–z, Ziffern und
- * Bindestriche, Endung klein. Gleicher Dateiname ergibt gleichen Objektnamen;
- * so erkennt ein neuer Lauf schon hochgeladene Dateien.
- */
-export function objektName(dateiname) {
-  const name = (dateiname ?? "").trim();
-  if (!name) throw new Error("Dateiname fehlt.");
-  if (name.includes("/") || name.includes("\\")) throw new Error(`„${name}“: nur der Dateiname, ohne Ordner.`);
-  const e = endung(name);
-  if (!FORMATE[e]) throw new Error(`„${name}“: Format nicht erlaubt (erlaubt: ${Object.keys(FORMATE).join(", ")}).`);
-  const stamm = name
-    .slice(0, -(e.length + 1))
+/** Ein Namensteil als Speichername: nur a–z, Ziffern und Bindestriche. */
+function kuerzel(teil) {
+  return teil
     .replace(/[äöüßÄÖÜ]/g, (z) => UMLAUTE[z])
     .normalize("NFKD")
     .replace(/[̀-ͯ]/g, "")
@@ -54,8 +44,43 @@ export function objektName(dateiname) {
     .replace(/^-+|-+$/g, "")
     .slice(0, 120)
     .replace(/-+$/, "");
-  if (!stamm) throw new Error(`„${name}“: Aus dem Namen bleibt kein gültiger Speichername übrig.`);
-  return `praxis-hilfen/${stamm}.${e === "jpeg" ? "jpg" : e}`;
+}
+
+/**
+ * Pfad relativ zum Ordner der Dateien, "Datei" oder "Ordner/Datei"
+ * (auch mehrere Ordner; "\" zählt wie "/"). Gibt die Teile zurück; kein
+ * absoluter Pfad, kein "." oder "..", keine leeren Teile.
+ */
+export function pfadTeile(dateipfad) {
+  const pfad = (dateipfad ?? "").trim().replace(/\\/g, "/");
+  if (!pfad) throw new Error("Dateiname fehlt.");
+  const teile = pfad.split("/").map((t) => t.trim());
+  if (pfad.startsWith("/") || teile.some((t) => !t || t === "." || t === "..")) {
+    throw new Error(`„${dateipfad}“: nur „Datei“ oder „Ordner/Datei“ innerhalb des Ordners, ohne „..“ und ohne „/“ am Anfang.`);
+  }
+  return teile;
+}
+
+/**
+ * Objektname im Bucket: "praxis-hilfen/[<ordner>/]<name>", jeder Teil nur
+ * a–z, Ziffern und Bindestriche, Endung klein. Gleicher Pfad ergibt gleichen
+ * Objektnamen; so erkennt ein neuer Lauf schon hochgeladene Dateien. Gleiche
+ * Dateinamen in verschiedenen Ordnern bleiben getrennt.
+ */
+export function objektName(dateipfad) {
+  const teile = pfadTeile(dateipfad);
+  const name = teile.pop();
+  const e = endung(name);
+  if (!FORMATE[e]) throw new Error(`„${dateipfad}“: Format nicht erlaubt (erlaubt: ${Object.keys(FORMATE).join(", ")}).`);
+  const stamm = kuerzel(name.slice(0, -(e.length + 1)));
+  const ordner = teile.map(kuerzel);
+  if (!stamm || ordner.some((o) => !o)) throw new Error(`„${dateipfad}“: Aus dem Namen bleibt kein gültiger Speichername übrig.`);
+  return ["praxis-hilfen", ...ordner, `${stamm}.${e === "jpeg" ? "jpg" : e}`].join("/");
+}
+
+/** Angezeigter Dateiname: nur der letzte Teil des Pfads. */
+export function anzeigeName(dateipfad) {
+  return pfadTeile(dateipfad).at(-1);
 }
 
 /** Nur https-Links mit Host. */
@@ -71,7 +96,7 @@ export function linkGueltig(wert) {
 /**
  * Liest die Zuordnungsliste. Spalten (Kopfzeile, Groß-/Kleinschreibung egal):
  * aufgabe_titel; reihenfolge; titel; datei; link. Je Zeile genau eine von
- * datei und link. Gibt { eintraege, fehler } zurück; bei Fehlern bricht das
+ * datei und link; datei ist "Datei" oder "Ordner/Datei" im Ordner der Dateien. Gibt { eintraege, fehler } zurück; bei Fehlern bricht das
  * Skript vor jeder Datenbankverbindung ab.
  */
 export function leseZuordnung(text) {
@@ -111,7 +136,18 @@ export function leseZuordnung(text) {
     const schluessel = `${aufgabe}\u0000${reihenfolge}`;
     if (aufgabe && gesehen.has(schluessel)) fehler.push(`${wo}: Reihenfolge ${reihenfolge} steht für diese Aufgabe schon in Zeile ${gesehen.get(schluessel)}.`);
     gesehen.set(schluessel, nr);
-    eintraege.push({ zeile: nr, aufgabe, reihenfolge, titel, datei: datei || null, link: link || null, objekt, mime: datei ? mimeTyp(datei) : null });
+    const pfad = objekt ? pfadTeile(datei).join("/") : null;
+    eintraege.push({
+      zeile: nr,
+      aufgabe,
+      reihenfolge,
+      titel,
+      datei: pfad,
+      anzeige: pfad ? anzeigeName(pfad) : null,
+      link: link || null,
+      objekt,
+      mime: objekt ? mimeTyp(datei) : null,
+    });
   }
   return { eintraege, fehler };
 }
