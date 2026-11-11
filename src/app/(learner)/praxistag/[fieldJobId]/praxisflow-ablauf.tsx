@@ -42,7 +42,7 @@ import {
   eintragVerschieben,
   type Eintrag,
 } from "@/lib/praxisflow-liste";
-import { ereignisseMelden } from "@/lib/praxisflow-ereignis";
+import { ereignisseMelden, type Einstieg } from "@/lib/praxisflow-ereignis";
 import type { AktionErgebnis, PraxisflowDaten } from "@/lib/praxisflow-shared";
 import { cn } from "@/lib/utils";
 
@@ -169,7 +169,16 @@ function vibrieren() {
   }
 }
 
-export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; zurueck: { href: string; label: string } }) {
+export function PraxisflowAblauf({
+  daten,
+  zurueck,
+  einstieg,
+}: {
+  daten: PraxisflowDaten;
+  zurueck: { href: string; label: string };
+  /** Woher die Person kommt (SR-92, 0072) */
+  einstieg: Einstieg;
+}) {
   const f = daten.fortschritt;
   const [position, setPosition] = useState<string>(() => startPosition(daten));
   const [meldung, setMeldung] = useState<string | null>(null);
@@ -192,12 +201,21 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
     Object.fromEntries((f.deutungen ?? []).map((d) => [d.id, d.text]))
   );
 
-  // Ereignisse (SR-92): erster Schritt beim Öffnen, Schritt beendet beim
-  // Verlassen der Seite; Wechsel meldet gehe(). Nur Kennungen, keine Inhalte.
+  // Ereignisse (SR-92): beim Öffnen der Einstieg (0072) und der erste
+  // Schritt, Schritt beendet beim Verlassen der Seite; Wechsel meldet gehe().
+  // Nur Kennungen, keine Inhalte.
   const positionRef = useRef(position);
+  const einstiegRef = useRef(einstieg);
   useEffect(() => {
     const abbruch = new AbortController();
-    ereignisseMelden(daten.fieldJobId, [{ art: "schritt_geoeffnet", schritt: positionRef.current }], abbruch.signal);
+    ereignisseMelden(
+      daten.fieldJobId,
+      [
+        { art: "auftrag_geoeffnet", schritt: einstiegRef.current },
+        { art: "schritt_geoeffnet", schritt: positionRef.current },
+      ],
+      abbruch.signal
+    );
     const verlassen = () => ereignisseMelden(daten.fieldJobId, [{ art: "schritt_beendet", schritt: positionRef.current }]);
     window.addEventListener("pagehide", verlassen);
     return () => {
@@ -932,7 +950,7 @@ function Fertig({ daten, zurueck }: { daten: PraxisflowDaten; zurueck: { href: s
           </div>
         </div>
         {daten.naechster ? (
-          <Link href={`/praxistag/${daten.naechster.fieldJobId}`} className={cn(GROSS, "sm:w-auto sm:self-start")}>
+          <Link href={`/praxistag/${daten.naechster.fieldJobId}?von=naechster`} className={cn(GROSS, "sm:w-auto sm:self-start")}>
             Weiter zum nächsten Auftrag: {daten.naechster.titel} <ArrowRight aria-hidden="true" />
           </Link>
         ) : (

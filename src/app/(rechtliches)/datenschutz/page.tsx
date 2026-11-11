@@ -122,9 +122,11 @@ export default function DatenschutzPage() {
         Sie drucken oder als PDF speichern können.
       </p>
       <p>
-        Um den Praxisablauf zu verbessern, speichern wir außerdem, welche
-        Schritte Sie wann öffnen und abschließen, ob Sie Unterlagen öffnen oder
-        hochladen und ob Freigaben gelingen, jeweils mit Zeitpunkt, aber ohne
+        Um den Praxisablauf zu verbessern, speichern wir außerdem, über welchen
+        Weg Sie einen Praxisauftrag öffnen (zum Beispiel Startseite oder
+        Stundenplan), welche Schritte Sie wann öffnen und abschließen, ob Sie
+        Unterlagen öffnen oder hochladen und ob Freigaben gelingen, jeweils mit
+        Zeitpunkt, aber ohne
         Inhalte, Dateinamen oder Freitexte. Diese Angaben werten wir nur
         zusammengefasst für alle Lernenden aus (zum Beispiel: wie lange ein
         Schritt im Mittel dauert), nicht für einzelne Personen.
