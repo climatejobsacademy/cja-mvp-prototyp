@@ -307,10 +307,16 @@ export function PraxisflowAblauf({
     return r.wert ? { ok: true } : { ok: false, fehler: TEXTE.codewort.falsch };
   }
 
+  // Zurück innerhalb der Phase (SR-64 Navigation): jede Karte außer der
+  // ersten führt einen Schritt zurück; nur Anzeige, kein Stand ändert sich.
+  // Über eine Phasengrenze nie. Bewerten legt Zurück selbst fest (nur
+  // innerhalb der Einschätzung einer Person).
+  const vorher = aktuell.phase !== "bewerten" && nrInPhase > 1 ? inPhase[nrInPhase - 2].id : undefined;
   const k = {
     phase: phasenName(aktuell.phase),
     nr: nrInPhase,
     von: inPhase.length,
+    zurueck: vorher ? () => gehe(vorher) : undefined,
   };
 
   return (
@@ -372,7 +378,7 @@ export function PraxisflowAblauf({
             }
             if (art === "hilfen") {
               return (
-                <Karte {...k} frage="Deine Hilfsunterlagen" hinweis="Damit planst du dein Material und deine Arbeit." zurueck={() => gehe("auftrag")}>
+                <Karte {...k} frage="Deine Hilfsunterlagen" hinweis="Damit planst du dein Material und deine Arbeit.">
                   {daten.beschreibung && <p className="rounded-zeile bg-subtle p-4 text-[15px] text-ink">{daten.beschreibung}</p>}
                   <AfcjHilfen dateien={daten.dateien} links={daten.hilfeLinks} />
                   <div className="flex flex-col gap-2">
@@ -402,12 +408,11 @@ export function PraxisflowAblauf({
               };
               const aendern = (fn: (l: Eintrag[]) => Eintrag[]) => setListen((l) => ({ ...l, [name]: fn(l[name]) }));
               const gesperrt = name === "schritte" && listen.schritte.length === 0;
-              const zurueckZu = name === "materialien" ? "plaene" : name === "werkzeuge" ? "materialien" : "werkzeuge";
               // Der letzte Teil von Planen speichert den Plan und schließt die Phase ab.
               const weiter = () =>
                 name === "schritte" ? planSichern(() => phaseAbschliessen("planen", "rueckblick")) : planSichern(() => gehe(naechster()));
               return (
-                <Karte {...k} frage={fragen[name]} hinweis={hinweise[name]} zurueck={() => gehe(zurueckZu)}>
+                <Karte {...k} frage={fragen[name]} hinweis={hinweise[name]}>
                   <ListenEditor
                     id={name}
                     {...EDITOR[name]}
@@ -621,7 +626,6 @@ export function PraxisflowAblauf({
                   {...k}
                   frage={p?.titel ?? "Prüfpunkt"}
                   hinweis={TEXTE.deuten.frage}
-                  zurueck={nr > 0 ? () => gehe(`deuten:${PUNKTE[nr - 1].id}`) : undefined}
                 >
                   <label className="flex flex-col gap-2">
                     <span className="sr-only">Deine Deutung zu {p?.titel}</span>
@@ -955,7 +959,7 @@ function Fertig({ daten, zurueck }: { daten: PraxisflowDaten; zurueck: { href: s
           </Link>
         ) : (
           <Link href={zurueck.href} className={cn(GROSS, "sm:w-auto sm:self-start")}>
-            Zurück zum {zurueck.label} <ArrowRight aria-hidden="true" />
+            {zurueck.label} <ArrowRight aria-hidden="true" />
           </Link>
         )}
       </section>
@@ -1066,6 +1070,7 @@ function Uebergabe({
   hinweis,
   ton,
   phase,
+  zurueck,
   children,
 }: {
   icon: LucideIcon;
@@ -1075,19 +1080,20 @@ function Uebergabe({
   phase: string;
   nr?: number;
   von?: number;
+  zurueck?: () => void;
   children: React.ReactNode;
 }) {
   // Trainer:in ist dran: weiße Karte, Coral nur als kleines Badge (Dosis, 09.11.2026).
   if (ton === "trainer") {
     return (
-      <Karte phase={phase} frage={frage} hinweis={hinweis}>
+      <Karte phase={phase} frage={frage} hinweis={hinweis} zurueck={zurueck}>
         <TrainerBadge />
         <div>{children}</div>
       </Karte>
     );
   }
   return (
-    <Karte phase={phase} frage={frage} hinweis={hinweis} ton={ton}>
+    <Karte phase={phase} frage={frage} hinweis={hinweis} ton={ton} zurueck={zurueck}>
       <span
         className={cn(
           "flex size-14 items-center justify-center rounded-full",

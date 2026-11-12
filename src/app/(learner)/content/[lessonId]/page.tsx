@@ -8,6 +8,7 @@ import { UnitProgressBadge } from "@/components/status-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { heuteInBerlin, jetztInBerlin } from "@/lib/date";
 import { cn } from "@/lib/utils";
+import { zurueckZu, type ZurueckZiel } from "@/lib/zurueck";
 import { requireCurrentLearner } from "@/lib/queries/session";
 import { getKompetenzFortschritt } from "@/lib/queries/competencies";
 import { getLessonDetail } from "@/lib/queries/content";
@@ -40,14 +41,11 @@ const TYP_PILL: Record<string, string> = { live: "bg-brand-tint text-brand", sco
 /**
  * Zurück-Link je nach Herkunft: aus dem Stundenplan zurück zum selben Tag,
  * von Home zurück nach Home, sonst (Reiter Programm, Direktaufruf) zum Programm.
+ * Gemeinsamer Helfer wie Praxisauftrag und Fachsprache (src/lib/zurueck.ts).
  */
-function zurueckZiel(von?: string, datum?: string): { href: string; label: string } {
-  if (von === "stundenplan") {
-    const tag = datum && /^\d{4}-\d{2}-\d{2}$/.test(datum) ? `?datum=${datum}` : "";
-    return { href: `/schedule${tag}`, label: "Zurück zum Stundenplan" };
-  }
-  if (von === "home") return { href: "/home", label: "Zurück zu Home" };
-  return { href: "/content", label: "Zurück zum Programm" };
+function zurueckZiel(von?: string, datum?: string): ZurueckZiel {
+  if (von === "stundenplan") return zurueckZu("stundenplan", datum);
+  return zurueckZu(von === "home" ? "home" : "programm");
 }
 
 export default async function LessonPage({

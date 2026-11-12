@@ -4,6 +4,7 @@ import { requireCurrentLearner } from "@/lib/queries/session";
 import { getLabortag } from "@/lib/queries/labortag";
 import { getPraxisflow } from "@/lib/queries/praxisflow";
 import { einstiegAus } from "@/lib/praxisflow-ereignis";
+import { praxisZurueck } from "@/lib/zurueck";
 
 import { LabortagSeite } from "./labortag-seite";
 import { PraxisflowAblauf } from "./praxisflow-ablauf";
@@ -20,14 +21,13 @@ export default async function PraxisauftragPage({
 }) {
   const { fieldJobId } = await params;
   const { von } = await searchParams;
-  // Aus dem Reiter Programm zurück dorthin, sonst zum Stundenplan.
-  const zurueck = von === "programm" ? { href: "/content", label: "Programm" } : { href: "/schedule", label: "Stundenplan" };
   const learner = await requireCurrentLearner();
   const praxisflow = await getPraxisflow(fieldJobId, learner.personId);
   // Einstieg für die Auswertung (SR-92): Herkunft aus ?von=, sonst "direkt".
-  if (praxisflow) return <PraxisflowAblauf daten={praxisflow} zurueck={zurueck} einstieg={einstiegAus(von)} />;
+  // Zurück dorthin, woher der Auftrag geöffnet wurde (SR-64 Navigation).
+  if (praxisflow) return <PraxisflowAblauf daten={praxisflow} zurueck={praxisZurueck(von, praxisflow.datum)} einstieg={einstiegAus(von)} />;
   // Labortag (SR-94): ohne Praxisflow, nur Unterlagen.
   const labortag = await getLabortag(fieldJobId, learner.personId);
-  if (labortag) return <LabortagSeite daten={labortag} zurueck={zurueck} />;
+  if (labortag) return <LabortagSeite daten={labortag} zurueck={praxisZurueck(von, labortag.datum)} />;
   notFound();
 }
