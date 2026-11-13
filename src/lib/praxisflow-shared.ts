@@ -1,0 +1,42 @@
+import type { PraxisDateiArt, PraxisFortschritt, PraxisPhase } from "@/lib/database.types";
+import type { Pruefpunkt } from "@/lib/praxisflow-inhalte";
+
+// Typen des geführten Praxisflows ohne Server-Import, damit Server-Query und
+// Client-Komponente sie gemeinsam nutzen.
+
+export type PraxisDatei = {
+  id: string;
+  art: PraxisDateiArt;
+  dateiname: string;
+  mimeType: string;
+  storagePfad: string;
+  /** Signierter Link (1 Stunde), null = nicht abrufbar */
+  url: string | null;
+  /** Hilfsunterlage von AfCJ zur Praxisaufgabe (SR-68): nicht löschbar */
+  vonAfcj?: boolean;
+};
+
+export type PraxisflowDaten = {
+  fieldJobId: string;
+  learnerId: string;
+  organisationId: string;
+  titel: string;
+  beschreibung: string | null;
+  datum: string;
+  phase: PraxisPhase;
+  fortschritt: PraxisFortschritt;
+  dateien: PraxisDatei[];
+  /** Links zur Praxisaufgabe von AfCJ (SR-68), nur https */
+  hilfeLinks: { id: string; titel: string; url: string }[];
+  /** Trainer:in des Praxistags (SR-78), null = nicht zugeordnet */
+  trainer: { name: string; fotoUrl: string | null } | null;
+  /** Zweite begleitende Trainer:in (SR-78, 0071), nur Anzeige; Freigaben bleiben bei der zuständigen */
+  trainer2: { name: string; fotoUrl: string | null } | null;
+  /** Prüfliste des Auftrags (SR-91): Variante aus der Datenbank, sonst Standard */
+  pruefliste: { spannungsfrei: Pruefpunkt[]; unterSpannung: Pruefpunkt[] };
+  /** Nächster offener Praxisauftrag desselben Tages (SR-90), null = keiner */
+  naechster: { fieldJobId: string; titel: string } | null;
+};
+
+/** Antwort der Server-Aktionen: ok oder eine Meldung für die Oberfläche. */
+export type AktionErgebnis<T = undefined> = { ok: true; wert: T } | { ok: false; fehler: string };

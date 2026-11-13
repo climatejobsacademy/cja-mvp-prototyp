@@ -2,9 +2,10 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { kompetenzHref, StaerktPills, type StaerktKompetenz } from "@/components/staerkt-pills";
 import { PRAXISAUFGABE_LINK } from "@/lib/schalter";
-import { ArrowRight, BookOpen, CalendarDays, Check, Video, Wrench } from "lucide-react";
+import { ArrowRight, BookOpen, CalendarDays, Check, FlaskConical, Video, Wrench } from "lucide-react";
 
 import type { ErledigtEintrag, LiveAktivitaet, PraxisAktivitaet } from "@/lib/home-tag";
+import { PHASEN } from "@/lib/praxisflow-inhalte";
 import type { TrainerAnzeige } from "@/lib/queries/trainer";
 import { Ring } from "@/components/fortschritts-ring";
 import { ModulZeichen } from "@/components/modul-zeichen";
@@ -160,9 +161,9 @@ function FokusTitel({
 }
 
 /** "Live mit …" / "Praxis mit …" mit Foto (SR-78); ohne eingetragene Person nichts. */
-function FokusTrainer({ art, trainer }: { art: "live" | "praxis"; trainer?: TrainerAnzeige | null }) {
+function FokusTrainer({ art, trainer, zweite }: { art: "live" | "praxis"; trainer?: TrainerAnzeige | null; zweite?: TrainerAnzeige | null }) {
   if (!trainer) return null;
-  return <TrainerZeile art={art} trainer={trainer} className={cn("mt-1", art === "praxis" ? "text-ink" : "text-white/85")} />;
+  return <TrainerZeile art={art} trainer={trainer} zweite={zweite} className={cn("mt-1", art === "praxis" ? "text-ink" : "text-white/85")} />;
 }
 
 /** A (bevorstehend) und B (läuft gerade). */
@@ -230,17 +231,20 @@ export function FokusFlex({
   staerkt,
   nurSelbstlernen,
   stil,
+  etikett,
 }: {
   lektion: OffeneLektion & { thema: string | null; festigt: boolean };
   staerkt?: StaerktKompetenz[];
   nurSelbstlernen?: boolean;
   stil?: TitelStil;
+  /** Eigene Kennzeichnung, z. B. am Wochenende „Noch offen aus der Woche“ (SR-93) */
+  etikett?: string;
 }) {
   return (
     <FokusRahmen
       links={
         <>
-          {nurSelbstlernen ? <LimePill>Heute</LimePill> : ALS_NAECHSTES}
+          {etikett ? <LimePill>{etikett}</LimePill> : nurSelbstlernen ? <LimePill>Heute</LimePill> : ALS_NAECHSTES}
           <span className="flex size-12 items-center justify-center rounded-2xl bg-white/15 text-white md:size-16">
             <BookOpen className="size-6 md:size-8" aria-hidden="true" />
           </span>
@@ -265,10 +269,26 @@ export function FokusFlex({
 export function FokusErledigt({
   naechsterTag,
   gestaerkt,
+  abends = false,
 }: {
   naechsterTag: string | null;
   gestaerkt: GestaerkteKompetenz[];
+  /** Ab 17 Uhr (SR-93): „Als Nächstes“ wird zum Fokus */
+  abends?: boolean;
 }) {
+  if (abends && naechsterTag) {
+    return (
+      <FokusRahmen>
+        {ALS_NAECHSTES}
+        <h3 className="font-heading text-[36px] leading-none font-normal md:text-[48px]">{naechsterTag}</h3>
+        <span className="mt-1 inline-flex items-center gap-2.5 text-[15px] text-white/85">
+          <Check className="size-[18px] shrink-0" strokeWidth={2.5} aria-hidden="true" />
+          Heute ist alles erledigt. Schönen Abend!
+        </span>
+        <PrimaerAktion href="/schedule?ansicht=woche">Zum Stundenplan</PrimaerAktion>
+      </FokusRahmen>
+    );
+  }
   return (
     <FokusRahmen
       rechts={
@@ -305,22 +325,58 @@ export function FokusErledigt({
   );
 }
 
+/** Phase eines Praxisauftrags in Worten (SR-93). */
+function praxisStand(p: PraxisAktivitaet): string {
+  if (p.labor) return "Labortag";
+  if (p.phase === "abgeschlossen") return p.ergebnis === "angerechnet" ? "Geschafft, angerechnet" : "Geschafft";
+  const nr = PHASEN.findIndex((x) => x.id === p.phase);
+  return nr >= 0 ? `${PHASEN[nr].name} · Phase ${nr + 1} von ${PHASEN.length}` : "Noch nicht begonnen";
+}
+
 /**
- * E: Praxistag. Mit Uhrzeit (field_job.start, 0026) groß die Startzeit,
- * sonst "Heute" -- keine erfundene Zeit. Der Button führt in den echten
- * Praxistag (/praxistag/…), nicht in die Demo-Seite.
+ * E: Praxistag (SR-93). Alle Praxisaufträge des Tages mit ihrer Phase, Fokus
+ * auf den nächsten offenen; sind alle abgeschlossen, Erfolgsmoment mit dem
+ * Ergebnis je Auftrag. Mit Uhrzeit (field_job.start, 0026) groß die
+ * Startzeit, sonst "Heute" -- keine erfundene Zeit.
  */
 export function FokusPraxis({
   praxis,
+  alle,
+  alleFertig,
   staerkt,
   trainer,
+  trainer2,
   stil,
 }: {
   praxis: PraxisAktivitaet;
+  alle: PraxisAktivitaet[];
+  alleFertig: boolean;
   staerkt?: StaerktKompetenz[];
   trainer?: TrainerAnzeige | null;
+  /** Zweite begleitende Trainer:in (SR-78, 0071) */
+  trainer2?: TrainerAnzeige | null;
   stil?: TitelStil;
 }) {
+  const mehrere = alle.length > 1;
+  if (alleFertig) {
+    return (
+      <FokusRahmen praxis links={<LimePill>Für heute</LimePill>}>
+        <h3 className="font-heading text-[36px] leading-none font-normal md:text-[48px]">
+          {mehrere ? "Alle Praxisaufträge geschafft" : "Praxisauftrag geschafft"}
+        </h3>
+        <ul className="mt-1 flex flex-col gap-1.5">
+          {alle.map((p) => (
+            <li key={p.id} className="flex items-center gap-2 text-[15px]">
+              <Check className="size-4 flex-none" strokeWidth={3} aria-hidden="true" />
+              <span className="min-w-0">
+                <span className="font-semibold">{p.titel}</span> · {praxisStand(p)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </FokusRahmen>
+    );
+  }
   return (
     <FokusRahmen
       praxis
@@ -331,15 +387,36 @@ export function FokusPraxis({
         </>
       }
     >
+      {/* Labortag (SR-94): kein Flow, nur Unterlagen. */}
       <span className="inline-flex items-center gap-2 text-sm text-ink">
-        <Wrench className="size-4 flex-none" aria-hidden="true" />
-        {praxis.standort ? `Praxisaufgabe · ${praxis.standort}` : "Praxisaufgabe"}
+        {praxis.labor ? <FlaskConical className="size-4 flex-none" aria-hidden="true" /> : <Wrench className="size-4 flex-none" aria-hidden="true" />}
+        {praxis.labor
+          ? praxis.standort ? `Labortag · ${praxis.standort}` : "Labortag"
+          : `${praxis.standort ? `Praxisauftrag · ${praxis.standort}` : "Praxisauftrag"} · ${praxisStand(praxis)}`}
       </span>
       <FokusTitel titel={praxis.titel} stil={stil} aufCoral />
-      <FokusTrainer art="praxis" trainer={trainer} />
+      <FokusTrainer art="praxis" trainer={trainer} zweite={trainer2} />
       <StaerktPills kompetenzen={staerkt} aufCoral />
+      {mehrere && (
+        <ul aria-label="Alle Praxisaufträge heute" className="mt-1 flex flex-col gap-1 text-[14px]">
+          {alle.map((p) => (
+            <li key={p.id} className={cn("flex items-center gap-2", p.id === praxis.id && "font-semibold")}>
+              {p.phase === "abgeschlossen" ? (
+                <Check className="size-4 flex-none" strokeWidth={3} aria-hidden="true" />
+              ) : (
+                <span aria-hidden="true" className="size-1.5 flex-none rounded-full bg-ink" />
+              )}
+              <span className="min-w-0">
+                {p.titel} · {praxisStand(p)}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
       {PRAXISAUFGABE_LINK && (
-        <PrimaerAktion href={`/praxistag/${praxis.fieldJobId}?von=home`}>Praxisaufgabe öffnen</PrimaerAktion>
+        <PrimaerAktion href={`/praxistag/${praxis.fieldJobId}?von=home`}>
+          {praxis.labor ? "Unterlagen öffnen" : praxis.phase === "informieren" ? "Praxisauftrag starten" : "Praxisauftrag fortsetzen"}
+        </PrimaerAktion>
       )}
     </FokusRahmen>
   );
@@ -428,7 +505,7 @@ export function ErledigtLeiste({ erledigt }: { erledigt: ErledigtEintrag[] }) {
 const ERLEDIGT_TEXT: Record<ErledigtEintrag["typ"], string> = {
   live: "Live-Unterricht",
   flex: "Wissen festigen",
-  praxis: "Praxisaufgabe",
+  praxis: "Praxisauftrag",
 };
 
 /** D: was heute erledigt wurde, mit Weg zur Woche. */

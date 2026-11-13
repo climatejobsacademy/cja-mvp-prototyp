@@ -30,7 +30,7 @@ Stand 18.10.2026 · Ablauf für den Pilot, Entscheidungen Geschäftsführung 18.
 
 5. **Blockaden lösen (nur bei Trainer:innen, Team, Admins).** Einträge, die auf die Person zeigen und nicht automatisch geleert werden, vorher auf „leer“ setzen — z. B. Trainer:in am Termin (`live_session.trainer_id`). Bei `attendance.bestaetigt_von` und `verification.verifiziert_von` geht das **nicht**, weil diese Zeilen unveränderlich sind (Trigger `unveraenderlich`, `0032`). Dann stoppen und Punkt E2 entscheiden. *Probelauf auf Staging, auf Production nur nach ausdrücklicher Freigabe.*
 
-6. **Dateien im Speicher löschen.** Im Bucket `profilfotos` den Ordner `<person_id>/` leeren (Supabase-Dashboard → Storage). Das Löschen der Zeile entfernt die Datei nicht (bekannte Lücke). Weitere Buckets mit Personendaten gibt es derzeit nicht (`field_capture.media` ist laut `0006` „inaktiv“, es gibt keinen Bucket für Praxisfotos). Mit dem Praxisflow (ab 16.11.) kommt ein Bucket hinzu — dann diesen Schritt ergänzen. *Erst auf Staging üben; auf Production nur nach ausdrücklicher Freigabe.*
+6. **Dateien im Speicher löschen.** Im Bucket `profilfotos` den Ordner `<person_id>/` leeren (Supabase-Dashboard → Storage). Das Löschen der Zeile entfernt die Datei nicht (bekannte Lücke). Ebenso im Bucket `praxis-dateien` den Ordner `<person_id>/` leeren (Dateien aus dem Praxisflow, `0059`, SR-88); die Zeilen in `field_job_datei` verschwinden beim Löschen des Kontos, die Dateien nicht. Weitere Buckets mit Personendaten gibt es derzeit nicht (`field_capture.media` ist laut `0006` „inaktiv“). *Erst auf Staging üben; auf Production nur nach ausdrücklicher Freigabe.*
 
 7. **Auth-Konto löschen.** Im Dashboard unter Authentication → Users das Konto löschen. Das braucht Admin-Rechte (wie `service_role`). Danach löscht bzw. anonymisiert die Datenbank alles laut Tabelle unten. Schlägt das Löschen fehl, gibt es noch eine Blockade (zurück zu Schritt 5) — nichts erzwingen. *Probelauf auf Staging mit Testperson; Production nur nach ausdrücklicher Freigabe.*
 
@@ -68,6 +68,9 @@ Stand 18.10.2026 · Ablauf für den Pilot, Entscheidungen Geschäftsführung 18.
 | `file_asset` | hochgeladene Dateien (Team) | `hochgeladen_von`: **blockiert** (`0003`) | nur Team/Admin: vorher leeren |
 | `knowledge_source` | freigegebene Wissensquellen | `freigegeben_von`: **blockiert** (`0007`) | nur Team/Admin: vorher leeren |
 | Storage `profilfotos` | Profilfoto, Ordner `<person_id>/` | bleibt liegen (Storage kaskadiert nicht, `0030`) | Schritt 6, von Hand |
+| `field_job_datei` | Dateien im Praxisflow (Zeilen) | wird gelöscht (`cascade`, `0059`) | — |
+| `praxis_ereignis` | Ereignisse im Praxisflow ohne Inhalte (SR-92) | wird gelöscht (`cascade`, `0064`) | — |
+| Storage `praxis-dateien` | Dateien im Praxisflow, Ordner `<person_id>/` | bleibt liegen (Storage kaskadiert nicht, `0059`) | Schritt 6, von Hand |
 
 Nicht personenbezogen: Buckets `scorm-packages`, `lesson-resources`, `fachsprache-bilder` und das Organisationslogo (`0016`, `0023`, `0051`, `0025`). Die Prüf-Spalten in `fachsprache_einheit` (`restrict`) sind mit `0053` entfernt.
 
@@ -108,7 +111,10 @@ union all select 'lektion_beitrag', count(*) from lektion_beitrag where person_i
 union all select 'chat_nachricht', count(*) from chat_nachricht where person_id = :pid
 union all select 'chat_gelesen', count(*) from chat_gelesen where person_id = :pid
 union all select 'chat_meldung', count(*) from chat_meldung where person_id = :pid or erledigt_von = :pid
-union all select 'profilfotos (Dateien)', count(*) from storage.objects where bucket_id = 'profilfotos' and (storage.foldername(name))[1] = :pid::text;
+union all select 'profilfotos (Dateien)', count(*) from storage.objects where bucket_id = 'profilfotos' and (storage.foldername(name))[1] = :pid::text
+union all select 'field_job_datei', count(*) from field_job_datei where learner_id = :pid
+union all select 'praxis_ereignis', count(*) from praxis_ereignis where learner_id = :pid
+union all select 'praxis-dateien (Dateien)', count(*) from storage.objects where bucket_id = 'praxis-dateien' and (storage.foldername(name))[1] = :pid::text;
 
 -- B) Blockaden lösen, nur nach Entscheidung E3 (UNGETESTET)
 begin;

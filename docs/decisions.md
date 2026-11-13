@@ -420,6 +420,78 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Status:** gültig
 - **Belegt:** Branch-Schutz von `main` per GitHub-API gelesen (ein Approval, `enforce_admins` aus, Pflicht-Checks `lint-and-types` und `rls-tests`); `docs/release.md`, `docs/runbook.md`, `docs/arbeitsweise.md`
 
+### 2026-11-04 – Warnungen des Supabase Security Advisors bewusst akzeptiert
+
+- **Entscheidung:** (Produkt-Lead) Nach Migration `0057` meldet der Security Advisor für Production keine Fehler und 29 Warnungen; sie werden akzeptiert. (1) 28 Warnungen „Signed-In Users Can Execute SECURITY DEFINER Function“: Die Funktionen sind Hilfsfunktionen der Zugriffsregeln oder Aktionen, die die App per `rpc` aufruft (Chat, Fragen-Thread, Kohorte, Trainer-Ansicht). Die Migrationen geben sie ausdrücklich für `authenticated` frei (die Hilfsfunktionen aus `0008` erst mit `0057`); ohne dieses Recht greifen die Zugriffsregeln nicht. Sie leiten ihr Ergebnis aus der angemeldeten Person ab. (2) Eine Warnung „Leaked Password Protection Disabled“: Die Plattform meldet nur per Magic Link an und hat keine Passwörter; die Einstellung im Dashboard ist Sache der Geschäftsführung.
+- **Begründung:** Der Advisor erkennt nicht, ob eine Freigabe für Angemeldete gewollt ist. Die Warnungen zu Suchpfaden und zu Funktionen, die Nicht-Angemeldete aufrufen konnten, sind mit `0057` behoben.
+- **Folgen:** Die Hilfsfunktionen könnten in ein Schema verschoben werden, das die API nicht anbietet; dann entfallen die Warnungen. Das gehört zu den technischen Schulden nach dem Pilot (Abschnitt unten). Technisch läuft die Prüfung eines Release-PRs mit dem Review-Agenten gegen `origin/main` statt mit `/pr-check` (`release.md`, Abschnitt 2); das ergänzt Punkt (1) des Eintrags „Releases ohne Zweitfreigabe“. Eine vollständige Prüfung jeder Funktion auf den Bezug zur angemeldeten Person gehört zur Nachprüfung durch Entwickler:innen (RLS-Policies und Hilfsfunktionen). Neue `SECURITY DEFINER`-Funktionen prüfen die angemeldete Person selbst oder über eine dieser Hilfsfunktionen.
+- **Status:** gültig
+- **Belegt:** `supabase db advisors --type security` gegen Production (nur lesend); Freigaben in den Migrationen `0024`, `0028`, `0030`, `0032`, `0034`, `0050` und `0057`; Aufrufe per `rpc` in `src/`
+
+### 2026-11-06 – Praxisflow im Pilot: Uploads nur für die lernende Person
+
+- **Entscheidung:** (Produkt-Lead) Dateien, die Lernende im Praxisflow hochladen (Arbeitsauftrag, Hilfen, Pläne, Prüfprotokoll), sieht in der Plattform nur die lernende Person selbst, weder andere Lernende noch Trainer:innen noch AfCJ admin. Lernende können eigene Dateien bis zum Abschluss des Auftrags löschen, danach nicht mehr. Erlaubt sind die Formate aus demo (`UPLOAD_FORMATE`: Bilder und PDF, CSV/Excel, bei Plänen zusätzlich DWG, DXF, GLB), höchstens 50 MB je Datei. Trainer:innen prüfen Prüfprotokoll und Pläne im Pilot am Gerät der Lernenden oder auf Papier.
+- **Begründung:** Die Trainer:innen sind beim Prüfen vor Ort dabei; eine Sicht für weitere Personen bringt im Pilot keinen Nutzen und vergrößert den Datenschutzumfang. Bis zum Abschluss lassen sich falsche Dateien korrigieren, danach bleiben sie Teil der Zusammenfassung (SR-90).
+- **Folgen:** Privater Bucket mit Pfad je lernender Person; Storage-Policies nur für die eigene `auth.uid()`; erreichbar sind die Dateien sonst nur über den Supabase-Zugang des Projekts. Die Datenschutzerklärung (Abschnitt „Uploads“) wird vor dem Einsatz ergänzt.
+- **Status:** gültig
+- **Belegt:** SR-88, `praxisflow-realbau.md` (Abschnitte 5.2 und 7)
+
+### 2026-11-06 – Praxisflow im Pilot: Codewort, Einschätzung und automatische Verifizierung
+
+- **Entscheidung:** (Produkt-Lead) (1) Trainer:innen geben an zwei festen Stellen mit einem Codewort frei: vor dem Zuschalten der Spannung (Kontrollieren) und vor ihrer Einschätzung (Bewerten). Es gibt ein Codewort je Kohorte für alle Gates; AfCJ admin kann es ändern. (2) Die Peer-Einschätzung wird nur mit der Rolle „Peer“ gespeichert, nicht mit der Person. (3) Im Pilot gibt es keinen eigenen Verifizierungsschritt, weder im Backend noch in der App. Beim Abschluss legt das System die Verifizierung selbst an, mit der Trainer:in des Praxistags (`field_job.instructor_id`) als Prüfer:in. (4) Nur ein K.-o.-Kriterium, das in der Trainer-Einschätzung mit 0 bewertet ist, verhindert die Verifizierung und damit die Anrechnung auf Teilschritte; Selbst- und Peer-Einschätzung blockieren nichts. (5) Ein eigenes Ergebnis „bestanden / nicht bestanden“ (SR-66) gibt es im Pilot nicht.
+- **Begründung:** Prüfen und Bewerten finden im Pilot immer mit der Trainer:in vor Ort statt; das ersetzt die nachträgliche Verifizierung. Die Größenordnung (313 geplante Praxistage auf Production am 06.11.2026, gezählt nur lesend) wäre von Hand nicht zu verifizieren. Ein Codewort je Kohorte ist für die Trainer:innen am einfachsten.
+- **Folgen:** Regel 6 in `CLAUDE.md` bleibt gültig: Nachweise entstehen weiter über eine Verifizierung, die hier das System anlegt. Ohne zugeordnete Trainer:in am Praxistag entsteht keine Verifizierung; Trainer:innen müssen vor der Praxisphase als Personen mit Rolle `trainer` angelegt und den Praxistagen zugeordnet sein. Was Lernende nach einem durchgefallenen K.-o.-Kriterium tun, regelt der Eintrag vom 2026-11-09. Die Verifizierung nach dem Pilot (automatisiert oder über eine Trainer-Ansicht) ist nicht entschieden.
+- **Status:** gültig, außer Punkt (1) zu den Freigaben und der Pflicht zu drei Einschätzungen (ersetzt durch den Eintrag vom 2026-11-09 „Praxisflow nach dem Feedback der Trainer:innen“)
+- **Belegt:** SR-03, SR-65, SR-66 (Stage Later), SR-89, `praxisflow-realbau.md` (Abschnitte 5 und 8)
+
+### 2026-11-06 – Praxisflow: Trainer-Einschätzung nur mit Codewort im selben Schritt
+
+- **Entscheidung:** (Produkt-Lead) Das Codewort der Trainer:in wird immer neu eingegeben; ohne Codewort wird keine Trainer-Einschätzung gespeichert. Technisch: Die Trainer:in gibt ihre Punkte ein und bestätigt am Ende mit dem Codewort, gespeichert wird beides in einem Aufruf (`fn_praxis_trainer_einschaetzen`). Es gibt keine gespeicherte Freigabe, nach der die lernende Person die Trainer-Einschätzung allein abgeben könnte. Das Gate vor dem Zuschalten der Spannung bleibt eine einmalige Freigabe (`fn_praxis_gate`).
+- **Begründung:** Aus der Trainer-Einschätzung folgt die automatische Verifizierung (Eintrag oben). Eine gespeicherte Freigabe hätte nach einem Neuladen erlaubt, die Einschätzung ohne Trainer:in abzugeben.
+- **Folgen:** Ergänzt den Eintrag „Codewort, Einschätzung und automatische Verifizierung“ vom selben Tag, Punkt (1).
+- **Status:** gültig
+- **Belegt:** Migrationen `0060`, `0061`; RLS-Tests `033`, `034`
+
+### 2026-11-09 – Praxisflow nach dem Feedback der Trainer:innen
+
+- **Entscheidung:** (Produkt-Lead) (1) Phasen nach Variante B: Informieren, Planen, Entscheiden, Ausführen (mit Messen), Kontrollieren (Messwerte deuten), Bewerten (Einschätzung). (2) Planen in der Reihenfolge Plan, Material und Werkzeuge, Arbeitsschritte; Arbeitsschritte lassen sich umsortieren. (3) Drei Codewort-Freigaben: Plan-Freigabe am Ende von Entscheiden, Zuschalten der Spannung, Trainer-Einschätzung; das Codewort wird jedes Mal neu eingegeben. Wer den Plan nach der Freigabe noch einmal ändert, braucht eine neue Freigabe. (4) Selbst- und Peer-Einschätzung sind optional, die Trainer-Einschätzung ist Pflicht. (5) Nur ein K.-o. in der Trainer-Einschätzung führt denselben Praxisauftrag zurück zu Informieren; Dateien und Verlauf bleiben. (6) Interaktionen im Praxisflow werden als Ereignisse ohne Inhalte gespeichert und täglich nur aggregiert ausgewertet. (7) Ein Praxisauftrag ist die Bearbeitung einer Praxisaufgabe durch eine lernende Person; an einem Praxistag können mehrere liegen.
+- **Begründung:** Feedback-Gespräch mit den Trainer:innen am 09.11.2026 (Zusammenfassung in Notion, „Feedback zum Praxisflow“): Der Plan bestimmt das Material; ein Fehler im Plan soll vor dem Aufbau auffallen; Messen und Deuten getrennt prüfen das Verständnis.
+- **Folgen:** Ersetzt im Eintrag „Codewort, Einschätzung und automatische Verifizierung“ vom 06.11.2026 die zwei Gates durch drei und die Pflicht zu drei Einschätzungen. Technisch: Plan-Freigabe in Migration `0062`; optionale Selbst- und Peer-Einschätzung und K.-o.-Rücksprung in `0063`; Ereignisprotokoll in `0064` mit Auswertung `scripts/sql/praxis_auswertung.sql`; Phasen nach Variante B in `0065` (Messen und Prüfprotokoll am Ende von Ausführen, Kontrollieren mit einer Deutung je Prüfpunkt als Pflicht, die Trainer:in sieht die Deutungen vor ihrer Einschätzung) (abgelegte Durchläufe unter `praxisflow.durchlaeufe`, kein Abschluss und keine Verifizierung beim K.-o.).
+- **Status:** gültig
+- **Belegt:** SR-64, SR-65, SR-89, SR-91, SR-92
+
+### 2026-11-09 – Praxisflow: Fortschritt, Farben, Reflexion und nächster Schritt
+
+- **Entscheidung:** (Produkt-Lead) (1) Fortschritt innerhalb einer Phase bleibt klein (Zähler und dünner Balken in Eco Deep Green); das Ende jeder Phase bekommt immer denselben großen Moment („… geschafft“, was als Nächstes kommt, ein Lime-Knopf). Freigaben der Trainer:in sind eine schlichte Bestätigung auf der Karte, kein großer Moment. (2) Farben nach dem visuellen Update vom 11./12.10.2026: Übergaben an andere Personen über Symbol und Bezeichnung; Peer neutral (weiß); Coral im Flow nur noch als kleines Badge „Trainer:in ist dran“ (Coral hell, dunkle Schrift) auf weißer Karte, keine Coral-Flächen mehr (Nachtrag 09.11.2026: Dosis); Nummern und Symbole neutral; K.-o.-Hinweise und gesunkene Punkte neutral; Fehlermeldungen in Rot wie in der Spezifikation (Fehler = Standard-Rot). Ein durchgefallenes K.-o.-Kriterium ist im Ergebnis mit Symbol und „nicht erfüllt“ markiert. (3) „Was machst du beim nächsten Mal anders?“ ist eine eigene Karte nach dem Ergebnis und Pflicht, auch nach einem K.-o. (4) Am Ende führt ein Hauptknopf zum nächsten offenen Praxisauftrag desselben Tages, sonst zurück zum Stundenplan; Drucken/PDF ist Nebenaktion.
+- **Begründung:** Durchklicken auf Staging am 09.11.2026: Phasenabschlüsse fühlten sich nicht nach Erfolg an, Zwischenfreigaben dagegen schon; Lila für Peer und Coral für Warnungen wichen von der Bedeutung der Farben auf der übrigen Plattform ab; die optionale Reflexion ging unter; am Ende fehlte ein verbindlicher nächster Schritt.
+- **Folgen:** SR-90 (Acceptance Check am 09.11.2026 ergänzt). Technisch: Migration `0066` (Reflexion Pflicht beim Abschluss), Oberfläche des Praxisflows.
+- **Status:** gültig
+- **Belegt:** SR-90, `design-specifications.md` (Abschnitt 1, Farbregeln im Praxis-Flow)
+
+### 2026-11-09 – Praxisflow: einfacher Ablauf entfällt
+
+- **Entscheidung:** (Produkt-Lead) Alle Praxisaufgaben laufen im geführten Ablauf; der frühere einfache Praxistag-Ablauf wird aus dem Code entfernt. Aufträge, die vorher im einfachen Ablauf bestätigt wurden, laufen ebenfalls im geführten Ablauf (keine Sonderanzeige). In Texten für Lernende heißt der einzelne Auftrag „Praxisauftrag“, der Tag „Praxistag“.
+- **Begründung:** Alle Aufgaben haben dieselben sechs Phasen; ein zweiter Ablauf wäre nur Pflegeaufwand. Auf Production war vor dem Start der Praxiswochen ein Auftrag im alten Ablauf bestätigt.
+- **Folgen:** Migration `0068` setzt alle Aufgabentypen auf `gefuehrt` (Spalte bleibt technisch); SR-64 am 09.11.2026 in Notion angepasst. Ersetzt den Punkt „Schalter erst am Ende der Woche entfernen“ aus dem Gespräch vom 09.11.2026.
+- **Status:** gültig
+- **Belegt:** SR-64, Migration `0068`
+
+### 2026-11-09 – Home: eine Lage, ein Fokus, ein Call to Action
+
+- **Entscheidung:** (Produkt-Lead) Home folgt festen Vorrangregeln (läuft jetzt, kommt heute, offen heute, Als Nächstes) und zeigt je Lage genau einen Fokus mit einem Call to Action. Abends heißt nach dem Stundenplan, ab 17 Uhr; Begrüßung „Guten Morgen“ bis 11 Uhr, „Hallo“ bis 17 Uhr, „Guten Abend“ ab 17 Uhr. Am Wochenende sind offene Selbstlern-Lektionen der vorangegangenen Woche der Fokus, sonst eine lockere Wochenend-Ansicht mit „Als Nächstes“. Selbstlern-Lektionen (SCORM) haben Vorrang vor Fachsprache, Fachsprache ist Zusatzangebot und nur Nebeninfo. Kein Hinweis auf verpasste Live-Termine, solange die Plattform die Teilnahme nicht zeitnah kennt. Die Woche (Theorie oder Praxis) ist keine eigene Dimension. „Als Nächstes“ ist immer sichtbar, auch neben der Praxistag-Karte (ersetzt die Regel vom 20.10.2026, die das als doppelt ausblendete).
+- **Begründung:** Home reagierte nur in sechs Zuständen; viele reale Lagen fielen zufällig auf einen davon. Grundlage: Zählung der Tagesarten im Pilot (Miro-Board, Frame „Home - Zustände“).
+- **Folgen:** SR-93; Umsetzung in `src/lib/home-tag.ts` und `src/app/(learner)/home/`.
+- **Status:** gültig
+- **Belegt:** SR-93
+
+### 2026-11-10 – Sprache: ein Begriff je Sache
+
+- **Entscheidung:** (Produkt-Lead) Für Texte an Lernende und Trainer:innen gilt die Begriffsliste in `design-specifications.md`, Abschnitt 1.3. Dabei: Lerngruppe heißt „Kohorte“; das Papier-Dokument heißt weiter „Arbeitsauftrag“; Prüfungen durch Akademie oder Trainer:in heißen „bestätigt“ statt „verifiziert“; Absender ist „Academy for Climate Jobs“. Praxisaufgabe = Vorlage, Praxisauftrag = Bearbeitung; Live-Unterricht für alles Live; erledigt, abgeschlossen, geschafft, angerechnet je mit eigener Bedeutung.
+- **Begründung:** Inventar aller Oberflächentexte am 10.11.2026: fünf Namen für den Praxisauftrag, drei für Live, mehrere für Selbstlernen und für „fertig“.
+- **Folgen:** Texte angeglichen; neue Texte folgen der Liste. Meldungen aus Datenbankfunktionen werden angepasst, wenn die jeweilige Funktion das nächste Mal ersetzt wird.
+- **Status:** gültig
+- **Belegt:** `design-specifications.md` Abschnitt 1.3
+
 ## Offene technische Schulden
 
 Diese Punkte sind keine Entscheidungen, sondern bekannte Lücken; was daraus wird, steht in Asana.
@@ -429,3 +501,5 @@ Diese Punkte sind keine Entscheidungen, sondern bekannte Lücken; was daraus wir
 **Löschweg.** Löschen einer Person ist ein manuelles Verfahren, beschrieben in `loeschweg.md`. Die Abwägung zwischen Löschanspruch, Unveränderlichkeit der Nachweise und Aufbewahrungspflicht ist nicht rechtlich geprüft.
 
 **`field_job` ohne Verweis auf die Einschreibung.** Ein Praxistag verweist auf die lernende Person (`learner_id`, Löschweitergabe) und auf den Auftragstyp, aber nicht auf die Einschreibung (Migration `0005`, keine spätere Migration ergänzt einen Verweis). Korrektur zur ersten Fassung dieses Abschnitts: Nur der Plan-Eintrag `schedule_entry` trägt die `enrolment_id` und kaskadiert mit der Einschreibung (`0005`). Wird die Einschreibung gelöscht, bleibt die `field_job`-Zeile bestehen, ohne dass ein Plan-Eintrag der Einschreibung auf sie zeigt; das ist die Folge des fehlenden Verweises, im Betrieb nicht geprüft.
+
+**Hilfsfunktionen über die API erreichbar.** Die `SECURITY DEFINER`-Hilfsfunktionen der Zugriffsregeln liegen im Schema `public` und sind für Angemeldete per `rpc` aufrufbar; der Security Advisor meldet das als Warnung (Eintrag 2026-11-04, „Warnungen des Supabase Security Advisors bewusst akzeptiert“). Ein eigenes Schema, das die API nicht anbietet, würde das beheben.

@@ -2,8 +2,8 @@
 // Nur serverseitig: ohne NEXT_PUBLIC_-Präfix kommt der Wert nicht ins
 // Browser-Bundle. Ohne gesetzte Variable ist jeder Schalter aus (Ausnahme:
 // NATIVE_SELBSTLERNEN, siehe unten); gesetzt wird er in Vercel je Umgebung
-// (Preview/Development an, Production aus). Eine
-// Änderung wirkt erst nach einem neuen Deployment. Getestet in
+// mit eigenem Wert, der nur in Vercel steht (docs/runbook.md, Abschnitt 7).
+// Eine Änderung wirkt erst nach einem neuen Deployment. Getestet in
 // src/lib/schalter.test.ts.
 
 type Umgebung = Record<string, string | undefined>;
@@ -34,6 +34,11 @@ export const PRAXISAUFGABE_LINK = praxisaufgabeLinkAn();
 export function praxisaufgabeHref(fieldJobId: string, von?: string, an: boolean = PRAXISAUFGABE_LINK): string | null {
   if (!an) return null;
   return von ? `/praxistag/${fieldJobId}?von=${von}` : `/praxistag/${fieldJobId}`;
+}
+
+/** Tagesübersicht eines Praxistags mit mehreren Praxisaufträgen (SR-13) oder null, wenn der Link aus ist. */
+export function praxistagHref(datum: string, an: boolean = PRAXISAUFGABE_LINK): string | null {
+  return an ? `/praxistag/tag/${datum}` : null;
 }
 
 /**

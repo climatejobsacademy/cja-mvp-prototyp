@@ -26,7 +26,7 @@ Statusdokumente („Stand vom …“, „offen“, „erledigt“) gehören nich
 
 **Betrieb und Release.** `umgebungen.md` zeigt, welche Umgebung (Production, Staging, `demo`, lokal) wofür da ist, gegen welche Datenbank sie läuft und welche Daten darin liegen. `runbook.md` sagt, was zu tun ist, wenn etwas bricht, und wer entscheidet. `release.md` beschreibt den Weg von `dev` nach Production mit Checkliste und Rückweg. `definition-of-done.md` legt fest, wann ein Pull Request fertig ist.
 
-**Importe und Skripte.** `import-plan.md` beschreibt den Excel-Import für Stundenplan, Kompetenzen, Aufträge und Fachsprache-Einheiten, `lernende-anlegen.md` das Anlegen von Konten, Profilen und Einschreibungen, `scorm-einspielen.md` das Einspielen von Selbstlern-Paketen und `live-links.md` das Hinterlegen der Teams-Links. `lernmaterialien-upload.md` erklärt, wie Dateien an Lektionen hängen.
+**Importe und Skripte.** `import-plan.md` beschreibt den Excel-Import für Stundenplan, Kompetenzen, Aufträge und Fachsprache-Einheiten, `lernende-anlegen.md` das Anlegen von Konten, Profilen und Einschreibungen, `scorm-einspielen.md` das Einspielen von Selbstlern-Paketen und `live-links.md` das Hinterlegen der Teams-Links, `import-pruefprotokolle.md` die Prüfprotokoll-Varianten des Praxisflows mit Vorlagen in `vorlagen/`. `lernmaterialien-upload.md` erklärt, wie Dateien an Lektionen hängen.
 
 **Funktionen im Betrieb.** `fachsprache.md` ist die Betriebsanleitung für die Fachsprache-Einheiten einschließlich Schalter und Fehlersuche. `fragen-thread.md` beschreibt den Fragen-Thread je Lektion, `organisations-logo.md` das Organisations-Logo im Header, und `praxisflow-realbau.md` ist die Analyse und der Migrationsentwurf für den echten Praxisflow.
 

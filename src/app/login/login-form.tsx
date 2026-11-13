@@ -60,7 +60,7 @@ export function LoginForm() {
           autoComplete="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="name@betrieb.de"
+          placeholder="name@beispiel.de"
           aria-describedby={state?.error ? "email-fehler" : undefined}
           aria-invalid={state?.error ? true : undefined}
           className={`h-11 rounded-lg border border-border bg-white px-3 text-[15px] text-eco-deep-green placeholder:text-muted-foreground aria-invalid:border-2 aria-invalid:border-coral ${FOKUS}`}
@@ -75,7 +75,7 @@ export function LoginForm() {
       </div>
       <button type="submit" disabled={pending} className={PRIMAER}>
         <Mail className="size-[18px]" aria-hidden="true" />
-        {pending ? "Wird verschickt …" : "Login-Link anfordern"}
+        {pending ? "Wird verschickt …" : "Anmeldelink anfordern"}
       </button>
     </form>
   );

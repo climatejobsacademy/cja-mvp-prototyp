@@ -1,72 +1,54 @@
 import { createClient } from "@/lib/supabase/server";
-import type { CaptureUiStatus } from "@/components/status-badge";
-import type { FieldJobDetail } from "@/lib/praxistag-shared";
 
-export async function getFieldJobDetail(
-  fieldJobId: string,
-  learnerId: string
-): Promise<FieldJobDetail | null> {
+export type PraxistagAuftrag = {
+  fieldJobId: string;
+  titel: string;
+  phase: string;
+  ergebnis: string | null;
+  /** Labortag (SR-94): ohne Praxisflow */
+  labor: boolean;
+};
+
+/**
+ * Eigene Praxisaufträge eines Tages in fester Reihenfolge (SR-13, SR-64):
+ * Reihenfolge des Stundenplan-Eintrags (schedule_entry.reihenfolge), bei
+ * Gleichstand Anlagezeitpunkt. Sichtbar ist nur, was RLS der Person zeigt.
+ */
+export async function getPraxistag(learnerId: string, datum: string): Promise<PraxistagAuftrag[]> {
   const supabase = await createClient();
-
-  const { data: job } = await supabase
+  const { data: jobs, error } = await supabase
     .from("field_job")
-    .select("id, status, field_job_type_id, learner_id")
-    .eq("id", fieldJobId)
-    .single();
-
-  if (!job || job.learner_id !== learnerId) return null;
-
-  const [{ data: type }, { data: fragen }] = await Promise.all([
-    supabase
-      .from("field_job_type")
-      .select(
-        "titel, beschreibung, vorbereitung_text, vorbereitung_content_id, nachbereitung_text, nachbereitung_content_id"
-      )
-      .eq("id", job.field_job_type_id)
-      .single(),
-    supabase
-      .from("field_job_type_frage")
-      .select("id, frage_text, antwortoptionen, reihenfolge")
-      .eq("field_job_type_id", job.field_job_type_id)
-      .eq("phase", "abschluss")
-      .order("reihenfolge", { ascending: true }),
-  ]);
-
-  if (!type) return null;
-
-  const reflexionsFragen = (fragen ?? []).map((f) => ({
-    id: f.id,
-    frageText: f.frage_text,
-    antwortoptionen: f.antwortoptionen,
-  }));
-
-  const { data: captures } = await supabase
-    .from("field_capture")
-    .select("id, status")
-    .eq("field_job_id", fieldJobId)
+    .select("id, phase, praxisflow, created_at, field_job_type:field_job_type_id (titel, ablauf)")
     .eq("learner_id", learnerId)
-    .order("eingereicht_am", { ascending: false })
-    .limit(1);
+    .eq("datum", datum);
+  if (error) throw new Error("Praxistag konnte nicht geladen werden");
+  if (!jobs?.length) return [];
 
-  const capture = captures?.[0]
-    ? { id: captures[0].id, status: toUiStatus(captures[0].status) }
-    : null;
+  const { data: eintraege } = await supabase
+    .from("schedule_entry")
+    .select("field_job_id, reihenfolge")
+    .in("field_job_id", jobs.map((j) => j.id));
+  const position = new Map((eintraege ?? []).map((e) => [e.field_job_id, e.reihenfolge]));
 
-  return {
-    fieldJobId: job.id,
-    status: job.status,
-    titel: type.titel,
-    beschreibung: type.beschreibung,
-    vorbereitungText: type.vorbereitung_text,
-    vorbereitungContentId: type.vorbereitung_content_id,
-    nachbereitungText: type.nachbereitung_text,
-    nachbereitungContentId: type.nachbereitung_content_id,
-    reflexionsFragen,
-    capture,
-  };
+  return [...jobs]
+    .sort(
+      (a, b) =>
+        (position.get(a.id) ?? Number.MAX_SAFE_INTEGER) - (position.get(b.id) ?? Number.MAX_SAFE_INTEGER) ||
+        a.created_at.localeCompare(b.created_at)
+    )
+    .map((j) => {
+      const t = Array.isArray(j.field_job_type) ? j.field_job_type[0] : j.field_job_type;
+      return {
+        fieldJobId: j.id,
+        titel: t?.titel ?? "Praxisauftrag",
+        phase: j.phase,
+        ergebnis: j.praxisflow?.ergebnis ?? null,
+        labor: t?.ablauf === "labor",
+      };
+    });
 }
 
-function toUiStatus(status: "submitted" | "verified" | "rejected"): CaptureUiStatus {
-  if (status === "submitted") return "pending";
-  return status;
+/** Nächster offener Praxisauftrag nach der festen Reihenfolge (ohne Labortage), außer dem aktuellen. */
+export function naechsterOffener(auftraege: PraxistagAuftrag[], aktuell: string): PraxistagAuftrag | null {
+  return auftraege.find((a) => a.fieldJobId !== aktuell && !a.labor && a.phase !== "abgeschlossen") ?? null;
 }

@@ -42,7 +42,7 @@ Namen, E-Mail-Adressen, Schlüssel und Passwörter gehören weder in Chats noch 
 3. Lies den Bericht: Befunde nach Schwere (Blocker, Hoch, Hinweis), jeweils mit `Datei:Zeile` und der Regel samt Quelldatei, darunter „Nicht geprüft“. „Keine Verstöße gefunden“ heißt nicht „in Ordnung“.
 4. Ordne die Befunde ein und behebe sie oder begründe, warum nicht, und öffne dann die PR. Den Diff liest und die Preview prüft weiterhin ein Mensch (Abschnitt oben).
 
-Der Agent prüft gegen die Regeln aus `CLAUDE.md` und `docs/`, nicht den Datenbankstand, die CI, das Verhalten im Browser und nicht den Abgleich von `requirements.md` mit Notion. Große Diffs werden bei etwa 200 KB gekürzt (Lockfiles sind ausgenommen); der Bericht meldet dann „Diff gekürzt“. Der Agent hat keine Schreib- und keine Shell-Werkzeuge und kann nichts schreiben, pushen oder freigeben.
+Für einen Release-PR von `dev` nach `main` passt der Befehl nicht, weil er gegen `origin/dev` vergleicht; dort startet die Sitzung den Agenten direkt mit dem Diff gegen `origin/main` (`release.md`, Abschnitt 2). Der Agent prüft gegen die Regeln aus `CLAUDE.md` und `docs/`, nicht den Datenbankstand, die CI, das Verhalten im Browser und nicht den Abgleich von `requirements.md` mit Notion. Große Diffs werden bei etwa 200 KB gekürzt (Lockfiles sind ausgenommen); der Bericht meldet dann „Diff gekürzt“. Der Agent hat keine Schreib- und keine Shell-Werkzeuge und kann nichts schreiben, pushen oder freigeben.
 
 ## Dokumentation
 

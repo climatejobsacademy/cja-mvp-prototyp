@@ -35,9 +35,9 @@ const BILDER = {
 
 const HINWEISE: Record<string, string> = {
   "kein-profil":
-    "Du bist eingeloggt, aber es gibt noch kein Profil für dich. Bitte wende dich an deine Ansprechperson bei AfCJ.",
+    "Du bist angemeldet, aber es gibt noch kein Profil für dich. Bitte wende dich an deine Ansprechperson bei der Academy for Climate Jobs.",
   "keine-einschreibung": "Du hast noch keine aktive Einschreibung in ein Programm.",
-  "login-fehlgeschlagen": "Der Login-Link war ungültig oder ist abgelaufen. Bitte fordere einen neuen an.",
+  "login-fehlgeschlagen": "Der Anmeldelink war ungültig oder ist abgelaufen. Bitte fordere einen neuen an.",
 };
 
 export default async function LoginPage({

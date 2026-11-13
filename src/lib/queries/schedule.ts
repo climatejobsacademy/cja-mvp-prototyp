@@ -18,6 +18,13 @@ export type FeldEintrag = {
   status: "geplant" | "durchgeführt";
   /** Begleitende Person (field_job.instructor_id, SR-78), sonst null */
   trainerId: string | null;
+  /** Zweite begleitende Person (field_job.zweit_trainer_id, SR-78, 0071), sonst null */
+  zweitTrainerId: string | null;
+  /** Phase im Praxisflow (0058) und Ergebnis beim Abschluss (SR-93) */
+  phase: string;
+  ergebnis: string | null;
+  /** Labortag (SR-94, field_job_type.ablauf = labor): kein Praxisflow, nur Unterlagen */
+  labor: boolean;
 };
 
 export type TheorieEintrag = {
@@ -110,13 +117,13 @@ export async function getAgendaZeitraum(
       const fieldJobIds = feldEntries.map((r) => r.field_job_id!) as string[];
       const { data: fieldJobs } = await supabase
         .from("field_job")
-        .select("id, status, standort, start, ende, field_job_type_id, instructor_id")
+        .select("id, status, standort, start, ende, field_job_type_id, instructor_id, zweit_trainer_id, phase, praxisflow")
         .in("id", fieldJobIds);
 
       const typeIds = [...new Set((fieldJobs ?? []).map((j) => j.field_job_type_id))];
       const { data: fieldJobTypes } = await supabase
         .from("field_job_type")
-        .select("id, titel, beschreibung, bild_oder_icon")
+        .select("id, titel, beschreibung, bild_oder_icon, ablauf")
         .in("id", typeIds.length > 0 ? typeIds : ["00000000-0000-0000-0000-000000000000"]);
 
       for (const entry of feldEntries) {
@@ -136,6 +143,10 @@ export async function getAgendaZeitraum(
             ende: job.ende,
             status: job.status,
             trainerId: job.instructor_id,
+            zweitTrainerId: job.zweit_trainer_id,
+            phase: job.phase,
+            ergebnis: job.praxisflow?.ergebnis ?? null,
+            labor: type.ablauf === "labor",
           });
         }
       }

@@ -29,7 +29,7 @@ function LiveKarte({ termin, zustand }: { termin: LiveTermin; zustand: TerminZus
   const { bestaetigt, gesamt } = bestaetigtZaehlen(termin.teilnehmende.map((t) => t.anwesenheit));
   return (
     <section
-      aria-label={`Live-Termin ${termin.titel}, ${zeit(termin.start)} bis ${zeit(termin.ende)} Uhr`}
+      aria-label={`Live-Unterricht ${termin.titel}, ${zeit(termin.start)} bis ${zeit(termin.ende)} Uhr`}
       className={cn(
         "rounded-karte border-l-[3px] border-l-brand-2 bg-brand-tint p-4 md:p-5",
         zustand === "jetzt" && "ring-2 ring-lime",
@@ -57,7 +57,7 @@ function LiveKarte({ termin, zustand }: { termin: LiveTermin; zustand: TerminZus
 function PraxisKarte({ termin, zustand }: { termin: PraxisTermin; zustand: TerminZustand }) {
   return (
     <section
-      aria-label={`Praxisaufgabe ${termin.titel}`}
+      aria-label={`Praxisauftrag ${termin.titel}`}
       className={cn(
         "rounded-karte border-l-[3px] border-l-praxis bg-praxis-tint p-4 md:p-5",
         zustand === "jetzt" && "ring-2 ring-lime",
@@ -66,7 +66,7 @@ function PraxisKarte({ termin, zustand }: { termin: PraxisTermin; zustand: Termi
     >
       <div className="flex items-center gap-2 text-xs font-semibold text-ink">
         <Wrench className="size-[13px] text-praxis-text" aria-hidden="true" />
-        {termin.start ? `${zeit(termin.start)}–${zeit(termin.ende)}` : "ganztägig"} · Praxisaufgabe
+        {termin.start ? `${zeit(termin.start)}–${zeit(termin.ende)}` : "ganztägig"} · Praxisauftrag
         <ZustandsMarke zustand={zustand} />
       </div>
       <h2 className="mt-2 text-base leading-snug font-semibold text-ink">{termin.titel}</h2>
@@ -78,7 +78,7 @@ function PraxisKarte({ termin, zustand }: { termin: PraxisTermin; zustand: Termi
           <li key={l.personId} className="flex min-h-11 items-center justify-between gap-3 px-3 py-2 text-sm text-ink">
             <span className="min-w-0 truncate">{l.name}</span>
             <span className={cn("shrink-0 text-xs", l.durchgefuehrt ? "font-semibold text-progress" : "text-ink-muted")}>
-              {l.durchgefuehrt ? "durchgeführt" : "geplant"}
+              {l.durchgefuehrt ? "erledigt" : "geplant"}
             </span>
           </li>
         ))}

@@ -3,9 +3,10 @@
 // "Flexibel", Tagestyp. Reine Funktionen, keine Datenbank.
 
 import type { EinstiegEintrag } from "@/lib/fachsprache-einstiege";
-import { praxisaufgabeHref } from "@/lib/schalter";
+import { praxisaufgabeHref, praxistagHref } from "@/lib/schalter";
 import type { Plantag } from "@/lib/queries/stundenplan";
 import type { TrainerAnzeige } from "@/lib/queries/trainer";
+import { praxistagFortschritt, praxistagTitel, type PraxistagFortschritt } from "@/lib/praxistag-kachel";
 import { hatUhrzeit, naechsterTerminId, tagestypAus, type Tagestyp } from "@/lib/stundenplan";
 
 /** "Grundlagen der Elektrotechnik: Der Transistor" bzw. nur der Titel ohne Thema. */
@@ -41,7 +42,15 @@ export type Block = {
   fieldJobId: string | null;
   /** "Live mit …" / "Praxis mit …" (SR-78), null = niemand eingetragen */
   trainer: TrainerAnzeige | null;
+  /** Zweite begleitende Trainer:in (SR-78, 0071), nur Praxis */
+  trainer2: TrainerAnzeige | null;
+  /** Labortag (SR-94): Praxis-Farbe, eigener Name, führt zu den Unterlagen */
+  labor: boolean;
+  /** Praxistag (SR-13): ein Block je Tag mit Praxisaufträgen, Fortschritt je Auftrag */
+  sammel: Sammel | null;
 };
+
+export type Sammel = PraxistagFortschritt;
 
 export type Chip = {
   id: string;
@@ -68,6 +77,12 @@ export type Ganztag = {
   fieldJobId: string;
   /** "Praxis mit …" (SR-78), null = niemand eingetragen */
   trainer: TrainerAnzeige | null;
+  /** Zweite begleitende Trainer:in (SR-78, 0071) */
+  trainer2: TrainerAnzeige | null;
+  /** Labortag (SR-94) */
+  labor: boolean;
+  /** Praxistag (SR-13): Fortschritt je Auftrag */
+  sammel: Sammel | null;
 };
 
 
@@ -133,6 +148,9 @@ export function planModell(
           lessonId: e.lessonId,
           fieldJobId: null,
           trainer: trainerVon(s.trainerId),
+          trainer2: null,
+          labor: false,
+          sammel: null,
         },
       ];
     });
@@ -141,7 +159,53 @@ export function planModell(
     // ohne Uhrzeit -- keine Platzhalterzeit. Ziel ist der Praxistag-Ablauf.
     const praxisStatus = (status: string): BlockStatus =>
       status === "durchgeführt" ? "erledigt" : tag.datum < heute ? "vorbei" : "offen";
-    const praxis: Block[] = tag.feld.flatMap((e) =>
+
+    // Jeder Tag mit Praxisaufträgen (SR-13): ein gleich aufgebauter Block
+    // „Praxistag“ mit dem Zeitslot des Tages, der Zahl der Aufträge („1
+    // Praxisauftrag“) und dem Fortschritt je Auftrag. Ein Auftrag: Klick direkt
+    // hinein (Titel im Tooltip). Mehrere: Klick öffnet die Tagesübersicht.
+    // Labortage (SR-94) bleiben eigene Einträge.
+    const auftraege = tag.feld.filter((e) => !e.labor);
+    const einzeln = tag.feld.filter((e) => e.labor);
+    const sammelBloecke: Block[] = [];
+    const sammelGanztags: Ganztag[] = [];
+    if (auftraege.length > 0) {
+      const fortschritt = praxistagFortschritt(auftraege);
+      const einer = auftraege.length === 1 ? auftraege[0] : null;
+      const mitZeit = auftraege.filter(hatUhrzeit);
+      const mitTrainer = auftraege.find((e) => e.trainerId) ?? auftraege[0];
+      const gemeinsam = {
+        id: einer ? einer.scheduleEntryId : `praxistag-${tag.datum}`,
+        titel: praxistagTitel(auftraege),
+        ort: auftraege.find((e) => e.standort)?.standort ?? null,
+        status: (fortschritt.fertig === fortschritt.anzahl ? "erledigt" : tag.datum < heute ? "vorbei" : "offen") as BlockStatus,
+        href: einer ? praxisaufgabeHref(einer.fieldJobId, "stundenplan") : praxistagHref(tag.datum),
+        trainer: trainerVon(mitTrainer.trainerId),
+        trainer2: trainerVon(mitTrainer.zweitTrainerId),
+        labor: false,
+        sammel: fortschritt,
+      };
+      if (mitZeit.length > 0) {
+        sammelBloecke.push({
+          ...gemeinsam,
+          art: "praxis",
+          volltitel: `Praxistag: ${auftraege.map((e) => e.titel).join(", ")}`,
+          datum: tag.datum,
+          start: mitZeit.map((e) => e.start).sort()[0],
+          ende: mitZeit.map((e) => e.ende).sort().at(-1)!,
+          naechster: false,
+          extern: false,
+          liveRaum: null,
+          inhalt: gemeinsam.href,
+          lessonId: null,
+          fieldJobId: einer ? einer.fieldJobId : null,
+        });
+      } else {
+        sammelGanztags.push({ ...gemeinsam, fieldJobId: auftraege[0].fieldJobId });
+      }
+    }
+
+    const praxis: Block[] = [...sammelBloecke, ...einzeln.flatMap((e) =>
       hatUhrzeit(e)
         ? [
             {
@@ -155,28 +219,34 @@ export function planModell(
               ort: e.standort,
               status: praxisStatus(e.status),
               naechster: false,
-              href: praxisaufgabeHref(e.fieldJobId),
+              href: praxisaufgabeHref(e.fieldJobId, "stundenplan"),
               extern: false,
               liveRaum: null,
-              inhalt: praxisaufgabeHref(e.fieldJobId),
+              inhalt: praxisaufgabeHref(e.fieldJobId, "stundenplan"),
               lessonId: null,
               fieldJobId: e.fieldJobId,
               trainer: trainerVon(e.trainerId),
+              trainer2: trainerVon(e.zweitTrainerId),
+              labor: e.labor,
+              sammel: null,
             },
           ]
         : []
-    );
-    const ganztags: Ganztag[] = tag.feld
+    )];
+    const ganztags: Ganztag[] = [...sammelGanztags, ...einzeln
       .filter((e) => !hatUhrzeit(e))
       .map((e) => ({
         id: e.scheduleEntryId,
         titel: e.titel,
         ort: e.standort,
         status: praxisStatus(e.status),
-        href: praxisaufgabeHref(e.fieldJobId),
+        href: praxisaufgabeHref(e.fieldJobId, "stundenplan"),
         fieldJobId: e.fieldJobId,
         trainer: trainerVon(e.trainerId),
-      }));
+        trainer2: trainerVon(e.zweitTrainerId),
+        labor: e.labor,
+        sammel: null,
+      }))];
 
     // Brief 2.4/5: Selbstlernen nur in "Flexibel", nie mit Uhrzeit.
     // Gehört die Selbstlern-Lektion zum Live-Unterricht desselben Tages, heißt

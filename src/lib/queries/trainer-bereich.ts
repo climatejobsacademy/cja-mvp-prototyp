@@ -163,7 +163,7 @@ export async function getTrainerTag(personId: string, datum: string): Promise<Tr
     const person = teilnehmende.find((t) => t.person_id === j.learner_id);
     const termin = praxisMap.get(schluessel) ?? {
       id: schluessel,
-      titel: (typen ?? []).find((t) => t.id === j.field_job_type_id)?.titel ?? "Praxisaufgabe",
+      titel: (typen ?? []).find((t) => t.id === j.field_job_type_id)?.titel ?? "Praxisauftrag",
       start: j.start,
       ende: j.ende,
       kohorten: [],

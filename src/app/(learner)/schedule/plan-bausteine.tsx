@@ -1,13 +1,16 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, Check, Play, Video, Wrench } from "lucide-react";
+import { ArrowRight, BookOpen, FlaskConical, Play, Video, Wrench } from "lucide-react";
+
+import { GeschafftZeichen } from "./geschafft-zeichen";
 
 import { spuren, stunden, type Tagestyp } from "@/lib/stundenplan";
 import { TrainerZeile } from "@/components/trainer-zeile";
+import { fortschrittKurz, fortschrittText } from "@/lib/praxistag-kachel";
 import { cn } from "@/lib/utils";
 
 import { JetztLinie } from "./jetzt-linie";
 import type { Chip, Ganztag, TagModell } from "./plan-modell";
-import { TerminBlock } from "./termin-block";
+import { FortschrittZeile, TerminBlock } from "./termin-block";
 
 // Stundenplan v2 (SR-13, SR-73): gemeinsame
 // Bausteine von Woche, Tag und Monat. Aktivitätsfarben wie Home und
@@ -55,12 +58,14 @@ export function AbweichungsLabel({ typ, haupt }: { typ: Tagestyp | null; haupt: 
 /**
  * Was an einem Tag als erledigt zählen kann. Live-Termine ohne eigene Lektion
  * (Deutsch/Fachdeutsch, Softskills Coaching) zählen nicht mit: für sie wird
- * keine Anwesenheit bestätigt (Entscheidung Anna 2026-10-20).
+ * keine Anwesenheit bestätigt (Entscheidung Anna 2026-10-20). Labortage
+ * zählen auch nicht mit: sie haben keinen Abschluss (SR-94), sonst würde ein
+ * Tag mit Labortag nie „geschafft“ (SR-13, Entscheidung Produkt-Lead 13.11.2026).
  */
 function zaehlendeStatus(tag: TagModell): boolean[] {
   return [
-    ...tag.bloecke.filter((b) => b.art !== "live" || b.lessonId).map((b) => b.status === "erledigt"),
-    ...tag.ganztags.map((g) => g.status === "erledigt"),
+    ...tag.bloecke.filter((b) => (b.art !== "live" || b.lessonId) && !b.labor).map((b) => b.status === "erledigt"),
+    ...tag.ganztags.filter((g) => !g.labor).map((g) => g.status === "erledigt"),
     ...tag.chips.map((c) => c.erledigt),
   ];
 }
@@ -99,7 +104,7 @@ export function FlexChip({ chip }: { chip: Chip }) {
       {/* Thema als Titel bzw. "Wissen festigen" (Anna 2026-10-16, wie demo). */}
       <span className="min-w-0 flex-1 truncate">{chip.titel}</span>
       {chip.erledigt ? (
-        <Check className="size-3.5 shrink-0 text-progress" strokeWidth={3} aria-hidden="true" />
+        <GeschafftZeichen klein />
       ) : chip.begonnen ? (
         <span aria-hidden="true" title="Weiterlernen" className="flex size-5 shrink-0 items-center justify-center rounded-full bg-self-tint text-self">
           <Play className="size-2.5 fill-current" />
@@ -135,7 +140,7 @@ export function FlexLeiste({ chip, gross }: { chip: Chip; gross: boolean }) {
       <span className="min-w-0 flex-1">{chip.titel}</span>
       {/* "Weiterlernen" nur, wenn schon begonnen; sonst nur der Pfeil (Anna 2026-10-20, Handy und Laptop gleich). */}
       {chip.erledigt ? (
-        <Check className="size-3.5 shrink-0 text-progress" strokeWidth={3} aria-hidden="true" />
+        <GeschafftZeichen klein />
       ) : (
         <span aria-hidden="true" className="inline-flex shrink-0 items-center gap-1 text-xs font-bold">
           {chip.begonnen && "Weiterlernen"}
@@ -152,24 +157,34 @@ export function FlexLeiste({ chip, gross }: { chip: Chip; gross: boolean }) {
  * Text; Ort, wenn eingetragen. Klick öffnet den Praxistag-Ablauf.
  */
 export function GanztagsLeiste({ tag: g, gross }: { tag: Ganztag; gross: boolean }) {
-  const zurueck = g.status !== "offen";
-  const label = `Praxisaufgabe, ganztägig, ${g.titel}${g.ort ? `, ${g.ort}` : ""}${g.trainer ? `, Praxis mit ${g.trainer.rufname}` : ""}, ${g.status === "erledigt" ? "erledigt" : g.status === "vorbei" ? "vorbei" : "offen"}`;
+  const zurueck = g.status === "vorbei";
+  const geschafft = g.status === "erledigt";
+  const label = `${g.labor ? "Labortag" : g.sammel ? "Praxistag" : "Praxisauftrag"}, ganztägig, ${g.titel}${g.sammel ? `, ${fortschrittText(g.sammel)}` : ""}${g.ort ? `, ${g.ort}` : ""}${g.trainer ? `, Praxis mit ${g.trainer.rufname}${g.trainer2 ? ` und ${g.trainer2.rufname}` : ""}` : ""}, ${g.status === "erledigt" ? "erledigt" : g.status === "vorbei" ? "vorbei" : "offen"}`;
   const klasse = cn(
     "flex min-w-0 items-start gap-2 rounded-xl px-3 py-2 font-semibold outline-none",
     g.href && "transition-[box-shadow] duration-150 hover:shadow-card focus-visible:ring-2 focus-visible:ring-brand motion-reduce:transition-none",
     gross ? "text-sm" : "text-[13px] leading-snug",
-    zurueck ? "border border-line bg-card text-ink-muted" : "border-l-[3px] border-l-praxis bg-praxis-tint text-ink"
+    zurueck
+      ? "border border-line bg-card text-ink-muted"
+      : geschafft
+        ? "border border-l-[3px] border-line border-l-progress bg-card text-ink"
+        : "border-l-[3px] border-l-praxis bg-praxis-tint text-ink"
   );
   const inhalt = (
     <>
-      <Wrench className="mt-px size-4 shrink-0 text-praxis-text" aria-hidden="true" />
+      {g.labor ? (
+        <FlaskConical className="mt-px size-4 shrink-0 text-praxis-text" aria-hidden="true" />
+      ) : (
+        <Wrench className="mt-px size-4 shrink-0 text-praxis-text" aria-hidden="true" />
+      )}
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="hyphens-auto break-words">{g.titel}</span>
-        <span className="text-xs font-normal text-ink-muted">Ganztägig{g.ort ? ` · ${g.ort}` : ""}</span>
+        {g.sammel && <FortschrittZeile f={g.sammel} klein={!gross} className="my-0.5" />}
+        <span className="text-xs font-normal text-ink-muted">{g.labor ? "Labortag · ganztägig" : "Ganztägig"}{g.ort ? ` · ${g.ort}` : ""}</span>
         {/* Begleitende Person des Praxistags (SR-78). */}
-        {g.trainer && <TrainerZeile art="praxis" trainer={g.trainer} klein className="mt-1 font-normal text-ink-muted" />}
+        {g.trainer && <TrainerZeile art="praxis" trainer={g.trainer} zweite={g.trainer2} klein className="mt-1 font-normal text-ink-muted" />}
       </span>
-      {g.status === "erledigt" && <Check className="mt-0.5 size-3.5 shrink-0 text-progress" strokeWidth={3} aria-hidden="true" />}
+      {geschafft && <GeschafftZeichen wort={gross} klein={!gross} className="mt-0.5" />}
     </>
   );
   // Ohne Link (PRAXISAUFGABE_LINK aus) dieselbe Leiste als reiner Text.
@@ -277,16 +292,16 @@ export function MonatsTags({ tag }: { tag: TagModell }) {
   const tags = [
     ...tag.bloecke.map((b) => ({
       id: b.id,
-      text: b.art === "live" ? `${b.start.slice(0, 5)} Live` : "Praxis",
-      lang: `${b.art === "live" ? "Live-Unterricht" : "Praxisaufgabe"}: ${b.titel}`,
+      text: b.art === "live" ? `${b.start.slice(0, 5)} Live` : b.labor ? "Labor" : b.sammel ? `Praxis ${fortschrittKurz(b.sammel)}` : "Praxis",
+      lang: `${b.art === "live" ? "Live-Unterricht" : b.labor ? "Labortag" : b.sammel ? "Praxistag" : "Praxisauftrag"}: ${b.titel}${b.sammel ? `, ${fortschrittText(b.sammel)}` : ""}`,
       erledigt: b.status === "erledigt",
       vorbei: b.status !== "offen",
       punkt: b.art === "live" ? "bg-brand" : "bg-praxis",
     })),
     ...tag.ganztags.map((g) => ({
       id: g.id,
-      text: "Praxis",
-      lang: `Praxisaufgabe, ganztägig: ${g.titel}`,
+      text: g.labor ? "Labor" : g.sammel ? `Praxis ${fortschrittKurz(g.sammel)}` : "Praxis",
+      lang: `${g.labor ? "Labortag" : g.sammel ? "Praxistag" : "Praxisauftrag"}, ganztägig: ${g.titel}${g.sammel ? `, ${fortschrittText(g.sammel)}` : ""}`,
       erledigt: g.status === "erledigt",
       vorbei: g.status !== "offen",
       punkt: "bg-praxis",
@@ -309,7 +324,7 @@ export function MonatsTags({ tag }: { tag: TagModell }) {
           title={t.lang}
           className={cn(
             "flex min-w-0 items-center gap-1.5 text-xs",
-            t.vorbei ? "text-ink-muted" : "font-medium text-ink"
+            t.erledigt ? "font-medium text-ink" : t.vorbei ? "text-ink-muted" : "font-medium text-ink"
           )}
         >
           <span aria-hidden="true" className={cn("size-1.5 shrink-0 rounded-full", t.punkt)} />
@@ -320,7 +335,7 @@ export function MonatsTags({ tag }: { tag: TagModell }) {
             {t.lang}
             {t.erledigt ? ", erledigt" : ""}
           </span>
-          {t.erledigt && <Check className="size-3 shrink-0 text-progress" strokeWidth={3} aria-hidden="true" />}
+          {t.erledigt && <GeschafftZeichen klein />}
         </li>
       ))}
     </ul>

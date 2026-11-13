@@ -46,7 +46,7 @@ Zugänge: Wer welche Zugänge zu GitHub, Supabase, Vercel und Brevo hat, steht i
 | Thema | Person | Erreichbar über |
 |---|---|---|
 | Technik (App, Deployment, Datenbank) | Technik, Vertretung Geschäftsführung | Kontaktwege in Notion (nicht im Repo) |
-| Freigabe von Releases | keine Zweitfreigabe nötig; die Person mit Admin-Recht, die den Release macht, merged nach `/pr-check`, grüner CI und Prüfung auf Staging (`docs/release.md`, `docs/decisions.md` 2026-11-04) | Kontaktwege in Notion |
+| Freigabe von Releases | keine Zweitfreigabe nötig; die Person mit Admin-Recht, die den Release macht, merged nach der Prüfung durch den Review-Agenten, grüner CI und Prüfung auf Staging (`docs/release.md`, `docs/decisions.md` 2026-11-04) | Kontaktwege in Notion |
 | Datenschutzvorfall (Meldung, Betroffene informieren) | Geschäftsführung | Kontaktwege in Notion |
 | App im Notfall vom Netz nehmen | entscheidet die Geschäftsführung | Kontaktwege in Notion |
 
@@ -359,6 +359,7 @@ Buckets entstehen nur über Migrationen. Die Angaben stammen aus den Migrationen
 | `lesson-resources` | privat | 50 MB | PDF, PNG, JPEG, WebP, DOCX, PPTX, XLSX | nur Kleinbuchstaben a bis z, Ziffern und Bindestriche, eine Endung, keine Umlaute, keine Leerzeichen, keine Ordner (`lernmaterialien-upload.md`) |
 | `fachsprache-bilder` | privat | 2 MB | PNG, JPEG, WebP (kein SVG) | `<lesson_id>/<dateiname>`, Dateiname aus Buchstaben, Ziffern, Punkt, Unterstrich und Bindestrich, höchstens 100 Zeichen, mit Endung (`0051`, `fachsprache.md`) |
 | `profilfotos` | privat | 1 MB | nur JPEG | Ordner `<person_id>/` (`loeschweg.md`) |
+| `praxis-dateien` | privat, nur die lernende Person selbst (SR-88) | 50 MB | JPEG, PNG, WebP, HEIC/HEIF, PDF, CSV, XLS, XLSX; DWG, DXF, GLB nur als Plan | `<learner_id>/<field_job_id>/<uuid>.<endung>`, kein Überschreiben (`0059`, `loeschweg.md`) |
 | `org-logos` | öffentlich | 512000 Byte | PNG, WebP, JPEG | direkt im Wurzelverzeichnis, Dateiname eine neue UUID in Kleinbuchstaben mit Endung, keine Ordner (`organisations-logo.md`) |
 
 Storage ist nicht im Backup: Die Sicherung enthält nur die Einträge in der Datenbank, nicht die Dateien (Abschnitt 5). Eine gelöschte Datei kommt durch eine Wiederherstellung nicht zurück.

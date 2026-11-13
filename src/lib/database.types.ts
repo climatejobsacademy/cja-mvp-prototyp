@@ -45,6 +45,47 @@ export type CompetencyStepTyp = "theoretisch" | "praktisch";
 export type EnrolmentStatus = "aktiv" | "abgeschlossen" | "abgebrochen";
 export type ScheduleArt = "live" | "asynchron" | "feld";
 export type FieldJobStatus = "geplant" | "durchgeführt";
+// 0058 (SR-64): Praxisflow.
+export type FieldJobTypeAblauf = "einfach" | "gefuehrt" | "labor";
+export type PraxisPhase =
+  | "informieren"
+  | "planen"
+  | "entscheiden"
+  | "ausfuehren"
+  | "kontrollieren"
+  | "bewerten"
+  | "abgeschlossen";
+export type PraxisEintrag = { id: string; text: string };
+// 0059 (SR-88): Art einer hochgeladenen Datei im Praxisflow.
+export type PraxisDateiArt = "auftrag" | "hilfe" | "plan" | "protokoll";
+// Inhalt von field_job.praxisflow; geschrieben nur über fn_praxis_* (0058).
+export type PraxisFortschritt = {
+  werkzeuge?: PraxisEintrag[];
+  materialien?: PraxisEintrag[];
+  schritte?: PraxisEintrag[];
+  erledigt?: { id: string; am: string }[];
+  plan_bestaetigt_am?: string;
+  plan_freigegeben_am?: string;
+  verlauf?: { zeit: string; ereignis: string }[];
+  // 0060 (SR-65): abgehakte Prüfpunkte und Freigaben der Trainer:in.
+  kontrolle?: { id: string; am: string }[];
+  zuschalten_freigegeben_am?: string;
+  bewertung_freigegeben_am?: string;
+  /** Rückblick in Bewerten bestätigt (SR-64, 0073) */
+  rueckblick_am?: string;
+  // 0061 (SR-89, SR-03, SR-90): Einschätzungen (Punkte je Kriterium) und Abschluss.
+  einschaetzung?: Partial<Record<PraxisRolle, Record<string, number>>>;
+  // 0065 (SR-64, Variante B): Deutung der Messwerte je Prüfpunkt in Kontrollieren.
+  deutungen?: { id: string; text: string; am: string }[];
+  // 0063 (SR-89, SR-64): abgelegte Durchläufe nach einem K.-o.
+  durchlaeufe?: { nr: number; ergebnis: "ko"; einschaetzung?: Partial<Record<PraxisRolle, Record<string, number>>>; naechstes_mal?: string | null; am: string }[];
+  naechstes_mal?: string | null;
+  abgeschlossen_am?: string;
+  ergebnis?: PraxisErgebnis;
+};
+export type PraxisRolle = "selbst" | "peer" | "trainer";
+export type PraxisErgebnis = "angerechnet" | "ko" | "ohne_trainer";
+export type PraxisGate = "plan" | "zuschalten" | "bewertung";
 export type FieldJobErgebnis = "erledigt" | "problem";
 export type FieldCapturePhase = "start" | "abschluss";
 export type UnitProgressStatus = "offen" | "in Bearbeitung" | "abgeschlossen";
@@ -297,6 +338,19 @@ type LessonResourceRow = Flatten<
   }
 >;
 
+/** SR-68 (0069): Hilfsunterlagen je Praxisaufgabe, gepflegt von AfCJ. */
+type FieldJobTypeResourceRow = Flatten<
+  Timestamps & {
+    id: string;
+    field_job_type_id: string;
+    reihenfolge: number;
+    typ: LessonResourceTyp;
+    titel: string;
+    file_asset_id: string | null;
+    external_url: string | null;
+  }
+>;
+
 type CompetencyRow = Flatten<
   Timestamps & {
     id: string;
@@ -413,6 +467,10 @@ type FieldJobTypeRow = Flatten<
     programme_id: string | null;
     // Entschieden 2026-09-16 (SR-58/0015): analog module.reihenfolge/course.reihenfolge.
     reihenfolge: number;
+    // 0058 (SR-64): einfach = bisheriger Praxistag, gefuehrt = Praxisflow.
+    ablauf: FieldJobTypeAblauf;
+    // 0067 (SR-91): Prüfprotokoll-Variante der Aufgabe, leer = Standard-Prüfliste.
+    pruefprotokoll_id: string | null;
   }
 >;
 
@@ -441,12 +499,68 @@ type FieldJobRow = Flatten<
     field_job_type_id: string;
     learner_id: string;
     instructor_id: string | null;
+    /** SR-78 (0071): zweite begleitende Trainer:in, nur Anzeige */
+    zweit_trainer_id: string | null;
     status: FieldJobStatus;
     durchgefuehrt_bestaetigt_am: string | null;
     // Entschieden 2026-09-11 (0011_field_job_praxistag_erfassung.sql): Learner
     // bestätigt "erledigt" oder meldet ein "problem" mit Freitext.
     ergebnis: FieldJobErgebnis | null;
     problem_beschreibung: string | null;
+    // 0058 (SR-64): Phase und Fortschritt im Praxisflow, nur über fn_praxis_*.
+    phase: PraxisPhase;
+    phase_seit: string | null;
+    praxisflow: PraxisFortschritt;
+    // 0067 (SR-91): Prüfprotokoll-Variante, beim Anlegen vom Typ übernommen.
+    pruefprotokoll_id: string | null;
+  }
+>;
+
+// 0067 (SR-91): Prüfprotokoll-Varianten und ihre Punkte (AfCJ pflegt, Lernende lesen veröffentlichte).
+type PruefprotokollRow = Flatten<
+  Timestamps & { id: string; kennung: string; titel: string; beschreibung: string | null; status: "published" | "unpublished" }
+>;
+type PruefprotokollPunktRow = Flatten<
+  Timestamps & {
+    id: string;
+    pruefprotokoll_id: string;
+    kennung: string;
+    nr: number;
+    teil: "spannungsfrei" | "unter_spannung";
+    titel: string;
+    text: string | null;
+    hinweis: string | null;
+    punkte: string[];
+  }
+>;
+
+// 0060 (SR-65): nur AfCJ admin liest; geschrieben nur über fn_praxis_*.
+type PraxisCodewortRow = Flatten<
+  Timestamps & { id: string; cohort_id: string; hash: string; geaendert_von: string | null }
+>;
+type PraxisCodewortVersuchRow = Flatten<
+  Timestamps & {
+    id: string;
+    organisation_id: string;
+    field_job_id: string;
+    gate: PraxisGate;
+    art: "fehlversuch" | "erfolg" | "entsperrt";
+    person_id: string | null;
+  }
+>;
+
+// 0059 (SR-88): nur die lernende Person selbst liest, legt an und löscht.
+type FieldJobDateiRow = Flatten<
+  Timestamps & {
+    id: string;
+    organisation_id: string;
+    field_job_id: string;
+    learner_id: string;
+    art: PraxisDateiArt;
+    storage_pfad: string;
+    dateiname: string;
+    mime_type: string;
+    groesse: number;
   }
 >;
 
@@ -862,6 +976,7 @@ export type Database = {
             module_id?: string | null;
             programme_id?: string | null;
             reihenfolge: number;
+            ablauf?: FieldJobTypeAblauf;
           }
         >,
         Partial<FieldJobTypeRow>
@@ -908,6 +1023,16 @@ export type Database = {
           problem_beschreibung?: string | null;
         }
       >;
+      field_job_datei: Table<
+        FieldJobDateiRow,
+        Flatten<Partial<Timestamps> & Omit<FieldJobDateiRow, "id" | "created_at" | "updated_at"> & { id?: string }>,
+        Record<string, never>
+      >;
+      praxis_codewort: Table<PraxisCodewortRow, Record<string, never>, Record<string, never>>;
+      pruefprotokoll: Table<PruefprotokollRow, Record<string, never>, Record<string, never>>;
+      pruefprotokoll_punkt: Table<PruefprotokollPunktRow, Record<string, never>, Record<string, never>>;
+      field_job_type_resource: Table<FieldJobTypeResourceRow, Record<string, never>, Record<string, never>>;
+      praxis_codewort_versuch: Table<PraxisCodewortVersuchRow, Record<string, never>, Record<string, never>>;
       schedule_entry: Table<
         ScheduleEntryRow,
         Flatten<
@@ -1074,6 +1199,36 @@ export type Database = {
       fn_chat_ungelesen: { Args: { p_cohort_id: string }; Returns: { kanal: ChatKanal; anzahl: number }[] };
       // Darf die eingeloggte Person die Fotos im Ordner sehen? (0030, SR-77)
       fn_darf_foto_sehen: { Args: { p_ordner: string }; Returns: boolean };
+      // Praxisflow (0058, SR-64): nur eigener Praxistag im geführten Ablauf.
+      fn_praxis_plan_speichern: {
+        Args: { p_job: string; p_werkzeuge: string[]; p_materialien: string[]; p_schritte: string[] };
+        Returns: PraxisFortschritt;
+      };
+      fn_praxis_weiter: { Args: { p_job: string; p_von: PraxisPhase }; Returns: PraxisPhase };
+      fn_praxis_zurueck_zum_plan: { Args: { p_job: string }; Returns: PraxisPhase };
+      fn_praxis_schritt_abhaken: { Args: { p_job: string; p_schritt: string }; Returns: PraxisFortschritt };
+      // 0059 (SR-88): Dateien zum Praxistag hochladen oder löschen erlaubt?
+      fn_praxis_datei_offen: { Args: { p_job: string }; Returns: boolean };
+      // 0060 (SR-65): Prüfpunkte abhaken, Trainer-Gate mit Codewort, Pflege durch AfCJ admin.
+      fn_praxis_kontrolle_abhaken: { Args: { p_job: string; p_punkt: string }; Returns: PraxisFortschritt };
+      fn_praxis_deutung_speichern: { Args: { p_job: string; p_punkt: string; p_text: string }; Returns: PraxisFortschritt };
+      // 0073 (SR-64): Rückblick auf die vollständige Handlung in Bewerten.
+      fn_praxis_rueckblick_speichern: { Args: { p_job: string; p_phasen: string[] }; Returns: PraxisFortschritt };
+      fn_praxis_gate: { Args: { p_job: string; p_gate: "plan" | "zuschalten"; p_codewort: string }; Returns: boolean };
+      fn_praxis_codewort_setzen: { Args: { p_cohort: string; p_codewort: string }; Returns: undefined };
+      fn_praxis_codewort_entsperren: { Args: { p_job: string; p_gate: PraxisGate }; Returns: undefined };
+      // 0061 (SR-89, SR-03): Einschätzung speichern, Abschluss mit automatischer Verifizierung.
+      fn_praxis_ereignis_melden: { Args: { p_job: string; p_ereignisse: unknown }; Returns: number };
+      fn_praxis_einschaetzen: {
+        Args: { p_job: string; p_rolle: "selbst" | "peer"; p_werte: Record<string, number> };
+        Returns: PraxisFortschritt;
+      };
+      // Trainer-Einschätzung nur mit Codewort im selben Aufruf; false = Codewort falsch.
+      fn_praxis_trainer_einschaetzen: {
+        Args: { p_job: string; p_werte: Record<string, number>; p_codewort: string };
+        Returns: boolean;
+      };
+      fn_praxis_abschliessen: { Args: { p_job: string; p_naechstes_mal: string | null }; Returns: PraxisErgebnis };
     };
   };
 };

@@ -18,7 +18,7 @@ export function MehrMenue({ lessonId }: { lessonId: string }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        aria-label="Mehr: Unterlagen und Chat"
+        aria-label="Mehr: Unterlagen und Fragen zur Lektion"
         className="inline-flex size-[52px] items-center justify-center rounded-full border border-white/30 text-white outline-none transition-[background-color] duration-150 hover:bg-white/15 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand data-popup-open:bg-white/15 motion-reduce:transition-none"
       >
         <MoreHorizontal className="size-5" aria-hidden="true" />
@@ -38,7 +38,7 @@ export function MehrMenue({ lessonId }: { lessonId: string }) {
           render={<Link href={`${basis}#thread-ueberschrift`} />}
         >
           <MessageCircle className="size-[18px] shrink-0 text-brand" aria-hidden="true" />
-          Chat
+          Fragen zur Lektion
         </MenuPrimitive.LinkItem>
       </DropdownMenuContent>
     </DropdownMenu>

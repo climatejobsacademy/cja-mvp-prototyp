@@ -37,7 +37,7 @@ export const HILFE: HilfeGruppe[] = [
                 Öffne <b>learn.climatejobsacademy.com</b>.
               </li>
               <li>
-                Gib deine E-Mail-Adresse ein und tippe auf <b>Login-Link anfordern</b> <Nr>1</Nr>.
+                Gib deine E-Mail-Adresse ein und tippe auf <b>Anmeldelink anfordern</b> <Nr>1</Nr>.
               </li>
               <li>Öffne die E-Mail und tippe auf den Link. Fertig, du bist angemeldet.</li>
             </ol>
@@ -51,7 +51,7 @@ export const HILFE: HilfeGruppe[] = [
       },
       {
         id: "home",
-        titel: "Was zeigt mir die Startseite „Home“?",
+        titel: "Was zeigt mir „Home“?",
         antwort: (
           <>
             <p>
@@ -158,7 +158,7 @@ export const HILFE: HilfeGruppe[] = [
         antwort: (
           <>
             <p>
-              An Praxistagen arbeitest du <b>vor Ort in der Werkstatt oder im Betrieb</b>. Sie sind im Stundenplan{" "}
+              An Praxistagen arbeitest du <b>vor Ort in der Werkstatt</b>. Sie sind im Stundenplan{" "}
               <b>orange</b>.
             </p>
             <p>
@@ -176,12 +176,12 @@ export const HILFE: HilfeGruppe[] = [
         antwort: (
           <>
             <p>
-              Zu jedem Live-Unterricht gehört eine Selbstlern-Einheit <b>Wissen festigen</b>. Darin wiederholst du das
+              Zu jedem Live-Unterricht gehört eine Selbstlern-Lektion <b>Wissen festigen</b>. Darin wiederholst du das
               Wichtigste, lernst die Begriffe und prüfst dich mit einem kurzen Quiz.
             </p>
             <ul>
               <li>
-                Du findest sie im Stundenplan unter <b>Flexibel</b> und in der Live-Lektion über den Knopf{" "}
+                Du findest sie im Stundenplan unter <b>Flexibel</b> und auf der Seite zum Live-Unterricht über den Knopf{" "}
                 <b>Wissen festigen</b>.
               </li>
               <li>
@@ -230,7 +230,7 @@ export const HILFE: HilfeGruppe[] = [
         antwort: (
           <>
             <p>
-              Unten in jeder Live-Lektion gibt es <b>Fragen zur Lektion</b> <Nr>1</Nr>. Schreib deine Frage ins Feld und
+              Unten auf jeder Seite zum Live-Unterricht gibt es <b>Fragen zur Lektion</b> <Nr>1</Nr>. Schreib deine Frage ins Feld und
               tippe auf den Pfeil. Deine Trainer:in und deine Kohorte sehen sie und können antworten.
             </p>
             <p>
@@ -256,10 +256,10 @@ export const HILFE: HilfeGruppe[] = [
               Jede Kompetenz besteht aus mehreren <b>Kompetenzschritten</b>.
             </p>
             <p>
-              Der Ring <Nr>1</Nr> zeigt, wie viele Schritte du schon erreicht hast. Ein Schritt zählt, wenn
+              Der Ring <Nr>1</Nr> zeigt, wie viele Kompetenzschritte du schon erreicht hast. Ein Kompetenzschritt zählt, wenn
             </p>
             <ul>
-              <li>du eine Selbstlern-Einheit abgeschlossen hast,</li>
+              <li>du eine Selbstlern-Lektion abgeschlossen hast,</li>
               <li>deine Teilnahme am Live-Unterricht bestätigt ist oder</li>
               <li>deine Trainer:in eine Praxisaufgabe bestätigt hat.</li>
             </ul>
@@ -319,7 +319,7 @@ export const HILFE: HilfeGruppe[] = [
             </p>
             <ul>
               <li>
-                <b>Ankündigungen:</b> Hier schreiben deine Trainer:innen und das Team der Akademie. Du liest mit.
+                <b>Ankündigungen:</b> Hier schreiben deine Trainer:innen und die Academy for Climate Jobs. Du liest mit.
               </li>
               <li>
                 <b>Treffpunkt:</b> Hier tauschst du dich mit deiner Kohorte aus.

@@ -2,7 +2,7 @@
 // der Home-Seite -- Termin-Texte (Datumsanzeige aus src/lib/date.ts), Tagestyp und die Umwandlung der
 // Tagesagenda in die Eingabe von getDayState().
 
-import { datumKurz, tageZwischen, tagRelativ, wochentagLang } from "@/lib/date";
+import { datumKurz, tageZwischen, wochentagLang } from "@/lib/date";
 import type { TagesAktivitaeten } from "@/lib/home-tag";
 import type { NaechsterTermin, TagesAgenda } from "@/lib/queries/schedule";
 
@@ -18,9 +18,14 @@ export function naechsterTerminText(t: NaechsterTermin): string {
   return `${datumKurz(t.datum)}${t.start ? `, ${t.start.slice(0, 5)}` : ""}`;
 }
 
-/** Vorschau in Zustand D (Brief 3): "Montag: Praxistag" / "Montag: Theorietag ab 13:00" */
-export function naechsterTagText(t: NaechsterTermin): string {
-  return `${wochentagLang(t.datum)}: ${terminArt(t)}`;
+/** Vorschau in Zustand D (Brief 3, SR-93): "Morgen: Praxistag" / "Montag, 16.11.: Theorietag ab 13:00" */
+export function naechsterTagText(t: NaechsterTermin, heute: string): string {
+  return `${wannText(t.datum, heute)}: ${terminArt(t)}`;
+}
+
+/** SR-93: „Morgen“, sonst Wochentag mit Datum ("Montag, 16.11."). */
+function wannText(datum: string, heute: string): string {
+  return tageZwischen(heute, datum) === 1 ? "Morgen" : `${wochentagLang(datum)}, ${datum.slice(8, 10)}.${datum.slice(5, 7)}.`;
 }
 
 /**
@@ -28,8 +33,7 @@ export function naechsterTagText(t: NaechsterTermin): string {
  * 13:00", wenn unter der Fokus-Karte sonst nichts steht.
  */
 export function naechsterTagZeile(t: NaechsterTermin, heute: string): { wann: string; was: string } {
-  const wann = tagRelativ(t.datum, heute);
-  return { wann: wann.charAt(0).toUpperCase() + wann.slice(1), was: terminArt(t) };
+  return { wann: `Als Nächstes · ${wannText(t.datum, heute)}`, was: terminArt(t) };
 }
 
 /**
@@ -105,6 +109,10 @@ export function aktivitaeten(tag: TagesAgenda): TagesAktivitaeten {
       ende: e.ende,
       durchgefuehrt: e.status === "durchgeführt",
       trainerId: e.trainerId,
+      zweitTrainerId: e.zweitTrainerId,
+      phase: e.phase,
+      ergebnis: e.ergebnis,
+      labor: e.labor,
     })),
   };
 }

@@ -17,7 +17,7 @@ const FOKUS = "outline-none focus-visible:ring-2 focus-visible:ring-brand focus-
 
 // Der zugängliche Name enthält den sichtbaren Text (Fachsprache bzw. "Fachsprache: Titel").
 function beschriftung(e: EinstiegEintrag, mitTitel: boolean) {
-  return mitTitel ? `Fachsprache: ${e.titel}, zur Live-Lektion` : `Fachsprache, ${e.titel}, zur Live-Lektion`;
+  return mitTitel ? `Fachsprache: ${e.titel}, passend zum Live-Unterricht` : `Fachsprache, ${e.titel}, passend zum Live-Unterricht`;
 }
 
 /** Wochenansicht: ein Chip in der Tagesspalte (Titel nur, wenn mehrere an einem Tag). */

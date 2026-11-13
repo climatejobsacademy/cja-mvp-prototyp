@@ -19,7 +19,7 @@ export type KanalInfo = { kanal: ChatKanal; titel: string; zusatz: string; nurTe
 
 /** Die beiden festen Kanäle je Kohorte (Entscheidung Anna 2026-10-16). */
 export const KANAELE: KanalInfo[] = [
-  { kanal: "ankuendigungen", titel: "Ankündigungen", zusatz: "Nur deine Trainer:innen und das Team schreiben hier", nurTeam: true },
+  { kanal: "ankuendigungen", titel: "Ankündigungen", zusatz: "Nur deine Trainer:innen und die Academy for Climate Jobs schreiben hier", nurTeam: true },
   { kanal: "treffpunkt", titel: "Treffpunkt", zusatz: "Für alle in deiner Kohorte", nurTeam: false },
 ];
 

@@ -155,6 +155,8 @@ declare
   v_datum date;
   v_enr record;
   v_trainer uuid;
+  v_trainer2 uuid;
+  v_pos int;
   v_job uuid;
   a text;
 begin
@@ -163,6 +165,11 @@ begin
      or not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'lesson' and column_name = 'thema')
      or not exists (select 1 from pg_constraint where conname = 'role_assignment_rolle_check' and pg_get_constraintdef(oid) like '%trainer%') then
     raise exception 'Abbruch: Migrationen bis 0030 fehlen in dieser Datenbank.';
+  end if;
+  -- Labortag (0070) und zweite Trainer:in (0071) für Praxistermine
+  if not exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'field_job' and column_name = 'zweit_trainer_id')
+     or not exists (select 1 from pg_constraint where conname = 'field_job_type_ablauf_check' and pg_get_constraintdef(oid) like '%labor%') then
+    raise exception 'Abbruch: Migrationen 0070 und 0071 fehlen in dieser Datenbank.';
   end if;
 
   select id into strict v_prog from programme where kuerzel = 'EFK-EE';
@@ -374,9 +381,10 @@ begin
       if v_id2 is null then
         raise exception 'Abbruch: % hat keine Woche in diesem Lauf und fehlt in der Datenbank.', r->>'kennung';
       end if;
-      insert into field_job_type (titel, kategorie, module_id, reihenfolge, status)
+      insert into field_job_type (titel, kategorie, module_id, reihenfolge, status, ablauf)
       values (r->>'titel', r->>'kennung', v_id2, (r->>'reihenfolge')::int,
-              case when (r->>'sichtbar')::boolean then 'published' else 'unpublished' end)
+              case when (r->>'sichtbar')::boolean then 'published' else 'unpublished' end,
+              case when coalesce((r->>'labor')::boolean, false) then 'labor' else 'gefuehrt' end)
       returning id into v_id;
       perform pg_temp.zaehle(p_lauf, 'field_job_type', 'neu');
     else
@@ -386,9 +394,12 @@ begin
              reihenfolge = (r->>'reihenfolge')::int,
              status = case when (r->>'sichtbar')::boolean then 'published' else 'unpublished' end,
              module_id = coalesce(v_id2, module_id),
-             programme_id = case when coalesce(v_id2, module_id) is null then programme_id end
+             programme_id = case when coalesce(v_id2, module_id) is null then programme_id end,
+             -- Labortag (SR-94) oder Praxisflow; einfach wird nicht mehr vergeben (0068).
+             ablauf = case when coalesce((r->>'labor')::boolean, false) then 'labor' else 'gefuehrt' end
        where id = v_id
-         and (titel is distinct from r->>'titel'
+         and (ablauf is distinct from case when coalesce((r->>'labor')::boolean, false) then 'labor' else 'gefuehrt' end
+           or titel is distinct from r->>'titel'
            or kategorie is distinct from r->>'kennung'
            or reihenfolge <> (r->>'reihenfolge')::int
            or status <> case when (r->>'sichtbar')::boolean then 'published' else 'unpublished' end
@@ -565,6 +576,8 @@ begin
     for t in select * from jsonb_array_elements(p->'termine') loop
       v_datum := (t->>'datum')::date + coalesce((k->>'versatz')::int, 0);
       v_trainer := (select id from _trainer where kennung = t->>'trainer');
+      -- Zweite Trainer:in an Praxis- und Labortagen, nur Anzeige (SR-78)
+      v_trainer2 := (select id from _trainer where kennung = t->>'trainer2');
 
       if t->>'art' in ('kurs', 'begleit') then
         if t->>'art' = 'kurs' then
@@ -610,32 +623,37 @@ begin
 
       elsif t->>'art' = 'praxis' then
         for v_enr in select * from enrolment where cohort_id = v_kohorte.id and status = 'aktiv' loop
-          for a in select * from jsonb_array_elements_text(t->'auftraege') loop
+          -- Feste Reihenfolge der Aufträge eines Tages (SR-64): Position in der Spalte Auftragsnummer
+          for a, v_pos in select x.a, x.nr::int from jsonb_array_elements_text(t->'auftraege') with ordinality as x(a, nr) loop
             v_id := (select id from _auftrag where kennung = a);
             v_job := null;
             select id into v_job from field_job where learner_id = v_enr.learner_id and field_job_type_id = v_id and datum = v_datum;
             if v_job is null then
-              insert into field_job (organisation_id, datum, standort, field_job_type_id, learner_id, instructor_id, start, ende)
-              values (v_enr.organisation_id, v_datum, t->>'ort', v_id, v_enr.learner_id, v_trainer, (t->>'start')::time, (t->>'ende')::time)
+              insert into field_job (organisation_id, datum, standort, field_job_type_id, learner_id, instructor_id, zweit_trainer_id, start, ende)
+              values (v_enr.organisation_id, v_datum, t->>'ort', v_id, v_enr.learner_id, v_trainer, v_trainer2, (t->>'start')::time, (t->>'ende')::time)
               returning id into v_job;
               perform pg_temp.zaehle(p_lauf, 'field_job', 'neu');
             else
               update field_job
                  set start = (t->>'start')::time, ende = (t->>'ende')::time,
                      instructor_id = coalesce(instructor_id, v_trainer),
+                     zweit_trainer_id = coalesce(v_trainer2, zweit_trainer_id),
                      standort = coalesce(standort, t->>'ort')
                where id = v_job
                  and (start is distinct from (t->>'start')::time or ende is distinct from (t->>'ende')::time
                    or (instructor_id is null and v_trainer is not null)
+                   or (v_trainer2 is not null and zweit_trainer_id is distinct from v_trainer2)
                    or (standort is null and t->>'ort' is not null));
               get diagnostics v_n = row_count;
               perform pg_temp.zaehle(p_lauf, 'field_job', case when v_n > 0 then 'geändert' else 'unverändert' end);
             end if;
             if exists (select 1 from schedule_entry where field_job_id = v_job) then
-              perform pg_temp.zaehle(p_lauf, 'schedule_entry (Praxis)', 'unverändert');
+              update schedule_entry set reihenfolge = v_pos where field_job_id = v_job and reihenfolge <> v_pos;
+              get diagnostics v_n = row_count;
+              perform pg_temp.zaehle(p_lauf, 'schedule_entry (Praxis)', case when v_n > 0 then 'geändert' else 'unverändert' end);
             else
               insert into schedule_entry (organisation_id, datum, art, reihenfolge, enrolment_id, field_job_id)
-              values (v_enr.organisation_id, v_datum, 'feld', 1, v_enr.id, v_job);
+              values (v_enr.organisation_id, v_datum, 'feld', v_pos, v_enr.id, v_job);
               perform pg_temp.zaehle(p_lauf, 'schedule_entry (Praxis)', 'neu');
             end if;
           end loop;

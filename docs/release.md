@@ -1,11 +1,11 @@
 # Release: dev nach Production
 
-Zuletzt gegen den Release vom 20.10.2026 geprüft (Abschnitte 1 bis 5). Ergänzt `docs/runbook.md` (was tun, wenn etwas bricht). Diese Seite beschreibt den Weg von `dev` nach Production: was vorher feststehen muss, in welcher Reihenfolge es läuft, wie man prüft und wie man zurückkommt.
+Ergänzt `docs/runbook.md` (was tun, wenn etwas bricht). Diese Seite beschreibt den Weg von `dev` nach Production: was vorher feststehen muss, in welcher Reihenfolge es läuft, wie man prüft und wie man zurückkommt.
 
 ## Kurz
 
 1. **Vorher:** Umfang festlegen, Zugänge prüfen, Backup-Stand kennen, Schalter für Production prüfen.
-2. **Release-PR** `dev` → `main` öffnen, `/pr-check` laufen lassen, CI abwarten. Keine Zweitfreigabe nötig. Noch nicht mergen, das passiert in Schritt 4 per Admin-Recht.
+2. **Release-PR** `dev` → `main` öffnen, den Release-Stand prüfen lassen (Abschnitt 2), CI abwarten. Keine Zweitfreigabe nötig. Noch nicht mergen, das passiert in Schritt 4 per Admin-Recht.
 3. **Migrationen** auf Production: Probelauf, anhalten und erklären, dann mit getippter Freigabe einspielen.
 4. **Merge** des Release-PRs. Vercel veröffentlicht automatisch.
 5. **Smoke-Test** auf learn.climatejobsacademy.com.
@@ -27,14 +27,15 @@ Migrationen kommen **vor** dem Merge: Die neue App erwartet die neuen Tabellen. 
 - [ ] **Jede fehlende Migration einmal lesen:** additiv oder nicht? Ändert sie Daten (z. B. 0054 schaltet den Fragen-Thread an allen Live-Lektionen ein)?
 - [ ] **Schalter für Production in Vercel** (Settings → Environment Variables, Umgebung Production): `FACHSPRACHE_EINHEIT` und `PRAXISAUFGABE_LINK` sind nur mit dem Wert `an` eingeschaltet, ohne Variable oder mit jedem anderen Wert sind sie aus. Vor dem Release den Wert beider Variablen in Production lesen und mit der Absicht für diesen Release vergleichen (Mechanismus der Fachsprache: `fachsprache.md`); eine Änderung wirkt erst nach einem neuen Deployment. `NATIVE_SELBSTLERNEN` ist ohne Variable **an** (native Selbstlern-Ansicht); nur `aus` schaltet sie ab. Der Kohorten-Chat ist je Kohorte über `cohort.chat_aktiv` aus (Standard), der Fragen-Thread je Lektion über `lesson.chat_aktiv`.
 - [ ] **Backup:** Im Supabase-Dashboard (Frankfurt) unter Database → Backups prüfen, dass die Sicherung der letzten Nacht da ist (tägliche Sicherung, 7 Tage, Storage-Dateien nicht enthalten; Details im Runbook Abschnitt 5). Wurde seit Mitternacht viel auf Production geändert, den Release lieber am nächsten Tag machen.
-- [ ] **Zugänge:** eigenes Supabase-Konto mit Zugriff auf das Frankfurter Projekt, `cja-db-fra` (und für Staging `cja-db-irl`) im Schlüsselbund, `psql` (Postgres.app oder Homebrew) für die Skripte, Merge-Recht für `main` auf GitHub, Zugriff auf Vercel.
+- [ ] **Zugänge:** eigenes Supabase-Konto mit Zugriff auf das Frankfurter Projekt, `cja-db-fra` (und für Staging `cja-db-irl`) im Schlüsselbund, `psql` (Postgres.app oder Homebrew) für die Skripte, Admin-Recht im Repository auf GitHub (nur Admins mergen nach `main` ohne Approval), Zugriff auf Vercel.
 - [ ] **Datenschutzerklärung:** Stimmt sie für alles, was mit diesem Release sichtbar wird? Das Datum „Stand dieser Erklärung“ (`src/app/(rechtliches)/datenschutz/page.tsx`) wird im Release-PR gesetzt.
 
 ## 2. Release-PR
 
 - Titel nach dem bisherigen Muster: `Release: <Inhalt in Stichworten> (Dev → Main, Stand TT.MM.JJJJ)`.
 - In die Beschreibung: Liste der Migrationen, die mitgehen, und ob sie eingespielt sind; welche Schalter aus bleiben; Smoke-Test-Liste.
-- Eine Zweitfreigabe durch eine zweite Person ist vorerst nicht nötig (`decisions.md`, 2026-11-04, „Releases ohne Zweitfreigabe“). Vor dem Merge laufen `/pr-check` und die Pflicht-Checks `lint-and-types` und `rls-tests` und müssen grün sein (Admins könnten sie technisch umgehen, das ist nicht vorgesehen); die Person, die den Release macht, liest den Diff und hat die Änderungen auf Staging geprüft. Gemergt wird per Admin-Recht (das eingestellte Approval auf `main` gilt nicht für Admins); wer kein Admin ist, braucht eine Person mit Admin-Recht. Gemergt wird erst nach Schritt 3.
+- **Prüfung:** `/pr-check` vergleicht fest mit `origin/dev` und findet bei einem Release-PR keinen Diff. Die Sitzung startet deshalb den Agenten `code-reviewer` direkt mit dem Diff `origin/main...origin/dev` und meldet das Ergebnis in der PR.
+- Eine Zweitfreigabe durch eine zweite Person ist vorerst nicht nötig (`decisions.md`, 2026-11-04, „Releases ohne Zweitfreigabe“). Vor dem Merge laufen die Prüfung durch den Review-Agenten und die Pflicht-Checks `lint-and-types` und `rls-tests` und müssen grün sein (Admins könnten sie technisch umgehen, das ist nicht vorgesehen); die Person, die den Release macht, liest den Diff und hat die Änderungen auf Staging geprüft. Gemergt wird per Admin-Recht (das eingestellte Approval auf `main` gilt nicht für Admins); wer kein Admin ist, braucht eine Person mit Admin-Recht. Gemergt wird erst nach Schritt 3.
 
 ## 3. Migrationen auf Production
 
@@ -67,7 +68,7 @@ Mit einem eigenen Testkonto auf learn.climatejobsacademy.com, nicht mit Konten v
 
 ## 6. Inhalte
 
-Erst nach den Migrationen (der Import braucht mindestens 0030). Aus dem Release-Ordner mit `/production-inhalte`. Empfohlen ist erst Staging, direkt auf Production ist erlaubt, wenn man das ausdrücklich will. Je Schritt Probelauf, Freigabe, echter Lauf:
+Erst nach den Migrationen (der Import braucht mindestens 0030). Aus dem Release-Ordner (Abschnitt „Release-Ordner einrichten“, Punkt 4). Empfohlen ist erst Staging, direkt auf Production ist erlaubt, wenn man das ausdrücklich will. Je Schritt Probelauf, Freigabe, echter Lauf:
 
 - Trainer-Konten und Plan: `scripts/import-plan.mjs --ziel production --production-freigabe …` (siehe `docs/import-plan.md`).
 - SCORM (`scripts/scorm-einspielen.mjs`, veröffentlicht sofort), Fachsprache (`scripts/import-plan.mjs --fachsprache`), Teams-Links (`scripts/live-links.mjs`, ohne Begleitkurse): dieselben Skripte wie auf Staging, Ziel Production.
@@ -84,7 +85,7 @@ Erst nach den Migrationen (der Import braucht mindestens 0030). Aus dem Release-
 
 Ein eigener Ordner verhindert, dass ein Befehl aus Versehen gegen die falsche Datenbank läuft. Die Arbeitsordner für `dev` bleiben mit Staging verlinkt.
 
-1. Neuer Arbeitsbaum, z. B. `../cja-mvp-prototyp-release` auf `main` (`git worktree add`).
+1. Neuer Arbeitsbaum, z. B. `../cja-mvp-prototyp-release` (`git worktree add`). Weil Migrationen vor dem Merge eingespielt werden, steht er für den Probelauf und den echten Lauf auf dem Stand von `origin/dev` (ohne eigenen Branch, `git switch --detach origin/dev`), nicht auf `main`. Vor dem Probelauf `git fetch` und prüfen, dass die Migrationen im Ordner genau die aus dem Release-PR sind; wurde inzwischen weiter nach `dev` gemergt, gehört das in den Release-PR oder in den nächsten Release.
 2. Production-Passwort selbst in den Schlüsselbund (`cja-db-fra`), dann im Ordner `SUPABASE_DB_PASSWORD="$(security find-generic-password -s cja-db-fra -w)" npx supabase@2.117.0 link --project-ref vqfnmkcfjsudsujiuoqm`. Claude sieht das Passwort nie.
 3. Prüfen, dass `supabase/.temp/project-ref` die Frankfurter Ref enthält, und im Staging-Ordner weiterhin die Irland-Ref.
-4. Die Befehle `/release` (Code und Migrationen) und `/production-inhalte` (Inhalte, Konten, Lernende) für Claude führen durch diese Seite, mit Anhalten vor jedem Production-Schritt. Einrichtung für weitere Personen: `ONBOARDING-PRODUCTION.md` (lokal, wird per Datei weitergegeben).
+4. Die Befehle `/release` und `/production-inhalte` sowie die Datei `ONBOARDING-PRODUCTION.md` liegen nicht im Repository; wo sie lokal eingerichtet sind, führen sie durch diese Seite. Ohne sie geht die Sitzung diese Seite Schritt für Schritt durch und hält vor jedem Production-Schritt an.
