@@ -450,7 +450,7 @@ export default function DatenschutzPage() {
         <a href="https://learn.climatejobsacademy.com/">
           https://learn.climatejobsacademy.com/
         </a>{" "}
-        und wurde zuletzt am 21.10.2026 aktualisiert.
+        und wurde zuletzt am 13.11.2026 aktualisiert.
       </p>
     </main>
   );
