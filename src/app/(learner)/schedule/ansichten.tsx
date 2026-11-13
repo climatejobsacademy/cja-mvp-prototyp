@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-import { GeschafftZeichen } from "./geschafft-zeichen";
+import { GeschafftZeichen } from "@/components/geschafft-zeichen";
 
 import { datumLang, plusTage, wochentagLang } from "@/lib/date";
 import { stundenBereich, stunden, type Tagestyp } from "@/lib/stundenplan";

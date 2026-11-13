@@ -23,7 +23,8 @@ import {
 import { Auftragsakte } from "@/components/praxisflow/auftragsakte";
 import { CodewortGate, type GateErgebnis } from "@/components/praxisflow/codewort-gate";
 import { ListenEditor } from "@/components/praxisflow/listen-editor";
-import { PhasenAnzeige } from "@/components/praxisflow/phasen-anzeige";
+import { GeschafftZeichen } from "@/components/geschafft-zeichen";
+import { PhasenAnzeige, PHASEN_SYMBOL } from "@/components/praxisflow/phasen-anzeige";
 import { PlanUebersicht } from "@/components/praxisflow/plan-uebersicht";
 import { FOKUS, PRIMAER, SEKUNDAER, TEXT } from "@/components/praxisflow/stile";
 import type { PraxisPhase, PraxisRolle } from "@/lib/database.types";
@@ -694,44 +695,115 @@ export function PraxisflowAblauf({
 
             // ----- Bewerten: Rückblick auf die vollständige Handlung (SR-64, 13.11.2026)
             if (art === "handlung") {
+              // Rückblick (SR-64, 13.11.2026): je Phase Symbol, Frage und konkret,
+              // was gemacht ist (grüner Haken) oder fehlt (Coral), dann „Ja, habe ich“.
               const anzahl = (x: string) => daten.dateien.filter((d) => d.art === x).length;
-              const dateien = (n: number) => (n === 1 ? "1 Datei" : `${n} Dateien`);
+              const n = (zahl: number, eins: string, mehr: string) => `${zahl} ${zahl === 1 ? eins : mehr}`;
+              const schritte = (f.schritte ?? []).length;
               const erledigt = (f.erledigt ?? []).length;
               const geprueft = (f.kontrolle ?? []).length;
               const gedeutet = (f.deutungen ?? []).length;
-              const zeilen: { phase: Phase; text: string; ziel: string }[] = [
-                { phase: "informieren", text: `Auftrag: ${dateien(anzahl("auftrag"))}`, ziel: "auftrag" },
+              const uhr = (am?: string) => (am ? `, ${jetztInBerlin(new Date(am)).slice(11, 16)} Uhr` : "");
+              type Punkt = { text: string; ok: boolean };
+              const zeilen: { phase: Phase; punkte: Punkt[]; ziel: string }[] = [
+                {
+                  phase: "informieren",
+                  punkte: [{ text: anzahl("auftrag") > 0 ? "Auftrag hochgeladen" : "Kein Auftrag hochgeladen", ok: anzahl("auftrag") > 0 }],
+                  ziel: "auftrag",
+                },
                 {
                   phase: "planen",
-                  text: `Plan: ${dateien(anzahl("plan"))}, ${(f.materialien ?? []).length} Material, ${(f.werkzeuge ?? []).length} Werkzeuge, ${(f.schritte ?? []).length} Arbeitsschritte`,
+                  punkte: [
+                    { text: anzahl("plan") > 0 ? "Plan hochgeladen" : "Kein Plan hochgeladen", ok: anzahl("plan") > 0 },
+                    { text: n((f.materialien ?? []).length, "Material", "Materialien"), ok: (f.materialien ?? []).length > 0 },
+                    { text: n((f.werkzeuge ?? []).length, "Werkzeug", "Werkzeuge"), ok: (f.werkzeuge ?? []).length > 0 },
+                    { text: n(schritte, "Arbeitsschritt", "Arbeitsschritte"), ok: schritte > 0 },
+                  ],
                   ziel: "plaene",
                 },
-                { phase: "entscheiden", text: f.plan_freigegeben_am ? "Plan freigegeben" : "Plan noch nicht freigegeben", ziel: "rueckblick" },
+                {
+                  phase: "entscheiden",
+                  punkte: [{ text: f.plan_freigegeben_am ? `Plan freigegeben${uhr(f.plan_freigegeben_am)}` : "Plan nicht freigegeben", ok: !!f.plan_freigegeben_am }],
+                  ziel: "rueckblick",
+                },
                 {
                   phase: "ausfuehren",
-                  text: `${erledigt} von ${(f.schritte ?? []).length} Arbeitsschritten, ${geprueft} von ${PUNKTE.length} Prüfpunkten, Prüfprotokoll: ${dateien(anzahl("protokoll"))}`,
+                  punkte: [
+                    { text: `${erledigt} von ${schritte} Arbeitsschritten`, ok: schritte > 0 && erledigt >= schritte },
+                    { text: `${geprueft} von ${PUNKTE.length} Prüfpunkten`, ok: geprueft >= PUNKTE.length },
+                    { text: anzahl("protokoll") > 0 ? "Prüfprotokoll hochgeladen" : "Kein Prüfprotokoll hochgeladen", ok: anzahl("protokoll") > 0 },
+                  ],
                   ziel: (f.schritte ?? [])[0] ? `tun:${(f.schritte ?? [])[0].id}` : "start-kontrolle",
                 },
-                { phase: "kontrollieren", text: `${gedeutet} von ${PUNKTE.length} Prüfpunkten gedeutet`, ziel: "start-deuten" },
+                {
+                  phase: "kontrollieren",
+                  punkte: [{ text: `${gedeutet} von ${PUNKTE.length} Prüfpunkten gedeutet`, ok: gedeutet >= PUNKTE.length }],
+                  ziel: "start-deuten",
+                },
               ];
               const alleJa = zeilen.every((z) => rueckblick[z.phase] === true);
+              const bestaetigt = zeilen.filter((z) => rueckblick[z.phase] === true).length;
               return (
                 <Karte {...k} frage={TEXTE.rueckblick.titel} hinweis={TEXTE.rueckblick.hinweis}>
-                  <ul className="flex flex-col gap-3">
-                    {zeilen.map((z) => {
+                  <ol className="flex flex-col gap-3">
+                    {zeilen.map((z, i) => {
                       const wert = rueckblick[z.phase];
                       const setze = (v: boolean) => setRueckblick((r) => ({ ...r, [z.phase]: v }));
+                      const Symbol = PHASEN_SYMBOL[z.phase];
+                      const fehlt = z.punkte.some((x) => !x.ok);
                       return (
-                        <li key={z.phase} className="flex flex-col gap-2 rounded-zeile bg-subtle p-4">
-                          <span className="text-sm font-semibold text-ink-muted">{phasenName(z.phase)}</span>
-                          <span className="text-[17px] font-bold text-ink">{TEXTE.rueckblick.fragen[z.phase as keyof typeof TEXTE.rueckblick.fragen]}</span>
-                          <span className="text-sm text-ink-muted">{z.text}</span>
-                          <div className="flex flex-wrap gap-2" role="group" aria-label={phasenName(z.phase)}>
+                        <li
+                          key={z.phase}
+                          className={cn(
+                            "flex flex-col gap-3 rounded-zeile border bg-card p-4",
+                            wert === true ? "border-line border-l-[3px] border-l-progress" : wert === false ? "border-praxis" : "border-line"
+                          )}
+                        >
+                          <div className="flex items-start gap-3">
+                            <span
+                              aria-hidden="true"
+                              className={cn("flex size-10 shrink-0 items-center justify-center rounded-full", wert === true ? "bg-ink text-white" : "bg-subtle text-ink")}
+                            >
+                              {wert === true ? <Check className="size-4" strokeWidth={3} /> : <Symbol className="size-[18px]" />}
+                            </span>
+                            <div className="flex min-w-0 flex-col">
+                              <span className="text-sm font-semibold text-ink-muted">
+                                Phase {i + 1} · {phasenName(z.phase)}
+                              </span>
+                              <span className="text-[17px] leading-snug font-bold text-ink">
+                                {TEXTE.rueckblick.fragen[z.phase as keyof typeof TEXTE.rueckblick.fragen]}
+                              </span>
+                            </div>
+                          </div>
+                          <ul className="flex flex-wrap gap-2 pl-0 sm:pl-[52px]">
+                            {z.punkte.map((x) => (
+                              <li
+                                key={x.text}
+                                className={cn(
+                                  "inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium text-ink",
+                                  x.ok ? "bg-subtle" : "bg-praxis-tint"
+                                )}
+                              >
+                                {x.ok ? (
+                                  <GeschafftZeichen klein />
+                                ) : (
+                                  <CircleAlert className="size-3.5 shrink-0 text-praxis-text" aria-hidden="true" />
+                                )}
+                                {x.text}
+                                {!x.ok && <span className="sr-only">, fehlt</span>}
+                              </li>
+                            ))}
+                          </ul>
+                          <div className="flex flex-wrap gap-2 sm:pl-[52px]" role="group" aria-label={`${phasenName(z.phase)}: ${TEXTE.rueckblick.ja} oder ${TEXTE.rueckblick.nein}`}>
                             <button
                               type="button"
                               aria-pressed={wert === true}
                               onClick={() => setze(true)}
-                              className={cn("inline-flex min-h-11 items-center gap-1.5 rounded-full px-4 text-[15px] font-semibold", wert === true ? "bg-ink text-white" : "bg-white text-ink hover:bg-white/70", FOKUS)}
+                              className={cn(
+                                "inline-flex min-h-11 items-center gap-1.5 rounded-full border px-4 text-[15px] font-semibold",
+                                wert === true ? "border-ink bg-ink text-white" : "border-line bg-white text-ink hover:bg-subtle",
+                                FOKUS
+                              )}
                             >
                               <Check className="size-4" aria-hidden="true" /> {TEXTE.rueckblick.ja}
                             </button>
@@ -739,14 +811,18 @@ export function PraxisflowAblauf({
                               type="button"
                               aria-pressed={wert === false}
                               onClick={() => setze(false)}
-                              className={cn("inline-flex min-h-11 items-center rounded-full px-4 text-[15px] font-semibold", wert === false ? "bg-ink text-white" : "bg-white text-ink hover:bg-white/70", FOKUS)}
+                              className={cn(
+                                "inline-flex min-h-11 items-center rounded-full border px-4 text-[15px] font-semibold",
+                                wert === false ? "border-ink bg-ink text-white" : "border-line bg-white text-ink hover:bg-subtle",
+                                FOKUS
+                              )}
                             >
                               {TEXTE.rueckblick.nein}
                             </button>
                           </div>
-                          {wert === false && (
-                            <div className="flex flex-col gap-2 pt-1">
-                              <p className="text-sm text-ink">{TEXTE.rueckblick.neinHinweis}</p>
+                          {(wert === false || (fehlt && wert !== true)) && (
+                            <div className="flex flex-col gap-2 sm:pl-[52px]">
+                              {wert === false && <p className="text-sm text-ink">{TEXTE.rueckblick.neinHinweis}</p>}
                               <button
                                 type="button"
                                 onClick={() => {
@@ -762,7 +838,10 @@ export function PraxisflowAblauf({
                         </li>
                       );
                     })}
-                  </ul>
+                  </ol>
+                  <p className="text-center text-sm font-semibold text-ink-muted" aria-live="polite">
+                    {bestaetigt} von {zeilen.length} Phasen bestätigt
+                  </p>
                   <button
                     type="button"
                     disabled={!alleJa || laeuft}

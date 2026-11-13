@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Check, FlaskConical, Video, Wrench } from "lucide-react";
 
-import { GeschafftZeichen } from "./geschafft-zeichen";
+import { GeschafftZeichen } from "@/components/geschafft-zeichen";
 
 import { TrainerZeile } from "@/components/trainer-zeile";
 import { fortschrittMittel, fortschrittText, type PraxistagFortschritt } from "@/lib/praxistag-kachel";
