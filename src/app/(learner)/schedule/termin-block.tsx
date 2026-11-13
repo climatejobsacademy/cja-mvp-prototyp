@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ArrowRight, Check, FlaskConical, Video, Wrench } from "lucide-react";
 
+import { GeschafftZeichen } from "./geschafft-zeichen";
+
 import { TrainerZeile } from "@/components/trainer-zeile";
 import { fortschrittMittel, fortschrittText, type PraxistagFortschritt } from "@/lib/praxistag-kachel";
 import { cn } from "@/lib/utils";
@@ -64,7 +66,9 @@ const STATUS_TEXT = { erledigt: "erledigt", vorbei: "vorbei", offen: "offen" } a
 export function TerminBlock({ block, gross, style }: { block: Block; gross: boolean; style: React.CSSProperties }) {
   const art = ART[block.labor ? "labor" : block.sammel ? "praxistag" : block.art];
   // Punkt 3 der Änderungsliste: Vergangenes weiß mit feinem Rand und grauem Text.
-  const zurueck = !block.naechster && block.status !== "offen";
+  const zurueck = !block.naechster && block.status === "vorbei";
+  // Geschafft (SR-13, 13.11.2026): weiß mit grünem Streifen, Titel bleibt dunkel.
+  const geschafft = !block.naechster && block.status === "erledigt";
   const label = [
     art.text,
     `${zeitText(block)} Uhr`,
@@ -97,6 +101,8 @@ export function TerminBlock({ block, gross, style }: { block: Block; gross: bool
           ? cn("z-10", art.anker)
           : zurueck
             ? "border border-line bg-card text-ink-muted"
+            : geschafft
+              ? "border border-l-[3px] border-line border-l-progress bg-card text-ink"
             : cn("border-l-[3px] text-ink", art.flaeche, art.streifen),
         (block.inhalt || block.liveRaum) && !block.naechster && "transition-[box-shadow] duration-150 hover:shadow-card motion-reduce:transition-none"
       )}
@@ -107,7 +113,7 @@ export function TerminBlock({ block, gross, style }: { block: Block; gross: bool
         <span className="whitespace-nowrap">{zeitText(block)}</span>
         {gross && ` · ${art.text}`}
         {block.ort && <span className="min-w-0 truncate font-normal">· {block.ort}</span>}
-        {block.status === "erledigt" && <Check className={cn("ml-auto size-3", block.naechster ? art.ankerIcon : "text-progress")} strokeWidth={3} aria-hidden="true" />}
+        {block.status === "erledigt" && <GeschafftZeichen wort={gross} klein={!gross} className="ml-auto" />}
       </span>
       {/* Immer genau eine Aktion (wie Veras Stundenplan, Anna 2026-10-11): ab
           15 Min. vor Beginn bis zum Ende führt der ganze Block in den Live-Raum,

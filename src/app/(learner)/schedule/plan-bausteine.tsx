@@ -1,5 +1,7 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, Check, FlaskConical, Play, Video, Wrench } from "lucide-react";
+import { ArrowRight, BookOpen, FlaskConical, Play, Video, Wrench } from "lucide-react";
+
+import { GeschafftZeichen } from "./geschafft-zeichen";
 
 import { spuren, stunden, type Tagestyp } from "@/lib/stundenplan";
 import { TrainerZeile } from "@/components/trainer-zeile";
@@ -100,7 +102,7 @@ export function FlexChip({ chip }: { chip: Chip }) {
       {/* Thema als Titel bzw. "Wissen festigen" (Anna 2026-10-16, wie demo). */}
       <span className="min-w-0 flex-1 truncate">{chip.titel}</span>
       {chip.erledigt ? (
-        <Check className="size-3.5 shrink-0 text-progress" strokeWidth={3} aria-hidden="true" />
+        <GeschafftZeichen klein />
       ) : chip.begonnen ? (
         <span aria-hidden="true" title="Weiterlernen" className="flex size-5 shrink-0 items-center justify-center rounded-full bg-self-tint text-self">
           <Play className="size-2.5 fill-current" />
@@ -136,7 +138,7 @@ export function FlexLeiste({ chip, gross }: { chip: Chip; gross: boolean }) {
       <span className="min-w-0 flex-1">{chip.titel}</span>
       {/* "Weiterlernen" nur, wenn schon begonnen; sonst nur der Pfeil (Anna 2026-10-20, Handy und Laptop gleich). */}
       {chip.erledigt ? (
-        <Check className="size-3.5 shrink-0 text-progress" strokeWidth={3} aria-hidden="true" />
+        <GeschafftZeichen klein />
       ) : (
         <span aria-hidden="true" className="inline-flex shrink-0 items-center gap-1 text-xs font-bold">
           {chip.begonnen && "Weiterlernen"}
@@ -153,13 +155,18 @@ export function FlexLeiste({ chip, gross }: { chip: Chip; gross: boolean }) {
  * Text; Ort, wenn eingetragen. Klick öffnet den Praxistag-Ablauf.
  */
 export function GanztagsLeiste({ tag: g, gross }: { tag: Ganztag; gross: boolean }) {
-  const zurueck = g.status !== "offen";
+  const zurueck = g.status === "vorbei";
+  const geschafft = g.status === "erledigt";
   const label = `${g.labor ? "Labortag" : g.sammel ? "Praxistag" : "Praxisauftrag"}, ganztägig, ${g.titel}${g.sammel ? `, ${fortschrittText(g.sammel)}` : ""}${g.ort ? `, ${g.ort}` : ""}${g.trainer ? `, Praxis mit ${g.trainer.rufname}${g.trainer2 ? ` und ${g.trainer2.rufname}` : ""}` : ""}, ${g.status === "erledigt" ? "erledigt" : g.status === "vorbei" ? "vorbei" : "offen"}`;
   const klasse = cn(
     "flex min-w-0 items-start gap-2 rounded-xl px-3 py-2 font-semibold outline-none",
     g.href && "transition-[box-shadow] duration-150 hover:shadow-card focus-visible:ring-2 focus-visible:ring-brand motion-reduce:transition-none",
     gross ? "text-sm" : "text-[13px] leading-snug",
-    zurueck ? "border border-line bg-card text-ink-muted" : "border-l-[3px] border-l-praxis bg-praxis-tint text-ink"
+    zurueck
+      ? "border border-line bg-card text-ink-muted"
+      : geschafft
+        ? "border border-l-[3px] border-line border-l-progress bg-card text-ink"
+        : "border-l-[3px] border-l-praxis bg-praxis-tint text-ink"
   );
   const inhalt = (
     <>
@@ -175,7 +182,7 @@ export function GanztagsLeiste({ tag: g, gross }: { tag: Ganztag; gross: boolean
         {/* Begleitende Person des Praxistags (SR-78). */}
         {g.trainer && <TrainerZeile art="praxis" trainer={g.trainer} zweite={g.trainer2} klein className="mt-1 font-normal text-ink-muted" />}
       </span>
-      {g.status === "erledigt" && <Check className="mt-0.5 size-3.5 shrink-0 text-progress" strokeWidth={3} aria-hidden="true" />}
+      {geschafft && <GeschafftZeichen wort={gross} klein={!gross} className="mt-0.5" />}
     </>
   );
   // Ohne Link (PRAXISAUFGABE_LINK aus) dieselbe Leiste als reiner Text.
@@ -315,7 +322,7 @@ export function MonatsTags({ tag }: { tag: TagModell }) {
           title={t.lang}
           className={cn(
             "flex min-w-0 items-center gap-1.5 text-xs",
-            t.vorbei ? "text-ink-muted" : "font-medium text-ink"
+            t.erledigt ? "font-medium text-ink" : t.vorbei ? "text-ink-muted" : "font-medium text-ink"
           )}
         >
           <span aria-hidden="true" className={cn("size-1.5 shrink-0 rounded-full", t.punkt)} />
@@ -326,7 +333,7 @@ export function MonatsTags({ tag }: { tag: TagModell }) {
             {t.lang}
             {t.erledigt ? ", erledigt" : ""}
           </span>
-          {t.erledigt && <Check className="size-3 shrink-0 text-progress" strokeWidth={3} aria-hidden="true" />}
+          {t.erledigt && <GeschafftZeichen klein />}
         </li>
       ))}
     </ul>

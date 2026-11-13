@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+
+import { GeschafftZeichen } from "./geschafft-zeichen";
 
 import { datumLang, plusTage, wochentagLang } from "@/lib/date";
 import { stundenBereich, stunden, type Tagestyp } from "@/lib/stundenplan";
@@ -181,13 +183,14 @@ export function WochenAnsicht({
           <div key={t.datum} className={cn("flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 rounded-t-xl px-2 pt-2 pb-1.5", heute(t))}>
             <Link
               href={tagHref(t.datum)}
-              aria-label={`${datumLang(t.datum)}, Tagesansicht öffnen`}
+              aria-label={`${datumLang(t.datum)}${tagErledigt(t) ? ", alles geschafft" : ""}, Tagesansicht öffnen`}
               className="flex items-center gap-1.5 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-brand"
             >
               <DatumsKreis datum={t.datum} heute={t.heute} />
               <span className={cn("text-xs font-semibold tracking-[0.06em] uppercase", !t.heute && "text-ink-muted")}>
                 {kurzname(t.datum)}
               </span>
+              {tagErledigt(t) && <GeschafftZeichen klein />}
             </Link>
             <span className="ml-auto">
               <AbweichungsLabel typ={t.typ} haupt={haupt} />
@@ -282,13 +285,13 @@ export function TagesListe({
               <DatumsKreis datum={t.datum} heute={t.heute} klein={quer} />
               {quer ? (
                 <span className="flex h-3 items-center">
-                  {erledigt && <Check className="size-3 text-progress" strokeWidth={3} aria-hidden="true" />}
+                  {erledigt && <GeschafftZeichen klein />}
                 </span>
               ) : (
                 <>
                   <span className={cn("text-sm", aktiv ? "font-bold" : "font-medium")}>{wochentagLang(t.datum)}</span>
                   <AbweichungsLabel typ={t.typ} haupt={haupt} />
-                  {erledigt && <Check className="ml-auto size-3.5 text-progress" strokeWidth={3} aria-hidden="true" />}
+                  {erledigt && <GeschafftZeichen className="ml-auto" />}
                 </>
               )}
             </Link>
@@ -418,15 +421,16 @@ export function MonatsAnsicht({
                 <Link
                   key={t.datum}
                   href={tagHref(t.datum)}
-                  aria-label={`${datumLang(t.datum)}, Tagesansicht öffnen`}
+                  aria-label={`${datumLang(t.datum)}${tagErledigt(t) ? ", alles geschafft" : ""}, Tagesansicht öffnen`}
                   className={cn(
                     "flex min-h-[104px] min-w-0 flex-col gap-1.5 rounded-lg p-1.5 outline-none hover:bg-subtle focus-visible:ring-2 focus-visible:ring-brand",
                     t.heute && "bg-heute-flaeche",
                     fremd && "opacity-50"
                   )}
                 >
-                  <span className={cn("self-start", wochenende && !t.heute && "text-ink-muted")}>
+                  <span className={cn("flex items-center gap-1.5 self-start", wochenende && !t.heute && "text-ink-muted")}>
                     <DatumsKreis datum={t.datum} heute={t.heute} klein />
+                    {tagErledigt(t) && <GeschafftZeichen klein />}
                   </span>
                   <MonatsTags tag={t} />
                 </Link>
@@ -547,11 +551,11 @@ export function MobilWoche({ tage, tagHref }: { tage: TagModell[]; tagHref: (dat
               ) : (
                 <ul className="flex min-w-0 flex-1 flex-col gap-1.5">
                   {zeilen.map((z) => (
-                    <li key={z.id} className={cn("flex min-w-0 items-center gap-2 text-[14px]", z.erledigt ? "text-ink-muted" : "text-ink")}>
+                    <li key={z.id} className={cn("flex min-w-0 items-center gap-2 text-[14px]", "text-ink")}>
                       <span aria-hidden="true" className={cn("size-2 shrink-0 rounded-full", PUNKT[z.art])} />
                       {z.zeit && <span className="shrink-0 tabular-nums text-ink-muted">{z.zeit}</span>}
                       <span className="min-w-0 truncate font-medium">{z.text}</span>
-                      {z.erledigt && <Check className="size-3.5 shrink-0 text-progress" strokeWidth={3} aria-label="erledigt" />}
+                      {z.erledigt && <GeschafftZeichen klein />}
                     </li>
                   ))}
                 </ul>
