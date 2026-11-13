@@ -11,6 +11,8 @@
 
 // @ts-expect-error TS5097: .ts-Endung für node:test nötig (wie die Tests)
 import { bildDateien, bildPfad, einheitAnzeige, parseInhalt, type EinheitStatus } from "./fachsprache.ts";
+// @ts-expect-error TS5097: .ts-Endung für node:test nötig (wie die Tests)
+import { zurueckZu, type ZurueckZiel } from "./zurueck.ts";
 
 /** Gültigkeit der signierten Bildlinks in Sekunden (kurzlebig, Seite lädt sie bei jedem Aufruf neu). */
 export const BILD_GUELTIGKEIT_SEKUNDEN = 600;
@@ -144,12 +146,8 @@ export async function ladeEinheitSeite(
  * Ziel von "Zurück" auf der Seite je Herkunft (?von=): aus dem Stundenplan zum
  * selben Tag, sonst nach Home. Nur feste Ziele, nie ein Wert aus der URL als Pfad.
  */
-export function zurueckZiel(von?: string, datum?: string): { href: string; label: string } {
-  if (von === "stundenplan") {
-    const tag = datum && /^\d{4}-\d{2}-\d{2}$/.test(datum) ? `?datum=${datum}` : "";
-    return { href: `/schedule${tag}`, label: "Zurück zum Stundenplan" };
-  }
-  return { href: "/home", label: "Zurück zu Home" };
+export function zurueckZiel(von?: string, datum?: string): ZurueckZiel {
+  return von === "stundenplan" ? zurueckZu("stundenplan", datum) : zurueckZu("home");
 }
 
 // ---------- Einstiege (Etappe 2): veröffentlichte Einheit zu einer Lektion ----------

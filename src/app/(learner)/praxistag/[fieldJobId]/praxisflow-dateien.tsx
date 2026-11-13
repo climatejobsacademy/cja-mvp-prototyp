@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Dialog } from "@base-ui/react/dialog";
-import { Check, ClipboardList, FileCheck2, FileText, FileUp, Library, Link2, PencilRuler, Trash2, X, type LucideIcon } from "lucide-react";
+import { Check, ClipboardList, Download, ExternalLink, FileCheck2, FileText, FileUp, Library, Link2, PencilRuler, Trash2, X, type LucideIcon } from "lucide-react";
 
 import { FOKUS } from "@/components/praxisflow/stile";
 import type { PraxisDateiArt } from "@/lib/database.types";
@@ -234,6 +234,45 @@ function istBild(mime: string) {
   return mime.startsWith("image/") && !mime.includes("dwg") && !mime.includes("dxf");
 }
 
+/** Signierter Supabase-Link, der die Datei herunterlädt statt sie zu öffnen. */
+function downloadUrl(url: string, name: string) {
+  return `${url}${url.includes("?") ? "&" : "?"}download=${encodeURIComponent(name)}`;
+}
+
+const AKTION = cn("inline-flex min-h-11 items-center gap-2 rounded-full bg-subtle px-4 text-[14px] font-semibold text-ink hover:bg-line", FOKUS);
+
+/**
+ * Unter jeder Datei: in neuem Tab öffnen (am Handy zeigt das den PDF-Viewer
+ * des Geräts, eingebettet klappt das nicht überall) und herunterladen. Für
+ * Formate ohne Vorschau (Word, Excel, CAD) ein kurzer Hinweis.
+ */
+function DateiAktionen({ datei, ohneVorschau }: { datei: PraxisDatei; ohneVorschau: boolean }) {
+  if (!datei.url) return null;
+  return (
+    <div className="flex flex-col items-center gap-2">
+      {ohneVorschau && (
+        <p className="max-w-sm text-center text-sm text-ink-muted">Diese Datei kann hier nicht angezeigt werden. Lade sie herunter und öffne sie auf deinem Gerät.</p>
+      )}
+      <div className="flex flex-wrap justify-center gap-2">
+        {!ohneVorschau && (
+          <a href={datei.url} target="_blank" rel="noopener noreferrer" className={AKTION}>
+            <ExternalLink className="size-4" aria-hidden="true" />
+            In neuem Tab öffnen
+            <span className="sr-only">: {datei.dateiname}</span>
+          </a>
+        )}
+        <a href={downloadUrl(datei.url, datei.dateiname)} className={AKTION}>
+          <Download className="size-4" aria-hidden="true" />
+          Herunterladen
+          <span className="sr-only">: {datei.dateiname}</span>
+        </a>
+      </div>
+    </div>
+  );
+}
+
+const hatVorschau = (mime: string) => istBild(mime) || mime === "application/pdf";
+
 /** Unterlagen-Leiste: je Art ein Symbol, ein Klick öffnet die Vorschau im Fenster. */
 export function UnterlagenLeiste({ dateien, onGeoeffnet }: { dateien: PraxisDatei[]; onGeoeffnet?: (art: PraxisDateiArt) => void }) {
   return (
@@ -251,6 +290,18 @@ export function UnterlagenLeiste({ dateien, onGeoeffnet }: { dateien: PraxisDate
 function UnterlagenFenster({ art, dateien, onGeoeffnet }: { art: Art; dateien: PraxisDatei[]; onGeoeffnet?: (art: PraxisDateiArt) => void }) {
   const [gewaehlt, setGewaehlt] = useState(0);
   const datei = dateien.length > 0 ? dateien[Math.min(gewaehlt, dateien.length - 1)] : null;
+  // Kommt eine Datei dazu (Upload), leuchtet das Fach kurz in Charge Green
+  // auf (Lime = jetzt, design-specifications.md), nicht beim ersten Laden.
+  const vorher = useRef(dateien.length);
+  const [neu, setNeu] = useState(false);
+  useEffect(() => {
+    const mehr = dateien.length > vorher.current;
+    vorher.current = dateien.length;
+    if (!mehr) return;
+    setNeu(true);
+    const t = setTimeout(() => setNeu(false), 2200);
+    return () => clearTimeout(t);
+  }, [dateien.length]);
   return (
     <Dialog.Root
       onOpenChange={(offen) => {
@@ -261,16 +312,18 @@ function UnterlagenFenster({ art, dateien, onGeoeffnet }: { art: Art; dateien: P
     >
       <Dialog.Trigger
         className={cn(
-          "relative flex min-h-14 min-w-16 shrink-0 flex-col items-center justify-center gap-1 rounded-zeile bg-card px-2 py-1.5 text-[12px] font-semibold shadow-card hover:bg-subtle md:shadow-none",
-          dateien.length === 0 ? "text-ink-muted" : "text-ink",
+          "relative flex min-h-14 min-w-16 shrink-0 flex-col items-center justify-center gap-1 rounded-zeile px-2 py-1.5 text-[12px] font-semibold shadow-card transition-[background-color,box-shadow] duration-500 hover:bg-subtle md:shadow-none motion-reduce:transition-none",
+          dateien.length === 0 ? "bg-card text-ink-muted" : "bg-card text-ink",
+          neu && "bg-lime/40 shadow-glow-charge-sm md:shadow-glow-charge-sm",
           FOKUS
         )}
       >
         <art.Icon className={cn("size-5", dateien.length === 0 ? "text-ink-muted opacity-60" : "text-ink")} aria-hidden="true" />
         {art.kurz}
         <span className="sr-only">, {dateien.length} {dateien.length === 1 ? "Dokument" : "Dokumente"}</span>
-        {dateien.length > 1 && (
-          <span aria-hidden="true" className="absolute top-1 right-1 rounded-full bg-subtle px-1.5 text-[11px] tabular-nums">
+        {/* Belegt: immer eine kleine Zahl in der Fortschrittsfarbe, auch bei einer Datei. */}
+        {dateien.length > 0 && (
+          <span aria-hidden="true" className="absolute top-1 right-1 min-w-4 rounded-full bg-progress px-1 text-center text-[11px] leading-4 text-white tabular-nums">
             {dateien.length}
           </span>
         )}
@@ -307,21 +360,18 @@ function UnterlagenFenster({ art, dateien, onGeoeffnet }: { art: Art; dateien: P
           {datei && (
             <p className="px-4 pt-2 text-xs text-ink-muted md:px-6">Öffnet sich die Datei nicht, lade die Seite neu.</p>
           )}
-          <div className="flex min-h-0 flex-1 p-4 md:px-6">
+          <div className="flex min-h-0 flex-1 flex-col gap-3 p-4 md:px-6">
             {!datei ? (
               <p className="m-auto max-w-sm text-center text-[15px] text-ink-muted">{art.leer}</p>
             ) : !datei.url ? (
               <p className="m-auto max-w-sm text-center text-sm text-ink-muted">Die Datei lässt sich gerade nicht öffnen. Lade die Seite neu.</p>
             ) : istBild(datei.mimeType) ? (
               // eslint-disable-next-line @next/next/no-img-element -- signierter Link aus Supabase Storage, kein Bildoptimierer
-              <img src={datei.url} alt={datei.dateiname} className="m-auto max-h-full max-w-full object-contain" />
+              <img src={datei.url} alt={datei.dateiname} className="mx-auto min-h-0 max-w-full flex-1 object-contain" />
             ) : datei.mimeType === "application/pdf" ? (
-              <iframe src={datei.url} title={`Vorschau: ${datei.dateiname}`} className="h-full w-full rounded-zeile bg-white" />
-            ) : (
-              <a href={datei.url} download={datei.dateiname} className={cn("m-auto inline-flex min-h-11 items-center gap-2 rounded-full bg-subtle px-5 text-[15px] font-semibold hover:bg-line", FOKUS)}>
-                Datei herunterladen
-              </a>
-            )}
+              <iframe src={datei.url} title={`Vorschau: ${datei.dateiname}`} className="min-h-0 w-full flex-1 rounded-zeile bg-white" />
+            ) : null}
+            {datei && <div className={hatVorschau(datei.mimeType) ? "" : "m-auto"}><DateiAktionen datei={datei} ohneVorschau={!hatVorschau(datei.mimeType)} /></div>}
           </div>
         </Dialog.Popup>
       </Dialog.Portal>
@@ -332,7 +382,8 @@ function UnterlagenFenster({ art, dateien, onGeoeffnet }: { art: Art; dateien: P
 /**
  * Vorschau direkt auf der Seite, ohne Fenster: für die Plan-Freigabe, damit
  * die Trainer:in alles auf einen Blick sieht (SR-65). Bilder und PDF werden
- * angezeigt, andere Formate (z. B. CAD) als Link zum Herunterladen.
+ * angezeigt, andere Formate (Word, Excel, CAD) mit Hinweis; unter jeder
+ * Datei „In neuem Tab öffnen“ und „Herunterladen“.
  */
 export function DateiVorschau({ dateien }: { dateien: PraxisDatei[] }) {
   return (
@@ -346,12 +397,9 @@ export function DateiVorschau({ dateien }: { dateien: PraxisDatei[] }) {
             <img src={d.url} alt={d.dateiname} className="mx-auto max-h-[70vh] w-auto max-w-full rounded-sm object-contain" />
           ) : d.mimeType === "application/pdf" ? (
             <iframe src={d.url} title={`Vorschau: ${d.dateiname}`} className="h-[70vh] w-full rounded-sm bg-white" />
-          ) : (
-            <a href={d.url} download={d.dateiname} className={cn("m-auto inline-flex min-h-11 items-center gap-2 rounded-full bg-subtle px-5 text-[15px] font-semibold hover:bg-line", FOKUS)}>
-              {d.dateiname} herunterladen
-            </a>
-          )}
+          ) : null}
           <figcaption className="truncate px-1 text-xs text-ink-muted">{d.dateiname}</figcaption>
+          <DateiAktionen datei={d} ohneVorschau={!hatVorschau(d.mimeType)} />
         </figure>
       ))}
     </div>

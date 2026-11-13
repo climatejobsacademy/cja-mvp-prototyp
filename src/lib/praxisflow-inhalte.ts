@@ -218,16 +218,18 @@ export const TEXTE = {
     weiter: "Weiter zu Bewerten",
   },
   reflexion: {
-    titel: "Deine Erkenntnis",
+    titel: "Das nehme ich mit",
     frage: "Was machst du beim nächsten Mal anders?",
     anfaenge: ["Gut lief …", "Nächstes Mal …"],
     platzhalter: "Gut lief … Nächstes Mal …",
     hinweis: "Ein, zwei Sätze reichen. Das steht danach in deiner Zusammenfassung.",
   },
   deuten: {
-    startTitel: "Jetzt kontrollierst du deine Messwerte",
-    startText: "Zu jedem Prüfpunkt schreibst du kurz, was dein Messwert bedeutet und welcher Grenzwert gilt. Dein Prüfprotokoll findest du links unter „Protokoll“.",
-    frage: "Was bedeutet dein Messwert? Welcher Grenzwert gilt, und hältst du ihn ein?",
+    startTitel: "Jetzt kontrollierst du deine Prüfpunkte",
+    startText:
+      "Zu jedem Prüfpunkt schreibst du kurz, was er dir zeigt: bei einer Messung deinen Messwert und den Grenzwert, sonst, worauf es ankommt und warum. Dein Prüfprotokoll findest du links unter „Protokoll“.",
+    frage:
+      "Was zeigt dir dieser Prüfpunkt? Wenn du gemessen hast: Messwert, Grenzwert, eingehalten? Wenn nicht: Worauf kommt es hier an, und warum?",
     platzhalter: "Zum Beispiel: 0,4 Ω gemessen, Grenzwert 1 Ω, also in Ordnung.",
     leer: "Schreib ein, zwei Sätze, dann geht es weiter.",
   },
@@ -255,10 +257,10 @@ export const TEXTE = {
   },
   // Hinweis direkt am jeweiligen Codewort-Feld
   gates: {
-    entscheiden: "Die Trainer:in nimmt deinen Plan ab und gibt ihn mit dem Codewort frei.",
-    durchfuehren: "Wenn alle Schritte abgehakt sind, gibt die Trainer:in die Durchführung mit dem Codewort frei.",
-    kontrolle: "Die Trainer:in prüft die Anlage und gibt die Inbetriebnahme mit dem Codewort frei.",
-    bewerten: "Die Trainer:in bestätigt ihre Einschätzung mit dem Codewort. Ohne Codewort wird nichts gespeichert.",
+    entscheiden: "Eine Trainer:in nimmt deinen Plan ab und gibt ihn mit dem Codewort frei.",
+    durchfuehren: "Wenn alle Schritte abgehakt sind, gibt eine Trainer:in die Durchführung mit dem Codewort frei.",
+    kontrolle: "Eine Trainer:in prüft die Anlage und gibt die Inbetriebnahme mit dem Codewort frei.",
+    bewerten: "Eine Trainer:in bestätigt ihre Einschätzung mit dem Codewort. Ohne Codewort wird nichts gespeichert.",
   },
   codewort: {
     label: "Codewort der Trainer:in",

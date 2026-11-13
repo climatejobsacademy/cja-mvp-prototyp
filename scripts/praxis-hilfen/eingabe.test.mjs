@@ -9,8 +9,25 @@ const KOPF = "aufgabe_titel;reihenfolge;titel;datei;link\n";
 test("SR-68: Objektname ohne Umlaute, Leerzeichen und Großbuchstaben", () => {
   assert.equal(objektName("Datenblatt Schütz Ä1.PDF"), "praxis-hilfen/datenblatt-schuetz-ae1.pdf");
   assert.equal(objektName("foto.JPEG"), "praxis-hilfen/foto.jpg");
-  assert.throws(() => objektName("ordner/datei.pdf"));
   assert.throws(() => objektName("paket.zip"));
+});
+
+test("SR-68: Ordner/Datei, gleiche Namen in verschiedenen Ordnern bleiben getrennt", () => {
+  assert.equal(objektName("07_Ausschaltung mit Steckdose/Übersichtsschaltplan.png"), "praxis-hilfen/07-ausschaltung-mit-steckdose/uebersichtsschaltplan.png");
+  assert.equal(objektName("a\\b\\Plan.pdf"), "praxis-hilfen/a/b/plan.pdf");
+  assert.notEqual(objektName("07/Plan.png"), objektName("08/Plan.png"));
+  for (const falsch of ["../geheim.pdf", "/abs/plan.pdf", "a//b.pdf", "a/./b.pdf", "a/b/", "!!!/b.pdf"]) {
+    assert.throws(() => objektName(falsch), undefined, falsch);
+  }
+});
+
+test("SR-68: Liste mit Ordnerpfad, angezeigt wird nur der Dateiname", () => {
+  const { eintraege, fehler } = leseZuordnung(KOPF + '"A";1;"Plan";"07_Ausschaltung\\Plan.PDF";\n"A";2;"x";"../x.pdf";\n');
+  assert.equal(fehler.length, 1);
+  assert.equal(eintraege[0].datei, "07_Ausschaltung/Plan.PDF");
+  assert.equal(eintraege[0].anzeige, "Plan.PDF");
+  assert.equal(eintraege[0].objekt, "praxis-hilfen/07-ausschaltung/plan.pdf");
+  assert.equal(eintraege[1].datei, null);
 });
 
 test("SR-68: MIME-Typ nur für erlaubte Formate", () => {

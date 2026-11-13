@@ -42,7 +42,7 @@ import {
   eintragVerschieben,
   type Eintrag,
 } from "@/lib/praxisflow-liste";
-import { ereignisseMelden } from "@/lib/praxisflow-ereignis";
+import { ereignisseMelden, type Einstieg } from "@/lib/praxisflow-ereignis";
 import type { AktionErgebnis, PraxisflowDaten } from "@/lib/praxisflow-shared";
 import { cn } from "@/lib/utils";
 
@@ -169,7 +169,16 @@ function vibrieren() {
   }
 }
 
-export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; zurueck: { href: string; label: string } }) {
+export function PraxisflowAblauf({
+  daten,
+  zurueck,
+  einstieg,
+}: {
+  daten: PraxisflowDaten;
+  zurueck: { href: string; label: string };
+  /** Woher die Person kommt (SR-92, 0072) */
+  einstieg: Einstieg;
+}) {
   const f = daten.fortschritt;
   const [position, setPosition] = useState<string>(() => startPosition(daten));
   const [meldung, setMeldung] = useState<string | null>(null);
@@ -192,12 +201,21 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
     Object.fromEntries((f.deutungen ?? []).map((d) => [d.id, d.text]))
   );
 
-  // Ereignisse (SR-92): erster Schritt beim Öffnen, Schritt beendet beim
-  // Verlassen der Seite; Wechsel meldet gehe(). Nur Kennungen, keine Inhalte.
+  // Ereignisse (SR-92): beim Öffnen der Einstieg (0072) und der erste
+  // Schritt, Schritt beendet beim Verlassen der Seite; Wechsel meldet gehe().
+  // Nur Kennungen, keine Inhalte.
   const positionRef = useRef(position);
+  const einstiegRef = useRef(einstieg);
   useEffect(() => {
     const abbruch = new AbortController();
-    ereignisseMelden(daten.fieldJobId, [{ art: "schritt_geoeffnet", schritt: positionRef.current }], abbruch.signal);
+    ereignisseMelden(
+      daten.fieldJobId,
+      [
+        { art: "auftrag_geoeffnet", schritt: einstiegRef.current },
+        { art: "schritt_geoeffnet", schritt: positionRef.current },
+      ],
+      abbruch.signal
+    );
     const verlassen = () => ereignisseMelden(daten.fieldJobId, [{ art: "schritt_beendet", schritt: positionRef.current }]);
     window.addEventListener("pagehide", verlassen);
     return () => {
@@ -289,10 +307,16 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
     return r.wert ? { ok: true } : { ok: false, fehler: TEXTE.codewort.falsch };
   }
 
+  // Zurück innerhalb der Phase (SR-64 Navigation): jede Karte außer der
+  // ersten führt einen Schritt zurück; nur Anzeige, kein Stand ändert sich.
+  // Über eine Phasengrenze nie. Bewerten legt Zurück selbst fest (nur
+  // innerhalb der Einschätzung einer Person).
+  const vorher = aktuell.phase !== "bewerten" && nrInPhase > 1 ? inPhase[nrInPhase - 2].id : undefined;
   const k = {
     phase: phasenName(aktuell.phase),
     nr: nrInPhase,
     von: inPhase.length,
+    zurueck: vorher ? () => gehe(vorher) : undefined,
   };
 
   return (
@@ -301,7 +325,10 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
         <Link href={zurueck.href} className={cn("inline-flex w-fit items-center gap-1 rounded-sm text-sm text-ink-muted hover:text-ink", FOKUS)}>
           <ArrowLeft className="size-4" aria-hidden="true" /> {zurueck.label}
         </Link>
-        <span className="text-sm text-ink-muted">Praxisauftrag · {daten.titel}</span>
+        {/* Titel zur Orientierung wie in der Tagesübersicht (22/26 px, Work Sans);
+            die Frage der Karte bleibt die größte Zeile (Anton). */}
+        <span className="mt-1 text-sm text-ink-muted">Praxisauftrag</span>
+        <h1 className="text-[22px] leading-tight font-semibold text-ink md:text-[26px]">{daten.titel}</h1>
       </div>
       <div className="flex flex-col gap-3 rounded-karte bg-card px-4 pt-4 pb-3 text-ink shadow-card md:px-6 print:hidden">
         <PhasenAnzeige phasen={PHASEN} aktuell={phasenIndex} hell />
@@ -351,7 +378,7 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
             }
             if (art === "hilfen") {
               return (
-                <Karte {...k} frage="Deine Hilfsunterlagen" hinweis="Damit planst du dein Material und deine Arbeit." zurueck={() => gehe("auftrag")}>
+                <Karte {...k} frage="Deine Hilfsunterlagen" hinweis="Damit planst du dein Material und deine Arbeit.">
                   {daten.beschreibung && <p className="rounded-zeile bg-subtle p-4 text-[15px] text-ink">{daten.beschreibung}</p>}
                   <AfcjHilfen dateien={daten.dateien} links={daten.hilfeLinks} />
                   <div className="flex flex-col gap-2">
@@ -381,12 +408,11 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
               };
               const aendern = (fn: (l: Eintrag[]) => Eintrag[]) => setListen((l) => ({ ...l, [name]: fn(l[name]) }));
               const gesperrt = name === "schritte" && listen.schritte.length === 0;
-              const zurueckZu = name === "materialien" ? "plaene" : name === "werkzeuge" ? "materialien" : "werkzeuge";
               // Der letzte Teil von Planen speichert den Plan und schließt die Phase ab.
               const weiter = () =>
                 name === "schritte" ? planSichern(() => phaseAbschliessen("planen", "rueckblick")) : planSichern(() => gehe(naechster()));
               return (
-                <Karte {...k} frage={fragen[name]} hinweis={hinweise[name]} zurueck={() => gehe(zurueckZu)}>
+                <Karte {...k} frage={fragen[name]} hinweis={hinweise[name]}>
                   <ListenEditor
                     id={name}
                     {...EDITOR[name]}
@@ -457,6 +483,7 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
                     label={TEXTE.codewort.label}
                     buttonText="Plan freigeben"
                     trainer={daten.trainer}
+                    trainer2={daten.trainer2}
                     pruefen={async (e) => gateErgebnis(await planFreigeben(daten.fieldJobId, e))}
                     onFreigabe={() => vibrieren()}
                   />
@@ -560,6 +587,7 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
                     label={TEXTE.codewort.label}
                     buttonText="Inbetriebnahme freigeben"
                     trainer={daten.trainer}
+                    trainer2={daten.trainer2}
                     pruefen={async (e) => gateErgebnis(await zuschaltenFreigeben(daten.fieldJobId, e))}
                     onFreigabe={() => vibrieren()}
                   />
@@ -598,7 +626,6 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
                   {...k}
                   frage={p?.titel ?? "Prüfpunkt"}
                   hinweis={TEXTE.deuten.frage}
-                  zurueck={nr > 0 ? () => gehe(`deuten:${PUNKTE[nr - 1].id}`) : undefined}
                 >
                   <label className="flex flex-col gap-2">
                     <span className="sr-only">Deine Deutung zu {p?.titel}</span>
@@ -755,6 +782,7 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
                       label={TEXTE.codewort.label}
                       buttonText="Einschätzung speichern"
                       trainer={daten.trainer}
+                      trainer2={daten.trainer2}
                       pruefen={async (e) => gateErgebnis(await trainerEinschaetzen(daten.fieldJobId, werte.trainer, e))}
                       onFreigabe={() => gehe(naechster())}
                     />
@@ -810,7 +838,7 @@ export function PraxisflowAblauf({ daten, zurueck }: { daten: PraxisflowDaten; z
                     ))}
                   </ul>
                   <button type="button" onClick={() => gehe("reflexion")} className={GROSS}>
-                    {ko ? "Weiter zur Erkenntnis" : "Weiter"} <ArrowRight aria-hidden="true" />
+                    Weiter <ArrowRight aria-hidden="true" />
                   </button>
                 </Karte>
               );
@@ -926,12 +954,12 @@ function Fertig({ daten, zurueck }: { daten: PraxisflowDaten; zurueck: { href: s
           </div>
         </div>
         {daten.naechster ? (
-          <Link href={`/praxistag/${daten.naechster.fieldJobId}`} className={cn(GROSS, "sm:w-auto sm:self-start")}>
+          <Link href={`/praxistag/${daten.naechster.fieldJobId}?von=naechster`} className={cn(GROSS, "sm:w-auto sm:self-start")}>
             Weiter zum nächsten Auftrag: {daten.naechster.titel} <ArrowRight aria-hidden="true" />
           </Link>
         ) : (
           <Link href={zurueck.href} className={cn(GROSS, "sm:w-auto sm:self-start")}>
-            Zurück zum {zurueck.label} <ArrowRight aria-hidden="true" />
+            {zurueck.label} <ArrowRight aria-hidden="true" />
           </Link>
         )}
       </section>
@@ -1042,6 +1070,7 @@ function Uebergabe({
   hinweis,
   ton,
   phase,
+  zurueck,
   children,
 }: {
   icon: LucideIcon;
@@ -1051,19 +1080,20 @@ function Uebergabe({
   phase: string;
   nr?: number;
   von?: number;
+  zurueck?: () => void;
   children: React.ReactNode;
 }) {
   // Trainer:in ist dran: weiße Karte, Coral nur als kleines Badge (Dosis, 09.11.2026).
   if (ton === "trainer") {
     return (
-      <Karte phase={phase} frage={frage} hinweis={hinweis}>
+      <Karte phase={phase} frage={frage} hinweis={hinweis} zurueck={zurueck}>
         <TrainerBadge />
         <div>{children}</div>
       </Karte>
     );
   }
   return (
-    <Karte phase={phase} frage={frage} hinweis={hinweis} ton={ton}>
+    <Karte phase={phase} frage={frage} hinweis={hinweis} ton={ton} zurueck={zurueck}>
       <span
         className={cn(
           "flex size-14 items-center justify-center rounded-full",

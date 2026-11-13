@@ -29,5 +29,18 @@ Hat eine Variante keine Punkte „unter Spannung“, entfällt die Freigabe zum 
 
 - Erst Staging, dann Production, jeweils Probelauf vor dem echten Lauf (`arbeitsweise.md`).
 - Eine neue Variante ist zunächst `unpublished`; erst nach Durchsicht auf `published` setzen. Lernende lesen nur veröffentlichte Varianten.
-- Ein Praxisauftrag übernimmt die Variante seiner Aufgabe beim Anlegen und behält sie. Eine geänderte Zuordnung gilt deshalb nur für neu angelegte Aufträge; bereits angelegte Aufträge ohne Variante behalten die Standard-Prüfliste.
+- Ein Praxisauftrag übernimmt die Variante seiner Aufgabe beim Anlegen und behält sie; eine gesetzte Variante ändert sich nie. Aufträge **ohne** Variante trägt das Skript nach, solange in ihnen noch nicht gemessen wurde (keine Haken bei den Prüfpunkten, keine Freigabe zum Zuschalten, nicht abgeschlossen). Die übrigen behalten die Standard-Prüfliste; die Ausgabe nennt ihre Zahl. Die Prüfprotokolle können also auch nach dem Stundenplan-Import kommen, besser aber vor dem ersten Praxistag.
 - Punktkennungen einer veröffentlichten Variante nicht umbenennen: Haken und Deutungen laufender Aufträge verweisen darauf.
+
+## Einspielen mit dem Skript
+
+```bash
+node scripts/pruefprotokolle.mjs --protokolle <pruefprotokolle.csv> --zuordnung <zuordnung.csv> --ziel staging
+node scripts/pruefprotokolle.mjs --protokolle <pruefprotokolle.csv> --zuordnung <zuordnung.csv> --ziel staging --ausfuehren --veroeffentlichen
+```
+
+- Standard ist der Probelauf: Er prüft beide Dateien, schreibt in einer Transaktion und rollt am Ende zurück. Ein zweiter Durchgang in derselben Transaktion muss leer sein.
+- `--ausfuehren` speichert nach Eingabe der Projekt-Ref. Production nur mit `--production-freigabe`.
+- Ohne `--veroeffentlichen` bleiben neue Varianten `unpublished`. Eine Zuordnung ist nur zu veröffentlichten Varianten möglich, sonst bricht das Skript ab: Lernende lesen keine unveröffentlichten Punkte und hätten eine leere Prüfliste. Zum Durchsehen deshalb erst ohne `--zuordnung` einspielen.
+- Nutzt schon ein Praxisauftrag eine Variante, ändert das Skript dort nur Texte (Titel, Anweisung, Unterpunkte, Hinweis). Andere Punkte, Nummern oder Teile brechen ab; dafür eine neue Kennung anlegen.
+- Die Zuordnung sucht die Praxisaufgabe über den Titel; er muss genau eine Aufgabe treffen.

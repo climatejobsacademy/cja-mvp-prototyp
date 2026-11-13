@@ -51,6 +51,21 @@ from field_job fj join field_job_type t on t.id = fj.field_job_type_id and t.abl
 join p on p.learner_id = fj.learner_id
 group by 1 order by 1;
 
+\echo === Einstieg in den Praxisauftrag (SR-92, 0072): Öffnungen je Weg
+with p as (
+  select e.learner_id from enrolment e
+  join cohort c on c.id = e.cohort_id and c.name = :'kohorte'
+  join auth.users u on u.id = e.learner_id
+  where e.status = 'aktiv'
+    and u.email not ilike '%@climatejobsacademy.com'
+    and split_part(u.email, '@', 2) not ilike :'traeger'
+    and not exists (select 1 from role_assignment r where r.person_id = e.learner_id and r.rolle in ('trainer', 'afcj_admin'))
+)
+select ev.schritt as einstieg, count(*) as oeffnungen, count(distinct ev.learner_id) as personen
+from praxis_ereignis ev join p on p.learner_id = ev.learner_id
+where ev.art = 'auftrag_geoeffnet'
+group by 1 order by 2 desc;
+
 \echo === Ereignisse je Art und Schritt (Anzahl Ereignisse, Anzahl Personen)
 with p as (
   select e.learner_id from enrolment e
@@ -65,7 +80,7 @@ select ev.art,
        case when ev.schritt like 'tun:%' then 'tun:*' else ev.schritt end as schritt,
        count(*) as ereignisse, count(distinct ev.learner_id) as personen
 from praxis_ereignis ev join p on p.learner_id = ev.learner_id
-where ev.art not in ('schritt_geoeffnet', 'schritt_beendet')
+where ev.art not in ('schritt_geoeffnet', 'schritt_beendet', 'auftrag_geoeffnet')
 group by 1, 2 order by 1, 2;
 
 \echo === Verweildauer je Schritt (Median in Minuten, geöffnet bis nächstes Ereignis der Person im Auftrag)

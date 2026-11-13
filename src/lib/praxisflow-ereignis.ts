@@ -3,10 +3,22 @@
 // (fn_praxis_ereignis_melden, 0064). Melden ist "fire and forget": ein
 // Fehler darf den Praxisflow nie stören.
 
-export type PraxisEreignisArt = "schritt_geoeffnet" | "schritt_beendet" | "hilfe_geoeffnet" | "vorschau_geoeffnet";
+export type PraxisEreignisArt = "auftrag_geoeffnet" | "schritt_geoeffnet" | "schritt_beendet" | "hilfe_geoeffnet" | "vorschau_geoeffnet";
 export type PraxisEreignis = { art: PraxisEreignisArt; schritt: string };
 
 const KENNUNG = /^[a-z0-9:_-]{1,80}$/;
+
+/**
+ * Einstieg in einen Praxisauftrag (SR-92, 0072): woher die Person kommt, aus
+ * dem Parameter ?von= der Links. Unbekannt oder ohne Parameter: "direkt".
+ * Dieselbe Liste prüft fn_praxis_ereignis_melden.
+ */
+export const EINSTIEGE = ["home", "stundenplan", "tagesuebersicht", "programm", "kompetenzen", "naechster", "direkt"] as const;
+export type Einstieg = (typeof EINSTIEGE)[number];
+
+export function einstiegAus(von: string | undefined): Einstieg {
+  return (EINSTIEGE as readonly string[]).includes(von ?? "") ? (von as Einstieg) : "direkt";
+}
 
 /** Nur gültige Kennungen; ungültige fallen still heraus. */
 export function ereignisseFiltern(liste: PraxisEreignis[]): PraxisEreignis[] {

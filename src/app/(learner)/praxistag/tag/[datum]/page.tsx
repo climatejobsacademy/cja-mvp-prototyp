@@ -8,6 +8,7 @@ import { PHASEN } from "@/lib/praxisflow-inhalte";
 import { getPraxistag, type PraxistagAuftrag } from "@/lib/queries/praxistag";
 import { requireCurrentLearner } from "@/lib/queries/session";
 import { cn } from "@/lib/utils";
+import { zurueckZu } from "@/lib/zurueck";
 
 function stand(a: PraxistagAuftrag): string {
   if (a.labor) return "Labortag";
@@ -34,12 +35,14 @@ export default async function PraxistagPage({ params }: { params: Promise<{ datu
   const naechster = auftraege.find((a) => !a.labor && a.phase !== "abgeschlossen");
   const fertig = auftraege.filter((a) => !a.labor && a.phase === "abgeschlossen").length;
   const anzahl = auftraege.filter((a) => !a.labor).length;
+  // Zurück zum Stundenplan auf diesem Tag (SR-64 Navigation).
+  const zurueck = zurueckZu("stundenplan", datum);
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1">
-        <Link href="/schedule" className={cn("inline-flex w-fit items-center gap-1 rounded-sm text-sm text-ink-muted hover:text-ink", FOKUS)}>
-          <ArrowLeft className="size-4" aria-hidden="true" /> Stundenplan
+        <Link href={zurueck.href} className={cn("inline-flex w-fit items-center gap-1 rounded-sm text-sm text-ink-muted hover:text-ink", FOKUS)}>
+          <ArrowLeft className="size-4" aria-hidden="true" /> {zurueck.label}
         </Link>
         <h1 className="text-[22px] leading-tight font-semibold text-ink md:text-[26px]">Praxistag · {datumLang(datum)}</h1>
         <p className="text-[15px] text-ink-muted">
@@ -52,7 +55,7 @@ export default async function PraxistagPage({ params }: { params: Promise<{ datu
           return (
             <li key={a.fieldJobId}>
               <Link
-                href={`/praxistag/${a.fieldJobId}`}
+                href={`/praxistag/${a.fieldJobId}?von=tagesuebersicht`}
                 className={cn(
                   "flex items-center gap-3 rounded-karte p-4 text-ink shadow-card md:px-6",
                   istNaechster ? "border-l-[3px] border-l-praxis bg-praxis-tint hover:brightness-[0.98]" : "bg-card hover:bg-subtle",

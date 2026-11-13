@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Check, FlaskConical, Video, Wrench } from "lucide-react";
 
 import { TrainerZeile } from "@/components/trainer-zeile";
+import { fortschrittMittel, fortschrittText, type PraxistagFortschritt } from "@/lib/praxistag-kachel";
 import { cn } from "@/lib/utils";
 
 import { zeitText, type Block } from "./plan-modell";
@@ -23,13 +24,39 @@ const ART = {
   praxis: { text: "Praxisauftrag", Icon: Wrench, flaeche: "bg-praxis-tint", streifen: "border-l-praxis", icon: "text-praxis-text", anker: "bg-anchor-praxis text-ink shadow-anchor-praxis", ankerIcon: "text-ink", inhalt: "Zum Praxisauftrag" },
   // Labortag (SR-94): Farben wie Praxis, eigener Name und Ziel.
   labor: { text: "Labortag", Icon: FlaskConical, flaeche: "bg-praxis-tint", streifen: "border-l-praxis", icon: "text-praxis-text", anker: "bg-anchor-praxis text-ink shadow-anchor-praxis", ankerIcon: "text-ink", inhalt: "Zu den Unterlagen" },
-  // Mehrere Praxisaufträge an einem Tag (SR-13): ein Block für den Tag.
+  // Praxistag (SR-13): ein Block je Tag mit Praxisaufträgen.
   praxistag: { text: "Praxistag", Icon: Wrench, flaeche: "bg-praxis-tint", streifen: "border-l-praxis", icon: "text-praxis-text", anker: "bg-anchor-praxis text-ink shadow-anchor-praxis", ankerIcon: "text-ink", inhalt: "Zum Praxistag" },
 } as const;
 
-/** "3 Praxisaufträge · 1 abgeschlossen" (SR-13) */
-export function sammelText(s: { anzahl: number; fertig: number }): string {
-  return `${s.anzahl} Praxisaufträge · ${s.fertig} abgeschlossen`;
+/**
+ * Fortschritt eines Praxistags (SR-13): immer genau eine Zeile, bricht nie um,
+ * damit die Trainer-Zeile in allen Praxistagen gleich hoch steht. Text vorne
+ * ("2 von 6" schmal, "2 von 6 erledigt" breit), dahinter ein Kreis je Auftrag
+ * in fester Reihenfolge, erledigte gefüllt mit Haken; bei sehr vielen
+ * Aufträgen werden die Kreise rechts abgeschnitten, nie der Text. Farbe wie
+ * aller Fortschritt (--progress). Bildschirmleser lesen die lange Form.
+ */
+export function FortschrittZeile({ f, klein, className }: { f: PraxistagFortschritt; klein?: boolean; className?: string }) {
+  return (
+    <span className={cn("flex min-w-0 items-center gap-1.5 overflow-hidden font-semibold whitespace-nowrap", klein ? "text-[11px]" : "text-[13px]", className)}>
+      <span aria-hidden="true" className="shrink-0">{klein ? fortschrittMittel(f) : fortschrittText(f)}</span>
+      <span className="sr-only">{fortschrittText(f)}</span>
+      <span aria-hidden="true" className="flex min-w-0 items-center gap-1 overflow-hidden">
+        {f.erledigt.map((ok, i) => (
+          <span
+            key={i}
+            className={cn(
+              "inline-flex shrink-0 items-center justify-center rounded-full border-[1.5px] border-progress",
+              klein ? "size-3" : "size-4",
+              ok && "bg-progress"
+            )}
+          >
+            {ok && <Check className={cn("text-white", klein ? "size-2" : "size-2.5")} strokeWidth={4} />}
+          </span>
+        ))}
+      </span>
+    </span>
+  );
 }
 
 const STATUS_TEXT = { erledigt: "erledigt", vorbei: "vorbei", offen: "offen" } as const;
@@ -42,7 +69,7 @@ export function TerminBlock({ block, gross, style }: { block: Block; gross: bool
     art.text,
     `${zeitText(block)} Uhr`,
     block.volltitel,
-    block.sammel ? sammelText(block.sammel) : null,
+    block.sammel ? fortschrittText(block.sammel) : null,
     block.trainer ? `${block.art === "live" ? "Live" : "Praxis"} mit ${block.trainer.rufname}${block.trainer2 ? ` und ${block.trainer2.rufname}` : ""}` : null,
     block.ort,
     // Der Anker bleibt nach dem letzten Termin des Tages stehen (Anna 2026-10-12): dann "vorbei", nicht "als Nächstes".
@@ -102,9 +129,7 @@ export function TerminBlock({ block, gross, style }: { block: Block; gross: bool
       ) : (
         <span aria-label={label}>{titel}</span>
       )}
-      {block.sammel && (
-        <span className={cn("pointer-events-none", gross ? "text-[13px]" : "text-[11px]")}>{sammelText(block.sammel)}</span>
-      )}
+      {block.sammel && <FortschrittZeile f={block.sammel} klein={!gross} className="pointer-events-none" />}
       {/* Trainer:in des Termins (SR-78); steht auch im aria-label des Links. */}
       {block.trainer && (
         <TrainerZeile
@@ -142,7 +167,7 @@ export function TerminBlock({ block, gross, style }: { block: Block; gross: bool
                   : cn("transition-[color] duration-150 group-hover/termin:text-brand motion-reduce:transition-none", gross ? "text-[13px]" : "text-[11px]")
               )}
             >
-              {art.inhalt}
+              {block.sammel?.anzahl === 1 ? ART.praxis.inhalt : art.inhalt}
               <ArrowRight className={gross ? "size-3.5" : "size-3"} aria-hidden="true" />
             </span>
           )
