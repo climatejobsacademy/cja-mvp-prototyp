@@ -258,8 +258,16 @@ export function PraxisflowAblauf({
   const aktuell = schritte[index];
   // Reflexion: alle Schritte von Bewerten nach dem Rückblick, eigene Zählung.
   const reflexion = aktuell.phase === "bewerten" && aktuell.id !== "handlung";
+  // Ausführen zählt in zwei Teilen (SR-64): die eigenen Arbeitsschritte
+  // („2 von 3“) und danach das Messen (Start, Prüfpunkte, Freigabe, Protokoll).
+  const arbeitsschritt = aktuell.id.startsWith("tun:");
+  const messen = aktuell.phase === "ausfuehren" && !arbeitsschritt;
   const inPhase = schritte.filter(
-    (s) => s.phase === aktuell.phase && s.id !== "fertig" && (aktuell.phase !== "bewerten" || (s.id !== "handlung") === reflexion)
+    (s) =>
+      s.phase === aktuell.phase &&
+      s.id !== "fertig" &&
+      (aktuell.phase !== "bewerten" || (s.id !== "handlung") === reflexion) &&
+      (aktuell.phase !== "ausfuehren" || s.id.startsWith("tun:") === arbeitsschritt)
   );
   const nrInPhase = inPhase.findIndex((s) => s.id === aktuell.id) + 1;
   // Nach dem Rückblick sind alle sechs Phasen geschafft (SR-64, 13.11.2026).
@@ -330,7 +338,7 @@ export function PraxisflowAblauf({
   // innerhalb der Einschätzung einer Person).
   const vorher = aktuell.phase !== "bewerten" && nrInPhase > 1 ? inPhase[nrInPhase - 2].id : undefined;
   const k = {
-    phase: reflexion ? TEXTE.rueckblick.reflexion : phasenName(aktuell.phase),
+    phase: reflexion ? TEXTE.rueckblick.reflexion : messen ? `${phasenName(aktuell.phase)} · Messen` : phasenName(aktuell.phase),
     nr: nrInPhase,
     von: inPhase.length,
     zurueck: vorher ? () => gehe(vorher) : undefined,
