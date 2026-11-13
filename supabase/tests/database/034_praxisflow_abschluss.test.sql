@@ -76,6 +76,10 @@ set praxisflow = jsonb_build_object(
 )
 where id in ('00000000-0000-0000-0000-000000034082', '00000000-0000-0000-0000-000000034083');
 
+-- Rückblick in Bewerten (SR-64, 0073) für alle drei schon bestätigt.
+update field_job set praxisflow = coalesce(praxisflow, '{}'::jsonb) || jsonb_build_object('rueckblick_am', now())
+where id in ('00000000-0000-0000-0000-000000034081', '00000000-0000-0000-0000-000000034082', '00000000-0000-0000-0000-000000034083');
+
 select is(has_function_privilege('anon', 'fn_praxis_abschliessen(uuid, text)', 'execute'), false,
   'anon darf fn_praxis_abschliessen nicht ausführen');
 

@@ -221,7 +221,6 @@ export const TEXTE = {
     titel: "Das nehme ich mit",
     frage: "Was machst du beim nächsten Mal anders?",
     anfaenge: ["Gut lief …", "Nächstes Mal …"],
-    platzhalter: "Gut lief … Nächstes Mal …",
     hinweis: "Ein, zwei Sätze reichen. Das steht danach in deiner Zusammenfassung.",
   },
   deuten: {
@@ -230,8 +229,30 @@ export const TEXTE = {
       "Zu jedem Prüfpunkt schreibst du kurz, was er dir zeigt: bei einer Messung deinen Messwert und den Grenzwert, sonst, worauf es ankommt und warum. Dein Prüfprotokoll findest du links unter „Protokoll“.",
     frage:
       "Was zeigt dir dieser Prüfpunkt? Wenn du gemessen hast: Messwert, Grenzwert, eingehalten? Wenn nicht: Worauf kommt es hier an, und warum?",
-    platzhalter: "Zum Beispiel: 0,4 Ω gemessen, Grenzwert 1 Ω, also in Ordnung.",
     leer: "Schreib ein, zwei Sätze, dann geht es weiter.",
+  },
+  // Bewerten (SR-64, geändert 13.11.2026): Rückblick auf die vollständige Handlung.
+  rueckblick: {
+    titel: "Schau auf deine Arbeit zurück",
+    hinweis: "Hast du in jeder Phase alles gemacht? Bestätige jede Phase. Erst dann ist deine vollständige Handlung abgeschlossen.",
+    fragen: {
+      informieren: "Habe ich bei Informieren alles gemacht?",
+      planen: "Habe ich bei Planen alles gemacht?",
+      entscheiden: "Habe ich richtig entschieden?",
+      ausfuehren: "Habe ich ordentlich ausgeführt und gemessen?",
+      kontrollieren: "Habe ich meine Prüfpunkte ordentlich kontrolliert?",
+    },
+    ja: "Ja, habe ich",
+    nein: "Noch nicht",
+    neinHinweis: "Schau dir die Phase noch einmal an. Dateien kannst du dort noch hochladen.",
+    weiter: "Vollständige Handlung abschließen",
+    ansehen: "Du schaust dir diese Phase noch einmal an. Plan und Deutungen bleiben, wie sie freigegeben sind; Dateien kannst du noch hochladen.",
+    zurueckZuBewerten: "Zurück zu Bewerten",
+    momentTitel: "Vollständige Handlung abgeschlossen",
+    momentText: "Alle sechs Phasen sind geschafft. Jetzt kommt die Reflexion: Du, eine Person aus deiner Gruppe und deine Trainer:in schätzen deine Arbeit ein.",
+    momentButton: "Weiter zur Reflexion",
+    reflexion: "Reflexion",
+    reflexionHinweis: "Nach der vollständigen Handlung",
   },
   entscheiden: {
     bestaetigen: "Gib das Gerät deiner Trainer:in. Sie schaut sich deinen Plan an und gibt ihn mit dem Codewort frei.",

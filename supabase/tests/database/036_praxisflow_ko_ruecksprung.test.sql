@@ -60,7 +60,8 @@ insert into field_job (id, organisation_id, datum, field_job_type_id, learner_id
      'plan_bestaetigt_am', '2026-11-16T08:30:00Z',
      'plan_freigegeben_am', '2026-11-16T08:30:00Z',
      'kontrolle', '[{"id": "a1", "am": "2026-11-16T10:00:00Z"}]'::jsonb,
-     'zuschalten_freigegeben_am', '2026-11-16T10:10:00Z'));
+     'zuschalten_freigegeben_am', '2026-11-16T10:10:00Z',
+     'rueckblick_am', '2026-11-16T11:00:00Z'));
 
 insert into schedule_entry (organisation_id, datum, art, reihenfolge, cohort_id, enrolment_id, live_session_id, field_job_id) values
   ('00000000-0000-0000-0000-000000036011', '2026-11-16', 'feld', 1, null, '00000000-0000-0000-0000-000000036061', null, '00000000-0000-0000-0000-000000036081');
@@ -106,9 +107,9 @@ select is(
 );
 select ok(
   (select not (praxisflow ?| array['erledigt', 'plan_freigegeben_am', 'kontrolle', 'zuschalten_freigegeben_am',
-                                   'bewertung_freigegeben_am', 'einschaetzung'])
+                                   'bewertung_freigegeben_am', 'einschaetzung', 'rueckblick_am'])
      from field_job where id = '00000000-0000-0000-0000-000000036081'),
-  'Haken, Freigaben und Einschätzungen sind für den neuen Durchlauf leer'
+  'Haken, Freigaben, Einschätzungen und Rückblick (0073) sind für den neuen Durchlauf leer'
 );
 select is(
   (select jsonb_array_length(praxisflow -> 'schritte') from field_job where id = '00000000-0000-0000-0000-000000036081'),
@@ -141,7 +142,8 @@ select is(
 -- ------------------------------------------------------------
 -- Zweiter Durchlauf: ohne K.-o. (Phase für den Test direkt auf Bewerten)
 -- ------------------------------------------------------------
-update field_job set phase = 'bewerten' where id = '00000000-0000-0000-0000-000000036081';
+update field_job set phase = 'bewerten', praxisflow = praxisflow || jsonb_build_object('rueckblick_am', now())
+where id = '00000000-0000-0000-0000-000000036081';
 set local role authenticated;
 
 select throws_ok(

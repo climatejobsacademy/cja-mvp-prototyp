@@ -57,7 +57,11 @@ export function PhasenAnzeige({
   hell?: boolean;
   onPhase?: (id: string) => void;
 }) {
-  const label = `Phase ${aktuell + 1} von ${phasen.length}: ${phasen[aktuell]?.name ?? ""}, ${aktuell} geschafft`;
+  // aktuell = phasen.length: alle Phasen geschafft (nach dem Rückblick, SR-64).
+  const label =
+    aktuell >= phasen.length
+      ? `Alle ${phasen.length} Phasen geschafft`
+      : `Phase ${aktuell + 1} von ${phasen.length}: ${phasen[aktuell]?.name ?? ""}, ${aktuell} geschafft`;
   return (
     <div className="flex items-start gap-4">
       <ol aria-label={label} className="grid min-w-0 flex-1 grid-cols-6 items-start">
