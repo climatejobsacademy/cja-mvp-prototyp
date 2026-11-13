@@ -47,7 +47,8 @@ insert into field_job (id, organisation_id, datum, field_job_type_id, learner_id
    '00000000-0000-0000-0000-000000038041', '00000000-0000-0000-0000-000000038001', 'bewerten',
    '{"deutungen": [{"id": "a1", "text": "Durchgängig", "am": "2026-11-18T10:00:00Z"}],
      "einschaetzung": {"trainer": {"funktion": 0, "ausfuehrung": 7, "schutz": 10, "protokoll": 7, "unterlagen": 9}},
-     "bewertung_freigegeben_am": "2026-11-18T11:00:00Z"}'::jsonb);
+     "bewertung_freigegeben_am": "2026-11-18T11:00:00Z",
+     "rueckblick_am": "2026-11-18T10:30:00Z"}'::jsonb);
 
 set local role authenticated;
 select set_config('request.jwt.claims',

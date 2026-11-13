@@ -12,6 +12,7 @@ import {
   ListOrdered,
   Package,
   PartyPopper,
+  Sparkles,
   ShieldCheck,
   UserRound,
   Users,
@@ -54,6 +55,7 @@ import {
   phaseWeiter,
   planFreigeben,
   planSpeichern,
+  rueckblickSpeichern,
   schrittAbhaken,
   trainerEinschaetzen,
   zurueckZumPlan,
@@ -100,7 +102,10 @@ function alleSchritte(schritte: Eintrag[], liste: Pruefliste): Schritt[] {
       "protokoll",
     ]),
     ...s("kontrollieren", ["start-deuten", ...allePunkte(liste).map((p) => `deuten:${p.id}`)]),
+    // Bewerten (SR-64, 13.11.2026): Rückblick auf die vollständige Handlung;
+    // danach, technisch weiter in bewerten, die Reflexion (Einschätzungen).
     ...s("bewerten", [
+      "handlung",
       "uebergabe-selbst",
       ...BOGEN.map((k) => `selbst:${k.id}`),
       "uebergabe-peer",
@@ -145,6 +150,7 @@ function startPosition(d: PraxisflowDaten): string {
       return `deuten:${offen?.id}`;
     }
     case "bewerten": {
+      if (!f.rueckblick_am) return "handlung";
       const e = f.einschaetzung ?? {};
       if (e.trainer) return "ergebnis";
       if (e.peer) return "uebergabe-trainer";
@@ -196,6 +202,10 @@ export function PraxisflowAblauf({
   // Bewerten: Punkte der laufenden Einschätzung, beim letzten Kriterium speichern.
   const [werte, setWerte] = useState<Record<PraxisRolle, Record<string, number>>>({ selbst: {}, peer: {}, trainer: {} });
   const [naechstesMal, setNaechstesMal] = useState("");
+  // Bewerten: Rückblick je Phase (SR-64, 0073); nach dem Speichern beginnt die Reflexion.
+  const [rueckblickFertig, setRueckblickFertig] = useState(!!f.rueckblick_am);
+  const [rueckblick, setRueckblick] = useState<Partial<Record<Phase, boolean>>>({});
+  const [ansehen, setAnsehen] = useState(false);
   // Kontrollieren: Deutungen lokal bearbeiten, je Prüfpunkt beim Weiter speichern.
   const [deutungen, setDeutungen] = useState<Record<string, string>>(() =>
     Object.fromEntries((f.deutungen ?? []).map((d) => [d.id, d.text]))
@@ -245,9 +255,15 @@ export function PraxisflowAblauf({
   const schritte = alleSchritte(f.schritte ?? [], daten.pruefliste);
   const index = Math.max(0, schritte.findIndex((s) => s.id === position));
   const aktuell = schritte[index];
-  const inPhase = schritte.filter((s) => s.phase === aktuell.phase && s.id !== "fertig");
+  // Reflexion: alle Schritte von Bewerten nach dem Rückblick, eigene Zählung.
+  const reflexion = aktuell.phase === "bewerten" && aktuell.id !== "handlung";
+  const inPhase = schritte.filter(
+    (s) => s.phase === aktuell.phase && s.id !== "fertig" && (aktuell.phase !== "bewerten" || (s.id !== "handlung") === reflexion)
+  );
   const nrInPhase = inPhase.findIndex((s) => s.id === aktuell.id) + 1;
-  const phasenIndex = daten.phase === "abgeschlossen" ? PHASEN.length - 1 : PHASEN.findIndex((p) => p.id === daten.phase);
+  // Nach dem Rückblick sind alle sechs Phasen geschafft (SR-64, 13.11.2026).
+  const phasenIndex =
+    daten.phase === "abgeschlossen" || rueckblickFertig ? PHASEN.length : PHASEN.findIndex((p) => p.id === daten.phase);
   const offen = daten.phase !== "abgeschlossen";
 
   function gehe(id: string, phasenMeldung?: string) {
@@ -313,7 +329,7 @@ export function PraxisflowAblauf({
   // innerhalb der Einschätzung einer Person).
   const vorher = aktuell.phase !== "bewerten" && nrInPhase > 1 ? inPhase[nrInPhase - 2].id : undefined;
   const k = {
-    phase: phasenName(aktuell.phase),
+    phase: reflexion ? TEXTE.rueckblick.reflexion : phasenName(aktuell.phase),
     nr: nrInPhase,
     von: inPhase.length,
     zurueck: vorher ? () => gehe(vorher) : undefined,
@@ -345,6 +361,27 @@ export function PraxisflowAblauf({
           <CircleAlert className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden="true" />
           {fehler}
         </p>
+      )}
+      {/* Rückblick: eine frühere Phase nur ansehen (SR-64, 13.11.2026). */}
+      {ansehen && aktuell.phase !== "bewerten" && !phasenMoment && (
+        <div className="flex flex-col gap-3 rounded-zeile border border-line bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between print:hidden">
+          <p className="text-[15px] text-ink">{TEXTE.rueckblick.ansehen}</p>
+          <button type="button" onClick={() => { setAnsehen(false); gehe("handlung"); }} className={cn(SEKUNDAER, "shrink-0")}>
+            <ArrowLeft aria-hidden="true" /> {TEXTE.rueckblick.zurueckZuBewerten}
+          </button>
+        </div>
+      )}
+      {/* Reflexion: deutlich abgesetzt, außerhalb der vollständigen Handlung. */}
+      {reflexion && !phasenMoment && aktuell.id !== "fertig" && (
+        <div className="flex items-center gap-3 rounded-zeile bg-subtle px-4 py-3 print:hidden">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white text-ink" aria-hidden="true">
+            <Sparkles className="size-[18px]" />
+          </span>
+          <p className="flex flex-col">
+            <span className="text-[17px] font-bold text-ink">{TEXTE.rueckblick.reflexion}</span>
+            <span className="text-sm text-ink-muted">{TEXTE.rueckblick.reflexionHinweis}</span>
+          </p>
+        </div>
       )}
       <div className="flex flex-col gap-4 md:flex-row md:items-start">
         <UnterlagenLeiste
@@ -633,7 +670,6 @@ export function PraxisflowAblauf({
                       rows={4}
                       maxLength={1000}
                       value={text}
-                      placeholder={TEXTE.deuten.platzhalter}
                       onChange={(ev) => setDeutungen((d) => ({ ...d, [id]: ev.target.value }))}
                       className={cn("rounded-zeile border border-line bg-white px-4 py-3 text-[15px] text-ink placeholder:text-ink-subtle", FOKUS)}
                     />
@@ -657,6 +693,100 @@ export function PraxisflowAblauf({
             }
 
             // ----- Bewerten: ein Kriterium pro Karte, Antippen geht weiter
+            // ----- Bewerten: Rückblick auf die vollständige Handlung (SR-64, 13.11.2026)
+            if (art === "handlung") {
+              const anzahl = (x: string) => daten.dateien.filter((d) => d.art === x).length;
+              const dateien = (n: number) => (n === 1 ? "1 Datei" : `${n} Dateien`);
+              const erledigt = (f.erledigt ?? []).length;
+              const geprueft = (f.kontrolle ?? []).length;
+              const gedeutet = (f.deutungen ?? []).length;
+              const zeilen: { phase: Phase; text: string; ziel: string }[] = [
+                { phase: "informieren", text: `Auftrag: ${dateien(anzahl("auftrag"))}`, ziel: "auftrag" },
+                {
+                  phase: "planen",
+                  text: `Plan: ${dateien(anzahl("plan"))}, ${(f.materialien ?? []).length} Material, ${(f.werkzeuge ?? []).length} Werkzeuge, ${(f.schritte ?? []).length} Arbeitsschritte`,
+                  ziel: "plaene",
+                },
+                { phase: "entscheiden", text: f.plan_freigegeben_am ? "Plan freigegeben" : "Plan noch nicht freigegeben", ziel: "rueckblick" },
+                {
+                  phase: "ausfuehren",
+                  text: `${erledigt} von ${(f.schritte ?? []).length} Arbeitsschritten, ${geprueft} von ${PUNKTE.length} Prüfpunkten, Prüfprotokoll: ${dateien(anzahl("protokoll"))}`,
+                  ziel: (f.schritte ?? [])[0] ? `tun:${(f.schritte ?? [])[0].id}` : "start-kontrolle",
+                },
+                { phase: "kontrollieren", text: `${gedeutet} von ${PUNKTE.length} Prüfpunkten gedeutet`, ziel: "start-deuten" },
+              ];
+              const alleJa = zeilen.every((z) => rueckblick[z.phase] === true);
+              return (
+                <Karte {...k} frage={TEXTE.rueckblick.titel} hinweis={TEXTE.rueckblick.hinweis}>
+                  <ul className="flex flex-col gap-3">
+                    {zeilen.map((z) => {
+                      const wert = rueckblick[z.phase];
+                      const setze = (v: boolean) => setRueckblick((r) => ({ ...r, [z.phase]: v }));
+                      return (
+                        <li key={z.phase} className="flex flex-col gap-2 rounded-zeile bg-subtle p-4">
+                          <span className="text-sm font-semibold text-ink-muted">{phasenName(z.phase)}</span>
+                          <span className="text-[17px] font-bold text-ink">{TEXTE.rueckblick.fragen[z.phase as keyof typeof TEXTE.rueckblick.fragen]}</span>
+                          <span className="text-sm text-ink-muted">{z.text}</span>
+                          <div className="flex flex-wrap gap-2" role="group" aria-label={phasenName(z.phase)}>
+                            <button
+                              type="button"
+                              aria-pressed={wert === true}
+                              onClick={() => setze(true)}
+                              className={cn("inline-flex min-h-11 items-center gap-1.5 rounded-full px-4 text-[15px] font-semibold", wert === true ? "bg-ink text-white" : "bg-white text-ink hover:bg-white/70", FOKUS)}
+                            >
+                              <Check className="size-4" aria-hidden="true" /> {TEXTE.rueckblick.ja}
+                            </button>
+                            <button
+                              type="button"
+                              aria-pressed={wert === false}
+                              onClick={() => setze(false)}
+                              className={cn("inline-flex min-h-11 items-center rounded-full px-4 text-[15px] font-semibold", wert === false ? "bg-ink text-white" : "bg-white text-ink hover:bg-white/70", FOKUS)}
+                            >
+                              {TEXTE.rueckblick.nein}
+                            </button>
+                          </div>
+                          {wert === false && (
+                            <div className="flex flex-col gap-2 pt-1">
+                              <p className="text-sm text-ink">{TEXTE.rueckblick.neinHinweis}</p>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setAnsehen(true);
+                                  gehe(z.ziel);
+                                }}
+                                className={cn(SEKUNDAER, "sm:self-start")}
+                              >
+                                <ArrowLeft aria-hidden="true" /> Zurück zu {phasenName(z.phase)}
+                              </button>
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  <button
+                    type="button"
+                    disabled={!alleJa || laeuft}
+                    onClick={() =>
+                      aktion(
+                        () => rueckblickSpeichern(daten.fieldJobId),
+                        () => {
+                          vibrieren();
+                          setAnsehen(false);
+                          setRueckblickFertig(true);
+                          setPhasenMoment({ von: "bewerten", ziel: "uebergabe-selbst" });
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        }
+                      )
+                    }
+                    className={GROSS}
+                  >
+                    {TEXTE.rueckblick.weiter} <ArrowRight aria-hidden="true" />
+                  </button>
+                </Karte>
+              );
+            }
+
             if (art === "selbst" || art === "peer" || art === "trainer") {
               const rolle = art as PraxisRolle;
               const kriterium = BOGEN.find((x) => x.id === id);
@@ -864,7 +994,6 @@ export function PraxisflowAblauf({
                       rows={5}
                       maxLength={2000}
                       value={naechstesMal}
-                      placeholder={TEXTE.reflexion.platzhalter}
                       onChange={(ev) => setNaechstesMal(ev.target.value)}
                       className={cn("rounded-zeile border border-line bg-white px-4 py-3 text-[16px] text-ink placeholder:text-ink-subtle", FOKUS)}
                     />
@@ -885,6 +1014,9 @@ export function PraxisflowAblauf({
                           setWerte({ selbst: {}, peer: {}, trainer: {} });
                           setDeutungen({});
                           setNaechstesMal("");
+                          // Auch der Rückblick wird neu erfasst (0073).
+                          setRueckblick({});
+                          setRueckblickFertig(false);
                           gehe("auftrag", "Neuer Durchlauf");
                         }
                       )
@@ -917,6 +1049,7 @@ const VERLAUF_TEXT: Record<string, string> = {
   "phase:ausfuehren": "Ausführen begonnen",
   "phase:kontrollieren": "Aufbau, Messungen und Prüfprotokoll erledigt",
   "phase:bewerten": "Messwerte gedeutet",
+  rueckblick: "Rückblick abgeschlossen, vollständige Handlung geschafft",
   "zurueck:planen": "Zurück zum Plan",
   "gate:plan": "Plan freigegeben (Codewort der Trainer:in)",
   "gate:zuschalten": "Inbetriebnahme freigegeben (Codewort der Trainer:in)",
@@ -1122,13 +1255,33 @@ const ALS_NAECHSTES: Record<Exclude<Phase, "informieren">, string> = {
   entscheiden: "Deine Trainer:in schaut sich deinen Plan an und gibt ihn frei.",
   ausfuehren: "Du baust auf und misst danach.",
   kontrollieren: "Du deutest deine Messwerte.",
-  bewerten: "Ihr schätzt deine Arbeit ein.",
+  bewerten: "Du schaust auf alle Phasen zurück.",
 };
 
 /** Ende einer Phase: immer derselbe große Moment (dunkelgrün, Häkchen, was als Nächstes kommt, ein Knopf). */
 function PhasenMoment({ von, onWeiter }: { von: Phase; onWeiter: () => void }) {
   const nr = PHASEN.findIndex((p) => p.id === von);
   const naechste = PHASEN[nr + 1];
+  // Nach Bewerten: Ende der vollständigen Handlung, dann die Reflexion (SR-64, 13.11.2026).
+  if (von === "bewerten") {
+    return (
+      <section aria-labelledby="frage" className="flex flex-col items-center gap-4 rounded-karte bg-progress p-7 text-center text-white shadow-card md:p-10">
+        <span className="flex size-20 items-center justify-center rounded-full bg-white/15" aria-hidden="true">
+          <Check className="size-10" strokeWidth={3} />
+        </span>
+        <span className="text-sm font-semibold text-white/85">
+          {PHASEN.length} von {PHASEN.length} Phasen
+        </span>
+        <h2 id="frage" tabIndex={-1} className="font-heading text-[36px] leading-none outline-none md:text-[44px]">
+          {TEXTE.rueckblick.momentTitel}
+        </h2>
+        <p className="max-w-sm text-[16px] text-white/90">{TEXTE.rueckblick.momentText}</p>
+        <button type="button" onClick={onWeiter} className={cn(GROSS, "max-w-sm")}>
+          {TEXTE.rueckblick.momentButton} <ArrowRight aria-hidden="true" />
+        </button>
+      </section>
+    );
+  }
   return (
     <section aria-labelledby="frage" className="flex flex-col items-center gap-4 rounded-karte bg-progress p-7 text-center text-white shadow-card md:p-10">
       <span className="flex size-20 items-center justify-center rounded-full bg-white/15" aria-hidden="true">

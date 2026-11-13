@@ -71,6 +71,8 @@ export type PraxisFortschritt = {
   kontrolle?: { id: string; am: string }[];
   zuschalten_freigegeben_am?: string;
   bewertung_freigegeben_am?: string;
+  /** Rückblick in Bewerten bestätigt (SR-64, 0073) */
+  rueckblick_am?: string;
   // 0061 (SR-89, SR-03, SR-90): Einschätzungen (Punkte je Kriterium) und Abschluss.
   einschaetzung?: Partial<Record<PraxisRolle, Record<string, number>>>;
   // 0065 (SR-64, Variante B): Deutung der Messwerte je Prüfpunkt in Kontrollieren.
@@ -1210,6 +1212,8 @@ export type Database = {
       // 0060 (SR-65): Prüfpunkte abhaken, Trainer-Gate mit Codewort, Pflege durch AfCJ admin.
       fn_praxis_kontrolle_abhaken: { Args: { p_job: string; p_punkt: string }; Returns: PraxisFortschritt };
       fn_praxis_deutung_speichern: { Args: { p_job: string; p_punkt: string; p_text: string }; Returns: PraxisFortschritt };
+      // 0073 (SR-64): Rückblick auf die vollständige Handlung in Bewerten.
+      fn_praxis_rueckblick_speichern: { Args: { p_job: string; p_phasen: string[] }; Returns: PraxisFortschritt };
       fn_praxis_gate: { Args: { p_job: string; p_gate: "plan" | "zuschalten"; p_codewort: string }; Returns: boolean };
       fn_praxis_codewort_setzen: { Args: { p_cohort: string; p_codewort: string }; Returns: undefined };
       fn_praxis_codewort_entsperren: { Args: { p_job: string; p_gate: PraxisGate }; Returns: undefined };

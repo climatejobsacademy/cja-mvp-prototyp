@@ -57,6 +57,16 @@ export async function deutungSpeichern(fieldJobId: string, punktId: string, text
   return aufrufen(fieldJobId, (s) => s.rpc("fn_praxis_deutung_speichern", { p_job: fieldJobId, p_punkt: punktId, p_text: text }));
 }
 
+/** Bewerten (SR-64, 0073): Rückblick, alle fünf Phasen bestätigt. */
+export async function rueckblickSpeichern(fieldJobId: string) {
+  return aufrufen(fieldJobId, (s) =>
+    s.rpc("fn_praxis_rueckblick_speichern", {
+      p_job: fieldJobId,
+      p_phasen: ["informieren", "planen", "entscheiden", "ausfuehren", "kontrollieren"],
+    })
+  );
+}
+
 /** Plan-Freigabe der Trainer:in in Entscheiden (SR-65); ok mit wert false = Codewort falsch. */
 export async function planFreigeben(fieldJobId: string, codewort: string) {
   return aufrufen<boolean>(fieldJobId, (s) => s.rpc("fn_praxis_gate", { p_job: fieldJobId, p_gate: "plan", p_codewort: codewort }));
