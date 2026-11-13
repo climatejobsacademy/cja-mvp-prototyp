@@ -681,7 +681,7 @@ export function PraxisflowAblauf({
                     onClick={() =>
                       aktion(
                         () => deutungSpeichern(daten.fieldJobId, id, text),
-                        () => (letzter ? phaseAbschliessen("kontrollieren", "uebergabe-selbst") : gehe(naechster()))
+                        () => (letzter ? phaseAbschliessen("kontrollieren", "handlung") : gehe(naechster()))
                       )
                     }
                     className={GROSS}
@@ -692,7 +692,6 @@ export function PraxisflowAblauf({
               );
             }
 
-            // ----- Bewerten: ein Kriterium pro Karte, Antippen geht weiter
             // ----- Bewerten: Rückblick auf die vollständige Handlung (SR-64, 13.11.2026)
             if (art === "handlung") {
               const anzahl = (x: string) => daten.dateien.filter((d) => d.art === x).length;
@@ -787,6 +786,7 @@ export function PraxisflowAblauf({
               );
             }
 
+            // ----- Reflexion: ein Kriterium pro Karte, Antippen geht weiter
             if (art === "selbst" || art === "peer" || art === "trainer") {
               const rolle = art as PraxisRolle;
               const kriterium = BOGEN.find((x) => x.id === id);
