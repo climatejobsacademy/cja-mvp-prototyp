@@ -58,12 +58,14 @@ export function AbweichungsLabel({ typ, haupt }: { typ: Tagestyp | null; haupt: 
 /**
  * Was an einem Tag als erledigt zählen kann. Live-Termine ohne eigene Lektion
  * (Deutsch/Fachdeutsch, Softskills Coaching) zählen nicht mit: für sie wird
- * keine Anwesenheit bestätigt (Entscheidung Anna 2026-10-20).
+ * keine Anwesenheit bestätigt (Entscheidung Anna 2026-10-20). Labortage
+ * zählen auch nicht mit: sie haben keinen Abschluss (SR-94), sonst würde ein
+ * Tag mit Labortag nie „geschafft“ (SR-13, Entscheidung Produkt-Lead 13.11.2026).
  */
 function zaehlendeStatus(tag: TagModell): boolean[] {
   return [
-    ...tag.bloecke.filter((b) => b.art !== "live" || b.lessonId).map((b) => b.status === "erledigt"),
-    ...tag.ganztags.map((g) => g.status === "erledigt"),
+    ...tag.bloecke.filter((b) => (b.art !== "live" || b.lessonId) && !b.labor).map((b) => b.status === "erledigt"),
+    ...tag.ganztags.filter((g) => !g.labor).map((g) => g.status === "erledigt"),
     ...tag.chips.map((c) => c.erledigt),
   ];
 }
