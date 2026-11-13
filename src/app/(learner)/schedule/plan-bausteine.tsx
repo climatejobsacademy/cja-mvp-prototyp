@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, BookOpen, FlaskConical, Play, Video, Wrench } from "lucide-react";
 
-import { GeschafftZeichen } from "./geschafft-zeichen";
+import { GeschafftZeichen } from "@/components/geschafft-zeichen";
 
 import { spuren, stunden, type Tagestyp } from "@/lib/stundenplan";
 import { TrainerZeile } from "@/components/trainer-zeile";

@@ -7,7 +7,8 @@ import { cn } from "@/lib/utils";
 // "Dein Weg" -- geschafft Dunkelgrün mit Häkchen, aktuell Lime, kommend hell
 // mit Schloss; rechts ein kleiner Ring "2 von 6". Schrift dunkel auf Coral.
 
-const SYMBOL: Record<string, LucideIcon> = {
+/** Symbol je Phase, auch für den Rückblick in Bewerten (SR-64). */
+export const PHASEN_SYMBOL: Record<string, LucideIcon> = {
   informieren: Search,
   planen: ListOrdered,
   entscheiden: UserCheck,
@@ -66,7 +67,7 @@ export function PhasenAnzeige({
     <div className="flex items-start gap-4">
       <ol aria-label={label} className="grid min-w-0 flex-1 grid-cols-6 items-start">
         {phasen.map((p, i) => {
-          const Icon = SYMBOL[p.id] ?? Star;
+          const Icon = PHASEN_SYMBOL[p.id] ?? Star;
           const geschafft = i < aktuell;
           const jetzt = i === aktuell;
           return (
