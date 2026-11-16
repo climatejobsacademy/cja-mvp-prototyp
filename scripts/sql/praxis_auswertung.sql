@@ -9,12 +9,22 @@
 --     "host=<Session-Pooler> port=5432 dbname=postgres user=postgres.vqfnmkcfjsudsujiuoqm sslmode=require" \
 --     -X -A -F ' | ' -v ON_ERROR_STOP=1 \
 --     -v kohorte='<Name der Kohorte>' -v traeger='<Domain-Muster der Trainer-Konten, sonst ->' \
+--     -v ab='2026-11-16' \
 --     -f scripts/sql/praxis_auswertung.sql
 --
 -- Herausgerechnet: Teamkonten (eigene Domain), Personen mit Rolle trainer
 -- oder afcj_admin und Konten, deren Domain auf :traeger passt. Das Muster
 -- wird beim Aufruf übergeben und steht nicht im Repo.
 -- Ergebnisse gehören als Häufigkeiten nach Notion (Pilot Data), nicht ins Repo.
+--
+-- :ab (optional, JJJJ-MM-TT): nur Praxisaufträge ab diesem Datum zählen
+-- (Phasen und Ergebnisse). Ohne :ab zählen auch ältere Aufträge, z. B. die
+-- Modul-I-Aufträge, die seit 0068 ebenfalls im geführten Ablauf stehen.
+
+\if :{?ab}
+\else
+  \set ab '2000-01-01'
+\endif
 
 set session characteristics as transaction read only;
 select 'read_only=' || current_setting('transaction_read_only') as pruefung;
@@ -33,6 +43,7 @@ select fj.phase, count(*) as auftraege,
        count(*) filter (where fj.phase not in ('abgeschlossen') and fj.phase_seit < now() - interval '30 minutes') as seit_ueber_30_min
 from field_job fj join field_job_type t on t.id = fj.field_job_type_id and t.ablauf = 'gefuehrt'
 join p on p.learner_id = fj.learner_id
+where fj.datum >= :'ab'::date
 group by fj.phase order by min(fn_praxis_phase_nr(fj.phase));
 
 \echo === Ergebnisse und K.-o.-Durchläufe
@@ -49,6 +60,7 @@ select coalesce(fj.praxisflow ->> 'ergebnis', '(offen)') as ergebnis, count(*) a
        sum(jsonb_array_length(coalesce(fj.praxisflow -> 'durchlaeufe', '[]'::jsonb))) as ko_durchlaeufe
 from field_job fj join field_job_type t on t.id = fj.field_job_type_id and t.ablauf = 'gefuehrt'
 join p on p.learner_id = fj.learner_id
+where fj.datum >= :'ab'::date
 group by 1 order by 1;
 
 \echo === Einstieg in den Praxisauftrag (SR-92, 0072): Öffnungen je Weg
