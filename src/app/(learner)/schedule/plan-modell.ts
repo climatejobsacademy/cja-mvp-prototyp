@@ -3,6 +3,7 @@
 // "Flexibel", Tagestyp. Reine Funktionen, keine Datenbank.
 
 import type { EinstiegEintrag } from "@/lib/fachsprache-einstiege";
+import { unterlagenHref } from "@/lib/materialien";
 import { praxisaufgabeHref, praxistagHref } from "@/lib/schalter";
 import type { Plantag } from "@/lib/queries/stundenplan";
 import type { TrainerAnzeige } from "@/lib/queries/trainer";
@@ -38,6 +39,8 @@ export type Block = {
   liveRaum: string | null;
   /** Lektionsseite (Unterlagen) bzw. Praxisaufgabe; null = keine */
   inhalt: string | null;
+  /** Live: Sprung zu den Unterlagen der Lektion (SR-68, ergänzt 26.11.2026); fehlt/null = keine Unterlagen */
+  unterlagen?: string | null;
   lessonId: string | null;
   fieldJobId: string | null;
   /** "Live mit …" / "Praxis mit …" (SR-78), null = niemand eingetragen */
@@ -64,6 +67,8 @@ export type Chip = {
   erledigt: boolean;
   /** Schon begonnen ("in Bearbeitung"): dann "Weiterlernen", sonst kein Zusatz (Anna 2026-10-20) */
   begonnen: boolean;
+  /** Sprung zu den Unterlagen der Lektion (SR-68, ergänzt 26.11.2026); null = keine Unterlagen */
+  unterlagen: string | null;
 };
 
 /** Praxistag ohne Uhrzeit (field_job.start/ende leer): ganztägig, über dem Raster. */
@@ -145,6 +150,7 @@ export function planModell(
           extern: zumRaum,
           liveRaum: zumRaum ? s.joinLink : null,
           inhalt: e.lessonId ? lektionHref(e.lessonId) : null,
+          unterlagen: e.lessonId ? unterlagenHref(lektionHref(e.lessonId), e.hatUnterlagen) : null,
           lessonId: e.lessonId,
           fieldJobId: null,
           trainer: trainerVon(s.trainerId),
@@ -264,6 +270,7 @@ export function planModell(
           href: e.lessonId ? lektionHref(e.lessonId) : "/content",
           erledigt: e.unitProgressStatus === "abgeschlossen",
           begonnen: e.unitProgressStatus === "in Bearbeitung",
+          unterlagen: e.lessonId ? unterlagenHref(lektionHref(e.lessonId), e.hatUnterlagen) : null,
         },
       ];
     });

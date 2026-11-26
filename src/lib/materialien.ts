@@ -83,3 +83,15 @@ export function unterlagenAufteilen<T>(
   if (aufgeklappt || liste.length <= max) return { sichtbar: liste, weitere: 0 };
   return { sichtbar: liste.slice(0, max), weitere: liste.length - max };
 }
+
+/** Anker des Abschnitts „Unterlagen“ auf der Lektionsseite (SR-68). */
+export const UNTERLAGEN_ANKER = "unterlagen";
+
+/**
+ * Ziel des Knopfs bzw. Symbols „Unterlagen“ in Stundenplan und Home (SR-68,
+ * ergänzt 26.11.2026): die Lektionsseite mit Sprung zum Abschnitt; ohne
+ * Unterlagen null (dann kein Symbol).
+ */
+export function unterlagenHref(lektionHref: string, hatUnterlagen: boolean): string | null {
+  return hatUnterlagen ? `${lektionHref}#${UNTERLAGEN_ANKER}` : null;
+}

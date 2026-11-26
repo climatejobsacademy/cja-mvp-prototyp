@@ -17,6 +17,8 @@ export type LiveAktivitaet = {
   lessonId: string | null;
   /** live_session.trainer_id (SR-78), sonst null */
   trainerId: string | null;
+  /** Lektion hat Unterlagen (SR-68, ergänzt 26.11.2026) */
+  hatUnterlagen?: boolean;
 };
 
 export type FlexAktivitaet = {
@@ -29,6 +31,8 @@ export type FlexAktivitaet = {
   begonnen: boolean;
   /** Gehört zu einer Live-Lektion (lesson.live_lektion_id, 0029/Nr. 8): "Wissen festigen" */
   festigt: boolean;
+  /** Lektion hat Unterlagen (SR-68, ergänzt 26.11.2026) */
+  hatUnterlagen?: boolean;
 };
 
 export type PraxisAktivitaet = {
@@ -75,7 +79,7 @@ export type TagesAktivitaeten = {
 };
 
 export type ErledigtEintrag =
-  | { typ: "live"; titel: string; start: string; lessonId: string | null }
+  | { typ: "live"; titel: string; start: string; lessonId: string | null; hatUnterlagen?: boolean }
   | { typ: "flex"; titel: string; lessonId: string }
   | { typ: "praxis"; titel: string };
 
@@ -147,7 +151,7 @@ export function getDayState(jetzt: string, tag: TagesAktivitaeten): Tageszustand
   if (kommend) return { zustand: "A", live: kommend, danach: ersteOffeneFlex };
 
   const erledigt: ErledigtEintrag[] = [
-    ...live.map((l) => ({ typ: "live" as const, titel: l.titel, start: l.start, lessonId: l.lessonId })),
+    ...live.map((l) => ({ typ: "live" as const, titel: l.titel, start: l.start, lessonId: l.lessonId, hatUnterlagen: l.hatUnterlagen })),
     ...tag.flex.filter((f) => f.erledigt).map((f) => ({ typ: "flex" as const, titel: f.titel, lessonId: f.lessonId })),
     ...tag.praxis.map((p) => ({ typ: "praxis" as const, titel: p.titel })),
   ];

@@ -5,7 +5,7 @@ import { ChevronDown, CircleCheck, Download, ExternalLink, Eye, FileText, Link2 
 
 import { DateiVorschau } from "@/components/datei-vorschau";
 import { erstelleDownloadMarker, markierteIds } from "@/lib/download-marker";
-import { dateiInfo, unterlagenAufteilen } from "@/lib/materialien";
+import { UNTERLAGEN_ANKER, dateiInfo, unterlagenAufteilen } from "@/lib/materialien";
 import type { Material } from "@/lib/queries/materialien";
 
 // "heruntergeladen" nur für die laufende Browser-Sitzung (sessionStorage),
@@ -13,9 +13,6 @@ import type { Material } from "@/lib/queries/materialien";
 const downloadMarker = erstelleDownloadMarker(() =>
   typeof window === "undefined" ? null : window.sessionStorage
 );
-
-// Anker für Stundenplan und Home ("Unterlagen" führt direkt hierher).
-export const UNTERLAGEN_ANKER = "unterlagen";
 
 // Hauptaktion je Zeile: "Herunterladen" bzw. bei Links "Öffnen"; immer mit
 // sichtbarem Text, auch auf dem Smartphone (SR-68, ergänzt 26.11.2026).

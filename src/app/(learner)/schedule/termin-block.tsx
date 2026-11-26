@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Check, FlaskConical, Video, Wrench } from "lucide-react";
+import { ArrowRight, Check, Download, FlaskConical, Video, Wrench } from "lucide-react";
 
 import { GeschafftZeichen } from "@/components/geschafft-zeichen";
 
@@ -63,7 +63,24 @@ export function FortschrittZeile({ f, klein, className }: { f: PraxistagFortschr
 
 const STATUS_TEXT = { erledigt: "erledigt", vorbei: "vorbei", offen: "offen" } as const;
 
-export function TerminBlock({ block, gross, style }: { block: Block; gross: boolean; style: React.CSSProperties }) {
+/**
+ * Unterlagen (SR-68, ergänzt 26.11.2026, Entscheidung Produkt-Lead): in der
+ * Tagesansicht ein eigener Knopf „Unterlagen“ neben der Hauptaktion (zweite
+ * Tippfläche über dem Block, auch während des Live-Fensters), in der
+ * Wochenansicht nur ein Hinweis-Symbol; der Block selbst führt dort zur
+ * Lektion, wo die Unterlagen oben stehen.
+ */
+export function TerminBlock({
+  block,
+  gross,
+  style,
+  tagesansicht = false,
+}: {
+  block: Block;
+  gross: boolean;
+  style: React.CSSProperties;
+  tagesansicht?: boolean;
+}) {
   const art = ART[block.labor ? "labor" : block.sammel ? "praxistag" : block.art];
   // Punkt 3 der Änderungsliste: Vergangenes weiß mit feinem Rand und grauem Text.
   const zurueck = !block.naechster && block.status === "vorbei";
@@ -76,6 +93,7 @@ export function TerminBlock({ block, gross, style }: { block: Block; gross: bool
     block.sammel ? fortschrittText(block.sammel) : null,
     block.trainer ? `${block.art === "live" ? "Live" : "Praxis"} mit ${block.trainer.rufname}${block.trainer2 ? ` und ${block.trainer2.rufname}` : ""}` : null,
     block.ort,
+    block.unterlagen ? "mit Unterlagen" : null,
     // Der Anker bleibt nach dem letzten Termin des Tages stehen (Anna 2026-10-12): dann "vorbei", nicht "als Nächstes".
     block.naechster && block.status === "offen" ? "als Nächstes" : STATUS_TEXT[block.status],
   ]
@@ -113,6 +131,11 @@ export function TerminBlock({ block, gross, style }: { block: Block; gross: bool
         <span className="whitespace-nowrap">{zeitText(block)}</span>
         {gross && ` · ${art.text}`}
         {block.ort && <span className="min-w-0 truncate font-normal">· {block.ort}</span>}
+        {block.unterlagen && !tagesansicht && (
+          <span title="Mit Unterlagen" className="shrink-0">
+            <Download className={cn("size-3", block.naechster ? art.ankerIcon : art.icon)} aria-hidden="true" />
+          </span>
+        )}
         {block.status === "erledigt" && <GeschafftZeichen wort={gross} klein={!gross} className="ml-auto" />}
       </span>
       {/* Immer genau eine Aktion (wie Veras Stundenplan, Anna 2026-10-11): ab
@@ -177,6 +200,21 @@ export function TerminBlock({ block, gross, style }: { block: Block; gross: bool
               <ArrowRight className={gross ? "size-3.5" : "size-3"} aria-hidden="true" />
             </span>
           )
+        )}
+        {block.unterlagen && tagesansicht && (
+          // Eigene Tippfläche über der Klickfläche des Blocks (z-10, Zeiger wieder an).
+          <Link
+            href={block.unterlagen}
+            aria-label={`Unterlagen: ${block.volltitel}`}
+            className={cn(
+              "pointer-events-auto relative z-10 inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 font-semibold whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-brand",
+              gross ? "text-[13px]" : "text-[11px]",
+              block.naechster ? "bg-white/15 text-white hover:bg-white/25" : "border border-line bg-card text-ink hover:text-brand"
+            )}
+          >
+            <Download className={gross ? "size-3.5" : "size-3"} aria-hidden="true" />
+            Unterlagen
+          </Link>
         )}
       </span>
     </div>

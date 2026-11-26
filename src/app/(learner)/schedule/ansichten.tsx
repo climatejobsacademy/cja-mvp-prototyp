@@ -324,7 +324,7 @@ export function TagesKarte({ tag, jetzt, simuliert, mobil }: { tag: TagModell; j
       )}
       <div className={raster}>
         <StundenSpalte von={von} bis={bis} hoehe={hoehe} />
-        <TagSpalte tag={tag} von={von} bis={bis} hoehe={hoehe} gross={!mobil} jetzt={jetzt} simuliert={simuliert} />
+        <TagSpalte tag={tag} von={von} bis={bis} hoehe={hoehe} gross={!mobil} jetzt={jetzt} simuliert={simuliert} tagesansicht />
       </div>
       {(tag.chips.length > 0 || tag.fachsprache.length > 0) && (
         <div className={raster}>
