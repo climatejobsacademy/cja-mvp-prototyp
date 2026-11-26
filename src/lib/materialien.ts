@@ -58,3 +58,28 @@ export function istSichererLink(url: string | null | undefined): url is string {
 export function hatVorschau(mimetype: string | null): boolean {
   return mimetype !== null && VORSCHAU_MIMETYPES.has(mimetype);
 }
+
+/**
+ * Zweite Zeile einer Datei im Abschnitt „Unterlagen“ (SR-68, ergänzt
+ * 26.11.2026): Format und Größe, z. B. „PDF · 2,3 MB“; ohne bekannte Größe
+ * nur das Format.
+ */
+export function dateiInfo(format: string, groesse: string | null): string {
+  return groesse ? `${format} · ${groesse}` : format;
+}
+
+/** So viele Unterlagen stehen sichtbar da, der Rest hinter „Alle anzeigen“. */
+export const UNTERLAGEN_SICHTBAR = 3;
+
+/**
+ * Aufteilung für „Alle anzeigen“: bis zu `max` Einträge sichtbar, dazu die
+ * Zahl der weiteren. Aufgeklappt sind alle sichtbar.
+ */
+export function unterlagenAufteilen<T>(
+  liste: readonly T[],
+  aufgeklappt: boolean,
+  max: number = UNTERLAGEN_SICHTBAR
+): { sichtbar: readonly T[]; weitere: number } {
+  if (aufgeklappt || liste.length <= max) return { sichtbar: liste, weitere: 0 };
+  return { sichtbar: liste.slice(0, max), weitere: liste.length - max };
+}

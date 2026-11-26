@@ -143,15 +143,13 @@ export default async function LessonPage({
         )}
       </div>
 
+      {/* Unterlagen (SR-68, ergänzt 26.11.2026): bei allen Lektionsarten direkt
+          unter dem Titel, damit "Herunterladen" ohne Scrollen sichtbar ist.
+          Ohne Unterlagen kein Abschnitt (Material-Lektion: Hinweistext unten). */}
+      {materialien.length > 0 && <MaterialienListe lessonId={lesson.id} materialien={materialien} />}
+
       {/* "begonnen" beim ersten Öffnen (SR-73, Datenlücke Nr. 9). */}
       {begonnenSetzen(lesson.contentType, lesson.status) && <BegonnenMarker lessonId={lesson.id} />}
-
-      {/* Lernmaterialien (SR-68): bei SCORM über dem Player, bei Live unter
-          der Session, bei Repository als Hauptinhalt. Ohne Materialien kein
-          Abschnitt (Repository: Hinweistext). */}
-      {lesson.contentType === "scorm" && materialien.length > 0 && (
-        <MaterialienListe lessonId={lesson.id} materialien={materialien} />
-      )}
 
       {lesson.contentType === "scorm" && nativKurs && (
         // Kein Umschalt-Link für Lernende (Anna 2026-10-17); das Team erreicht
@@ -192,16 +190,10 @@ export default async function LessonPage({
         />
       )}
 
-      {lesson.contentType === "live" && materialien.length > 0 && (
-        <MaterialienListe lessonId={lesson.id} materialien={materialien} />
-      )}
-
       {lesson.contentType === "repository" && (
         <div className="flex flex-col gap-4">
-          {materialien.length > 0 ? (
-            <MaterialienListe lessonId={lesson.id} materialien={materialien} />
-          ) : (
-            <p className="text-sm text-muted-foreground">Für diese Lektion sind noch keine Materialien hinterlegt.</p>
+          {materialien.length === 0 && (
+            <p className="text-sm text-muted-foreground">Für diese Lektion sind noch keine Unterlagen hinterlegt.</p>
           )}
           <MarkCompleteButton lessonId={lesson.id} done={done} />
         </div>
