@@ -6,6 +6,7 @@ import { GeschafftZeichen } from "@/components/geschafft-zeichen";
 import { spuren, stunden, type Tagestyp } from "@/lib/stundenplan";
 import { TrainerZeile } from "@/components/trainer-zeile";
 import { fortschrittKurz, fortschrittText } from "@/lib/praxistag-kachel";
+import { terminZiel } from "@/lib/materialien";
 import { cn } from "@/lib/utils";
 
 import { JetztLinie } from "./jetzt-linie";
@@ -92,7 +93,7 @@ export function FlexChip({ chip }: { chip: Chip }) {
   const status = chip.erledigt ? "erledigt" : chip.begonnen ? "weiterlernen" : "offen";
   return (
     <Link
-      href={chip.href}
+      href={terminZiel(chip.href, chip.unterlagen, false) ?? chip.href}
       title={chip.volltitel}
       aria-label={`Selbstlernen, flexibel, ${chip.festigen ? "Wissen festigen: " : ""}${chip.volltitel}${chip.unterlagen ? ", mit Unterlagen" : ""}, ${status}`}
       className={cn(

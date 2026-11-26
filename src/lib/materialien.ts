@@ -95,3 +95,18 @@ export const UNTERLAGEN_ANKER = "unterlagen";
 export function unterlagenHref(lektionHref: string, hatUnterlagen: boolean): string | null {
   return hatUnterlagen ? `${lektionHref}#${UNTERLAGEN_ANKER}` : null;
 }
+
+/**
+ * Ziel eines Termins im Stundenplan (SR-68, ergänzt 26.11.2026): In der
+ * Wochenansicht springt ein Termin mit Unterlagen direkt zum Abschnitt
+ * „Unterlagen“; in der Tagesansicht (eigener Knopf) und ohne Unterlagen
+ * bleibt das bisherige Ziel. Den Live-Raum im Live-Fenster entscheidet der
+ * Aufrufer vorher.
+ */
+export function terminZiel(
+  inhalt: string | null,
+  unterlagen: string | null | undefined,
+  tagesansicht: boolean
+): string | null {
+  return (!tagesansicht && unterlagen) || inhalt;
+}
