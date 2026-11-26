@@ -92,7 +92,7 @@ export function FlexChip({ chip }: { chip: Chip }) {
   const status = chip.erledigt ? "erledigt" : chip.begonnen ? "weiterlernen" : "offen";
   return (
     <Link
-      href={chip.href}
+      href={chip.unterlagen ?? chip.href}
       title={chip.volltitel}
       aria-label={`Selbstlernen, flexibel, ${chip.festigen ? "Wissen festigen: " : ""}${chip.volltitel}${chip.unterlagen ? ", mit Unterlagen" : ""}, ${status}`}
       className={cn(

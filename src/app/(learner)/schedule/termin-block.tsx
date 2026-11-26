@@ -67,8 +67,8 @@ const STATUS_TEXT = { erledigt: "erledigt", vorbei: "vorbei", offen: "offen" } a
  * Unterlagen (SR-68, ergänzt 26.11.2026, Entscheidung Produkt-Lead): in der
  * Tagesansicht ein eigener Knopf „Unterlagen“ neben der Hauptaktion (zweite
  * Tippfläche über dem Block, auch während des Live-Fensters), in der
- * Wochenansicht nur ein Hinweis-Symbol; der Block selbst führt dort zur
- * Lektion, wo die Unterlagen oben stehen.
+ * Wochenansicht ein Hinweis-Symbol, und der Block springt direkt zum
+ * Abschnitt „Unterlagen“ der Lektion (außer im Live-Fenster, dort Live-Raum).
  */
 export function TerminBlock({
   block,
@@ -152,7 +152,9 @@ export function TerminBlock({
           {titel}
         </a>
       ) : block.inhalt ? (
-        <Link href={block.inhalt} aria-label={label} className={klickflaeche}>
+        // Wochenansicht: mit Unterlagen springt der Block direkt zum Abschnitt
+        // „Unterlagen“ (SR-68, Acceptance Check 26.11.2026); die Lektion steht darunter.
+        <Link href={(!tagesansicht && block.unterlagen) || block.inhalt} aria-label={label} className={klickflaeche}>
           {titel}
         </Link>
       ) : (
