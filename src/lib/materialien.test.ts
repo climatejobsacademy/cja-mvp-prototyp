@@ -7,7 +7,7 @@ import { test } from "node:test";
 // Node braucht die Endung .ts zum Auflösen; tsc (TS5097) erlaubt sie nur mit
 // allowImportingTsExtensions. Statt tsconfig.json global zu ändern, nur hier.
 // @ts-expect-error TS5097: .ts-Endung für node:test nötig
-import { dateiInfo, dateinameAusPfad, formatBezeichnung, groesseFormatieren, hatVorschau, istSichererLink, unterlagenAufteilen } from "./materialien.ts";
+import { dateiInfo, dateinameAusPfad, formatBezeichnung, groesseFormatieren, hatVorschau, istSichererLink, unterlagenAufteilen, unterlagenHref } from "./materialien.ts";
 
 test("dateinameAusPfad: letztes Segment des Storage-Pfads", () => {
   assert.equal(dateinameAusPfad("test-a-oe.pdf"), "test-a-oe.pdf");
@@ -104,4 +104,17 @@ test("SR-68 unterlagenAufteilen: mehr als 3 zugeklappt zeigt die ersten 3 und z�
 
 test("SR-68 unterlagenAufteilen: aufgeklappt sind alle sichtbar, Reihenfolge bleibt", () => {
   assert.deepEqual(unterlagenAufteilen([1, 2, 3, 4], true), { sichtbar: [1, 2, 3, 4], weitere: 0 });
+});
+
+// SR-68 (ergänzt 26.11.2026): Stundenplan und Home springen zu den Unterlagen.
+test("SR-68 unterlagenHref: mit Unterlagen Sprung zum Abschnitt, Herkunft bleibt", () => {
+  assert.equal(
+    unterlagenHref("/content/l1?von=stundenplan&datum=2026-12-01", true),
+    "/content/l1?von=stundenplan&datum=2026-12-01#unterlagen"
+  );
+  assert.equal(unterlagenHref("/content/l1?von=home", true), "/content/l1?von=home#unterlagen");
+});
+
+test("SR-68 unterlagenHref: ohne Unterlagen kein Ziel (kein Symbol)", () => {
+  assert.equal(unterlagenHref("/content/l1?von=home", false), null);
 });

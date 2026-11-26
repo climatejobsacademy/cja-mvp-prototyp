@@ -81,6 +81,7 @@ export function aktivitaeten(tag: TagesAgenda): TagesAktivitaeten {
               joinLink: e.liveSession.joinLink,
               lessonId: e.lessonId,
               trainerId: e.liveSession.trainerId,
+              hatUnterlagen: e.hatUnterlagen,
             },
           ]
         : []
@@ -96,6 +97,7 @@ export function aktivitaeten(tag: TagesAgenda): TagesAktivitaeten {
               erledigt: e.unitProgressStatus === "abgeschlossen",
               begonnen: e.unitProgressStatus === "in Bearbeitung",
               festigt: e.liveLektionId !== null,
+              hatUnterlagen: e.hatUnterlagen,
             },
           ]
         : []

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, FlaskConical, Play, Video, Wrench } from "lucide-react";
+import { ArrowRight, BookOpen, Download, FlaskConical, Play, Video, Wrench } from "lucide-react";
 
 import { GeschafftZeichen } from "@/components/geschafft-zeichen";
 
@@ -94,7 +94,7 @@ export function FlexChip({ chip }: { chip: Chip }) {
     <Link
       href={chip.href}
       title={chip.volltitel}
-      aria-label={`Selbstlernen, flexibel, ${chip.festigen ? "Wissen festigen: " : ""}${chip.volltitel}, ${status}`}
+      aria-label={`Selbstlernen, flexibel, ${chip.festigen ? "Wissen festigen: " : ""}${chip.volltitel}${chip.unterlagen ? ", mit Unterlagen" : ""}, ${status}`}
       className={cn(
         "flex min-h-11 min-w-0 items-center gap-2 rounded-xl border border-line bg-card px-3 py-2 text-[13px] leading-snug font-semibold outline-none transition-[box-shadow] duration-150 hover:shadow-card focus-visible:ring-2 focus-visible:ring-brand motion-reduce:transition-none",
         chip.erledigt ? "text-ink-muted" : "text-ink"
@@ -103,6 +103,7 @@ export function FlexChip({ chip }: { chip: Chip }) {
       <BookOpen className="size-4 shrink-0 text-self" aria-hidden="true" />
       {/* Thema als Titel bzw. "Wissen festigen" (Anna 2026-10-16, wie demo). */}
       <span className="min-w-0 flex-1 truncate">{chip.titel}</span>
+      {chip.unterlagen && <Download className="size-3.5 shrink-0 text-ink-muted" aria-hidden="true" />}
       {chip.erledigt ? (
         <GeschafftZeichen klein />
       ) : chip.begonnen ? (
@@ -123,14 +124,13 @@ export const BLOCK_RAND = { gross: { links: 8, rechts: 16 }, klein: { links: 6, 
  */
 export function FlexLeiste({ chip, gross }: { chip: Chip; gross: boolean }) {
   const rand = gross ? BLOCK_RAND.gross : BLOCK_RAND.klein;
-  return (
+  const leiste = (
     <Link
       href={chip.href}
       title={chip.festigen ? chip.volltitel : undefined}
       aria-label={`Selbstlernen, flexibel, ${chip.festigen ? "Wissen festigen: " : ""}${chip.volltitel}${chip.erledigt ? ", erledigt" : chip.begonnen ? ", weiterlernen" : ""}`}
-      style={{ marginLeft: rand.links, marginRight: rand.rechts }}
       className={cn(
-        "flex min-w-0 items-center gap-2 rounded-xl px-3 py-2 text-[13px] font-semibold outline-none transition-[box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-brand motion-reduce:transition-none",
+        "flex min-w-0 flex-1 items-center gap-2 rounded-xl px-3 py-2 text-[13px] font-semibold outline-none transition-[box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-brand motion-reduce:transition-none",
         chip.erledigt
           ? "border border-line bg-card text-ink-muted hover:shadow-card"
           : "border border-line bg-card text-ink hover:shadow-card"
@@ -148,6 +148,22 @@ export function FlexLeiste({ chip, gross }: { chip: Chip; gross: boolean }) {
         </span>
       )}
     </Link>
+  );
+  // Unterlagen (SR-68, ergänzt 26.11.2026): eigener Knopf neben der Leiste.
+  return (
+    <div style={{ marginLeft: rand.links, marginRight: rand.rechts }} className="flex min-w-0 items-stretch gap-2">
+      {leiste}
+      {chip.unterlagen && (
+        <Link
+          href={chip.unterlagen}
+          aria-label={`Unterlagen: ${chip.volltitel}`}
+          className="inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-xl border border-line bg-card px-3 text-[13px] font-semibold text-ink outline-none hover:text-brand hover:shadow-card focus-visible:ring-2 focus-visible:ring-brand"
+        >
+          <Download className="size-3.5" aria-hidden="true" />
+          <span className={gross ? undefined : "sr-only"}>Unterlagen</span>
+        </Link>
+      )}
+    </div>
   );
 }
 
@@ -238,6 +254,7 @@ export function TagSpalte({
   jetzt,
   simuliert,
   heuteToenen = false,
+  tagesansicht = false,
 }: {
   tag: TagModell;
   von: number;
@@ -249,6 +266,8 @@ export function TagSpalte({
   simuliert: boolean;
   /** Wochenansicht: heutige Spalte leicht tönen */
   heuteToenen?: boolean;
+  /** Tagesansicht: Knopf „Unterlagen“ statt Hinweis-Symbol (SR-68) */
+  tagesansicht?: boolean;
 }) {
   const lanes = spuren(tag.bloecke);
   const { links, rechts } = gross ? BLOCK_RAND.gross : BLOCK_RAND.klein;
@@ -269,6 +288,7 @@ export function TagSpalte({
             key={b.id}
             block={b}
             gross={gross}
+            tagesansicht={tagesansicht}
             style={{
               top: `calc(${prozent(stunden(b.start), von, bis)} + 2px)`,
               height: `max(calc(${anteil * 100}% - 4px), 28px)`,
