@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Check, Download, FlaskConical, Video, Wrench } from "lucide-react";
 
 import { GeschafftZeichen } from "@/components/geschafft-zeichen";
+import { terminZiel } from "@/lib/materialien";
 
 import { TrainerZeile } from "@/components/trainer-zeile";
 import { fortschrittMittel, fortschrittText, type PraxistagFortschritt } from "@/lib/praxistag-kachel";
@@ -154,7 +155,7 @@ export function TerminBlock({
       ) : block.inhalt ? (
         // Wochenansicht: mit Unterlagen springt der Block direkt zum Abschnitt
         // „Unterlagen“ (SR-68, Acceptance Check 26.11.2026); die Lektion steht darunter.
-        <Link href={(!tagesansicht && block.unterlagen) || block.inhalt} aria-label={label} className={klickflaeche}>
+        <Link href={terminZiel(block.inhalt, block.unterlagen, tagesansicht) ?? block.inhalt} aria-label={label} className={klickflaeche}>
           {titel}
         </Link>
       ) : (
