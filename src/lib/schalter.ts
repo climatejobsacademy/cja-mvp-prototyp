@@ -1,7 +1,7 @@
 // Funktionsschalter je Deployment (Entscheidung 2026-10-16, docs/decisions.md).
 // Nur serverseitig: ohne NEXT_PUBLIC_-Präfix kommt der Wert nicht ins
-// Browser-Bundle. Ohne gesetzte Variable ist jeder Schalter aus (Ausnahme:
-// NATIVE_SELBSTLERNEN, siehe unten); gesetzt wird er in Vercel je Umgebung
+// Browser-Bundle. Ohne gesetzte Variable ist jeder Schalter aus (Ausnahmen:
+// NATIVE_SELBSTLERNEN und FRAGEN_THREAD, siehe unten); gesetzt wird er in Vercel je Umgebung
 // mit eigenem Wert, der nur in Vercel steht (docs/runbook.md, Abschnitt 7).
 // Eine Änderung wirkt erst nach einem neuen Deployment. Getestet in
 // src/lib/schalter.test.ts.
