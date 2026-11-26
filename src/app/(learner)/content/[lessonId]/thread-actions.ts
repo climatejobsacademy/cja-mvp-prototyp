@@ -4,9 +4,14 @@ import { revalidatePath } from "next/cache";
 
 import { beitragPruefen } from "@/lib/lektion-thread";
 import { requireCurrentLearner } from "@/lib/queries/session";
+import { FRAGEN_THREAD } from "@/lib/schalter";
 import { createClient } from "@/lib/supabase/server";
 
 type Ergebnis = { ok: true } | { ok: false; fehler: string };
+
+// Schalter FRAGEN_THREAD=aus (SR-74, ergänzt 26.11.2026): Schreiben,
+// Antworten und Löschen werden abgelehnt, bevor die Datenbank gefragt wird.
+const AUSGESCHALTET: Ergebnis = { ok: false, fehler: "Fragen zur Lektion sind gerade ausgeschaltet." };
 
 // Kurze deutsche Meldungen; bewusst ohne Datenbank-Fehlertext, damit weder
 // Beitragsinhalte noch Namen in der Oberfläche oder in Logs landen
@@ -30,6 +35,7 @@ export async function beitragSchreiben(
   eingabe: string
 ): Promise<Ergebnis> {
   await requireCurrentLearner();
+  if (!FRAGEN_THREAD) return AUSGESCHALTET;
 
   const pruefung = beitragPruefen(eingabe);
   if (!pruefung.ok) {
@@ -56,6 +62,7 @@ export async function beitragSchreiben(
 /** Löschen über fn_beitrag_loeschen (Soft-Delete); das Backend entscheidet. */
 export async function beitragLoeschen(lessonId: string, beitragId: string): Promise<Ergebnis> {
   await requireCurrentLearner();
+  if (!FRAGEN_THREAD) return AUSGESCHALTET;
 
   const supabase = await createClient();
   const { error } = await supabase.rpc("fn_beitrag_loeschen", { p_beitrag_id: beitragId });

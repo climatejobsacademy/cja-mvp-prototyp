@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 // @ts-expect-error TS5097: .ts-Endung für node:test nötig
-import { fachspracheEinheitAn, nativeSelbstlernenAn, praxisaufgabeHref, praxisaufgabeLinkAn } from "./schalter.ts";
+import { fachspracheEinheitAn, fragenThreadAn, nativeSelbstlernenAn, praxisaufgabeHref, praxisaufgabeLinkAn, threadSichtbar } from "./schalter.ts";
 
 test("fachspracheEinheitAn: ohne Variable aus", () => {
   assert.equal(fachspracheEinheitAn({}), false);
@@ -55,4 +55,30 @@ test("nativeSelbstlernenAn: andere Werte bleiben an", () => {
 
 test("nativeSelbstlernenAn: NEXT_PUBLIC_-Variante zählt nicht", () => {
   assert.equal(nativeSelbstlernenAn({ NEXT_PUBLIC_NATIVE_SELBSTLERNEN: "aus" }), true);
+});
+
+// SR-74 (ergänzt 26.11.2026): Schalter für den Fragen-Thread.
+test("SR-74 fragenThreadAn: ohne Variable an (Staging bleibt je Lektion schaltbar)", () => {
+  assert.equal(fragenThreadAn({}), true);
+});
+
+test("SR-74 fragenThreadAn: nur der Wert 'aus' schaltet aus (Groß-/Kleinschreibung und Leerraum egal)", () => {
+  assert.equal(fragenThreadAn({ FRAGEN_THREAD: "aus" }), false);
+  assert.equal(fragenThreadAn({ FRAGEN_THREAD: " AUS " }), false);
+});
+
+test("SR-74 fragenThreadAn: andere Werte bleiben an", () => {
+  for (const wert of ["", "an", "false", "0", "nein", "off", "aus,an"]) {
+    assert.equal(fragenThreadAn({ FRAGEN_THREAD: wert }), true, wert);
+  }
+});
+
+test("SR-74 threadSichtbar: Schalter aus blendet den Thread aus, auch wenn chat_aktiv an ist", () => {
+  assert.equal(threadSichtbar(true, false), false);
+  assert.equal(threadSichtbar(false, false), false);
+});
+
+test("SR-74 threadSichtbar: Schalter an folgt chat_aktiv wie bisher", () => {
+  assert.equal(threadSichtbar(true, true), true);
+  assert.equal(threadSichtbar(false, true), false);
 });
