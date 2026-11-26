@@ -1,6 +1,6 @@
 {
   "quelle": "Notion-Datenbank \"System Requirements\" (SR-ID ist dort ein Auto-Zähler). Nummern werden nie im Repo vergeben.",
-  "stand": "2026-11-10",
+  "stand": "2026-11-26",
   "hinweis": "Bei jeder neuen Notion-SR die Nummer im selben PR hier ergänzen. 10, 33 und 87 sind in Notion nicht belegt.",
   "ids": [
     1,
@@ -93,7 +93,13 @@
     91,
     92,
     93,
-    94
+    94,
+    95,
+    96,
+    97,
+    98,
+    99,
+    100
   ],
   "legacyFiles": [
     "supabase/migrations/**"

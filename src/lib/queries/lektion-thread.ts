@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { threadSichtbar } from "@/lib/schalter";
 import { THREAD_LIMIT, beitraegeGruppieren, type ThreadBeitrag, type ThreadEintrag } from "@/lib/lektion-thread";
 
 export type LektionThread = {
@@ -15,8 +16,9 @@ const SPALTEN = "id, created_at, parent_id, person_id, autor_anzeigename, text, 
 
 /**
  * Thread einer Lektion für die angemeldete Person (SR-74).
- * Liefert null, wenn chat_aktiv aus ist oder die Person nicht lesen darf --
- * dann zeigt die Seite gar nichts an.
+ * Liefert null, wenn chat_aktiv aus ist, der Schalter FRAGEN_THREAD die
+ * Threads ausschaltet (SR-74, ergänzt 26.11.2026) oder die Person nicht
+ * lesen darf -- dann zeigt die Seite gar nichts an.
  *
  * Kohorte: Kandidaten sind die eigenen Einschreibungen mit Status aktiv oder
  * abgeschlossen. Zuerst die Kohorte des aktuellen Kontexts
@@ -30,7 +32,7 @@ export async function getLektionThread(
   chatAktiv: boolean,
   learner: { personId: string; cohortId: string }
 ): Promise<LektionThread | null> {
-  if (!chatAktiv) return null;
+  if (!threadSichtbar(chatAktiv)) return null;
 
   const supabase = await createClient();
 

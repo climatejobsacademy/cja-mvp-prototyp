@@ -1,7 +1,7 @@
 // Funktionsschalter je Deployment (Entscheidung 2026-10-16, docs/decisions.md).
 // Nur serverseitig: ohne NEXT_PUBLIC_-Präfix kommt der Wert nicht ins
-// Browser-Bundle. Ohne gesetzte Variable ist jeder Schalter aus (Ausnahme:
-// NATIVE_SELBSTLERNEN, siehe unten); gesetzt wird er in Vercel je Umgebung
+// Browser-Bundle. Ohne gesetzte Variable ist jeder Schalter aus (Ausnahmen:
+// NATIVE_SELBSTLERNEN und FRAGEN_THREAD, siehe unten); gesetzt wird er in Vercel je Umgebung
 // mit eigenem Wert, der nur in Vercel steht (docs/runbook.md, Abschnitt 7).
 // Eine Änderung wirkt erst nach einem neuen Deployment. Getestet in
 // src/lib/schalter.test.ts.
@@ -56,3 +56,24 @@ export function nativeSelbstlernenAn(umgebung: Umgebung = process.env): boolean 
 }
 
 export const NATIVE_SELBSTLERNEN = nativeSelbstlernenAn();
+
+/**
+ * Fragen-Thread in Lektionen (SR-74, ergänzt 26.11.2026): standardmäßig AN,
+ * aus nur mit FRAGEN_THREAD=aus (Groß-/Kleinschreibung und Leerraum egal),
+ * jeder andere Wert gilt als an. Aus heißt: keine Lektion zeigt einen
+ * Fragen-Bereich und Schreiben, Antworten und Löschen werden abgelehnt,
+ * unabhängig von lesson.chat_aktiv -- auch an neu angelegten Live-Lektionen,
+ * die der Trigger aus 0054 einschaltet. Daten bleiben unverändert. In Vercel
+ * nur für Production gesetzt; auf Staging bleibt der Thread je Lektion
+ * schaltbar.
+ */
+export function fragenThreadAn(umgebung: Umgebung = process.env): boolean {
+  return umgebung.FRAGEN_THREAD?.trim().toLowerCase() !== "aus";
+}
+
+export const FRAGEN_THREAD = fragenThreadAn();
+
+/** Thread einer Lektion sichtbar: nur bei eingeschaltetem Schalter und chat_aktiv. */
+export function threadSichtbar(chatAktiv: boolean, an: boolean = FRAGEN_THREAD): boolean {
+  return an && chatAktiv;
+}

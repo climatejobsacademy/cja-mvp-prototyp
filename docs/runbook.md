@@ -335,8 +335,21 @@ Die App liest die folgenden Variablen. Sie werden in Vercel gesetzt (Projekt, Se
 | `VERCEL_ENV`, `VERCEL_BRANCH_URL` | Systemvariablen von Vercel: Umgebung und Adresse der Vorschau-Version; nicht selbst setzen (`decisions.md`, Eintrag 2026-09-21) | Vercel, automatisch | alle |
 | `FACHSPRACHE_EINHEIT`, `PRAXISAUFGABE_LINK` | Funktionsschalter: nur der Wert `an` schaltet ein, ohne Variable ist die Funktion aus (`src/lib/schalter.ts`, `fachsprache.md`) | Vercel | je Umgebung ein eigener Wert |
 | `NATIVE_SELBSTLERNEN` | Schalter mit umgekehrtem Standard: ohne Variable ist die native Selbstlern-Ansicht an, nur der Wert `aus` schaltet sie ab (Notbremse) | Vercel | je Umgebung ein eigener Wert |
+| `FRAGEN_THREAD` | Schalter mit umgekehrtem Standard: ohne Variable folgt der Fragen-Thread `lesson.chat_aktiv`, der Wert `aus` blendet ihn überall aus und lehnt Schreiben ab (SR-74, `fragen-thread.md`) | Vercel | Production `aus`, Preview und Development ohne Variable |
 | `SUPABASE_SERVICE_ROLE_KEY` | nur für `scripts/invite-learner.mjs`, nie im App-Code; für Production liest das Skript den Schlüssel nur aus dem Schlüsselbund (`.env.example`) | lokal `.env.local` | lokal |
 | `PGPASSWORD`, `PSQL` | für die Skripte: Datenbank-Passwort (sonst ein Schlüsselbund-Eintrag je Ziel) und Pfad zu `psql` (`import-plan.md`, `lernende-anlegen.md`) | eigene Shell | lokal |
+
+### Dauer der Anmeldung (Sessions)
+
+Die Dauer einer Anmeldung steht nur im Supabase-Dashboard unter Authentication → Sessions, nicht im Code (SR-99). Das Dashboard erwartet die Werte in Stunden.
+
+| Einstellung | Production | Staging |
+|---|---|---|
+| Inactivity timeout | 336 Stunden (14 Tage) | nicht gesetzt |
+| Time-box user sessions | 720 Stunden (30 Tage) | nicht gesetzt |
+| Single session per user | aus | aus |
+
+Staging bleibt ohne Begrenzung, weil dort keine echten Personendaten liegen und Testkonten nicht ständig neu angemeldet werden sollen. Eine Änderung greift nicht sofort, sondern bei der nächsten Erneuerung einer Sitzung (spätestens nach einer Stunde, `jwt_expiry`). Ist eine Sitzung abgelaufen, leitet `middleware.ts` auf `/login` um. „Abmelden“ ruft `signOut({ scope: "local" })` auf und beendet nur die Sitzung auf dem aktuellen Gerät (`src/lib/sitzung.ts`); andere Geräte der Person bleiben angemeldet.
 
 ### Redirect-URLs
 

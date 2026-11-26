@@ -7,7 +7,7 @@ import { test } from "node:test";
 // Node braucht die Endung .ts zum Auflösen; tsc (TS5097) erlaubt sie nur mit
 // allowImportingTsExtensions. Statt tsconfig.json global zu ändern, nur hier.
 // @ts-expect-error TS5097: .ts-Endung für node:test nötig
-import { dateinameAusPfad, formatBezeichnung, groesseFormatieren, hatVorschau, istSichererLink } from "./materialien.ts";
+import { dateiInfo, dateinameAusPfad, formatBezeichnung, groesseFormatieren, hatVorschau, istSichererLink, terminZiel, unterlagenAufteilen, unterlagenHref } from "./materialien.ts";
 
 test("dateinameAusPfad: letztes Segment des Storage-Pfads", () => {
   assert.equal(dateinameAusPfad("test-a-oe.pdf"), "test-a-oe.pdf");
@@ -84,4 +84,48 @@ test("hatVorschau: PDF und Bilder ja, Office nein", () => {
   assert.equal(hatVorschau("application/vnd.openxmlformats-officedocument.wordprocessingml.document"), false);
   assert.equal(hatVorschau("image/svg+xml"), false);
   assert.equal(hatVorschau(null), false);
+});
+
+// SR-68 (ergänzt 26.11.2026): Abschnitt „Unterlagen“ mit Format und Größe je Datei.
+test("SR-68 dateiInfo: Format und Größe, ohne Größe nur das Format", () => {
+  assert.equal(dateiInfo("PDF", "2,3 MB"), "PDF · 2,3 MB");
+  assert.equal(dateiInfo("Word (DOCX)", "95 KB"), "Word (DOCX) · 95 KB");
+  assert.equal(dateiInfo("PDF", null), "PDF");
+});
+
+test("SR-68 unterlagenAufteilen: bis 3 Einträge alle sichtbar, keine weiteren", () => {
+  assert.deepEqual(unterlagenAufteilen([], false), { sichtbar: [], weitere: 0 });
+  assert.deepEqual(unterlagenAufteilen([1, 2, 3], false), { sichtbar: [1, 2, 3], weitere: 0 });
+});
+
+test("SR-68 unterlagenAufteilen: mehr als 3 zugeklappt zeigt die ersten 3 und zählt den Rest", () => {
+  assert.deepEqual(unterlagenAufteilen([1, 2, 3, 4, 5, 6, 7], false), { sichtbar: [1, 2, 3], weitere: 4 });
+});
+
+test("SR-68 unterlagenAufteilen: aufgeklappt sind alle sichtbar, Reihenfolge bleibt", () => {
+  assert.deepEqual(unterlagenAufteilen([1, 2, 3, 4], true), { sichtbar: [1, 2, 3, 4], weitere: 0 });
+});
+
+// SR-68 (ergänzt 26.11.2026): Stundenplan und Home springen zu den Unterlagen.
+test("SR-68 unterlagenHref: mit Unterlagen Sprung zum Abschnitt, Herkunft bleibt", () => {
+  assert.equal(
+    unterlagenHref("/content/l1?von=stundenplan&datum=2026-12-01", true),
+    "/content/l1?von=stundenplan&datum=2026-12-01#unterlagen"
+  );
+  assert.equal(unterlagenHref("/content/l1?von=home", true), "/content/l1?von=home#unterlagen");
+});
+
+test("SR-68 unterlagenHref: ohne Unterlagen kein Ziel (kein Symbol)", () => {
+  assert.equal(unterlagenHref("/content/l1?von=home", false), null);
+});
+
+test("SR-68 terminZiel: Wochenansicht mit Unterlagen springt zum Abschnitt", () => {
+  assert.equal(terminZiel("/content/l1?von=stundenplan", "/content/l1?von=stundenplan#unterlagen", false), "/content/l1?von=stundenplan#unterlagen");
+});
+
+test("SR-68 terminZiel: Tagesansicht und ohne Unterlagen bleibt das bisherige Ziel", () => {
+  assert.equal(terminZiel("/content/l1?von=stundenplan", "/content/l1?von=stundenplan#unterlagen", true), "/content/l1?von=stundenplan");
+  assert.equal(terminZiel("/content/l1?von=stundenplan", null, false), "/content/l1?von=stundenplan");
+  assert.equal(terminZiel("/content/l1?von=stundenplan", undefined, false), "/content/l1?von=stundenplan");
+  assert.equal(terminZiel(null, null, false), null);
 });

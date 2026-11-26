@@ -1,8 +1,9 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { kompetenzHref, StaerktPills, type StaerktKompetenz } from "@/components/staerkt-pills";
+import { unterlagenHref } from "@/lib/materialien";
 import { PRAXISAUFGABE_LINK } from "@/lib/schalter";
-import { ArrowRight, BookOpen, CalendarDays, Check, FlaskConical, Video, Wrench } from "lucide-react";
+import { ArrowRight, BookOpen, CalendarDays, Check, Download, FlaskConical, Video, Wrench } from "lucide-react";
 
 import type { ErledigtEintrag, LiveAktivitaet, PraxisAktivitaet } from "@/lib/home-tag";
 import { PHASEN } from "@/lib/praxisflow-inhalte";
@@ -34,7 +35,29 @@ export type OffeneLektion = {
   lessonId: string;
   /** "in Bearbeitung" (0029/Nr. 9): "Weiterlernen" statt "Starten" */
   begonnen: boolean;
+  /** Lektion hat Unterlagen (SR-68, ergänzt 26.11.2026) */
+  hatUnterlagen?: boolean;
 };
+
+/**
+ * Knopf „Unterlagen“ neben der Hauptaktion einer Fokus-Karte (SR-68, ergänzt
+ * 26.11.2026): führt zum Abschnitt „Unterlagen“ der Lektion. Auf dem
+ * lila Anker hell, Text immer sichtbar.
+ */
+function UnterlagenKnopf({ lessonId, titel }: { lessonId: string; titel: string }) {
+  const href = unterlagenHref(lektionHref(lessonId), true);
+  if (!href) return null;
+  return (
+    <Link
+      href={href}
+      aria-label={`Unterlagen: ${titel}`}
+      className="inline-flex min-h-11 items-center gap-2 rounded-full bg-white/15 px-4 text-[15px] font-semibold text-white outline-none hover:bg-white/25 focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-brand"
+    >
+      <Download className="size-[17px]" aria-hidden="true" />
+      Unterlagen
+    </Link>
+  );
+}
 export type GestaerkteKompetenz = { id: string; name: string; prozent: number };
 export type { StaerktKompetenz };
 export { kompetenzHref };
@@ -211,7 +234,14 @@ export function FokusLive({
         <PrimaerAktion
           href={ziel}
           extern={!!live.joinLink}
-          mehr={live.lessonId && <MehrMenue lessonId={live.lessonId} />}
+          mehr={
+            live.lessonId && (
+              <>
+                {live.hatUnterlagen && <UnterlagenKnopf lessonId={live.lessonId} titel={live.titel} />}
+                <MehrMenue lessonId={live.lessonId} />
+              </>
+            )
+          }
         >
           {laeuft ? "Jetzt beitreten" : "Zum Live-Unterricht"}
         </PrimaerAktion>
@@ -256,7 +286,12 @@ export function FokusFlex({
       </span>
       <FokusTitel titel={lektion.titel} thema={lektion.thema} stil={stil} />
       <StaerktPills kompetenzen={staerkt} />
-      <PrimaerAktion href={lektionHref(lektion.lessonId)}>{lektion.begonnen ? "Weiterlernen" : "Starten"}</PrimaerAktion>
+      <PrimaerAktion
+        href={lektionHref(lektion.lessonId)}
+        mehr={lektion.hatUnterlagen && <UnterlagenKnopf lessonId={lektion.lessonId} titel={lektion.titel} />}
+      >
+        {lektion.begonnen ? "Weiterlernen" : "Starten"}
+      </PrimaerAktion>
     </FokusRahmen>
   );
 }
@@ -475,9 +510,11 @@ export function FlexLeiste({
         <span className="line-clamp-2 text-sm text-ink-muted">
           {kopf ? `${kopf} · ` : ""}
           {lektion.titel}
-          <span className="sr-only">. {lektion.begonnen ? "Weiterlernen" : "Starten"}</span>
+          <span className="sr-only">. {lektion.begonnen ? "Weiterlernen" : "Starten"}{lektion.hatUnterlagen ? ", mit Unterlagen" : ""}</span>
         </span>
       </span>
+      {/* Hinweis auf Unterlagen (SR-68); die Leiste führt zur Lektion, wo sie oben stehen. */}
+      {lektion.hatUnterlagen && <Download className="size-[17px] flex-none text-ink-muted" aria-hidden="true" />}
       <ArrowRight className="size-[17px] flex-none text-ink-muted" aria-hidden="true" />
     </Link>
   );
@@ -488,10 +525,17 @@ export function ErledigtLeiste({ erledigt }: { erledigt: ErledigtEintrag[] }) {
   const live = [...erledigt].reverse().find((e) => e.typ === "live");
   if (!live || live.typ !== "live" || !live.lessonId) return null;
   return (
-    <Link href={lektionHref(live.lessonId)} className={cn(KAESTCHEN, LEISTE_LINK)}>
+    // Mit Unterlagen direkt zum Abschnitt (SR-68, ergänzt 26.11.2026), sonst zur Lektion.
+    <Link
+      href={unterlagenHref(lektionHref(live.lessonId), !!live.hatUnterlagen) ?? lektionHref(live.lessonId)}
+      className={cn(KAESTCHEN, LEISTE_LINK)}
+    >
       <Check className="size-[22px] flex-none text-progress" strokeWidth={2.5} aria-hidden="true" />
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <span className="text-[17px] font-semibold">Unterlagen ansehen</span>
+        <span className="flex items-center gap-1.5 text-[17px] font-semibold">
+          {live.hatUnterlagen && <Download className="size-[17px] flex-none text-brand" aria-hidden="true" />}
+          {live.hatUnterlagen ? "Unterlagen ansehen" : "Zur Lektion"}
+        </span>
         <span className="line-clamp-1 text-sm text-ink-muted">
           <span className="sr-only">Erledigt: Live-Unterricht {hhmm(live.start)}, </span>
           {live.titel}

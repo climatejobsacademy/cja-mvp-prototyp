@@ -492,6 +492,30 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Status:** gültig
 - **Belegt:** `design-specifications.md` Abschnitt 1.3
 
+### 2026-11-26 – Unterlagen: direkt unter dem Titel, erkennbar in Stundenplan und Home
+
+- **Entscheidung:** (Produkt-Lead) Der Abschnitt „Unterlagen“ steht bei allen Lektionsarten direkt unter dem Titel, je Datei mit Titel, „Format · Größe“ und eigenem Knopf „Herunterladen“; „Vorschau“ ist Nebenaktion. Das löst die Kacheln ohne Download-Knopf (Entscheidung Geschäftsführung 2026-10-12) ab. Im Stundenplan zeigt die Tagesansicht einen eigenen Knopf „Unterlagen“ im Live-Block und neben der Selbstlern-Leiste, die Wochenansicht ein Hinweis-Symbol, und dort springt ein Termin mit Unterlagen beim Tippen direkt zum Abschnitt (im Live-Fenster weiter in den Live-Raum); Home zeigt den Knopf neben der Hauptaktion der Fokus-Karte. Der Knopf im Block der Tagesansicht ist eine bewusste Ausnahme von „genau eine Aktion je Termin“ (2026-10-11), damit die Unterlagen auch im Live-Fenster erreichbar sind. Downloads werden nicht erfasst; „heruntergeladen“ gilt nur in der Browser-Sitzung. Eine Druckansicht nativer Lektionen ist nicht Teil davon (in Notion nur als Vorschlag geführt).
+- **Begründung:** Im Pilot lernen die Lernenden mit Ausdrucken (UN-66) und fanden Unterlagen oft erst, nachdem man sie gezeigt hatte (UN-72); der Stundenplan ist der häufigste Einstieg. Die Kacheln erfüllten zudem den Acceptance Check von SR-68 (Format, Größe, Download-Knopf) nicht.
+- **Folgen:** Acceptance Check von SR-68 in Notion ergänzt. Rechte und Lektionsseite zeigen Unterlagen schon heute auch nach Termin und Abschluss (nur lesend auf Production geprüft); ob Unterlagen eines Live-Termins zusätzlich in der zugehörigen Selbstlern-Lektion („Wissen festigen“) erscheinen sollen, klärt das Learning Design (Asana-Karte „Wann gilt ein Live-Termin als erledigt …“). Umsetzung in `materialien-liste.tsx`, `src/lib/queries/schedule.ts`, `src/app/(learner)/schedule/` und `src/app/(learner)/home/`; Beschreibung in `design-specifications.md` §2.2 und §2.4.
+- **Status:** gültig
+- **Belegt:** SR-68
+
+### 2026-11-26 – Fragen-Thread auf Production aus, per Schalter
+
+- **Entscheidung:** (Produkt-Lead) Der Fragen-Thread in Lektionen (SR-74) ist auf Production aus. Der serverseitige Schalter `FRAGEN_THREAD=aus` blendet ihn unabhängig von `lesson.chat_aktiv` aus und lehnt Schreiben, Antworten und Löschen ab, auch an neu angelegten Live-Lektionen (Trigger aus `0054`). Ohne Variable gilt `chat_aktiv` wie bisher; in Vercel wird der Schalter nur für Production gesetzt, Staging bleibt je Lektion schaltbar. Vorhandene Beiträge bleiben gespeichert. Zusätzlich wurde `chat_aktiv` auf Production an allen Lektionen ausgeschaltet (Probelauf mit ROLLBACK, danach mit Freigabe).
+- **Begründung:** Der Thread wurde im Pilot kaum genutzt und soll auf Production nicht mehr erscheinen. Das Ausschalten per Daten allein hält nur bis zum nächsten Import, weil `0054` neue Live-Lektionen einschaltet.
+- **Folgen:** Acceptance Check von SR-74 in Notion ergänzt, Stage Later. Der Schalter wirkt in der App; ein direkter Aufruf der Datenbank-API bleibt über `chat_aktiv` und RLS geregelt. Beschreibung in `fragen-thread.md`, `runbook.md` (Variablen) und `release.md` (Schalter-Checkliste).
+- **Status:** gültig
+- **Belegt:** SR-74
+
+### 2026-11-26 – Dauer der Anmeldung und Abmelden nur auf dem aktuellen Gerät
+
+- **Entscheidung:** (Produkt-Lead) In Production endet eine Anmeldung nach 14 Tagen ohne Nutzung und spätestens 30 Tage nach dem Login (Supabase: Inactivity timeout 336 Stunden, Time-box 720 Stunden); „Single session per user“ bleibt aus, Laptop und Handy dürfen gleichzeitig angemeldet sein. Staging bleibt ohne Begrenzung. „Abmelden“ beendet nur die Sitzung auf dem aktuellen Gerät.
+- **Begründung:** Login per Einmallink ist ein Faktor; NIST SP 800-63-4 (AAL1) verlangt dafür eine erneute Anmeldung spätestens nach 30 Tagen, ein Inaktivitäts-Timeout ist dort freiwillig. Strengere Werte (Stunden statt Tage) hätten für Lernende auf dem Handy praktisch ein tägliches Login per Mail bedeutet. Auf der Plattform liegen keine besonderen Kategorien personenbezogener Daten. Bisher meldete „Abmelden“ alle Geräte ab (Supabase-Standard „global“).
+- **Folgen:** Werte nur im Dashboard (`runbook.md`, Abschnitt 7), nicht im Code; Datenschutzerklärung und TOM (`verarbeitungsverzeichnis.md`) nennen die Dauer. Eine kürzere Dauer nur für Trainer:innen, die künftig Ergebnisse je Person sehen (SR-100), ginge nur über eigene Logik in der App und ist nicht Teil davon.
+- **Status:** gültig
+- **Belegt:** SR-99
+
 ## Offene technische Schulden
 
 Diese Punkte sind keine Entscheidungen, sondern bekannte Lücken; was daraus wird, steht in Asana.

@@ -40,6 +40,8 @@ export type TheorieEintrag = {
   liveLektionId: string | null;
   contentType: ContentType | "kurs";
   unitProgressStatus: UnitProgressStatus | null;
+  /** Lektion hat Unterlagen (lesson_resource, sichtbar laut RLS; SR-68, ergänzt 26.11.2026) */
+  hatUnterlagen: boolean;
   liveSession: {
     /** live_session.id (Stundenplan: bestätigte Anwesenheit) */
     id: string;
@@ -210,7 +212,7 @@ export async function getAgendaZeitraum(
       ];
       const allLessonIdsForProgress = [...lessonIds, ...liveSessionLessonIds];
       // Ladezeit (Anna 2026-10-21): die drei Nachlade-Abfragen gleichzeitig.
-      const [{ data: extraLessons }, { data: extraCourses }, { data: progress }] = await Promise.all([
+      const [{ data: extraLessons }, { data: extraCourses }, { data: progress }, { data: ressourcen }] = await Promise.all([
         liveSessionLessonIds.length > 0
           ? supabase.from("lesson").select("id, name, thema, content_type, live_lektion_id").in("id", liveSessionLessonIds)
           : Promise.resolve({ data: [] as NonNullable<typeof lessons> }),
@@ -224,7 +226,13 @@ export async function getAgendaZeitraum(
               .eq("learner_id", learnerId)
               .in("lesson_id", allLessonIdsForProgress)
           : Promise.resolve({ data: [] as { lesson_id: string; status: UnitProgressStatus }[] }),
+        // Unterlagen je Lektion (SR-68): nur die Lektions-IDs, RLS wie auf der
+        // Lektionsseite (fn_kann_lektion_lesen). Links zählen mit.
+        allLessonIdsForProgress.length > 0
+          ? supabase.from("lesson_resource").select("lesson_id").in("lesson_id", allLessonIdsForProgress)
+          : Promise.resolve({ data: [] as { lesson_id: string }[] }),
       ]);
+      const mitUnterlagen = new Set((ressourcen ?? []).map((r) => r.lesson_id));
       const allLessons = [...(lessons ?? []), ...(extraLessons ?? [])];
       const allCourses = [...(courses ?? []), ...(extraCourses ?? [])];
       const progressByLesson = new Map<string, UnitProgressStatus>((progress ?? []).map((p) => [p.lesson_id, p.status]));
@@ -247,6 +255,7 @@ export async function getAgendaZeitraum(
             liveLektionId: null,
             contentType: "live",
             unitProgressStatus: lesson ? progressByLesson.get(lesson.id) ?? "offen" : null,
+            hatUnterlagen: lesson ? mitUnterlagen.has(lesson.id) : false,
             liveSession: {
               id: session.id,
               datum: session.datum,
@@ -271,6 +280,7 @@ export async function getAgendaZeitraum(
             liveLektionId: lesson.live_lektion_id,
             contentType: lesson.content_type,
             unitProgressStatus: progressByLesson.get(lesson.id) ?? "offen",
+            hatUnterlagen: mitUnterlagen.has(lesson.id),
             liveSession: null,
           });
         } else if (entry.course_id) {
@@ -287,6 +297,7 @@ export async function getAgendaZeitraum(
             liveLektionId: null,
             contentType: "kurs",
             unitProgressStatus: null,
+            hatUnterlagen: false,
             liveSession: null,
           });
         }

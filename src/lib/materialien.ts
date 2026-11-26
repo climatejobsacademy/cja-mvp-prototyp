@@ -58,3 +58,55 @@ export function istSichererLink(url: string | null | undefined): url is string {
 export function hatVorschau(mimetype: string | null): boolean {
   return mimetype !== null && VORSCHAU_MIMETYPES.has(mimetype);
 }
+
+/**
+ * Zweite Zeile einer Datei im Abschnitt „Unterlagen“ (SR-68, ergänzt
+ * 26.11.2026): Format und Größe, z. B. „PDF · 2,3 MB“; ohne bekannte Größe
+ * nur das Format.
+ */
+export function dateiInfo(format: string, groesse: string | null): string {
+  return groesse ? `${format} · ${groesse}` : format;
+}
+
+/** So viele Unterlagen stehen sichtbar da, der Rest hinter „Alle anzeigen“. */
+export const UNTERLAGEN_SICHTBAR = 3;
+
+/**
+ * Aufteilung für „Alle anzeigen“: bis zu `max` Einträge sichtbar, dazu die
+ * Zahl der weiteren. Aufgeklappt sind alle sichtbar.
+ */
+export function unterlagenAufteilen<T>(
+  liste: readonly T[],
+  aufgeklappt: boolean,
+  max: number = UNTERLAGEN_SICHTBAR
+): { sichtbar: readonly T[]; weitere: number } {
+  if (aufgeklappt || liste.length <= max) return { sichtbar: liste, weitere: 0 };
+  return { sichtbar: liste.slice(0, max), weitere: liste.length - max };
+}
+
+/** Anker des Abschnitts „Unterlagen“ auf der Lektionsseite (SR-68). */
+export const UNTERLAGEN_ANKER = "unterlagen";
+
+/**
+ * Ziel des Knopfs bzw. Symbols „Unterlagen“ in Stundenplan und Home (SR-68,
+ * ergänzt 26.11.2026): die Lektionsseite mit Sprung zum Abschnitt; ohne
+ * Unterlagen null (dann kein Symbol).
+ */
+export function unterlagenHref(lektionHref: string, hatUnterlagen: boolean): string | null {
+  return hatUnterlagen ? `${lektionHref}#${UNTERLAGEN_ANKER}` : null;
+}
+
+/**
+ * Ziel eines Termins im Stundenplan (SR-68, ergänzt 26.11.2026): In der
+ * Wochenansicht springt ein Termin mit Unterlagen direkt zum Abschnitt
+ * „Unterlagen“; in der Tagesansicht (eigener Knopf) und ohne Unterlagen
+ * bleibt das bisherige Ziel. Den Live-Raum im Live-Fenster entscheidet der
+ * Aufrufer vorher.
+ */
+export function terminZiel(
+  inhalt: string | null,
+  unterlagen: string | null | undefined,
+  tagesansicht: boolean
+): string | null {
+  return (!tagesansicht && unterlagen) || inhalt;
+}
