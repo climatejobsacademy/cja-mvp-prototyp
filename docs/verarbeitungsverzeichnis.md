@@ -134,7 +134,7 @@ Seit Migration 0058–0068 (SR-64, SR-65, SR-88 bis SR-92, SR-03). Technischer S
 ## TOM (technische und organisatorische Maßnahmen, Kurzfassung)
 
 - **Zugriff:** Rechte je Rolle und Kohorte in der Datenbank erzwungen (Row Level Security auf jeder Tabelle, getestet in `supabase/tests`); Zugriffsregeln in `docs/access-matrix.md`.
-- **Anmeldung:** ohne Passwort per Einmallink; Konten legt nur das Team an.
+- **Anmeldung:** ohne Passwort per Einmallink; Konten legt nur das Team an. Eine Sitzung endet in Production nach 14 Tagen ohne Nutzung und spätestens 30 Tage nach dem Login; Abmelden beendet nur die Sitzung auf dem aktuellen Gerät (SR-99, `docs/runbook.md`, Abschnitt 7).
 - **Mandantentrennung:** jede Tabelle einer Partnerorganisation mit `organisation_id`.
 - **Unveränderlichkeit:** Anwesenheit und Prüfungen werden nicht geändert, Korrekturen als neuer Eintrag.
 - **Speicherort:** Datenbank und Dateien in der EU (Frankfurt); Dateien nur über zeitlich begrenzte Links.

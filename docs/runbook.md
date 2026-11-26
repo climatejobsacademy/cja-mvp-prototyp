@@ -339,6 +339,18 @@ Die App liest die folgenden Variablen. Sie werden in Vercel gesetzt (Projekt, Se
 | `SUPABASE_SERVICE_ROLE_KEY` | nur für `scripts/invite-learner.mjs`, nie im App-Code; für Production liest das Skript den Schlüssel nur aus dem Schlüsselbund (`.env.example`) | lokal `.env.local` | lokal |
 | `PGPASSWORD`, `PSQL` | für die Skripte: Datenbank-Passwort (sonst ein Schlüsselbund-Eintrag je Ziel) und Pfad zu `psql` (`import-plan.md`, `lernende-anlegen.md`) | eigene Shell | lokal |
 
+### Dauer der Anmeldung (Sessions)
+
+Die Dauer einer Anmeldung steht nur im Supabase-Dashboard unter Authentication → Sessions, nicht im Code (SR-99). Das Dashboard erwartet die Werte in Stunden.
+
+| Einstellung | Production | Staging |
+|---|---|---|
+| Inactivity timeout | 336 Stunden (14 Tage) | nicht gesetzt |
+| Time-box user sessions | 720 Stunden (30 Tage) | nicht gesetzt |
+| Single session per user | aus | aus |
+
+Staging bleibt ohne Begrenzung, weil dort keine echten Personendaten liegen und Testkonten nicht ständig neu angemeldet werden sollen. Eine Änderung greift nicht sofort, sondern bei der nächsten Erneuerung einer Sitzung (spätestens nach einer Stunde, `jwt_expiry`). Ist eine Sitzung abgelaufen, leitet `middleware.ts` auf `/login` um. „Abmelden“ ruft `signOut({ scope: "local" })` auf und beendet nur die Sitzung auf dem aktuellen Gerät (`src/lib/sitzung.ts`); andere Geräte der Person bleiben angemeldet.
+
 ### Redirect-URLs
 
 Der Magic-Link führt zu `<Basis>/auth/callback`. Die Basis bestimmt `src/app/login/actions.ts`: In Production `NEXT_PUBLIC_SITE_URL` (sonst die Production-Domain), in Vorschau-Versionen `https://<VERCEL_BRANCH_URL>`, sonst `http://localhost:3000`. Supabase leitet nur auf Adressen aus der Liste unter Authentication, URL Configuration weiter; die Liste steht im Dashboard und nicht im Repository, und jedes Projekt hat seine eigene. Als Muster gilt: Das Production-Projekt erlaubt nur `https://<production-domain>/**`, das Staging-Projekt zusätzlich `http://localhost:3000/**` und das Muster der Vorschau-Adressen `https://*-<vercel-team>.vercel.app/**`. Das Muster stammt aus der Projektdoku und ist im Dashboard nicht geprüft. Landet ein Link auf der falschen Adresse, fehlt vermutlich der passende Eintrag in dieser Liste.

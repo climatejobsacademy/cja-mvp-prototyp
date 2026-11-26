@@ -343,7 +343,11 @@ export default function DatenschutzPage() {
         Die Plattform verwendet ausschließlich technisch notwendige Cookies,
         die Ihre Anmeldung aufrechterhalten (Anmelde-Cookie mit einer Laufzeit
         von bis zu 400 Tagen sowie ein kurzlebiges Cookie während des
-        Anmeldevorgangs). Es werden keine Tracking- oder Analyse-Cookies
+        Anmeldevorgangs). Ihre Anmeldung endet automatisch, wenn Sie die
+        Plattform 14 Tage nicht genutzt haben, spätestens aber 30 Tage nach
+        der Anmeldung; danach melden Sie sich erneut per Einmallink an.
+        „Abmelden“ beendet die Anmeldung auf dem Gerät, auf dem Sie es
+        wählen. Es werden keine Tracking- oder Analyse-Cookies
         eingesetzt. Rechtsgrundlage: § 25 Abs. 2 Nr. 2 TDDDG sowie Art. 6 Abs.
         1 lit. b DSGVO.
       </p>
