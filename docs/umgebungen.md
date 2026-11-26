@@ -21,6 +21,8 @@ Die einzige Umgebung mit echten Personendaten. Schreiben nur über die Skripte u
 
 Smoke-Tests und Klicktests auf Production laufen nur mit Testkonten des Teams, nie mit Konten von Lernenden (`release.md`, Abschnitt 5).
 
+Nur in Production ist die Dauer einer Anmeldung begrenzt (14 Tage ohne Nutzung, höchstens 30 Tage, SR-99); auf Staging nicht (`runbook.md`, Abschnitt 7).
+
 ## Staging
 
 Gegen Staging wird alles erprobt, bevor es nach Production geht: Migrationen, Importe, Skripte und neue Ansichten. Auch hier gilt der Probelauf vor dem echten Lauf. Staging enthält keine echten Lernenden, Testdaten dürfen hier entstehen und gelöscht werden, soweit sie niemand anderes gerade nutzt.

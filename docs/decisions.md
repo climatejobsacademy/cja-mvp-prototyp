@@ -508,6 +508,14 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Status:** gültig
 - **Belegt:** SR-74
 
+### 2026-11-26 – Dauer der Anmeldung und Abmelden nur auf dem aktuellen Gerät
+
+- **Entscheidung:** (Produkt-Lead) In Production endet eine Anmeldung nach 14 Tagen ohne Nutzung und spätestens 30 Tage nach dem Login (Supabase: Inactivity timeout 336 Stunden, Time-box 720 Stunden); „Single session per user“ bleibt aus, Laptop und Handy dürfen gleichzeitig angemeldet sein. Staging bleibt ohne Begrenzung. „Abmelden“ beendet nur die Sitzung auf dem aktuellen Gerät.
+- **Begründung:** Login per Einmallink ist ein Faktor; NIST SP 800-63-4 (AAL1) verlangt dafür eine erneute Anmeldung spätestens nach 30 Tagen, ein Inaktivitäts-Timeout ist dort freiwillig. Strengere Werte (Stunden statt Tage) hätten für Lernende auf dem Handy praktisch ein tägliches Login per Mail bedeutet. Auf der Plattform liegen keine besonderen Kategorien personenbezogener Daten. Bisher meldete „Abmelden“ alle Geräte ab (Supabase-Standard „global“).
+- **Folgen:** Werte nur im Dashboard (`runbook.md`, Abschnitt 7), nicht im Code; Datenschutzerklärung und TOM (`verarbeitungsverzeichnis.md`) nennen die Dauer. Eine kürzere Dauer nur für Trainer:innen, die künftig Ergebnisse je Person sehen (SR-100), ginge nur über eigene Logik in der App und ist nicht Teil davon.
+- **Status:** gültig
+- **Belegt:** SR-99
+
 ## Offene technische Schulden
 
 Diese Punkte sind keine Entscheidungen, sondern bekannte Lücken; was daraus wird, steht in Asana.
