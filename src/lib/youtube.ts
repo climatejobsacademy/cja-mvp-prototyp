@@ -1,4 +1,4 @@
-// YouTube-Videos in Lektionen (SR folgt; Asana-Karte „YouTube-Videos in
+// YouTube-Videos in Lektionen (SR-102; Asana-Karte „YouTube-Videos in
 // Lektionen einbettbar machen“). Ein Link-Eintrag an der Lektion
 // (lesson_resource, typ link) mit einer YouTube-Adresse wird als Video
 // gezeigt statt als Link. Reine Funktionen, getestet in src/lib/youtube.test.ts.

@@ -235,7 +235,7 @@ export async function getAgendaZeitraum(
           : Promise.resolve({ data: [] as { lesson_id: string; external_url: string | null }[] }),
       ]);
       // YouTube-Links zählen nicht als Unterlagen: sie erscheinen als Video
-      // unter dem Inhalt, nicht im Abschnitt #unterlagen (SR folgt).
+      // unter dem Inhalt, nicht im Abschnitt #unterlagen (SR-102).
       const mitUnterlagen = new Set((ressourcen ?? []).filter((r) => !youtubeId(r.external_url)).map((r) => r.lesson_id));
       const allLessons = [...(lessons ?? []), ...(extraLessons ?? [])];
       const allCourses = [...(courses ?? []), ...(extraCourses ?? [])];

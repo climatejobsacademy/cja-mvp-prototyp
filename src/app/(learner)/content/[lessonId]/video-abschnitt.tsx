@@ -5,7 +5,7 @@ import { ExternalLink, Play, Video } from "lucide-react";
 
 import { einbettAdresse, startSekunden, youtubeId } from "@/lib/youtube";
 
-// YouTube-Videos einer Lektion (SR folgt): Link-Einträge mit YouTube-Adresse
+// YouTube-Videos einer Lektion (SR-102): Link-Einträge mit YouTube-Adresse
 // erscheinen hier als Player statt in „Unterlagen“. Zwei-Klick-Lösung: bis
 // zum Klick auf „Video laden“ wird nichts von YouTube geladen (kein
 // Vorschaubild, kein Skript); danach nur über youtube-nocookie.com, mit

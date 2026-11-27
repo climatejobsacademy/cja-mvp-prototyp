@@ -66,7 +66,7 @@ export default async function LessonPage({
     getLessonDetail(lessonId, learner.personId, { cohortId: learner.cohortId, enrolmentId: learner.enrolmentId }),
     getLessonMaterialien(lessonId),
   ]);
-  // YouTube-Links (SR folgt) erscheinen als Video unter dem Inhalt, nicht in „Unterlagen“.
+  // YouTube-Links (SR-102) erscheinen als Video unter dem Inhalt, nicht in „Unterlagen“.
   const videos = materialien.flatMap((m) => (m.art === "link" && youtubeId(m.url) ? [{ id: m.id, titel: m.titel, url: m.url }] : []));
   const unterlagen = materialien.filter((m) => !(m.art === "link" && youtubeId(m.url)));
 
@@ -207,7 +207,7 @@ export default async function LessonPage({
         </div>
       )}
 
-      {/* YouTube-Videos der Lektion (SR folgt): unter dem Inhalt, Zwei-Klick. */}
+      {/* YouTube-Videos der Lektion (SR-102): unter dem Inhalt, Zwei-Klick. */}
       <VideoAbschnitt videos={videos} />
 
       {thread && <LektionThread lessonId={lesson.id} thread={thread} />}

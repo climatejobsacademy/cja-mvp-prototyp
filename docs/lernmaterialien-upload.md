@@ -50,6 +50,14 @@ Die Vorlage prüft vorher, dass die Lektion existiert, ein Titel gesetzt ist, de
 
 - Bei Links prüft die Datenbank nur, dass `external_url` gesetzt ist. Die https-Prüfung liegt in der Vorlage und in der Anzeige (PR 2), nicht in der Datenbank.
 
+## YouTube-Videos (SR-102)
+
+- **Anlegen wie einen Link:** in der SQL-Vorlage `p_link` auf die YouTube-Adresse setzen, `p_pfad := null`, Titel wie das Video. Erkannt werden `youtube.com/watch?v=…`, `youtu.be/…`, `/embed/…`, `/shorts/…` und `/live/…`, nur mit `https://`. Eine Startzeit im Link (`t=90` oder `start=90`) wird übernommen.
+- **Anzeige:** unter dem Lektionsinhalt im Abschnitt „Video“ (bei mehreren „Videos“), nicht in „Unterlagen“. Im Stundenplan und auf Home zählt ein Video nicht als Unterlage.
+- **Zwei-Klick:** Bis „Video laden“ wird nichts von YouTube geladen, auch kein Vorschaubild. Danach läuft das Video über youtube-nocookie.com, Untertitel an (Deutsch bevorzugt), ohne fremde Vorschläge am Ende. „Auf YouTube öffnen“ ist immer da.
+- **Untertitel:** Deutsche Untertitel erscheinen nur, wenn das Video sie hat (eigene oder automatische). Vor dem Anlegen auf YouTube prüfen.
+- Andere Videoplattformen werden nicht eingebettet, sondern erscheinen als normaler Link in „Unterlagen“.
+
 ## Entfernen
 
 Eine Zuordnung entfernen: Zeile in `lesson_resource` löschen. Die Datei selbst bleibt im Bucket und in `file_asset`, bis sie dort bewusst gelöscht wird.

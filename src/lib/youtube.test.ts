@@ -1,4 +1,4 @@
-// Tests für YouTube-Videos in Lektionen (SR folgt). Ausführen mit `npm test`.
+// Tests für YouTube-Videos in Lektionen (SR-102). Ausführen mit `npm test`.
 
 import assert from "node:assert/strict";
 import { test } from "node:test";
@@ -8,7 +8,7 @@ import { einbettAdresse, startSekunden, youtubeId } from "./youtube.ts";
 
 const ID = "dQw4w9WgXcQ";
 
-test("YouTube: Kennung aus den üblichen Adressen", () => {
+test("SR-102: YouTube: Kennung aus den üblichen Adressen", () => {
   for (const url of [
     `https://www.youtube.com/watch?v=${ID}`,
     `https://youtube.com/watch?v=${ID}&t=42`,
@@ -22,7 +22,7 @@ test("YouTube: Kennung aus den üblichen Adressen", () => {
   }
 });
 
-test("YouTube: keine Kennung bei fremden Seiten, http, Kanälen oder kaputten Adressen", () => {
+test("SR-102: YouTube: keine Kennung bei fremden Seiten, http, Kanälen oder kaputten Adressen", () => {
   for (const url of [
     `http://www.youtube.com/watch?v=${ID}`,
     `https://www.youtube.com.evil.example/watch?v=${ID}`,
@@ -37,7 +37,7 @@ test("YouTube: keine Kennung bei fremden Seiten, http, Kanälen oder kaputten Ad
   }
 });
 
-test("YouTube: Startzeit aus t oder start", () => {
+test("SR-102: YouTube: Startzeit aus t oder start", () => {
   assert.equal(startSekunden(`https://youtu.be/${ID}?t=90`), 90);
   assert.equal(startSekunden(`https://youtu.be/${ID}?t=1m30s`), 90);
   assert.equal(startSekunden(`https://www.youtube.com/watch?v=${ID}&start=12`), 12);
@@ -45,7 +45,7 @@ test("YouTube: Startzeit aus t oder start", () => {
   assert.equal(startSekunden(`https://youtu.be/${ID}?t=abc`), null);
 });
 
-test("YouTube: Player nur über youtube-nocookie, Untertitel an, deutsch, ohne fremde Vorschläge", () => {
+test("SR-102: YouTube: Player nur über youtube-nocookie, Untertitel an, deutsch, ohne fremde Vorschläge", () => {
   const url = new URL(einbettAdresse(ID, 90));
   assert.equal(url.origin, "https://www.youtube-nocookie.com");
   assert.equal(url.pathname, `/embed/${ID}`);
