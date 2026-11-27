@@ -313,7 +313,7 @@ davon weiß.
 
 - **App vom Netz nehmen:** entscheidet die Geschäftsführung. Weg: Wartungsseite (Entscheidung Geschäftsführung 18.10.).
   1. Vercel → Projekt → Settings → Environment Variables → `WARTUNG` (Umgebung Production) auf `an` stellen.
-  2. Vercel → Deployments → letztes Production-Deployment → „Redeploy“. Nach 1–2 Minuten zeigt jede Seite nur noch „Wir sind gleich wieder da“ (Status 503). Impressum, Datenschutz und Barrierefreiheit bleiben erreichbar. Login und Datenbank werden nicht mehr angesprochen.
+  2. Vercel → Deployments → letztes Production-Deployment → „Redeploy“. Nach 1–2 Minuten zeigt jede Seite nur noch „Wir sind gleich wieder da“ (Status 503). Die Wartungsseite selbst braucht weder Login noch Datenbank. Impressum, Datenschutz und Barrierefreiheit bleiben wie gewohnt erreichbar.
   3. Prüfen: learn.climatejobsacademy.com in einem privaten Fenster öffnen.
   4. Zurück: `WARTUNG` wieder auf `aus`, erneut „Redeploy“.
 - **Meldung an die Aufsichtsbehörde** (Sächsische Datenschutz- und Transparenzbeauftragte) innerhalb von 72 Stunden und **Information der Betroffenen:** Geschäftsführung.
