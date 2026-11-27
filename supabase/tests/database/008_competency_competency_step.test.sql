@@ -35,8 +35,8 @@ insert into competency (id, name, kompetenzbereich) values
   ('00000000-0000-0000-0000-000000000321', 'Testkompetenz A', 'Elektro'),
   ('00000000-0000-0000-0000-000000000322', 'Testkompetenz B', 'Elektro');
 
--- competency_id ist bis zur Drop-Column-Folgemigration noch not null und
--- muss deshalb gesetzt werden, ist aber nicht mehr maßgeblich (SR-69).
+-- Zuordnung zur Kompetenz nur über competency_competency_step (0075 entfernt
+-- die alte Spalte competency_step.competency_id).
 insert into competency_step (id, name, typ) values
   ('00000000-0000-0000-0000-000000000331', 'Geteilter Teilschritt', 'theoretisch');
 

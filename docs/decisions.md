@@ -121,7 +121,7 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Belegt:** erster Release-PR #40; Branch-Schutz per GitHub-API geprüft (30.09.); `.github/workflows/ci.yml`
 
 ### 2026-09-23 – Teilschritt ↔ Kompetenz ist N:M (SR-69)
-- **Entscheidung:** Junction-Tabelle `competency_competency_step`; `competency_step.competency_id` bleibt vorerst stehen und wird nicht mehr gelesen, Drop-Column folgt in einer eigenen Migration.
+- **Entscheidung:** Junction-Tabelle `competency_competency_step`; `competency_step.competency_id` bleibt vorerst stehen und wird nicht mehr gelesen, Drop-Column folgt in einer eigenen Migration. *Nachtrag 2026-11-27: mit Migration `0075` entfernt.*
 - **Begründung:** Ein Teilschritt zahlt auf mehrere Kompetenzen ein.
 - **Folgen:** Bis zur Drop-Column-Migration keine Kompetenzen löschen.
 - **Status:** gültig
@@ -130,7 +130,7 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 ### 2026-09-23 – Kompetenz ↔ Programm ist N:M (SR-70)
 - **Entscheidung:** Junction-Tabelle `competency_programme`; `competency.quelle` gilt nicht mehr als Programmzuordnung.
 - **Begründung:** Kompetenzen gehören zu mehreren Programmen.
-- **Folgen:** `competency.quelle` bleibt vorerst als Spalte bestehen und wird nicht mehr als Programmzuordnung gelesen.
+- **Folgen:** `competency.quelle` bleibt vorerst als Spalte bestehen und wird nicht mehr als Programmzuordnung gelesen. *Nachtrag 2026-11-27: mit Migration `0075` entfernt.*
 - **Status:** gültig
 - **Belegt:** PR #45; Migration `0020`
 

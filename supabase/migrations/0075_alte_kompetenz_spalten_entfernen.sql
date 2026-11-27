@@ -2,10 +2,10 @@
 -- Technische Schulden (kein neues Verhalten, keine SR): zwei Spalten, die seit
 -- dem Umbau auf N:M-Zuordnungen nichts mehr bedeuten, werden entfernt.
 --
--- - competency.quelle: abgelöst durch competency_programme (0020, SR-66);
+-- - competency.quelle: abgelöst durch competency_programme (0020, SR-70);
 --   die Spalte blieb bisher mit not null und CHECK stehen.
 -- - competency_step.competency_id: abgelöst durch competency_competency_step
---   (Kompetenz <-> Teilschritt N:M); die App liest die Zuordnung nur von dort.
+--   (0019, SR-69; Kompetenz <-> Teilschritt N:M); die App liest die Zuordnung nur von dort.
 --
 -- Keine View, keine Funktion und keine Policy hängt an den Spalten (auf
 -- Staging am 27.11.2026 geprüft). Der Plan-Import schreibt sie nur noch,

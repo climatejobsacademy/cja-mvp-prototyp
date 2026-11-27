@@ -50,8 +50,8 @@ insert into field_job_type (id, titel, status, programme_id, reihenfolge) values
 insert into competency (id, name, kompetenzbereich) values
   ('00000000-0000-0000-0000-000000000651', 'Kompetenz Sal', 'Elektro');
 
--- competency_id ist bis zur Drop-Column-Folgemigration noch not null
--- (SR-69, 0019) -- maßgeblich ist competency_competency_step.
+-- Zuordnung zur Kompetenz nur über competency_competency_step (0075 entfernt
+-- die alte Spalte competency_step.competency_id).
 insert into competency_step (id, name, typ) values
   ('00000000-0000-0000-0000-000000000661', 'Theorie mit zwei Lektionen', 'theoretisch'),
   ('00000000-0000-0000-0000-000000000662', 'Praxis mit einem Typ', 'praktisch');

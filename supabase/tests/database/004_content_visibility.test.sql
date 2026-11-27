@@ -51,8 +51,8 @@ insert into lesson (id, course_id, name, content_type, reihenfolge, status) valu
 insert into competency (id, name, kompetenzbereich) values
   ('00000000-0000-0000-0000-000000000041', 'Testkompetenz', 'Elektro');
 
--- competency_id nur noch, weil die Spalte bis zur Drop-Column-Folgemigration
--- not null ist -- maßgeblich ist competency_competency_step (SR-69, 0019).
+-- Zuordnung Teilschritt -> Kompetenz nur über competency_competency_step
+-- (SR-69, 0019); die alte Spalte competency_step.competency_id ist mit 0075 entfernt.
 insert into competency_step (id, name, typ) values
   ('00000000-0000-0000-0000-000000000042', 'Teilschritt', 'theoretisch');
 
