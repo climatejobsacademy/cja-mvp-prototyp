@@ -8,6 +8,8 @@ import {
   type EinheitQuelle,
   type SeitenErgebnis,
 } from "@/lib/fachsprache-laden";
+import { parseInhalt } from "@/lib/fachsprache";
+import { glossarAus, type GlossarEintrag } from "@/lib/glossar";
 import { fachspracheEinheitAn } from "@/lib/schalter";
 import { createClient } from "@/lib/supabase/server";
 
@@ -120,4 +122,25 @@ export async function getEinstiegeJeTag(
     .select("einheit_id")
     .in("einheit_id", [...links.values()].map((l) => l.einheitId));
   return einstiegeJeTag(tage, links, von, new Set((erledigt ?? []).map((e) => e.einheit_id)));
+}
+
+/**
+ * Glossar der Woche (SR-101): Wortkarten aller veröffentlichten Einheiten der
+ * Live-Lektionen in `tage` (eine Stundenplan-Woche), alphabetisch, jedes Wort
+ * einmal (src/lib/glossar.ts). null bei ausgeschaltetem Schalter (Seite 404),
+ * sonst eine Liste, die leer sein kann. Mit dem Client der angemeldeten
+ * Person: die RLS liefert nur lesbare, veröffentlichte Einheiten.
+ */
+export async function getGlossarWoche(tage: TagMitTerminen[]): Promise<GlossarEintrag[] | null> {
+  if (!fachspracheEinheitAn()) return null;
+  const lessonIds = lektionIdsFuerEinstiege(tage);
+  if (lessonIds.length === 0) return [];
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("fachsprache_einheit")
+    .select("inhalt")
+    .in("lesson_id", lessonIds)
+    .eq("status", "veroeffentlicht");
+  const karten = (data ?? []).flatMap((z) => parseInhalt(z.inhalt)?.wortkarten ?? []);
+  return glossarAus(karten);
 }

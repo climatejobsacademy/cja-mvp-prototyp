@@ -1,5 +1,6 @@
 import { plusTage } from "@/lib/date";
 import { lektionTitel } from "@/lib/lektion-titel";
+import { requireCurrentLearner } from "@/lib/queries/session";
 import { createClient } from "@/lib/supabase/server";
 import type { ContentType, UnitProgressStatus } from "@/lib/database.types";
 
@@ -368,4 +369,13 @@ export async function getNaechsterTermin(
   }
 
   return { datum: entry.datum, art: entry.art, start };
+}
+
+/**
+ * Agenda Montag bis Sonntag der Woche ab `montag` für die angemeldete Person
+ * (Kontext wie im Stundenplan). Für das Glossar der Woche (SR-101).
+ */
+export async function getWocheDerPerson(montag: string): Promise<TagesAgenda[]> {
+  const l = await requireCurrentLearner();
+  return getAgendaZeitraum(l.organisationId, l.cohortId, l.enrolmentId, l.personId, montag, plusTage(montag, 6));
 }
