@@ -220,7 +220,8 @@ export default function DatenschutzPage() {
         sie zählen nicht für Ihren Lernfortschritt. Wenn Sie eine Übung bis
         zum Ende durchgearbeitet haben, speichern wir dies mit Datum, damit
         Stundenplan und Startseite sie als erledigt anzeigen. Diese Angabe
-        sehen nur Sie selbst; sie wird mit Ihrem Konto gelöscht. Bilder zu den Übungen rufen
+        sehen nur Sie selbst und die Administration der Akademie, nicht Ihre
+        Trainer:innen; sie wird mit Ihrem Konto gelöscht. Bilder zu den Übungen rufen
         wir über zeitlich begrenzte Links aus unserem Datenbankdienst ab. Über
         das Lautsprecher-Symbol können Sie sich Wörter und Sätze vorlesen
         lassen. Dafür nutzt die Plattform die Sprachausgabe Ihres Browsers. Je
