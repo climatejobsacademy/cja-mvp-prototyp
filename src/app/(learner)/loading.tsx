@@ -1,4 +1,4 @@
-// Lade-Anzeige für alle Seiten der Lernenden (Ladezeit, Anna 2026-10-21):
+// Lade-Anzeige für alle Seiten der Lernenden (Ladezeit, Geschäftsführung 2026-10-21):
 // Nach einem Klick im Menü erscheint sofort dieser ruhige Platzhalter statt
 // der alten Seite, bis die neue fertig ist. Kopf und Menü bleiben stehen
 // (Layout). Next.js lädt ihn beim Sichtbarwerden der Menü-Links schon vor.

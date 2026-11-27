@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 // Paket 3 B): Wortmarke und Logo der eigenen Organisation links (SR-76),
 // Navigation als Segmented Control in der Mitte, Avatar mit Konto-Menü
 // rechts (SR-77: "Profil bearbeiten"). Der Programmname steht nicht mehr im
-// Kopf (Entscheidung Anna 2026-10-10), sondern im Konto-Menü. Keine Glocke,
+// Kopf (Entscheidung Geschäftsführung 2026-10-10), sondern im Konto-Menü. Keine Glocke,
 // kein Chat-Knopf.
 const ITEMS = [
   { href: "/home", label: "Home", icon: House },

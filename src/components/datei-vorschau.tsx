@@ -5,7 +5,7 @@ import { Dialog } from "@base-ui/react/dialog";
 import { Download, ExternalLink, X } from "lucide-react";
 
 // Vorschau für PDFs (und Bilder) als Fenster über der Seite statt in einem
-// neuen Tab (Wunsch Anna 2026-10-12, SR folgt; Materialien SR-68). Die Datei
+// neuen Tab (Wunsch Geschäftsführung 2026-10-12, SR folgt; Materialien SR-68). Die Datei
 // lädt im Fenster erst beim Öffnen; "In neuem Fenster öffnen" zeigt dieselbe
 // Adresse wie bisher im neuen Tab. Schließen per X, Klick daneben oder Esc
 // (base-ui Dialog: Fokus ins Fenster, beim Schließen zurück zum Knopf).
@@ -28,7 +28,7 @@ export function DateiVorschau({
   ausloeserKlasse: string;
   /** Zugänglicher Name des Knopfs, z. B. "Vorschau: Schaltplan" */
   ausloeserLabel: string;
-  /** Optional: Herunterladen im Kopf des Fensters (Anna 2026-10-12) */
+  /** Optional: Herunterladen im Kopf des Fensters (Geschäftsführung 2026-10-12) */
   downloadHref?: string;
   /** Dateiname für Dateien derselben Seite (download-Attribut); sonst lädt der Link selbst herunter */
   downloadName?: string;

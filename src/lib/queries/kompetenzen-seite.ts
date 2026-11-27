@@ -87,7 +87,7 @@ export async function getLernaktivitaeten(
   // Live-Termine nur, wenn sie im eigenen Stundenplan stehen. Gleichzeitig
   // die Selbstlern-Lektionen, die zu den Live-Lektionen gehören (Wissen
   // festigen, live_lektion_id 0029) -- sie zahlen auf dieselben Teilschritte
-  // ein (Anna 2026-10-27: je Kompetenzschritt die Links zu Live, Selbstlernen,
+  // ein (Geschäftsführung 2026-10-27: je Kompetenzschritt die Links zu Live, Selbstlernen,
   // Praxis).
   const liveIds = (liveSessions ?? []).map((s) => s.id);
   const liveLektionIds = (lessons ?? []).filter((l) => l.content_type === "live").map((l) => l.id);

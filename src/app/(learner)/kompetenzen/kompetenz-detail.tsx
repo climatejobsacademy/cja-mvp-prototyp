@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * Statussymbol je Teilschritt. Die Datenbank kennt vier Stände; "in Prüfung"
- * und "abgelehnt" (nur Praxis) zusätzlich zum Brief, Entscheidung Anna
+ * und "abgelehnt" (nur Praxis) zusätzlich zum Brief, Entscheidung Geschäftsführung
  * 2026-10-10. Nie nur über Farbe: immer Symbol + Text (bei "offen" das leere
  * Symbol + sr-only).
  */
@@ -65,7 +65,7 @@ const HEUTE_DRAN = {
 };
 
 /**
- * Kompetenzschritt (Anna 2026-10-27): nur Beschreibung und Status, ohne
+ * Kompetenzschritt (Geschäftsführung 2026-10-27): nur Beschreibung und Status, ohne
  * Typ-Symbol -- das grüne Buch las sich wie „Selbstlernen“, obwohl ein
  * theoretischer Schritt auch über den Live-Unterricht erreicht wird. Gibt es
  * Lernaktivitäten dazu, klappt der Schritt auf und zeigt sie als Links
@@ -124,7 +124,7 @@ function TeilschrittZeile({
             aria-hidden="true"
           />
         </summary>
-        {/* Dezente Überschrift, damit klar ist, was die Links sind (Anna 2026-10-27). */}
+        {/* Dezente Überschrift, damit klar ist, was die Links sind (Geschäftsführung 2026-10-27). */}
         <p className="pb-2 text-[13px] font-semibold text-ink">Hier lernst du das</p>
         <ul className="flex flex-col gap-2 pb-3">
           {aktivitaeten.map((a) => (
@@ -147,7 +147,7 @@ const TYP: Record<Lernaktivitaet["art"], { Icon: typeof Video; kachel: string }>
 };
 
 /**
- * Lernaktivitäten je Kompetenzschritt (Brief 2.4, seit Anna 2026-10-27 im
+ * Lernaktivitäten je Kompetenzschritt (Brief 2.4, seit Geschäftsführung 2026-10-27 im
  * aufgeklappten Schritt statt in „Hier lernst du das“): Lektionen öffnen die
  * Lektionsseite, Praxis den eigenen Praxistag dieses Typs; ohne eigenen
  * Praxistag nur Text ohne Link. Groß das Thema, klein das Modul (0028).

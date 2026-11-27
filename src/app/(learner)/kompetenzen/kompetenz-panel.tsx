@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Dialog } from "@base-ui/react/dialog";
 import { X } from "lucide-react";
 
-// Kompetenzseite (SR-62), Entscheidung Anna 2026-10-12: die Details einer
+// Kompetenzseite (SR-62), Entscheidung Geschäftsführung 2026-10-12: die Details einer
 // Kompetenz fahren wie "Inhalte des Moduls" auf der Programmseite als Panel
 // von rechts herein (mobil volle Breite), die Übersicht bleibt dahinter.
 // Schließen per X, Klick daneben oder Esc (base-ui Dialog: Fokus ins Panel).

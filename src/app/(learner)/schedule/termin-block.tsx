@@ -10,18 +10,18 @@ import { cn } from "@/lib/utils";
 
 import { zeitText, type Block } from "./plan-modell";
 
-// Stundenplan v2 (SR-13, SR-73): Termin im Zeitraster. Wunsch Anna 2026-10-11:
+// Stundenplan v2 (SR-13, SR-73): Termin im Zeitraster. Wunsch Geschäftsführung 2026-10-11:
 // kein Klick-Fenster -- "Zur Lektion →" steht direkt im Block, der ganze
 // Block öffnet die Lektion (bzw. Praxisauftrag). Ab 15 Min. vor Beginn bis
 // zum Ende eines Live-Termins stattdessen der Live-Raum. Titel immer
 // vollständig. Bei Live ist der Titel das Thema der Lektion (lesson.thema,
-// 0029), ohne den Lektionsnamen darüber (Anna 2026-10-16, wie demo); der volle
+// 0029), ohne den Lektionsnamen darüber (Geschäftsführung 2026-10-16, wie demo); der volle
 // Name steht im Tooltip und für Bildschirmleser.
 
 // Visuelles Update (docs/ux/visual-update, 2026-10-11): helle Typ-Fläche mit
 // 3-px-Streifen; nur der nächste Termin ist der Anker (volle Fläche,
 // Lime-Button; Live mit weißer, Praxis auf Marken-Coral mit dunkler Schrift --
-// Anna 2026-10-12, Kontrast Weiß auf Coral nur 1.93:1).
+// Geschäftsführung 2026-10-12, Kontrast Weiß auf Coral nur 1.93:1).
 const ART = {
   live: { text: "Live-Unterricht", Icon: Video, flaeche: "bg-brand-tint", streifen: "border-l-brand-2", icon: "text-brand", anker: "bg-anchor-brand text-white shadow-anchor-brand", ankerIcon: "text-white", inhalt: "Zur Lektion" },
   praxis: { text: "Praxisauftrag", Icon: Wrench, flaeche: "bg-praxis-tint", streifen: "border-l-praxis", icon: "text-praxis-text", anker: "bg-anchor-praxis text-ink shadow-anchor-praxis", ankerIcon: "text-ink", inhalt: "Zum Praxisauftrag" },
@@ -95,7 +95,7 @@ export function TerminBlock({
     block.trainer ? `${block.art === "live" ? "Live" : "Praxis"} mit ${block.trainer.rufname}${block.trainer2 ? ` und ${block.trainer2.rufname}` : ""}` : null,
     block.ort,
     block.unterlagen ? "mit Unterlagen" : null,
-    // Der Anker bleibt nach dem letzten Termin des Tages stehen (Anna 2026-10-12): dann "vorbei", nicht "als Nächstes".
+    // Der Anker bleibt nach dem letzten Termin des Tages stehen (Geschäftsführung 2026-10-12): dann "vorbei", nicht "als Nächstes".
     block.naechster && block.status === "offen" ? "als Nächstes" : STATUS_TEXT[block.status],
   ]
     .filter(Boolean)
@@ -104,7 +104,7 @@ export function TerminBlock({
     "outline-none after:absolute after:inset-0 after:rounded-block after:content-[''] focus-visible:after:ring-2 focus-visible:after:ring-brand";
   const titel = (
     // Platz für zwei Titelzeilen, damit „Live mit …“ und „Praxis mit …“ in
-    // allen Blöcken einer Reihe auf derselben Höhe stehen (Anna 2026-10-29).
+    // allen Blöcken einer Reihe auf derselben Höhe stehen (Geschäftsführung 2026-10-29).
     <span title={block.volltitel} className={cn("min-h-[2lh] leading-snug font-semibold", gross ? "block text-base" : "line-clamp-3 text-[13px]")}>
       {block.titel}
     </span>
@@ -127,7 +127,7 @@ export function TerminBlock({
       )}
     >
       <span className="flex items-center gap-1.5 text-xs font-semibold">
-        {/* Symbol immer in der Typfarbe wie auf Home und Kompetenzen (Anna 2026-10-11). */}
+        {/* Symbol immer in der Typfarbe wie auf Home und Kompetenzen (Geschäftsführung 2026-10-11). */}
         <art.Icon className={cn("size-[13px] shrink-0", block.naechster ? art.ankerIcon : art.icon)} aria-hidden="true" />
         <span className="whitespace-nowrap">{zeitText(block)}</span>
         {gross && ` · ${art.text}`}
@@ -139,7 +139,7 @@ export function TerminBlock({
         )}
         {block.status === "erledigt" && <GeschafftZeichen wort={gross} klein={!gross} className="ml-auto" />}
       </span>
-      {/* Immer genau eine Aktion (wie Veras Stundenplan, Anna 2026-10-11): ab
+      {/* Immer genau eine Aktion (wie im Stundenplan der Produkt-Lead, Geschäftsführung 2026-10-11): ab
           15 Min. vor Beginn bis zum Ende führt der ganze Block in den Live-Raum,
           sonst zur Lektion bzw. Praxisauftrag. */}
       {block.liveRaum ? (

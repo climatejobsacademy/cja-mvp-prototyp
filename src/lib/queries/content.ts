@@ -29,7 +29,7 @@ export type FieldJobTypeListItem = {
   vorbereitungText: string | null;
   /** Praxistag des Learners zu dieser Aufgabe (nächster offener, sonst letzter) -- null, wenn keiner existiert. */
   fieldJobId: string | null;
-  /** Alle eigenen Praxistage zu dieser Aufgabe, nach Datum (mehrtägige Aufträge, Anna 2026-10-28). */
+  /** Alle eigenen Praxistage zu dieser Aufgabe, nach Datum (mehrtägige Aufträge, Geschäftsführung 2026-10-28). */
   praxistage: { datum: string; durchgefuehrt: boolean }[];
 };
 
@@ -78,7 +78,7 @@ export async function getContentLibrary(
   ]);
 
   const moduleIds = (modules ?? []).map((m) => m.id);
-  // Ladezeit (Anna 2026-10-21): beide Abfragen über die Wochen gleichzeitig.
+  // Ladezeit (Geschäftsführung 2026-10-21): beide Abfragen über die Wochen gleichzeitig.
   type KursZeile = { id: string; name: string; reihenfolge: number; module_id: string | null };
   type AuftragZeile = {
     id: string;

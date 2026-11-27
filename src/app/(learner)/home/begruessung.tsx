@@ -6,7 +6,7 @@ import { datumKurz, datumLang } from "@/lib/date";
 // Home (docs/design_handoff_home_v6, Brief 2.2; SR-73): Programm, "Hallo
 // {Rufname}" (person.rufname, 0029) und Datum, darüber ggf. der Hinweis auf
 // die simulierte Testzeit (?now, nie auf Production). Kein Tagestyp-Label
-// mehr (Entscheidung Anna 2026-10-12), die Fokus-Karte zeigt die Art schon.
+// mehr (Entscheidung Geschäftsführung 2026-10-12), die Fokus-Karte zeigt die Art schon.
 
 export function TestzeitHinweis({ heute, jetzt }: { heute: string; jetzt: string }) {
   return (
@@ -24,7 +24,7 @@ export function Begruessung({
 }: {
   /** „Guten Morgen Kim“ / „Hallo Kim“ / „Guten Abend Kim“ (SR-93, begruessungText) */
   gruss: string;
-  /** Home zeigt, in welchem Programm man ist (Anna 2026-10-12). */
+  /** Home zeigt, in welchem Programm man ist (Geschäftsführung 2026-10-12). */
   programmName: string;
   heute: string;
 }) {

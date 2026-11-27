@@ -1,7 +1,7 @@
 import katex from "katex";
 import "katex/dist/katex.min.css";
 
-// Formeln in Texten aus Elephant (SR-85, Anna 2026-10-20): Formel-Blöcke als
+// Formeln in Texten aus Elephant (SR-85, Geschäftsführung 2026-10-20): Formel-Blöcke als
 // LaTeX zwischen $$ … $$ (z. B. $$P_V=I^2\cdot R$$), Formeln mitten im Satz
 // als \( … \) (beim Einlesen aus Elephants inline-math, elephant-kurs.ts).
 // Einzelne $-Zeichen bleiben Text. KaTeX erzeugt

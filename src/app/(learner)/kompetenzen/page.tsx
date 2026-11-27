@@ -74,7 +74,7 @@ export default async function KompetenzenPage({
   }));
   const gewaehlt = waehleModul(reiterModule, reiterModule[aktuellIndex]?.id ?? null, modulParam, kompetenzParam);
   const gewaehltTab = tabs.find((t) => t.id === gewaehlt?.id) ?? null;
-  // Kommendes Modul ohne Kompetenzen (Anna 2026-10-20): statt "noch nicht
+  // Kommendes Modul ohne Kompetenzen (Geschäftsführung 2026-10-20): statt "noch nicht
   // hinterlegt" ein Ausblick, wann es so weit ist.
   const davor = gewaehltTab ? (tabs[tabs.indexOf(gewaehltTab) - 1] ?? null) : null;
   const leerHinweis = !gewaehltTab

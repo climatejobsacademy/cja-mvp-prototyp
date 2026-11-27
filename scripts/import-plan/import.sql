@@ -260,9 +260,17 @@ begin
       end if;
     end if;
     if v_id is null then
-      insert into competency (name, kompetenzbereich, quelle)
-      values (r->>'name', 'Modul ' || (r->>'modul'), 'EFK-EE')
-      returning id into v_id;
+      -- competency.quelle entfällt mit Migration 0075 (abgelöst durch
+      -- competency_programme, 0020); solange die Spalte existiert, wird sie gesetzt.
+      if exists (select 1 from information_schema.columns
+                  where table_schema = 'public' and table_name = 'competency' and column_name = 'quelle') then
+        execute 'insert into competency (name, kompetenzbereich, quelle) values ($1, $2, $3) returning id'
+          into v_id using r->>'name', 'Modul ' || (r->>'modul'), 'EFK-EE';
+      else
+        insert into competency (name, kompetenzbereich)
+        values (r->>'name', 'Modul ' || (r->>'modul'))
+        returning id into v_id;
+      end if;
       perform pg_temp.zaehle(p_lauf, 'competency', 'neu');
     else
       update competency set name = r->>'name' where id = v_id and name is distinct from r->>'name';
@@ -307,9 +315,17 @@ begin
      where pg_temp.norm(cs.name) = pg_temp.norm(r->>'name')
      limit 1;
     if v_id is null then
-      insert into competency_step (competency_id, name, typ)
-      values (v_id2, r->>'name', r->>'typ')
-      returning id into v_id;
+      -- competency_step.competency_id entfällt mit Migration 0075 (abgelöst
+      -- durch competency_competency_step); solange die Spalte existiert, wird sie gesetzt.
+      if exists (select 1 from information_schema.columns
+                  where table_schema = 'public' and table_name = 'competency_step' and column_name = 'competency_id') then
+        execute 'insert into competency_step (competency_id, name, typ) values ($1, $2, $3) returning id'
+          into v_id using v_id2, r->>'name', r->>'typ';
+      else
+        insert into competency_step (name, typ)
+        values (r->>'name', r->>'typ')
+        returning id into v_id;
+      end if;
       insert into competency_competency_step (competency_id, competency_step_id, reihenfolge)
       values (v_id2, v_id, (r->>'reihenfolge')::int);
       perform pg_temp.zaehle(p_lauf, 'competency_step', 'neu');

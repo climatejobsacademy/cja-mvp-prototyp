@@ -32,15 +32,16 @@ insert into role_assignment (person_id, organisation_id, rolle) values
   ('00000000-0000-0000-0000-000000001601', '00000000-0000-0000-0000-000000001611', 'learner'),
   ('00000000-0000-0000-0000-000000001602', '00000000-0000-0000-0000-000000001612', 'afcj_admin');
 
-insert into competency (id, name, kompetenzbereich, quelle) values
-  ('00000000-0000-0000-0000-000000001621', 'Kompetenz A', 'Elektro', 'EFK-EE'),
-  ('00000000-0000-0000-0000-000000001622', 'Kompetenz B', 'Elektro', 'EFK-EE');
+insert into competency (id, name, kompetenzbereich) values
+  ('00000000-0000-0000-0000-000000001621', 'Kompetenz A', 'Elektro'),
+  ('00000000-0000-0000-0000-000000001622', 'Kompetenz B', 'Elektro');
 
--- competency_id ist bis zur Drop-Column-Folgemigration noch not null.
-insert into competency_step (id, competency_id, name, typ) values
-  ('00000000-0000-0000-0000-000000001631', '00000000-0000-0000-0000-000000001621', 'Schritt 1', 'theoretisch'),
-  ('00000000-0000-0000-0000-000000001632', '00000000-0000-0000-0000-000000001621', 'Schritt 2', 'theoretisch'),
-  ('00000000-0000-0000-0000-000000001633', '00000000-0000-0000-0000-000000001621', 'Schritt 3', 'praktisch');
+-- Zuordnung zur Kompetenz nur über competency_competency_step (0075 entfernt
+-- die alte Spalte competency_step.competency_id).
+insert into competency_step (id, name, typ) values
+  ('00000000-0000-0000-0000-000000001631', 'Schritt 1', 'theoretisch'),
+  ('00000000-0000-0000-0000-000000001632', 'Schritt 2', 'theoretisch'),
+  ('00000000-0000-0000-0000-000000001633', 'Schritt 3', 'praktisch');
 
 insert into competency_competency_step (id, competency_id, competency_step_id, reihenfolge) values
   ('00000000-0000-0000-0000-000000001641', '00000000-0000-0000-0000-000000001621', '00000000-0000-0000-0000-000000001631', 1),

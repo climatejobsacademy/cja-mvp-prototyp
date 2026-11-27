@@ -39,7 +39,7 @@ import { planModell } from "./plan-modell";
 
 // Stundenplan v2 (SR-13, SR-73; Design aus dem Branch demo): Kalender nach
 // dem Prinzip von Google -- Woche (Desktop-Standard), Tag (Desktop und
-// mobil) und Monat (nur Desktop). Entscheidungen Anna 2026-10-10: Häkchen
+// mobil) und Monat (nur Desktop). Entscheidungen Geschäftsführung 2026-10-10: Häkchen
 // bei Live nur mit bestätigter Anwesenheit, kein Reiter "Programm", Breite
 // 1120 px (data-breit, seit 2026-10-13, siehe docs/design-specifications.md,
 // Abschnitt 1.1). Praxistage mit Uhrzeit aus field_job.start/ende
@@ -65,7 +65,7 @@ export default async function SchedulePage({
     ansichtParam === "tag" || ansichtParam === "woche" || ansichtParam === "monat" ? ansichtParam : null;
   const desktopAnsicht: Ansicht = ansicht ?? "woche";
   const mobilAnsicht: Ansicht = ansicht ?? "tag";
-  // Wunsch Anna 2026-10-11: am Wochenende zeigt der Stundenplan ohne
+  // Wunsch Geschäftsführung 2026-10-11: am Wochenende zeigt der Stundenplan ohne
   // ausgewähltes Datum schon die kommende Woche (die vergangene ist vorbei).
   const wochenende = !arbeitstage(heute).includes(heute);
   const datum = datumParam && DATUM.test(datumParam) ? datumParam : wochenende ? naechsterArbeitstag(heute, 1) : heute;
@@ -88,7 +88,7 @@ export default async function SchedulePage({
     getKohortenStart(learner.cohortId),
     getModuleDerKohorte(learner.programmeId, learner.cohortId, heute),
   ]);
-  // Module der gezeigten Woche (Anna 2026-10-12: eigene Zeile unter der
+  // Module der gezeigten Woche (Geschäftsführung 2026-10-12: eigene Zeile unter der
   // Überschrift): Module, deren Zeitraum im Stundenplan der Kohorte
   // (fn_modul_zeitraum, 0028) die Woche berührt -- keine feste Gliederung.
   const wochenModule = modulListe.filter((m) => m.von && m.bis && m.von <= woche[woche.length - 1] && m.bis >= woche[0]);
@@ -113,16 +113,16 @@ export default async function SchedulePage({
   ) : null;
 
   const nowZusatz = simuliert && now ? `&now=${encodeURIComponent(now)}` : "";
-  // "Heute"-Link nur noch mobil; am Desktop entfällt er (Entscheidung Anna
+  // "Heute"-Link nur noch mobil; am Desktop entfällt er (Entscheidung Geschäftsführung
   // 2026-10-12). Zeigt die Ansicht schon heute, ist der Link aus (null).
   const href = (a: Ansicht, d: string) => `/schedule?ansicht=${a}&datum=${d}${nowZusatz}`;
   const tagHref = (d: string) => href("tag", d);
 
-  // Entscheidung Anna 2026-10-12: neben dem Zeitraum nur das Symbol der
+  // Entscheidung Geschäftsführung 2026-10-12: neben dem Zeitraum nur das Symbol der
   // Wochenart, ohne "Woche 2 · Theorie (online)".
   const zusatz = haupt ? <WochenTypIcon typ={haupt} /> : null;
   const ohneJahr = (text: string) => text.replace(/\s\d{4}$/, "");
-  // Visuelles Update (Anna 2026-10-11, wie im Mock-up): Steuerleiste und
+  // Visuelles Update (Geschäftsführung 2026-10-11, wie im Mock-up): Steuerleiste und
   // Kalender stehen auf einer weißen Karte.
   const KALENDER_KARTE = "flex flex-col gap-6 rounded-karte bg-card p-6 shadow-card";
 
@@ -216,7 +216,7 @@ export default async function SchedulePage({
         )}
       </div>
 
-      {/* Mobil (< 768 px): ohne Angabe Tag (Brief 2.6); Woche als Liste, Monat als kleiner Kalender (Vorschau Anna 2026-10-20). */}
+      {/* Mobil (< 768 px): ohne Angabe Tag (Brief 2.6); Woche als Liste, Monat als kleiner Kalender (Vorschau Geschäftsführung 2026-10-20). */}
       <div className={cn("flex flex-col gap-4 md:hidden", mobilAnsicht === "tag" && "hidden")}>
         <MobilKopf
           ansicht={mobilAnsicht}

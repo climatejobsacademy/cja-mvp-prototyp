@@ -37,7 +37,7 @@ export function KompetenzListe({
   }
   return (
     <section aria-label={label}>
-      {/* Gleichmäßige Reihen (Anna 2026-10-12): drei Spalten nur, wenn die
+      {/* Gleichmäßige Reihen (Geschäftsführung 2026-10-12): drei Spalten nur, wenn die
           Zahl aufgeht (3, 6, 9 …), sonst zwei -- 4 also als 2 × 2. */}
       <ul
         className={cn(

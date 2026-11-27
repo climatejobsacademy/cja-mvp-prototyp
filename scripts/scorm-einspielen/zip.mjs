@@ -24,7 +24,7 @@ import { kursMedien } from "../../src/lib/lernkurs.ts";
 import { einstiegsDatei, leseManifest, waehleMedien, zaehleModularten } from "./paket.mjs";
 
 export const AFCONVERT = "/usr/bin/afconvert";
-/** Umwandlung: M4A-Container, AAC, 96 kbit/s (Entscheidung Anna 2026-10-17). */
+/** Umwandlung: M4A-Container, AAC, 96 kbit/s (Entscheidung Geschäftsführung 2026-10-17). */
 export const AFCONVERT_ARGS = ["-f", "m4af", "-d", "aac", "-b", "96000"];
 
 /** Öffnet eine Zip-Datei zum stückweisen Lesen. Schließen mit .schliessen(). */

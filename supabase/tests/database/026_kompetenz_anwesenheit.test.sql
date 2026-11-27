@@ -64,10 +64,10 @@ insert into live_session (id, lesson_id, datum, start, ende) values
 insert into schedule_entry (organisation_id, datum, art, reihenfolge, cohort_id, enrolment_id, live_session_id, field_job_id) values
   ('00000000-0000-0000-0000-000000025011', '2026-11-03', 'live', 1, '00000000-0000-0000-0000-000000025051', null, '00000000-0000-0000-0000-000000025071', null);
 
-insert into competency (id, name, kompetenzbereich, quelle) values
-  ('00000000-0000-0000-0000-000000025081', 'Kompetenz', 'Elektro', 'TQ-ARP');
-insert into competency_step (id, competency_id, name, typ) values
-  ('00000000-0000-0000-0000-000000025091', '00000000-0000-0000-0000-000000025081', 'Theorie Live + Selbstlernen', 'theoretisch');
+insert into competency (id, name, kompetenzbereich) values
+  ('00000000-0000-0000-0000-000000025081', 'Kompetenz', 'Elektro');
+insert into competency_step (id, name, typ) values
+  ('00000000-0000-0000-0000-000000025091', 'Theorie Live + Selbstlernen', 'theoretisch');
 insert into competency_competency_step (competency_id, competency_step_id, reihenfolge) values
   ('00000000-0000-0000-0000-000000025081', '00000000-0000-0000-0000-000000025091', 1);
 insert into content_competency_mapping (lesson_id, competency_step_id) values

@@ -136,7 +136,7 @@ function psqlPfad() {
   if (process.env.PSQL) return process.env.PSQL;
   const brew = "/opt/homebrew/opt/postgresql@17/bin/psql";
   if (existsSync(brew)) return brew;
-  // Postgres.app (Mac ohne Homebrew), Anna 2026-10-18
+  // Postgres.app (Mac ohne Homebrew), Geschäftsführung 2026-10-18
   const app = "/Applications/Postgres.app/Contents/Versions/latest/bin/psql";
   return existsSync(app) ? app : "psql";
 }

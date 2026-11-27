@@ -112,7 +112,7 @@ export type Tageszustand =
  * Regeln (Brief 3):
  * - Ein Praxistag hat Vorrang (E), er ist der Einstieg in den Praxis-Workflow.
  *   Auch ein schon durchgeführter Praxistag bleibt den ganzen Tag die
- *   Praxistag-Karte (Anna 2026-10-19), nicht "Alles erledigt".
+ *   Praxistag-Karte (Geschäftsführung 2026-10-19), nicht "Alles erledigt".
  * - Solange eine Live-Session läuft (B) oder bevorsteht (A), ist sie die
  *   Hauptaktion -- nie eine offene Selbstlernlektion.
  * - Danach wird die offene Selbstlernlektion zum Fokus (C).

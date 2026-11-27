@@ -16,12 +16,12 @@ import { FortschrittZeile, TerminBlock } from "./termin-block";
 // Stundenplan v2 (SR-13, SR-73): gemeinsame
 // Bausteine von Woche, Tag und Monat. Aktivitätsfarben wie Home und
 // Kompetenzen: Live = Lila (--brand), Selbstlernen = Eco Green, Praxis = Coral --
-// immer Icon + Text, nie nur Farbe. Änderungsliste Anna 2026-10-10: ruhiger
+// immer Icon + Text, nie nur Farbe. Änderungsliste Geschäftsführung 2026-10-10: ruhiger
 // -- kein Rahmen, feine Stundenlinien, Vergangenes weiß und grau.
 
 /**
  * Neben dem Zeitraum nur noch ein Symbol für die Art der Woche statt
- * "· Woche 2 · Theorie (online)" (Entscheidung Anna 2026-10-12): Kamera =
+ * "· Woche 2 · Theorie (online)" (Entscheidung Geschäftsführung 2026-10-12): Kamera =
  * Theorie, Werkzeug = Praxis, Buch = Selbstlernen, in den Aktivitätsfarben.
  * Der Name steht für Screenreader und als Tooltip dabei.
  */
@@ -59,7 +59,7 @@ export function AbweichungsLabel({ typ, haupt }: { typ: Tagestyp | null; haupt: 
 /**
  * Was an einem Tag als erledigt zählen kann. Live-Termine ohne eigene Lektion
  * (Deutsch/Fachdeutsch, Softskills Coaching) zählen nicht mit: für sie wird
- * keine Anwesenheit bestätigt (Entscheidung Anna 2026-10-20). Labortage
+ * keine Anwesenheit bestätigt (Entscheidung Geschäftsführung 2026-10-20). Labortage
  * zählen auch nicht mit: sie haben keinen Abschluss (SR-94), sonst würde ein
  * Tag mit Labortag nie „geschafft“ (SR-13, Entscheidung Produkt-Lead 13.11.2026).
  */
@@ -85,8 +85,8 @@ export function tagErledigt(tag: TagModell): boolean {
 /**
  * Selbstlern-Eintrag in "Flexibel" der Wochenansicht -- nie mit Uhrzeit
  * (Brief 5.5). Alle Einträge gleich hoch und gleich gerahmt wie
- * "Fachsprache", auch erledigte (Anna 2026-10-20: sonst "uneben"). Rechts
- * ein Zeichen: erledigt Häkchen, begonnen ein Weiter-Symbol (Anna 2026-10-20,
+ * "Fachsprache", auch erledigte (Geschäftsführung 2026-10-20: sonst "uneben"). Rechts
+ * ein Zeichen: erledigt Häkchen, begonnen ein Weiter-Symbol (Geschäftsführung 2026-10-20,
  * statt Text); offen nichts.
  */
 export function FlexChip({ chip }: { chip: Chip }) {
@@ -102,7 +102,7 @@ export function FlexChip({ chip }: { chip: Chip }) {
       )}
     >
       <BookOpen className="size-4 shrink-0 text-self" aria-hidden="true" />
-      {/* Thema als Titel bzw. "Wissen festigen" (Anna 2026-10-16, wie demo). */}
+      {/* Thema als Titel bzw. "Wissen festigen" (Geschäftsführung 2026-10-16, wie demo). */}
       <span className="min-w-0 flex-1 truncate">{chip.titel}</span>
       {chip.unterlagen && <Download className="size-3.5 shrink-0 text-ink-muted" aria-hidden="true" />}
       {chip.erledigt ? (
@@ -120,7 +120,7 @@ export function FlexChip({ chip }: { chip: Chip }) {
 export const BLOCK_RAND = { gross: { links: 8, rechts: 16 }, klein: { links: 6, rechts: 8 } } as const;
 
 /**
- * Punkt 9: Flexibel in der Tagesansicht als schmale weiße Leiste (Anna 2026-10-13), genau
+ * Punkt 9: Flexibel in der Tagesansicht als schmale weiße Leiste (Geschäftsführung 2026-10-13), genau
  * so breit wie der Live-Block -- Buch-Icon, Titel, Aktion.
  */
 export function FlexLeiste({ chip, gross }: { chip: Chip; gross: boolean }) {
@@ -139,7 +139,7 @@ export function FlexLeiste({ chip, gross }: { chip: Chip; gross: boolean }) {
     >
       <BookOpen className="size-4 shrink-0 text-self" aria-hidden="true" />
       <span className="min-w-0 flex-1">{chip.titel}</span>
-      {/* "Weiterlernen" nur, wenn schon begonnen; sonst nur der Pfeil (Anna 2026-10-20, Handy und Laptop gleich). */}
+      {/* "Weiterlernen" nur, wenn schon begonnen; sonst nur der Pfeil (Geschäftsführung 2026-10-20, Handy und Laptop gleich). */}
       {chip.erledigt ? (
         <GeschafftZeichen klein />
       ) : (
@@ -218,7 +218,7 @@ export function GanztagsLeiste({ tag: g, gross }: { tag: Ganztag; gross: boolean
 
 /**
  * Positionen im Raster in Prozent der Rasterhöhe -- so passt das Raster sich
- * der verfügbaren Höhe an (Entscheidung Anna 2026-10-10: die ganze Woche auf
+ * der verfügbaren Höhe an (Entscheidung Geschäftsführung 2026-10-10: die ganze Woche auf
  * einen Blick, ohne Scrollen). Die Höhe gibt die Ansicht vor.
  */
 const prozent = (h: number, von: number, bis: number) => `${((h - von) / (bis - von)) * 100}%`;

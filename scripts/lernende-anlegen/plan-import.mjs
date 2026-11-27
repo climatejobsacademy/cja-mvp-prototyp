@@ -1,6 +1,6 @@
 // scripts/lernende-anlegen/plan-import.mjs
 // Reine Funktionen für den Plan-Import-Teil von scripts/lernende-anlegen.mjs
-// (SR-48, Entscheidung Anna 18.10. „Variante B“): Praxistage hängen an der
+// (SR-48, Entscheidung Geschäftsführung 18.10. „Variante B“): Praxistage hängen an der
 // Einschreibung und entstehen nur über scripts/import-plan.mjs. Darum ruft
 // lernende-anlegen mit --plan-datei den Plan-Import für die Kohorten der
 // Lernenden-Liste auf, und am Ende prüft eine Kontrolle, ob aktive

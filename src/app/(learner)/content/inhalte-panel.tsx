@@ -16,8 +16,8 @@ import { cn } from "@/lib/utils";
 // Klick daneben oder Esc (base-ui Dialog: Fokus ins Panel, beim Schließen
 // zurück zum Knopf). &inhalte=1 in der Adresse öffnet es -- so öffnet ein
 // Klick auf eine Modulkarte im Pfad direkt die Inhalte dieses Moduls
-// (Wunsch Anna 2026-10-11) und man kann es verlinken. Darin je Woche (aufklappbar)
-// eine Zeile je Thema (= Kurs) mit den Lektionen als Knöpfe (Anna 2026-10-27).
+// (Wunsch Geschäftsführung 2026-10-11) und man kann es verlinken. Darin je Woche (aufklappbar)
+// eine Zeile je Thema (= Kurs) mit den Lektionen als Knöpfe (Geschäftsführung 2026-10-27).
 
 const STATUS: Record<ModulStatus, { text: string; klasse: string }> = {
   abgeschlossen: { text: "Abgeschlossen", klasse: "bg-subtle text-progress" },
@@ -47,7 +47,7 @@ const AUFKLAPP =
 const KURZ: Record<LektionsTyp, string> = { live: "Live", selbstlern: "Selbstlernen", dokument: "Material", praxis: "Praxis" };
 
 /**
- * Entscheidung Anna 2026-10-27 (zu viel Aufklappen): Woche aufklappbar, je
+ * Entscheidung Geschäftsführung 2026-10-27 (zu viel Aufklappen): Woche aufklappbar, je
  * Thema eine Zeile mit Datum, die Lektionen als kleine Knöpfe rechts --
  * keine dritte Ebene mehr. Erledigt mit Häkchen, heute in Lime.
  */
@@ -102,7 +102,7 @@ function ThemaZeile({ t }: { t: PanelThema }) {
 /**
  * Zeilen: das Sammel-Thema „Praxistag“ wird in eine Zeile je
  * Auftrag aufgeteilt -- sonst stünden dort nur Knöpfe „Praxis“ ohne Namen
- * (Anna 2026-10-27).
+ * (Geschäftsführung 2026-10-27).
  */
 function zeilenThemen(themen: PanelThema[]): PanelThema[] {
   return themen.flatMap((t) =>
@@ -172,7 +172,7 @@ export function InhaltePanel({
         adresseMerken(neu);
       }}
     >
-      {/* Kein eigener Knopf mehr (Entscheidung Anna 2026-10-12): das Panel
+      {/* Kein eigener Knopf mehr (Entscheidung Geschäftsführung 2026-10-12): das Panel
           öffnet nur der Klick auf eine Modulkarte im Pfad. */}
       <Dialog.Portal>
         <Dialog.Backdrop className="fixed inset-0 z-50 bg-ink/30 data-open:animate-in data-open:fade-in-0 data-closed:animate-out data-closed:fade-out-0 motion-reduce:animate-none" />

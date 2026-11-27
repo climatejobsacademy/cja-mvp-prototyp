@@ -15,7 +15,7 @@
 //
 // Praxistage (field_job, schedule_entry mit enrolment_id) hängen an der
 // Einschreibung und entstehen nur über scripts/import-plan.mjs (Entscheidung
-// Anna 18.10., „Variante B“). Mit --plan-datei ruft dieses Skript nach seinem
+// Geschäftsführung 18.10., „Variante B“). Mit --plan-datei ruft dieses Skript nach seinem
 // eigenen Teil den Plan-Import als Kindprozess auf: im Probelauf ebenfalls
 // als Probelauf; im echten Lauf erst als Probelauf, dann nach „ja“ mit
 // --ausfuehren (Production fragt dort zusätzlich die Ref ab). Nach jedem
@@ -208,7 +208,7 @@ function psqlPfad() {
   if (process.env.PSQL) return process.env.PSQL;
   const brew = "/opt/homebrew/opt/postgresql@17/bin/psql";
   if (existsSync(brew)) return brew;
-  // Postgres.app (Mac ohne Homebrew), Anna 2026-10-18
+  // Postgres.app (Mac ohne Homebrew), Geschäftsführung 2026-10-18
   const app = "/Applications/Postgres.app/Contents/Versions/latest/bin/psql";
   return existsSync(app) ? app : "psql";
 }

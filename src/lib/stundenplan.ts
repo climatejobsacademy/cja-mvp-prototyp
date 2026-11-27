@@ -42,7 +42,7 @@ export function stunden(zeit: string): number {
 }
 
 /**
- * Änderungsliste Anna 2026-10-10, Punkt 4: Raster von 1 h vor dem ersten
+ * Änderungsliste Geschäftsführung 2026-10-10, Punkt 4: Raster von 1 h vor dem ersten
  * bis 1 h nach dem letzten Termin (volle Stunden). Ohne Termine 08-17 Uhr.
  */
 export function stundenBereich(termine: { start: string; ende: string }[]): { von: number; bis: number } {
@@ -101,9 +101,9 @@ export function tagestypAus(tag: { live: number; praxis: number; flex: number })
 /**
  * Brief 2.4/5: der Anker-Termin der angezeigten Woche ab `jetzt`. Der
  * laufende bzw. nächste Termin von heute; ist heute alles vorbei, bleibt der
- * letzte Termin von heute der Anker, bis der Tag wechselt (Anna 2026-10-12,
- * wie demo). Ohne Termin heute kein Anker (Anna 2026-10-16). Die Anker-Fläche ist
- * die einzige Hervorhebung -- vergangene Termine sind abgesetzt (Anna
+ * letzte Termin von heute der Anker, bis der Tag wechselt (Geschäftsführung 2026-10-12,
+ * wie demo). Ohne Termin heute kein Anker (Geschäftsführung 2026-10-16). Die Anker-Fläche ist
+ * die einzige Hervorhebung -- vergangene Termine sind abgesetzt (Geschäftsführung
  * 2026-10-13), der Anker davon ausgenommen.
  */
 export function naechsterTerminId(
@@ -116,7 +116,7 @@ export function naechsterTerminId(
   const offen = termine.filter((t) => `${t.datum}T${t.ende}` > jetzt).sort(nachStart);
   if (offen[0]?.datum === heute) return offen[0].id;
   const heuteVorbei = termine.filter((t) => t.datum === heute).sort(nachStart);
-  // Ohne Termin heute kein Anker (Anna 2026-10-16, SR-13): sonst war in jeder
+  // Ohne Termin heute kein Anker (Geschäftsführung 2026-10-16, SR-13): sonst war in jeder
   // kommenden Woche der Montag dunkel hervorgehoben -- dunkel nur heute.
   return heuteVorbei.length > 0 ? heuteVorbei[heuteVorbei.length - 1].id : null;
 }
@@ -136,7 +136,7 @@ export function naechsterArbeitstag(datum: string, richtung: 1 | -1): string {
 
 /**
  * "Woche 2": Woche 1 ist die Woche, in der die Kohorte startet
- * (Änderungsliste Anna 2026-10-10, Punkt 6: Start 28.09.2026 → 05.-09.10.
+ * (Änderungsliste Geschäftsführung 2026-10-10, Punkt 6: Start 28.09.2026 → 05.-09.10.
  * ist Woche 2). Vor dem Start oder ohne Start: null.
  */
 export function wocheSeit(start: string | null, datum: string): number | null {

@@ -14,7 +14,7 @@ import type { SeitenBild } from "@/lib/fachsprache-laden";
 // zwischengespeichert wird.
 
 export function KartenBild({ bild }: { bild: SeitenBild }) {
-  // Klick aufs Bild öffnet es groß mit Zoom (Anna 2026-10-27); vorher ein
+  // Klick aufs Bild öffnet es groß mit Zoom (Geschäftsführung 2026-10-27); vorher ein
   // eigener Knopf mit Fenster ohne Zoom.
   return (
     <figure className="overflow-hidden rounded-xl bg-white">

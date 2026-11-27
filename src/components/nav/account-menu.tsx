@@ -113,7 +113,7 @@ export function AccountMenu({
               <UserRound className="size-[18px]" aria-hidden="true" />
               Profil bearbeiten
             </DropdownMenuItem>
-            {/* Hilfe-Seite (Anna 2026-11-01, SR folgt) */}
+            {/* Hilfe-Seite (Geschäftsführung 2026-11-01, SR folgt) */}
             <DropdownMenuItem
               onClick={() => router.push("/hilfe")}
               className="min-h-11 gap-2 rounded-lg px-3 text-sm text-ink focus:bg-subtle focus:text-ink"

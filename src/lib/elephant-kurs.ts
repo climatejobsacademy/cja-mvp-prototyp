@@ -122,7 +122,7 @@ const audio = (quelle: string | null): Baustein | null => (quelle ? { art: "audi
 const text = (inhalt: TextKnoten[]): Baustein | null => (inhalt.length ? { art: "text", inhalt } : null);
 
 // Bilder mitten im Text (Elephant: <img data-path="images/…"> im markupContent,
-// Anna 2026-10-20): der Text wird an diesen Stellen geteilt, das Bild steht als
+// Geschäftsführung 2026-10-20): der Text wird an diesen Stellen geteilt, das Bild steht als
 // eigener Baustein dazwischen. Bilder ohne data-path (z. B. Giphy) fallen weg.
 const BILD_IM_TEXT = /<img\b[^>]*\bdata-path=["']([^"']+)["'][^>]*>/gi;
 
@@ -321,7 +321,7 @@ function entschluesseln(t: string): string {
 
 // Formeln mitten im Satz (Elephant: <span data-type="inline-math">$…$</span>)
 // werden zu \(…\), damit die Anzeige sie von einzelnen $-Zeichen im Text
-// unterscheiden kann; Formel-Blöcke stehen schon als $$…$$ im Text (Anna 2026-10-20).
+// unterscheiden kann; Formel-Blöcke stehen schon als $$…$$ im Text (Geschäftsführung 2026-10-20).
 const INLINE_FORMEL = /<span\b[^>]*data-type=["']inline-math["'][^>]*>\s*\$([\s\S]*?)\$\s*<\/span>/gi;
 
 export function htmlLesen(html: string): TextKnoten[] {
