@@ -8,7 +8,9 @@ import {
   type EinheitQuelle,
   type SeitenErgebnis,
 } from "@/lib/fachsprache-laden";
-import { parseInhalt } from "@/lib/fachsprache";
+import { bildPfad, parseInhalt } from "@/lib/fachsprache";
+import { BILD_GUELTIGKEIT_SEKUNDEN } from "@/lib/fachsprache-laden";
+import type { Vokabel } from "@/lib/vokabeln";
 import { glossarAus, type GlossarEintrag } from "@/lib/glossar";
 import { fachspracheEinheitAn } from "@/lib/schalter";
 import { createClient } from "@/lib/supabase/server";
@@ -143,4 +145,55 @@ export async function getGlossarWoche(tage: TagMitTerminen[]): Promise<GlossarEi
     .eq("status", "veroeffentlicht");
   const karten = (data ?? []).flatMap((z) => parseInhalt(z.inhalt)?.wortkarten ?? []);
   return glossarAus(karten);
+}
+
+/**
+ * Vokabelklick (SR-24): Wortkarten aller veröffentlichten Fachsprache-Einheiten
+ * des Moduls, zu dem die Lektion gehört (ohne Modul: des Kurses), mit
+ * signierten Bild-Links. Leer bei ausgeschaltetem Schalter oder ohne Einheiten;
+ * mit dem Client der angemeldeten Person (RLS wie SR-84). Es wird nicht
+ * erfasst, wer welches Wort antippt.
+ */
+export async function getVokabelnFuerLektion(lessonId: string): Promise<Vokabel[]> {
+  if (!fachspracheEinheitAn()) return [];
+  const supabase = await createClient();
+
+  const { data: lektion } = await supabase.from("lesson").select("course_id").eq("id", lessonId).maybeSingle();
+  if (!lektion?.course_id) return [];
+  const { data: kurs } = await supabase.from("course").select("id, module_id").eq("id", lektion.course_id).maybeSingle();
+  if (!kurs) return [];
+  const { data: kurse } = kurs.module_id
+    ? await supabase.from("course").select("id").eq("module_id", kurs.module_id)
+    : { data: [{ id: kurs.id }] };
+  const kursIds = (kurse ?? []).map((k) => k.id);
+  if (kursIds.length === 0) return [];
+  const { data: lektionen } = await supabase.from("lesson").select("id").in("course_id", kursIds);
+  const lessonIds = (lektionen ?? []).map((l) => l.id);
+  if (lessonIds.length === 0) return [];
+
+  const { data: einheiten } = await supabase
+    .from("fachsprache_einheit")
+    .select("id, lesson_id, inhalt")
+    .in("lesson_id", lessonIds)
+    .eq("status", "veroeffentlicht")
+    .order("lesson_id");
+
+  const karten = (einheiten ?? []).flatMap((e) =>
+    (parseInhalt(e.inhalt)?.wortkarten ?? []).map((k, i) => ({ id: `${e.id}:${i}`, lessonId: e.lesson_id, karte: k }))
+  );
+  const pfade = [...new Set(karten.flatMap((k) => (k.karte.bild ? [bildPfad(k.lessonId, k.karte.bild.datei)] : [])))];
+  const links = new Map<string, string>();
+  if (pfade.length > 0) {
+    const { data } = await supabase.storage.from(FACHSPRACHE_BUCKET).createSignedUrls(pfade, BILD_GUELTIGKEIT_SEKUNDEN);
+    for (const e of data ?? []) if (e.path && e.signedUrl && !e.error) links.set(e.path, e.signedUrl);
+  }
+  return karten.map(({ id, lessonId: lid, karte }) => ({
+    id,
+    wort: karte.wort,
+    erklaerung: karte.erklaerung,
+    beispiel: karte.beispiel,
+    bildUrl: karte.bild ? (links.get(bildPfad(lid, karte.bild.datei)) ?? null) : null,
+    bildAlt: karte.bild?.alt ?? null,
+    formen: karte.formen ?? [],
+  }));
 }

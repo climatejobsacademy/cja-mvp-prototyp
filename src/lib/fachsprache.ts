@@ -13,7 +13,14 @@
 
 export type Bild = { datei: string; alt: string };
 
-export type Wortkarte = { wort: string; erklaerung: string; beispiel: string; bild: Bild | null };
+export type Wortkarte = {
+  wort: string;
+  erklaerung: string;
+  beispiel: string;
+  bild: Bild | null;
+  /** Weitere Schreibweisen im Lektionstext (Vokabelklick, SR-24), nur wenn gesetzt */
+  formen?: string[];
+};
 
 export type QuizFrage = {
   frage: string;
@@ -66,7 +73,11 @@ function wortkarteAus(x: unknown): Wortkarte | null {
   const beispiel = text(x.beispiel);
   const bild = bildAus(x);
   if (wort === null || erklaerung === null || beispiel === null || bild === undefined) return null;
-  return { wort, erklaerung, beispiel, bild };
+  // Formen (SR-24) sind optional; Ungültiges wird ignoriert statt die Karte zu verwerfen.
+  const formen = Array.isArray(x.formen)
+    ? x.formen.flatMap((f) => (typeof f === "string" && f.trim() !== "" ? [f.trim()] : []))
+    : [];
+  return formen.length > 0 ? { wort, erklaerung, beispiel, bild, formen } : { wort, erklaerung, beispiel, bild };
 }
 
 function quizFrageAus(x: unknown): QuizFrage | null {

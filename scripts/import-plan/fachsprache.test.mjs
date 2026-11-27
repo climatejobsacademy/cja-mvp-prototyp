@@ -9,7 +9,7 @@ import { join } from "node:path";
 import { test } from "node:test";
 import { strToU8, zipSync } from "fflate";
 
-import { erstelleFachsprache, waehleFachspracheTabs } from "./fachsprache.mjs";
+import { erstelleFachsprache, formenAus, waehleFachspracheTabs } from "./fachsprache.mjs";
 import { leseXlsx, ZEILE } from "./xlsx.mjs";
 
 const plan = () => ({
@@ -268,4 +268,20 @@ test("Excel-Leser: leere und selbstschließende Zeilen entfallen, Zeilennummern 
   assert.equal(t.Einheit[1][ZEILE], 4, "Zeile 3 war leer, die Nummer von Zeile 4 bleibt");
   assert.equal(t.Einheit[0].Quellen, "eigene");
   assert.deepEqual(t["Wörter"], []);
+});
+
+// SR-24 (Vokabelklick): optionale Spalte „Formen“ im Tab Wörter.
+test("SR-24 Formen: kommagetrennt, ohne Leerraum, ohne Doppelte; leer ergibt keine Formen", () => {
+  assert.deepEqual(formenAus(" Leitern, Leiters ,, leitern; PE-Leiter "), ["Leitern", "Leiters", "PE-Leiter"]);
+  assert.deepEqual(formenAus(""), []);
+  assert.deepEqual(formenAus(undefined), []);
+});
+
+test("SR-24 Formen: landen in der Wortkarte, ohne Spalte bleibt die Karte wie bisher", () => {
+  const fs = tabs();
+  fs["Wörter"][0].Formen = "Dioden, Diode";
+  const mit = erstelleFachsprache(fs, plan()).einheiten[0].inhalt.wortkarten[0];
+  assert.deepEqual(mit.formen, ["Dioden", "Diode"]);
+  const ohne = erstelleFachsprache(tabs(), plan()).einheiten[0].inhalt.wortkarten[0];
+  assert.equal("formen" in ohne, false);
 });

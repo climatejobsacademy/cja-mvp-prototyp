@@ -524,6 +524,14 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Status:** gültig
 - **Belegt:** SR-84
 
+### 2026-11-27 – Vokabelklick aus den Fachsprache-Einheiten des Moduls, Glossar der Woche
+
+- **Entscheidung:** (Produkt-Lead) Fachwörter werden einmal gepflegt, in den Wortkarten der Fachsprache-Einheiten, und dreifach genutzt: Einheit, Vokabelklick (SR-24) und Glossar der Woche (SR-101). Der Vokabelklick markiert in nativen Selbstlern-Lektionen die Wörter aller veröffentlichten Einheiten des Moduls; weitere Schreibweisen kommen aus der neuen optionalen Excel-Spalte „Formen“. Das Glossar druckt die Wörter einer Stundenplan-Woche alphabetisch, ohne Bilder.
+- **Begründung:** Lernende wünschen Worterklärungen (3 von 8 finden die Wörter zu schwer, 7 von 8 übersetzen selbst) und lernen auf Papier (UN-66). Keine doppelte Pflege für die Learning Designer.
+- **Folgen:** Keine Migration (zusätzliches Feld `formen` im JSON ist erlaubt). Markiert wird nur, was genau so im Lektionstext steht; SCORM-Pakete im Player (auch H5P) bekommen keine Markierung. Kein Tracking von Klicks oder Drucken.
+- **Status:** gültig
+- **Belegt:** SR-24, SR-101
+
 ## Offene technische Schulden
 
 Diese Punkte sind keine Entscheidungen, sondern bekannte Lücken; was daraus wird, steht in Asana.
