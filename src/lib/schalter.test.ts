@@ -4,7 +4,9 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 // @ts-expect-error TS5097: .ts-Endung für node:test nötig
-import { fachspracheEinheitAn, fragenThreadAn, nativeSelbstlernenAn, praxisaufgabeHref, praxisaufgabeLinkAn, threadSichtbar } from "./schalter.ts";
+import { fachspracheEinheitAn, fragenThreadAn, nativeSelbstlernenAn, praxisaufgabeHref, praxisaufgabeLinkAn, threadSichtbar, waehrendWartungErreichbar, wartungAn } from "./schalter.ts";
+// @ts-expect-error TS5097: .ts-Endung für node:test nötig
+import { wartungsseiteHtml } from "./wartungsseite.ts";
 
 test("fachspracheEinheitAn: ohne Variable aus", () => {
   assert.equal(fachspracheEinheitAn({}), false);
@@ -81,4 +83,32 @@ test("SR-74 threadSichtbar: Schalter aus blendet den Thread aus, auch wenn chat_
 test("SR-74 threadSichtbar: Schalter an folgt chat_aktiv wie bisher", () => {
   assert.equal(threadSichtbar(true, true), true);
   assert.equal(threadSichtbar(false, true), false);
+});
+
+test("wartungAn: ohne Variable und mit 'aus' aus, nur 'an' schaltet ein", () => {
+  assert.equal(wartungAn({}), false);
+  assert.equal(wartungAn({ WARTUNG: "aus" }), false);
+  assert.equal(wartungAn({ WARTUNG: " AN " }), true);
+  for (const wert of ["", "true", "1", "ja"]) {
+    assert.equal(wartungAn({ WARTUNG: wert }), false, wert);
+  }
+  assert.equal(wartungAn({ NEXT_PUBLIC_WARTUNG: "an" }), false);
+});
+
+test("waehrendWartungErreichbar: nur Pflichtseiten (SR-60), sonst Wartungsseite", () => {
+  for (const pfad of ["/impressum", "/datenschutz", "/barrierefreiheit"]) {
+    assert.equal(waehrendWartungErreichbar(pfad), true, pfad);
+  }
+  for (const pfad of ["/", "/login", "/auth/callback", "/schedule", "/trainer", "/impressum-x", "/content/1"]) {
+    assert.equal(waehrendWartungErreichbar(pfad), false, pfad);
+  }
+});
+
+test("wartungsseiteHtml: vollständige Seite auf Deutsch mit Links zu den Pflichtseiten", () => {
+  const html = wartungsseiteHtml();
+  assert.match(html, /^<!doctype html>/);
+  assert.match(html, /<html lang="de">/);
+  for (const pfad of ["/impressum", "/datenschutz", "/barrierefreiheit"]) {
+    assert.ok(html.includes(`href="${pfad}"`), pfad);
+  }
 });

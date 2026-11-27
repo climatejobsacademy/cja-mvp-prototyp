@@ -77,3 +77,23 @@ export const FRAGEN_THREAD = fragenThreadAn();
 export function threadSichtbar(chatAktiv: boolean, an: boolean = FRAGEN_THREAD): boolean {
   return an && chatAktiv;
 }
+
+/**
+ * Wartungsseite (Entscheidung Geschäftsführung 18.10.2026, docs/runbook.md
+ * Abschnitt 6 „App vom Netz nehmen“): An nur mit WARTUNG=an (Groß-/
+ * Kleinschreibung und Leerraum egal). Dann beantwortet die Middleware jede
+ * Anfrage mit einer Wartungsseite (Status 503), ohne Login und ohne
+ * Datenbank; nur die Pflichtseiten (SR-60) bleiben erreichbar. Im Alltag
+ * steht in Vercel Production WARTUNG=aus. Wirkt erst nach neuem Deployment.
+ */
+export function wartungAn(umgebung: Umgebung = process.env): boolean {
+  return umgebung.WARTUNG?.trim().toLowerCase() === "an";
+}
+
+/** Pfade, die auch während der Wartung erreichbar bleiben (Pflichtseiten, SR-60). */
+export const WARTUNG_ERREICHBAR = ["/impressum", "/datenschutz", "/barrierefreiheit"];
+
+/** true, wenn der Pfad während der Wartung durchgelassen wird. */
+export function waehrendWartungErreichbar(pfad: string): boolean {
+  return WARTUNG_ERREICHBAR.some((p) => pfad === p || pfad.startsWith(`${p}/`));
+}

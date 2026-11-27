@@ -311,7 +311,11 @@ davon weiß.
 
 **Selbst tun**
 
-- **App vom Netz nehmen:** entscheidet die Geschäftsführung. Weg: Wartungsseite (Entscheidung Geschäftsführung 18.10.). Technisch noch offen: Die App braucht dafür einen Schalter, der statt aller Seiten eine Wartungsseite zeigt (Umsetzung folgt).
+- **App vom Netz nehmen:** entscheidet die Geschäftsführung. Weg: Wartungsseite (Entscheidung Geschäftsführung 18.10.).
+  1. Vercel → Projekt → Settings → Environment Variables → `WARTUNG` (Umgebung Production) auf `an` stellen.
+  2. Vercel → Deployments → letztes Production-Deployment → „Redeploy“. Nach 1–2 Minuten zeigt jede Seite nur noch „Wir sind gleich wieder da“ (Status 503). Die Wartungsseite selbst braucht weder Login noch Datenbank. Impressum, Datenschutz und Barrierefreiheit bleiben wie gewohnt erreichbar.
+  3. Prüfen: learn.climatejobsacademy.com in einem privaten Fenster öffnen.
+  4. Zurück: `WARTUNG` wieder auf `aus`, erneut „Redeploy“.
 - **Meldung an die Aufsichtsbehörde** (Sächsische Datenschutz- und Transparenzbeauftragte) innerhalb von 72 Stunden und **Information der Betroffenen:** Geschäftsführung.
 
 Technischer Hintergrund für die Technik: Die Zugriffsregeln liegen als
@@ -335,6 +339,7 @@ Die App liest die folgenden Variablen. Sie werden in Vercel gesetzt (Projekt, Se
 | `VERCEL_ENV`, `VERCEL_BRANCH_URL` | Systemvariablen von Vercel: Umgebung und Adresse der Vorschau-Version; nicht selbst setzen (`decisions.md`, Eintrag 2026-09-21) | Vercel, automatisch | alle |
 | `FACHSPRACHE_EINHEIT`, `PRAXISAUFGABE_LINK` | Funktionsschalter: nur der Wert `an` schaltet ein, ohne Variable ist die Funktion aus (`src/lib/schalter.ts`, `fachsprache.md`) | Vercel | je Umgebung ein eigener Wert |
 | `NATIVE_SELBSTLERNEN` | Schalter mit umgekehrtem Standard: ohne Variable ist die native Selbstlern-Ansicht an, nur der Wert `aus` schaltet sie ab (Notbremse) | Vercel | je Umgebung ein eigener Wert |
+| `WARTUNG` | Wartungsseite: nur der Wert `an` zeigt statt aller Seiten die Wartungsseite (Status 503), Pflichtseiten bleiben erreichbar; Ablauf in Abschnitt 6 „App vom Netz nehmen“ | Vercel | Production `aus` (im Notfall `an`), Preview und Development ohne Variable |
 | `FRAGEN_THREAD` | Schalter mit umgekehrtem Standard: ohne Variable folgt der Fragen-Thread `lesson.chat_aktiv`, der Wert `aus` blendet ihn überall aus und lehnt Schreiben ab (SR-74, `fragen-thread.md`) | Vercel | Production `aus`, Preview und Development ohne Variable |
 | `SUPABASE_SERVICE_ROLE_KEY` | nur für `scripts/invite-learner.mjs`, nie im App-Code; für Production liest das Skript den Schlüssel nur aus dem Schlüsselbund (`.env.example`) | lokal `.env.local` | lokal |
 | `PGPASSWORD`, `PSQL` | für die Skripte: Datenbank-Passwort (sonst ein Schlüsselbund-Eintrag je Ziel) und Pfad zu `psql` (`import-plan.md`, `lernende-anlegen.md`) | eigene Shell | lokal |
