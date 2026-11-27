@@ -15,6 +15,7 @@ import { getLessonDetail } from "@/lib/queries/content";
 import { getHeutigeKompetenzen } from "@/lib/queries/home";
 import { getLektionThread } from "@/lib/queries/lektion-thread";
 import { getVokabelnFuerLektion } from "@/lib/queries/fachsprache";
+import { youtubeId } from "@/lib/youtube";
 import { getLessonMaterialien } from "@/lib/queries/materialien";
 import { getMeineTrainer } from "@/lib/queries/trainer";
 import { begonnenSetzen } from "@/lib/lektion-begonnen";
@@ -26,6 +27,7 @@ import { BegonnenMarker } from "./begonnen-marker";
 import { LektionThread } from "./lektion-thread";
 import { MarkCompleteButton } from "./mark-complete-button";
 import { MaterialienListe } from "./materialien-liste";
+import { VideoAbschnitt } from "./video-abschnitt";
 import { NativeLektion } from "./native-lektion";
 import { ScormPlayer } from "./scorm-player";
 import { TerminKarte } from "./termin-karte";
@@ -64,6 +66,9 @@ export default async function LessonPage({
     getLessonDetail(lessonId, learner.personId, { cohortId: learner.cohortId, enrolmentId: learner.enrolmentId }),
     getLessonMaterialien(lessonId),
   ]);
+  // YouTube-Links (SR-102) erscheinen als Video unter dem Inhalt, nicht in „Unterlagen“.
+  const videos = materialien.flatMap((m) => (m.art === "link" && youtubeId(m.url) ? [{ id: m.id, titel: m.titel, url: m.url }] : []));
+  const unterlagen = materialien.filter((m) => !(m.art === "link" && youtubeId(m.url)));
 
   if (!lesson) notFound();
 
@@ -149,7 +154,7 @@ export default async function LessonPage({
       {/* Unterlagen (SR-68, ergänzt 26.11.2026): bei allen Lektionsarten direkt
           unter dem Titel, damit "Herunterladen" ohne Scrollen sichtbar ist.
           Ohne Unterlagen kein Abschnitt (Material-Lektion: Hinweistext unten). */}
-      {materialien.length > 0 && <MaterialienListe lessonId={lesson.id} materialien={materialien} />}
+      {unterlagen.length > 0 && <MaterialienListe lessonId={lesson.id} materialien={unterlagen} />}
 
       {/* "begonnen" beim ersten Öffnen (SR-73, Datenlücke Nr. 9). */}
       {begonnenSetzen(lesson.contentType, lesson.status) && <BegonnenMarker lessonId={lesson.id} />}
@@ -195,12 +200,15 @@ export default async function LessonPage({
 
       {lesson.contentType === "repository" && (
         <div className="flex flex-col gap-4">
-          {materialien.length === 0 && (
+          {unterlagen.length === 0 && videos.length === 0 && (
             <p className="text-sm text-muted-foreground">Für diese Lektion sind noch keine Unterlagen hinterlegt.</p>
           )}
           <MarkCompleteButton lessonId={lesson.id} done={done} />
         </div>
       )}
+
+      {/* YouTube-Videos der Lektion (SR-102): unter dem Inhalt, Zwei-Klick. */}
+      <VideoAbschnitt videos={videos} />
 
       {thread && <LektionThread lessonId={lesson.id} thread={thread} />}
     </div>

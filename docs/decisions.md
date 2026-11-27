@@ -532,6 +532,14 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Status:** gültig
 - **Belegt:** SR-24, SR-101
 
+### 2026-11-27 – YouTube-Videos in Lektionen mit Zwei-Klick
+
+- **Entscheidung:** (Produkt-Lead) YouTube-Videos laufen direkt in der Lektion, unter dem Lektionsinhalt im Abschnitt „Video“. Angelegt werden sie wie andere Links (Link-Eintrag an der Lektion, `scripts/sql/lernmaterial_anlegen.sql`); eine YouTube-Adresse wird automatisch als Video gezeigt. Bis zum Klick auf „Video laden“ wird nichts von YouTube geladen; danach läuft das Video über youtube-nocookie.com mit Untertiteln (Deutsch bevorzugt). „Auf YouTube öffnen“ bleibt als Alternative.
+- **Begründung:** Learning Design nutzt Erklärvideos; Lernende sollen sie ohne Wechsel der Seite und mit Untertiteln sehen (Sprachhürde). Ohne Klick keine Datenübertragung an Google, damit keine Einwilligung vorab nötig ist.
+- **Folgen:** Keine Migration. YouTube-Links stehen nicht mehr in „Unterlagen“ und zählen im Stundenplan und auf Home nicht als Unterlage. Datenschutzerklärung (Abschnitt „Videos von YouTube“) und Verarbeitungsverzeichnis (Tätigkeit 6a) nennen die Einbindung; nicht rechtlich geprüft. Kein Tracking, wer ein Video lädt. Massen-Anlage per Excel-Import ist eine eigene Asana-Karte.
+- **Status:** gültig
+- **Belegt:** SR-102
+
 ## Offene technische Schulden
 
 Diese Punkte sind keine Entscheidungen, sondern bekannte Lücken; was daraus wird, steht in Asana.

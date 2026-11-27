@@ -93,6 +93,15 @@ Seit Migration 0058–0068 (SR-64, SR-65, SR-88 bis SR-92, SR-03). Technischer S
 - **Rechtsgrundlage:** Art. 6 Abs. 1 lit. b DSGVO.
 - **Löschfrist:** mit dem Konto der Person (`on delete cascade`, `loeschweg.md`).
 
+### 6a. Videos von YouTube in Lektionen (SR-102)
+
+- **Zweck:** Erklärvideos direkt in der Lektion zeigen.
+- **Betroffene:** Lernende, die ein Video laden.
+- **Daten:** Die Plattform speichert nichts dazu, auch nicht, wer ein Video lädt. Erst nach dem Klick auf „Video laden“ überträgt der Browser IP-Adresse, aufgerufene Seite und technische Angaben zu Browser und Gerät an YouTube (erweiterter Datenschutzmodus, youtube-nocookie.com); vorher wird nichts von YouTube geladen.
+- **Rechtsgrundlage:** Einwilligung durch den Klick (Art. 6 Abs. 1 lit. a DSGVO, § 25 Abs. 1 TDDDG).
+- **Empfänger:** Google Ireland Limited (eigene Verantwortung von YouTube, kein Auftragsverarbeiter); Übermittlung in die USA möglich (Google ist nach dem EU-US Data Privacy Framework zertifiziert).
+- **Löschfrist:** bei der Plattform nichts gespeichert; bei YouTube nach dessen Vorgaben.
+
 ### 7. Betrieb, Sicherheit und Backups
 
 - **Zweck:** sicherer Betrieb der Plattform, Wiederherstellung nach Fehlern.

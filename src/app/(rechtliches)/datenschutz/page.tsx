@@ -205,11 +205,29 @@ export default function DatenschutzPage() {
         heruntergeladen haben, merkt sich nur Ihr Browser im sogenannten
         sessionStorage, um sie als „heruntergeladen“ zu kennzeichnen. Das ist
         kein Cookie, wird nicht an uns übermittelt und beim Schließen des Tabs
-        gelöscht. Einige Lektionen enthalten Verweise auf externe Angebote, etwa
-        Videos. Diese öffnen sich in einem neuen Tab; Inhalte Dritter werden
-        nicht in die Plattform eingebettet. Für die verlinkten Seiten gelten die
-        Datenschutzhinweise der jeweiligen Anbieter. Rechtsgrundlage: Art. 6
-        Abs. 1 lit. b DSGVO.
+        gelöscht. Einige Lektionen enthalten Verweise auf externe Angebote.
+        Diese öffnen sich in einem neuen Tab. Für die verlinkten Seiten gelten
+        die Datenschutzhinweise der jeweiligen Anbieter. Rechtsgrundlage: Art. 6
+        Abs. 1 lit. b DSGVO. Videos von YouTube betten wir wie im nächsten
+        Abschnitt beschrieben ein.
+      </p>
+
+      <h2>Videos von YouTube</h2>
+      <p>
+        In einzelnen Lektionen zeigen wir Erklärvideos von YouTube (Anbieter:
+        Google Ireland Limited, Gordon House, Barrow Street, Dublin 4, Irland).
+        Das Video wird erst geladen, wenn Sie auf „Video laden“ klicken; vorher
+        werden keine Daten an YouTube übertragen, auch kein Vorschaubild. Wir
+        nutzen dafür den erweiterten Datenschutzmodus von YouTube
+        (youtube-nocookie.com). Nach dem Klick überträgt Ihr Browser unter
+        anderem Ihre IP-Adresse, die aufgerufene Seite und technische Angaben
+        zu Browser und Gerät an YouTube; YouTube kann beim Abspielen Daten auf
+        Ihrem Gerät speichern und Daten auch in die USA übermitteln. Ob und
+        welches Video Sie laden, erfassen wir nicht. Rechtsgrundlage ist Ihre
+        Einwilligung durch den Klick (Art. 6 Abs. 1 lit. a DSGVO, § 25 Abs. 1
+        TDDDG); Sie können das Video stattdessen auch über den Link „Auf
+        YouTube öffnen“ ansehen. Weitere Informationen finden Sie in der
+        Datenschutzerklärung von Google.
       </p>
 
       <h2>Fachsprache-Übungen</h2>
@@ -425,7 +443,8 @@ export default function DatenschutzPage() {
         weitergegeben. Eine Weitergabe erfolgt ausschließlich an Ihre
         Partnerorganisation (Anwesenheit und Lernfortschritt, siehe oben), an
         die technischen Dienstleister Vercel (Hosting), Supabase (Datenbank)
-        und Brevo (E-Mail-Versand) sowie, soweit gesetzlich vorgeschrieben, an
+        und Brevo (E-Mail-Versand), beim Laden eines Videos an YouTube (siehe
+        „Videos von YouTube“) sowie, soweit gesetzlich vorgeschrieben, an
         Behörden.
       </p>
 
