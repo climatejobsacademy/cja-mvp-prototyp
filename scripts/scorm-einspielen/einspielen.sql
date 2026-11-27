@@ -1,7 +1,7 @@
 -- scripts/scorm-einspielen/einspielen.sql
 -- Registriert eingespielte SCORM-Pakete (SR-50, SR-85): file_asset je Zip,
 -- scorm_package je Lektion (Upsert über lesson_id), danach lesson.status
--- 'published' (Entscheidung Anna 2026-10-17). Wird nur über
+-- 'published' (Entscheidung Geschäftsführung 2026-10-17). Wird nur über
 -- scripts/scorm-einspielen.mjs ausgeführt, innerhalb BEGIN ... ROLLBACK
 -- (Probelauf) bzw. COMMIT. Anleitung: docs/scorm-einspielen.md.
 --

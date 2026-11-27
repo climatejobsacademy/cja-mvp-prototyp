@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils";
 
-// Entscheidung Anna 2026-10-12, auf allen Seiten gleich: das Modul klein als
+// Entscheidung Geschäftsführung 2026-10-12, auf allen Seiten gleich: das Modul klein als
 // Text "Modul I · Grundlagen Elektrotechnik", groß steht das Thema der
-// Lektion. Ohne Symbol (Anna: zu viele Symbole, Zahl allein zu unklar).
+// Lektion. Ohne Symbol (Geschäftsführung: zu viele Symbole, Zahl allein zu unklar).
 // Überzeile und Name aus der Modul-Ebene (0028), nicht aus einer Gliederung.
 
 export function ModulZeichen({

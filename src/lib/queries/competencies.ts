@@ -49,7 +49,7 @@ export type CompetencyView = {
 export async function getKompetenzFortschritt(learnerId: string, programmeId?: string): Promise<CompetencyView[]> {
   const supabase = await createClient();
 
-  // Ladezeit (Anna 2026-10-21): alles, was nur an Programm und lernender
+  // Ladezeit (Geschäftsführung 2026-10-21): alles, was nur an Programm und lernender
   // Person hängt, in einer Welle statt nacheinander; danach die Zuordnungen,
   // zuletzt die Lektions-Reihenfolge. 11 -> 3 Wartezeiten.
   const [
@@ -225,7 +225,7 @@ export async function getKompetenzFortschritt(learnerId: string, programmeId?: s
     const f = fulfilmentByCompetency.get(c.id);
     const gesamt = f?.teilschritte_gesamt ?? stepViews.length;
     const erfuelltAnzahl = f?.teilschritte_erfuellt ?? 0;
-    // Anteiliger Fortschritt (Anna 2026-10-16): jeder Teilschritt zählt mit
+    // Anteiliger Fortschritt (Geschäftsführung 2026-10-16): jeder Teilschritt zählt mit
     // seinem Anteil erledigter Lektionen bzw. Praxisaufgaben, nicht erst ganz.
     // "erfüllt" bleibt die AND-Regel aus der Datenbank.
     const anteile = stepViews.map((s) =>

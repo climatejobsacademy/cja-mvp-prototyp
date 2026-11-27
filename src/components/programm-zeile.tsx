@@ -1,7 +1,7 @@
 import { GraduationCap } from "lucide-react";
 
 // Programmname über der Seitenüberschrift von Home, Stundenplan und
-// Kompetenzen -- überall gleich (SR folgt). Entscheidung Anna 2026-10-12:
+// Kompetenzen -- überall gleich (SR folgt). Entscheidung Geschäftsführung 2026-10-12:
 // präsenter als die frühere kleine graue Zeile, aber ohne Pill und ohne
 // Lila-Text: dunkel, halbfett, mit kleinem Doktorhut wie das Ziel in "Dein Weg".
 

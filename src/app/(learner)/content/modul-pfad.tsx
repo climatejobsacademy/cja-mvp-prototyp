@@ -10,7 +10,7 @@ import { AktuellSichtbar } from "./aktuell-sichtbar";
 // "Dein Weg" -- alle Module nebeneinander, verbunden durch eine Linie mit
 // nummerierten Punkten. Klick wählt ein Modul (?modul=…), zeigt darunter
 // dessen Tracking und öffnet direkt seine Inhalte im Seitenpanel
-// (&inhalte=1, Wunsch Anna 2026-10-11). Module, Reihenfolge und Zeitraum aus
+// (&inhalte=1, Wunsch Geschäftsführung 2026-10-11). Module, Reihenfolge und Zeitraum aus
 // der Modul-Ebene (0028, src/lib/queries/modul.ts).
 
 export type PfadModul = {
@@ -51,7 +51,7 @@ export function ModulPfad({
         {module.map((m, i) => {
           const gewaehlt = m.id === gewaehltId;
           const aktuell = m.status === "aktuell";
-          // Wunsch Anna 2026-10-11: das Modul nach dem aktuellen als "Als Nächstes" kennzeichnen.
+          // Wunsch Geschäftsführung 2026-10-11: das Modul nach dem aktuellen als "Als Nächstes" kennzeichnen.
           const naechstes = m.status === "kommend" && module[i - 1]?.status === "aktuell";
           const letztes = i === module.length - 1;
           return (
@@ -67,7 +67,7 @@ export function ModulPfad({
                         : "border-progress-track bg-white text-ink-muted"
                   )}
                 >
-                  {/* Entscheidung Anna 2026-10-12: auch der Abschluss hat seine
+                  {/* Entscheidung Geschäftsführung 2026-10-12: auch der Abschluss hat seine
                       Nummer; der Hut steht als Ziel am Ende der Linie. */}
                   {m.status === "abgeschlossen" ? <Check className="size-3.5" strokeWidth={3} /> : m.nummer}
                 </span>
@@ -103,16 +103,16 @@ export function ModulPfad({
                 <span className={cn("text-xs font-semibold tracking-[0.08em] uppercase", aktuell ? "text-white/85" : "text-ink-subtle")}>
                   {m.ueberzeile}
                 </span>
-                {/* Wunsch Anna 2026-10-11: Zeitraum bei jedem Modul, direkt unter der
+                {/* Wunsch Geschäftsführung 2026-10-11: Zeitraum bei jedem Modul, direkt unter der
                     Überzeile -- so stehen alle Daten auf einer Linie. */}
                 <span className={cn("block min-h-4 text-xs whitespace-nowrap tabular-nums", aktuell ? "text-white/85" : "text-ink-subtle")}>
                   {m.zeitraum ?? "Termine folgen"}
                 </span>
-                {/* Ruhiger (Anna 2026-10-12): etwas kleiner; lange Wörter trennen statt
+                {/* Ruhiger (Geschäftsführung 2026-10-12): etwas kleiner; lange Wörter trennen statt
                     über den Rahmen laufen (die Namen kommen aus der Datenbank, ohne
                     weiche Trennstellen -- darum hyphens-auto). */}
                 <span className="w-full text-sm leading-snug font-bold hyphens-auto break-words">{m.name}</span>
-                {/* Rückmeldung Anna 2026-10-11: "Hier bist du"/"Als Nächstes" als Label
+                {/* Rückmeldung Geschäftsführung 2026-10-11: "Hier bist du"/"Als Nächstes" als Label
                     auf dem oberen Rand -- braucht keinen Platz in der Karte, so bleibt
                     nirgends eine leere Zeile. */}
                 {(aktuell || naechstes) && (
@@ -131,7 +131,7 @@ export function ModulPfad({
                 <span
                   aria-hidden="true"
                   className={cn(
-                    // Dezenter (Anna 2026-10-12): grau, erst beim Hover betont.
+                    // Dezenter (Geschäftsführung 2026-10-12): grau, erst beim Hover betont.
                     "mt-auto pt-1 text-xs font-medium",
                     aktuell ? "text-white/75" : "text-ink-subtle group-hover/karte:text-brand"
                   )}

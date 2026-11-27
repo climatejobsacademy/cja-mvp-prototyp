@@ -15,10 +15,10 @@ import { cn } from "@/lib/utils";
 
 // Kohorten-Chat (SR-83): schwebender Knopf unten rechts, öffnet ein
 // Chat-Fenster (mobil Vollbild) mit den Kanälen "Ankündigungen" und
-// "Treffpunkt". Oberfläche aus der Demo (Anna 2026-10-11), angebunden an
+// "Treffpunkt". Oberfläche aus der Demo (Geschäftsführung 2026-10-11), angebunden an
 // Migration 0050: Nachrichten und Lesestand aus der Datenbank, neue
 // Nachrichten alle 30 Sekunden bei offenem Chat, sonst alle 2 Minuten für den
-// Zähler. Keine Rolle an der Nachricht (Entscheidung Anna 2026-10-16).
+// Zähler. Keine Rolle an der Nachricht (Entscheidung Geschäftsführung 2026-10-16).
 // Trainer:innen (PR 3, modus "trainer"): Auswahl der eigenen Kohorten,
 // Schreiben in beiden Kanälen, Löschen aller Nachrichten, Meldungen sehen und
 // erledigen -- was erlaubt ist, entscheidet die Datenbank (stand.moderation).

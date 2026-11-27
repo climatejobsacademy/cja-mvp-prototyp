@@ -6,7 +6,7 @@ import { Minus, Plus, RotateCcw, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-// Bilder vergrößern und zoomen (Anna 2026-10-27): Ein Klick auf das Bild
+// Bilder vergrößern und zoomen (Geschäftsführung 2026-10-27): Ein Klick auf das Bild
 // öffnet es groß über dem ganzen Bildschirm. Dort zoomen die Knöpfe + und −
 // (oder ein Klick ins Bild zwischen 100 % und 200 %); bei Zoom lässt sich das
 // Bild durch Ziehen bzw. Wischen verschieben (Scrollbereich). Esc, X oder

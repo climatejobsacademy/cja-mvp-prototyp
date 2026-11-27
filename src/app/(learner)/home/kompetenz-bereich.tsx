@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { kompetenzHref } from "./tages-karten";
 
 // Home v13 (docs/design_handoff_home_v6/design/home-v13-referenz.html;
-// SR-73), Stand demo (Entscheidung Anna 2026-10-12): keine rechte Spalte
+// SR-73), Stand demo (Entscheidung Geschäftsführung 2026-10-12): keine rechte Spalte
 // "Heute stärkst du" mehr -- unter "Dein Tag" über die volle Breite das ganze
 // Modul mit Fortschritt, heute gestärkte Kompetenzen zuerst mit Glow. Keine
 // Teilschritte auf Home, Klick führt auf die Kompetenzseite. Modul und seine

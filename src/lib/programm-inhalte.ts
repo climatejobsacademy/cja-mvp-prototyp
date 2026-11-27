@@ -97,7 +97,7 @@ export function panelWochen(
         const t = termin.get(l.id);
         if (t) daten.push(t.datum);
         const typ: LektionsTyp = l.contentType === "live" ? "live" : l.contentType === "scorm" ? "selbstlern" : "dokument";
-        // Entscheidung Anna 2026-10-11: Live erst mit bestätigter Anwesenheit
+        // Entscheidung Geschäftsführung 2026-10-11: Live erst mit bestätigter Anwesenheit
         // erledigt (wie im Stundenplan), sonst die abgeschlossene Lektion.
         const erledigt = typ === "live" ? !!t?.live && anwesend.has(t.live) : l.status === "abgeschlossen";
         const laeuftNoch = !!t && t.datum === heute && !!t.ende && `${t.datum}T${t.ende}` > jetzt;
@@ -120,7 +120,7 @@ export function panelWochen(
       const lektionen = gruppe.praxisTypen.map((p): PanelLektion => {
         const t = p.fieldJobId ? praxis.get(p.fieldJobId) : undefined;
         if (t) daten.push(t.datum);
-        // Mehrtägiger Auftrag (Anna 2026-10-28, Variante b): eine Zeile mit
+        // Mehrtägiger Auftrag (Geschäftsführung 2026-10-28, Variante b): eine Zeile mit
         // allen Tagen, "5 Praxistage, 19.10. – 23.10. · 2 von 5 erledigt";
         // erledigt erst, wenn alle Tage durchgeführt sind.
         const tage = p.praxistage ?? [];

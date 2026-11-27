@@ -36,7 +36,7 @@ import { markLessonComplete } from "./actions";
 // für "jetzt" und den Hauptknopf, Dunkelgrün für Fortschritt. Fragen:
 // auswählen, "Prüfen"; falsch -> neu wählen, richtig -> Erklärung, dann
 // weiter. Der Stand (Kapitel, Schritt, gelöste Fragen) wird nach jedem
-// Schritt auf dem Gerät und in unit_progress.stand gespeichert (0056, Anna
+// Schritt auf dem Gerät und in unit_progress.stand gespeichert (0056, Geschäftsführung
 // 2026-10-20); beim Öffnen gilt der neuere, damit es auch auf einem anderen
 // Gerät dort weitergeht. Der Abschluss der Lektion (markLessonComplete ->
 // unit_progress) wird gespeichert, sobald das letzte Kapitel abgeschlossen
@@ -192,7 +192,7 @@ function LektionAblauf({
 
   const loesen = (id: string) => setGeloest((alt) => new Set(alt).add(id));
 
-  // Stand speichern (Anna 2026-10-20): sofort auf dem Gerät, kurz danach in
+  // Stand speichern (Geschäftsführung 2026-10-20): sofort auf dem Gerät, kurz danach in
   // der Datenbank. Nur wenn sich die Position geändert hat; nicht bei schon
   // abgeschlossener Lektion. Ein neuer Schritt bricht ein noch laufendes Speichern ab.
   const zuletzt = useRef(JSON.stringify([start?.kap ?? 0, start?.schritt ?? 0, start?.geschafft ?? [], start?.geloest ?? []]));
@@ -847,7 +847,7 @@ function Geschafft({
 
 /** Einheitlicher Bildrahmen: gleiche Höhe, kleine Bilder werden vergrößert. */
 function Bild({ src, alt }: { src: string; alt: string }) {
-  // Klick öffnet das Bild groß mit Zoom (Anna 2026-10-27).
+  // Klick öffnet das Bild groß mit Zoom (Geschäftsführung 2026-10-27).
   return (
     <ZoomFenster src={src} alt={alt}>
       <div className="flex aspect-[16/9] w-full items-center justify-center overflow-hidden rounded-xl bg-white p-2 ring-1 ring-line">

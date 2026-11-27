@@ -15,7 +15,7 @@ select plan(48);
 
 -- ------------------------------------------------------------
 -- Fixtures (als Superuser)
--- 901 Anna (aktiv K1, Betrieb A), 902 Bernd (aktiv K1, Betrieb B),
+-- 901 Geschäftsführung (aktiv K1, Betrieb A), 902 Bernd (aktiv K1, Betrieb B),
 -- 903 abgeschlossen K1, 904 abgebrochen K1, 905 aktiv K2 (gleiches Programm),
 -- 906 aktiv K3 (anderes Programm), 907 ohne Einschreibung,
 -- 908 Moderation K1 (nicht eingeschrieben), 909 AfCJ admin
@@ -119,7 +119,7 @@ select is(has_function_privilege('anon', 'fn_moderiert_kohorte(uuid)', 'execute'
   'anon darf fn_moderiert_kohorte nicht ausführen');
 
 -- ------------------------------------------------------------
--- Als Anna (aktiv in K1, Betrieb A)
+-- Als Geschäftsführung (aktiv in K1, Betrieb A)
 -- ------------------------------------------------------------
 set local role authenticated;
 select set_config('request.jwt.claims',
@@ -270,7 +270,7 @@ select is((select count(id)::int from lektion_beitrag), 0,
   'Personen ohne Einschreibung sehen nichts');
 
 -- ------------------------------------------------------------
--- Anna löscht den eigenen Beitrag
+-- Geschäftsführung löscht den eigenen Beitrag
 -- ------------------------------------------------------------
 select set_config('request.jwt.claims',
   json_build_object('sub', '00000000-0000-0000-0000-000000000901', 'role', 'authenticated')::text, true);
@@ -338,7 +338,7 @@ select is(
 );
 
 -- ------------------------------------------------------------
--- Zurück als Anna: Protokoll und Moderation sind nicht zugänglich
+-- Zurück als Geschäftsführung: Protokoll und Moderation sind nicht zugänglich
 -- ------------------------------------------------------------
 select set_config('request.jwt.claims',
   json_build_object('sub', '00000000-0000-0000-0000-000000000901', 'role', 'authenticated')::text, true);

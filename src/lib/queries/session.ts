@@ -53,7 +53,7 @@ export const requireCurrentLearner = cache(async (): Promise<CurrentLearner> => 
   }
 
   // Person und Einschreibung hängen beide nur an der Nutzer-ID: gleichzeitig
-  // laden statt nacheinander (Ladezeit, Anna 2026-10-21).
+  // laden statt nacheinander (Ladezeit, Geschäftsführung 2026-10-21).
   // Bewusst als einfache Abfragen statt eines verschachtelten Selects:
   // hält die Typinferenz robust, ohne von den (hier von Hand geschriebenen,
   // nicht generierten) Relationships-Metadaten abhängig zu sein.

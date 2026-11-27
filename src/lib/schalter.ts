@@ -20,7 +20,7 @@ export const FACHSPRACHE_EINHEIT = fachspracheEinheitAn();
 
 /**
  * Link zur Praxisaufgabe (/praxistag/[fieldJobId]) im Stundenplan, auf Home,
- * in der Programm-Übersicht und in den Kompetenzen (Anna 2026-10-17). Aus:
+ * in der Programm-Übersicht und in den Kompetenzen (Geschäftsführung 2026-10-17). Aus:
  * die Einträge stehen als Text ohne Link da; die Seite selbst bleibt über die
  * Adresse erreichbar. An nur mit PRAXISAUFGABE_LINK=an.
  */
@@ -45,7 +45,7 @@ export function praxistagHref(datum: string, an: boolean = PRAXISAUFGABE_LINK): 
  * Native Selbstlern-Ansicht (SR-85): Selbstlern-Lektionen mit Elephant-Paket
  * erscheinen Schritt für Schritt im Plattform-Design statt im SCORM-Player;
  * die Medien-Route /content/[lessonId]/medium liefert nur bei an. Bewusst
- * anders als die übrigen Schalter (Entscheidung Anna 2026-10-17):
+ * anders als die übrigen Schalter (Entscheidung Geschäftsführung 2026-10-17):
  * standardmäßig AN -- ohne Variable an, aus nur mit NATIVE_SELBSTLERNEN=aus
  * (Groß-/Kleinschreibung und Leerraum egal), jeder andere Wert gilt als an.
  * Notbremse: in Vercel NATIVE_SELBSTLERNEN=aus setzen und neu deployen, dann

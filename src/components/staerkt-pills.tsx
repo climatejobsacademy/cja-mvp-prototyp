@@ -11,7 +11,7 @@ export const kompetenzHref = (id: string) => `/kompetenzen?kompetenz=${id}`;
  * "Stärkt"-Pills (Home v12): je gestärkter Kompetenz eine Pill mit
  * Mini-Ring und kleinem Glow, Klick führt auf die Kompetenzseite. Ohne
  * Zuordnung Lektion → Kompetenz: nichts. Auf Home und in der Termin-Karte
- * der Live-Lektion (Anna 2026-10-20).
+ * der Live-Lektion (Geschäftsführung 2026-10-20).
  */
 export function StaerktPills({ kompetenzen, aufCoral }: { kompetenzen?: StaerktKompetenz[]; aufCoral?: boolean }) {
   if (!kompetenzen || kompetenzen.length === 0) return null;

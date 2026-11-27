@@ -3,7 +3,7 @@ import { ChevronDown, Download } from "lucide-react";
 
 import { HILFE } from "./inhalte";
 
-// Hilfe-Seite (Anna 2026-11-01, SR folgt): Fragen und Antworten zur Plattform,
+// Hilfe-Seite (Geschäftsführung 2026-11-01, SR folgt): Fragen und Antworten zur Plattform,
 // aufklappbar in vier Gruppen. Erreichbar über das Account-Menü. Inhalt wie
 // die Kurzanleitung (PDF zum Herunterladen, Quelle docs/ux/hilfe/).
 

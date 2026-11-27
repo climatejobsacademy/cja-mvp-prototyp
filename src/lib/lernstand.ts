@@ -1,4 +1,4 @@
-// Stand in einer Selbstlern-Lektion (SR-85, Wunsch Anna 2026-10-20): wo die
+// Stand in einer Selbstlern-Lektion (SR-85, Wunsch Geschäftsführung 2026-10-20): wo die
 // Person aufgehört hat. Liegt sofort auf dem Gerät (localStorage) und wird
 // zusätzlich in unit_progress.stand gespeichert (Migration 0056), damit es
 // auf jedem Gerät weitergeht. Beim Öffnen gilt der neuere Stand. Kein

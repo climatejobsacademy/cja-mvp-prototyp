@@ -18,7 +18,7 @@
   --color-coral: var(--coral);
   --color-off-white: var(--off-white);
   --color-coral-text: var(--coral-text);
-  /* Visuelles Update (docs/ux/visual-update, Anna 2026-10-11) */
+  /* Visuelles Update (docs/ux/visual-update, Geschäftsführung 2026-10-11) */
   --color-page: var(--page);
   --color-subtle: var(--subtle);
   --color-line: var(--line);
@@ -105,12 +105,12 @@
   --lylac: #9164e1;
   --coral: #ffa573;
   /* Off-White -- bisher nicht in design-specifications.md Abschnitt 1
-     erfasst, von Vera 2026-09-18 fürs Login-Bildpanel ergänzt (analog
+     erfasst, von der Produkt-Lead 2026-09-18 fürs Login-Bildpanel ergänzt (analog
      climatejobsacademy.com). Nur als Hintergrundfläche gedacht, ersetzt
      nicht --background (#ffffff bleibt der App-weite Standard). */
   --off-white: #f5f5f0;
 
-  /* Home v6 (docs/design_handoff_home_v6, SR folgt), von Anna 2026-10-09
+  /* Home v6 (docs/design_handoff_home_v6, SR folgt), von der Geschäftsführung 2026-10-09
      freigegeben. Nur die Werte ohne nahen vorhandenen Token; die übrigen
      Hilfsfarben des Briefs laufen auf Off-White, --muted-foreground und
      --border. Kontraste gerechnet: Lylac/Eco Green hell auf Eco Deep Green
@@ -121,20 +121,20 @@
   /* Home v12 (docs/design_handoff_home_v6/design/home-v12-referenz.html), 2026-10-10: kleiner
      Glow für den 24-px-Mini-Ring in der "Stärkt"-Pill. */
   --glow-charge-sm: 0 0 0 3px rgb(162 229 0 / 0.25), 0 0 12px 2px rgb(162 229 0 / 0.55);
-  /* Stundenplan v2, Änderungsliste Anna 2026-10-10 (SR-13): Tönung der
+  /* Stundenplan v2, Änderungsliste Geschäftsführung 2026-10-10 (SR-13): Tönung der
      Heute-Spalte. Stundenlinien und "Flexibel" seit dem visuellen Update
      (2026-10-11) über --line bzw. --self-tint. */
   --heute-flaeche: #f7faf3;
 
   /* Visuelles Update (docs/ux/visual-update/claude-code-visual-update.md,
-     Anna 2026-10-11): so nah wie möglich an den Markenfarben. Wo der Brief
+     Geschäftsführung 2026-10-11): so nah wie möglich an den Markenfarben. Wo der Brief
      abweicht, gilt die Markenfarbe (Text = Eco Deep Green, Seite = Off-White,
      Selbstlernen = Eco Green, Lime = Charge Green). Lylac und Coral nur als
      Abstufung, wo weiße Schrift sonst WCAG AA verfehlt. Kontraste gerechnet:
      Weiß auf --brand 6.07:1, auf --brand-2 4.61:1; Eco Deep Green auf
      --praxis (= Coral) 7.0:1; --ink-subtle auf --page 4.75:1; --praxis-text auf
      --praxis-tint 4.78:1; Eco Deep Green auf Charge Green 8.89:1. */
-  --page: #fafaf7;              /* heller als Off-White (Anna 2026-10-11) */
+  --page: #fafaf7;              /* heller als Off-White (Geschäftsführung 2026-10-11) */
   --subtle: #ecede6;
   --line: #eceee8;
   --ink: var(--eco-deep-green);
@@ -143,7 +143,7 @@
   --brand: #6e44d6;            /* Lylac dunkel */
   --brand-2: #8959df;          /* Lylac, AA-Abstufung */
   --brand-tint: #f1ebfc;       /* Lylac hell */
-  /* Anna 2026-10-12: Praxis überall im Marken-Coral #FFA573 statt Coral
+  /* Geschäftsführung 2026-10-12: Praxis überall im Marken-Coral #FFA573 statt Coral
      dunkel (zu massiv). Coral ist eine Hintergrundfarbe: Schrift und Symbole
      darauf in Eco Deep Green (7.0:1), nie Weiß (1.93:1). */
   --praxis: var(--coral);

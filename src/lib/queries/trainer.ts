@@ -32,7 +32,7 @@ export async function signierteFotoLinks(supabase: SupabaseServer, pfade: string
 /**
  * Trainer:innen im eigenen Plan, nach person_id. Leer, wenn keine eingetragen sind.
  * Mit React cache(): Seite und Stundenplan rufen sie im selben Request auf,
- * geladen wird einmal (Ladezeit, Anna 2026-10-21).
+ * geladen wird einmal (Ladezeit, Geschäftsführung 2026-10-21).
  */
 export const getMeineTrainer = cache(async (): Promise<Map<string, TrainerAnzeige>> => {
   const supabase = await createClient();

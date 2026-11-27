@@ -43,7 +43,7 @@ export async function updateSession(request: NextRequest) {
   // getClaims() frischt eine abgelaufene Sitzung auf (dann ein Request an
   // Supabase Auth) und prüft das Token sonst lokal über den öffentlichen
   // Schlüssel (asymmetrische Signier-Schlüssel, ECC P-256) -- spart bei jedem
-  // Seitenwechsel die Rundreise, die getUser() machte (Ladezeit, Anna
+  // Seitenwechsel die Rundreise, die getUser() machte (Ladezeit, Geschäftsführung
   // 2026-10-21). Fehler (z. B. Supabase nicht erreichbar) legen nicht die
   // ganze Seite (auch /login) mit einem 500er lahm, sondern gelten als "nicht
   // eingeloggt".

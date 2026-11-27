@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import { beitragLoeschen, beitragSchreiben } from "./thread-actions";
 
 // Fragen-Thread unter einer Lektion (SR-74), Board-Darstellung wie demo
-// (Entscheidung Anna 2026-10-12): Eingabe oben, jede Frage als Karte mit
+// (Entscheidung Geschäftsführung 2026-10-12): Eingabe oben, jede Frage als Karte mit
 // Avatar (Initialen, keine Fotos anderer Lernender), Antworten zum
 // Aufklappen. Regeln wie bisher: nur Text (React escaped, Zeilenumbrüche
 // bleiben), keine Echtzeit ("Aktualisieren" lädt neu), Löschen eigener
