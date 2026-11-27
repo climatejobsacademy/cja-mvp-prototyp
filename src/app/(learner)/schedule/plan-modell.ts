@@ -20,7 +20,7 @@ export type BlockStatus = "erledigt" | "vorbei" | "offen";
 export type Block = {
   id: string;
   art: "live" | "praxis";
-  /** Angezeigter Titel: bei Live der Kurstitel = Lektionsname ohne Thema-Klammer (lesson.name, Maltes Import 2026-10-16; course.name enthält das Thema in Klammern), Selbstlernen wie bisher Thema bzw. „Wissen festigen“ (Anna 2026-10-16) */
+  /** Angezeigter Titel: bei Live der Kurstitel = Lektionsname ohne Thema-Klammer (lesson.name, Import der Programmleitung 2026-10-16; course.name enthält das Thema in Klammern), Selbstlernen wie bisher Thema bzw. „Wissen festigen“ (Geschäftsführung 2026-10-16) */
   titel: string;
   /** Voller Titel für Bildschirmleser und Tooltip: "Lektion: Thema" */
   volltitel: string;
@@ -65,7 +65,7 @@ export type Chip = {
   festigen: boolean;
   href: string;
   erledigt: boolean;
-  /** Schon begonnen ("in Bearbeitung"): dann "Weiterlernen", sonst kein Zusatz (Anna 2026-10-20) */
+  /** Schon begonnen ("in Bearbeitung"): dann "Weiterlernen", sonst kein Zusatz (Geschäftsführung 2026-10-20) */
   begonnen: boolean;
   /** Sprung zu den Unterlagen der Lektion (SR-68, ergänzt 26.11.2026); null = keine Unterlagen */
   unterlagen: string | null;
@@ -130,9 +130,9 @@ export function planModell(
       if (e.art !== "live" || !e.liveSession) return [];
       const s = e.liveSession;
       const vorbei = `${tag.datum}T${s.ende}` <= jetzt;
-      // Wie Veras Stundenplan (Entscheidung Anna 2026-10-11): immer genau eine
+      // Wie im Stundenplan der Produkt-Lead (Entscheidung Geschäftsführung 2026-10-11): immer genau eine
       // Aktion -- ab 15 Min. vor Beginn bis zum Ende der Live-Raum, sonst die
-      // Lektion. (Vera: erst ab Beginn; die 15 Min. zum rechtzeitigen Einwählen.)
+      // Lektion. (Produkt-Lead: erst ab Beginn; die 15 Min. zum rechtzeitigen Einwählen.)
       const zumRaum = !vorbei && !!s.joinLink && `${tag.datum}T${minus15(s.start)}` <= jetzt;
       return [
         {
@@ -256,7 +256,7 @@ export function planModell(
 
     // Brief 2.4/5: Selbstlernen nur in "Flexibel", nie mit Uhrzeit.
     // Gehört die Selbstlern-Lektion zum Live-Unterricht desselben Tages, heißt
-    // sie nur "Wissen festigen" (Anna 2026-10-11/16, wie demo); sonst das Thema.
+    // sie nur "Wissen festigen" (Geschäftsführung 2026-10-11/16, wie demo); sonst das Thema.
     const liveLektionen = new Set(tag.theorie.filter((e) => e.art === "live" && e.lessonId).map((e) => e.lessonId));
     const chips: Chip[] = tag.theorie.flatMap((e) => {
       if (e.art !== "asynchron") return [];
@@ -289,7 +289,7 @@ export function planModell(
 
   // Brief 2.4: laufender bzw. nächster Termin von heute hervorheben (nur heute)
   // -- nach Datum und Uhrzeit, auch wenn er schon erledigt ist (Entscheidung
-  // Anna 2026-10-11: ein vorab durchgeklickter Praxistag bleibt der nächste).
+  // Geschäftsführung 2026-10-11: ein vorab durchgeklickter Praxistag bleibt der nächste).
   const naechster = naechsterTerminId(
     modelle.flatMap((t) => t.bloecke),
     jetzt

@@ -93,7 +93,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     .filter((k) => heuteIds.has(k.id))
     .map((k) => ({ id: k.id, name: k.name, prozent: k.fortschrittProzent }));
 
-  // Stand demo (Anna 2026-10-12): keine rechte Spalte; unter "Dein Tag" über
+  // Stand demo (Geschäftsführung 2026-10-12): keine rechte Spalte; unter "Dein Tag" über
   // die volle Breite das ganze Modul, heute gestärkte zuerst. Ohne
   // aktuelles Modul entfällt der Bereich; ohne zugeordnete Kompetenzen (bis
   // zum Import) steht dort ein ruhiger Hinweis.

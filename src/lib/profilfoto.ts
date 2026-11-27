@@ -34,7 +34,7 @@ export function mittigerAusschnitt(breite: number, hoehe: number): { x: number; 
   return { x: Math.round((breite - kante) / 2), y: Math.round((hoehe - kante) / 2), kante };
 }
 
-/** "Malte Schmiedinghoff" -> "M"; leer -> "?" */
+/** "Programmleitung Schmiedinghoff" -> "M"; leer -> "?" */
 export function initiale(name: string): string {
   return (name.trim()[0] ?? "?").toUpperCase();
 }

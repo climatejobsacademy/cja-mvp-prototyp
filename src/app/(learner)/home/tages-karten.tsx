@@ -113,7 +113,7 @@ function FokusRahmen({
     <article
       className={cn(
         "flex flex-wrap items-start gap-x-7 gap-y-4 rounded-karte p-6 md:px-7 md:py-7",
-        // Praxis im Marken-Coral mit dunkler Schrift (Anna 2026-10-12, Weiß auf Coral nur 1.93:1).
+        // Praxis im Marken-Coral mit dunkler Schrift (Geschäftsführung 2026-10-12, Weiß auf Coral nur 1.93:1).
         praxis ? "bg-anchor-praxis text-ink shadow-anchor-praxis" : "bg-anchor-brand text-white shadow-anchor-brand"
       )}
     >
@@ -138,7 +138,7 @@ const ALS_NAECHSTES = <LimePill>Als Nächstes</LimePill>;
 const GROSS = "font-heading text-[44px] leading-none tabular-nums md:text-[56px]";
 
 /**
- * Titel einer Lektion (Entscheidung Anna 2026-10-12, auf allen Seiten
+ * Titel einer Lektion (Entscheidung Geschäftsführung 2026-10-12, auf allen Seiten
  * gleich): klein das Modul ("Modul I · Grundlagen Elektrotechnik", aus der
  * Modul-Ebene), groß das Thema der Lektion (lesson.thema, sonst der Titel).
  * Optional ein Typ-Icon direkt vor dem Thema; `art` liest der Screenreader mit.
@@ -220,7 +220,7 @@ export function FokusLive({
         )
       }
     >
-      {/* Wie demo (Anna 2026-10-12): Kamera-Symbol vor dem Thema, keine eigene Typzeile. */}
+      {/* Wie demo (Geschäftsführung 2026-10-12): Kamera-Symbol vor dem Thema, keine eigene Typzeile. */}
       <FokusTitel
         titel={live.titel}
         thema={live.thema}
@@ -471,7 +471,7 @@ export function FokusRuhig({ naechsterTermin }: { naechsterTermin: string | null
 }
 
 // ---------------------------------------------------------------------------
-// Kästchen rechts neben der Fokus-Karte (Entscheidung Anna 2026-10-12)
+// Kästchen rechts neben der Fokus-Karte (Entscheidung Geschäftsführung 2026-10-12)
 
 const LEISTE_LINK =
   "outline-none transition-[box-shadow] duration-150 hover:shadow-card focus-visible:ring-2 focus-visible:ring-brand motion-reduce:transition-none";

@@ -3,7 +3,7 @@ import type { TrainerAnzeige } from "@/lib/queries/trainer";
 import { cn } from "@/lib/utils";
 
 /**
- * "Live mit Malte" / "Praxis mit Slawa" mit Foto (SR-78). Ersetzt die fest
+ * "Live mit Programmleitung" / "Praxis mit Trainer:in" mit Foto (SR-78). Ersetzt die fest
  * eingetragenen Namen von demo (demo-personen.ts): die Person kommt aus
  * live_session.trainer_id bzw. field_job.instructor_id, Name und Foto aus
  * fn_meine_trainer(). Ohne eingetragene Person wird nichts angezeigt.

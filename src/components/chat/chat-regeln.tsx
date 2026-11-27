@@ -5,7 +5,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 // Nutzungsregeln für Kohorten-Chat und Fragen-Thread (SR-83, SR-74; Text
-// Anna 2026-10-18). Der Link sitzt unter dem Eingabefeld und öffnet die
+// Geschäftsführung 2026-10-18). Der Link sitzt unter dem Eingabefeld und öffnet die
 // Regeln als Fenster; nur Anzeige, nichts wird gespeichert.
 
 const ABSCHNITTE: { titel: string; punkte: string[] }[] = [

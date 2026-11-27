@@ -164,7 +164,7 @@ export function DeinTag({
           Woche ansehen →
         </Link>
       </div>
-      {/* Entscheidung Anna 2026-10-12: die Kästchen stehen rechts neben der
+      {/* Entscheidung Geschäftsführung 2026-10-12: die Kästchen stehen rechts neben der
           Fokus-Karte statt darunter, gleich hoch wie die Karte. */}
       <div className={cn("grid gap-4", rechts && "min-[960px]:grid-cols-[2fr_1fr]")}>
         {fokus}

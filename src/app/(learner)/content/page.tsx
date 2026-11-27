@@ -100,10 +100,10 @@ export default async function ProgrammPage({
   const steps = new Map(imModul.flatMap((k) => k.steps.map((st) => [st.id, st.status] as const)));
   const stepsErreicht = [...steps.values()].filter((st) => st === "abgeschlossen").length;
 
-  // Lerntage (Entscheidung Anna 2026-10-11): geplante Tage im Zeitraum des
+  // Lerntage (Entscheidung Geschäftsführung 2026-10-11): geplante Tage im Zeitraum des
   // Moduls; absolviert = alles an dem Tag erledigt -- derselbe Haken wie im
   // Stundenplan (Live nur mit bestätigter Anwesenheit; Live ohne eigene
-  // Lektion wie Deutsch oder Coaching zählt nicht, Anna 2026-10-20).
+  // Lektion wie Deutsch oder Coaching zählt nicht, Geschäftsführung 2026-10-20).
   const lernTage = planModell(plan, heute, jetzt).filter(tagZaehlt);
 
   const kacheln: Kachel[] = [
@@ -112,7 +112,7 @@ export default async function ProgrammPage({
     lernTage.length > 0 ? { wert: `${lernTage.filter(tagErledigt).length} / ${lernTage.length}`, label: "Lerntage erledigt" } : null,
   ].filter((k): k is Kachel => !!k);
 
-  // Brief 2.2, angepasst (Anna 2026-10-11): "Start {Datum} · Ende {Datum} · {n} Module".
+  // Brief 2.2, angepasst (Geschäftsführung 2026-10-11): "Start {Datum} · Ende {Datum} · {n} Module".
   // Ende: Kohorte, sonst Ende des letzten geplanten Moduls; Fehlendes weglassen.
   // Gezählt werden Module mit Überzeile "Modul …", nicht der Abschluss.
   const anzahl = modulListe.filter((m) => m.ueberzeile.startsWith("Modul")).length;
@@ -147,7 +147,7 @@ export default async function ProgrammPage({
       )}
 
       {/* Tracking über die volle Breite, darunter Kohorte und Ansprechpersonen
-          als zwei gleich hohe Karten; mobil untereinander (Anna 2026-10-11). */}
+          als zwei gleich hohe Karten; mobil untereinander (Geschäftsführung 2026-10-11). */}
       <div className="flex flex-col gap-6">
         {gewaehlt && (
           <TrackingKarte

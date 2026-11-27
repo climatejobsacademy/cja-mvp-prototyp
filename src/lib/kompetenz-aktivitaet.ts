@@ -22,7 +22,7 @@ export const AKTIVITAET_ART: Record<AktivitaetFuerMeta["art"], string> = {
 };
 
 /**
- * Wann bzw. welcher Stand, ohne die Art (Entscheidung Anna 2026-10-12: das
+ * Wann bzw. welcher Stand, ohne die Art (Entscheidung Geschäftsführung 2026-10-12: das
  * Symbol zeigt sie schon). Leer, wenn es nichts zu sagen gibt.
  */
 export function aktivitaetMeta(a: AktivitaetFuerMeta, heute: string): string {

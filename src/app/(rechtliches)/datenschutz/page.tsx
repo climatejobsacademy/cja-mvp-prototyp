@@ -5,12 +5,12 @@ export default function DatenschutzPage() {
   // (SR-74, SR-75) und „Lernmaterialien und externe Links“ (SR-68) ergänzt
   // 2026-10-08; Abschnitt „Profilfotos“ (SR-77, SR-78) und Rufname ergänzt
   // 2026-10-13; Abschnitt „Kohortenansicht“ (SR-30), Sichtbarkeit der Fotos
-  // und Beiträge, Löschweg 2026-10-14 (Entwurf, Datum „Stand“ setzt Vera beim
+  // und Beiträge, Löschweg 2026-10-14 (Entwurf, Datum „Stand“ setzt Produkt-Lead beim
   // Merge). Abschnitt „Kohorten-Chat“ (SR-83) und Speicherdauer der
-  // Chat-Nachrichten 2026-10-16 (Entwurf, Prüfung Anna auf Staging; Datum
+  // Chat-Nachrichten 2026-10-16 (Entwurf, Prüfung Geschäftsführung auf Staging; Datum
   // „Stand“ beim Merge setzen). Eigene Formulierung, nicht rechtlich geprüft;
   // offene Punkte in docs/datenschutz-offene-punkte.md.
-  // Ergänzungen für den Start 02.11. am 2026-10-18 (Anna mit Claude, SR folgt):
+  // Ergänzungen für den Start 02.11. am 2026-10-18 (Geschäftsführung mit Claude, SR folgt):
   // Chat genauer, Fragen-Thread an Live-Lektionen, Fachsprache-Übungen mit
   // Vorlesen, Anwesenheit und Kompetenzfortschritt, Trainer-Bereich,
   // Anonymisieren beim Löschen eines Kontos. Datum „Stand“ im Release setzen.

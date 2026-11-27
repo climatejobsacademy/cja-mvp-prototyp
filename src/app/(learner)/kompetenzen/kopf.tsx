@@ -15,7 +15,7 @@ export type ModulTab = {
   /** modul.ueberzeile, z. B. "Modul II" */
   ueberzeile: string;
   aktuell: boolean;
-  /** Alle Kompetenzschritte des Moduls erreicht (Entscheidung Anna 2026-10-10) */
+  /** Alle Kompetenzschritte des Moduls erreicht (Entscheidung Geschäftsführung 2026-10-10) */
   abgeschlossen: boolean;
   /** Liegt nach dem aktuellen Modul -- grau, aber anklickbar (Vorschau) */
   zukuenftig: boolean;
@@ -62,7 +62,7 @@ export function KompetenzenKopf({
                         <span className="sr-only">abgeschlossen: </span>
                       </>
                     )}
-                    {/* Aktuelles Modul: Lime-Punkt wie demo (Anna 2026-10-12). */}
+                    {/* Aktuelles Modul: Lime-Punkt wie demo (Geschäftsführung 2026-10-12). */}
                     {m.aktuell && (
                       <>
                         <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-lime shadow-glow-charge-sm" />
@@ -83,7 +83,7 @@ export function KompetenzenKopf({
 }
 
 /**
- * Brief 2.3, Stand demo (Anna 2026-10-12): ruhige Zeile mit Balken und
+ * Brief 2.3, Stand demo (Geschäftsführung 2026-10-12): ruhige Zeile mit Balken und
  * "Im Schnitt {p} % über alle {n} Kompetenzen in Modul II" -- Mittelwert der
  * Kompetenz-Ringe des Moduls (competency_fulfilment), wie auf Home.
  */

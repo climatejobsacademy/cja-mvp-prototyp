@@ -9,7 +9,7 @@ import { HilfeLink } from "@/components/hilfe-link";
  * (Login, rechtliche Seiten, Learner-Bereich). Aufteilung Logo links / Links
  * mittig / Copyright rechts angelehnt an climatejobsacademy.com, optisch
  * bewusst zurückhaltender (dünne graue Linie, weißer Hintergrund). Dazu der
- * Link „Hilfe“ (nur im Lernenden-Bereich, Anna 2026-11-01).
+ * Link „Hilfe“ (nur im Lernenden-Bereich, Geschäftsführung 2026-11-01).
  */
 export function Footer() {
   return (

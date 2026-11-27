@@ -37,7 +37,7 @@ export function TrackingKarte({
 }) {
   return (
     <section aria-labelledby="tracking-titel" className="flex flex-col gap-5 rounded-karte bg-card p-5 shadow-card md:p-7">
-      {/* Rückmeldung Anna 2026-10-11: ohne Überzeile "Modul 1 · Zeitraum" -- steht schon im Pfad. */}
+      {/* Rückmeldung Geschäftsführung 2026-10-11: ohne Überzeile "Modul 1 · Zeitraum" -- steht schon im Pfad. */}
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <h2 id="tracking-titel" className="text-[22px] leading-tight font-bold md:text-[24px]">
           <span className="sr-only">
@@ -53,7 +53,7 @@ export function TrackingKarte({
         // Mobil (Brief 2.6) ebenfalls drei nebeneinander, nur kompakter.
         <dl className="grid grid-cols-3 divide-x divide-line border-t border-line pt-5">
           {kacheln.map((k) => (
-            // Gleichmäßig (Anna 2026-10-12): jede Zahl mittig in ihrer Spalte.
+            // Gleichmäßig (Geschäftsführung 2026-10-12): jede Zahl mittig in ihrer Spalte.
             <div key={k.label} className="flex min-w-0 flex-col-reverse items-center gap-1 px-2.5 text-center sm:px-6">
               <dt className="text-[11px] leading-tight text-ink-subtle hyphens-auto break-words sm:text-[13px] sm:leading-normal">{k.label}</dt>
               <dd className="font-heading text-[26px] leading-[1.1] whitespace-nowrap tabular-nums sm:text-[36px]">{k.wert}</dd>

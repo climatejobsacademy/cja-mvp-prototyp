@@ -28,7 +28,7 @@ const ROEMISCH = { I: 1, II: 2, III: 3, IV: 4, V: 5, Abschluss: 6 };
  * Modul I: Theorietage M01-T01–T11 sind die Foliensätze 01–11 der schon
  * importierten Wochen 1–2. Zuordnung zu den bestehenden Live-Lektionen über
  * lesson.thema. Abgeleitet aus den bestehenden Lektion-Teilschritt-
- * Zuordnungen auf Staging (13.10.2026); T03, T04 und T11 bestätigt Malte
+ * Zuordnungen auf Staging (13.10.2026); T03, T04 und T11 bestätigt die Programmleitung
  * (docs/import-plan.md, offene Fragen).
  */
 export const FOLIENSAETZE_MODUL_I = {
@@ -198,7 +198,7 @@ export function erstellePlan(tabs, optionen = {}) {
   if (teamTermine.length) {
     melde(
       "trainer-team",
-      `${teamTermine.length} Termine mit zwei Trainer:innen, eingetragen wird nur die erste Person der Kennung (Aufteilung legt Malte fest): ${teamTermine.join(", ")}`
+      `${teamTermine.length} Termine mit zwei Trainer:innen, eingetragen wird nur die erste Person der Kennung (Aufteilung legt die Programmleitung fest): ${teamTermine.join(", ")}`
     );
   }
 

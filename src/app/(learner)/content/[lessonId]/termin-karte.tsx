@@ -8,7 +8,7 @@ import { datumLang, tagRelativ } from "@/lib/date";
 import type { TrainerAnzeige } from "@/lib/queries/trainer";
 import { cn } from "@/lib/utils";
 
-// Live-Lektion (SR-15, SR-78), Entscheidung Anna 2026-10-12: der Termin der
+// Live-Lektion (SR-15, SR-78), Entscheidung Geschäftsführung 2026-10-12: der Termin der
 // eigenen Kohorte als Anker-Karte wie die Fokus-Karte auf Home -- links Pill
 // + große Uhrzeit, rechts Kamera-Symbol, Tag und Zeit, "Live mit …" mit
 // Foto (fn_meine_trainer), darunter "Beitreten" (bis zum Ende des Termins)
@@ -51,7 +51,7 @@ export function TerminKarte({
   /** Titel der zugehörigen Selbstlern-Lektion, für Screenreader */
   festigenTitel?: string;
   trainer: TrainerAnzeige | null;
-  /** Kompetenzen, die die Lektion stärkt (wie auf Home, Anna 2026-10-20) */
+  /** Kompetenzen, die die Lektion stärkt (wie auf Home, Geschäftsführung 2026-10-20) */
   staerkt?: StaerktKompetenz[];
 }) {
   if (!termin) {
@@ -65,7 +65,7 @@ export function TerminKarte({
   const ende = `${termin.datum}T${termin.ende}`;
   const vorbei = jetzt >= ende;
   const laeuft = !vorbei && jetzt >= beginn;
-  // Anna 2026-10-12: "Beitreten" immer zeigen, bis der Termin vorbei ist --
+  // Geschäftsführung 2026-10-12: "Beitreten" immer zeigen, bis der Termin vorbei ist --
   // ohne Knopf war es verwirrend.
   const beitretbar = !vorbei && !!termin.joinLink;
   const wann = tagRelativ(termin.datum, heute);

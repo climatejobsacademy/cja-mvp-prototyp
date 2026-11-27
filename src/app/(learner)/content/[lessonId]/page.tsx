@@ -30,7 +30,7 @@ import { NativeLektion } from "./native-lektion";
 import { ScormPlayer } from "./scorm-player";
 import { TerminKarte } from "./termin-karte";
 
-// Lektionsseite wie demo (Entscheidungen Anna 2026-10-11/12): Typ als Pill
+// Lektionsseite wie demo (Entscheidungen Geschäftsführung 2026-10-11/12): Typ als Pill
 // (Live ohne Pill -- das Kamera-Symbol steht in der Termin-Karte), groß das
 // Thema, klein das Modul (aus der Modul-Ebene), bei Live der Termin der
 // eigenen Kohorte als Anker-Karte mit "Beitreten", "Wissen festigen" und
@@ -75,7 +75,7 @@ export default async function LessonPage({
   const trainerId = lesson.liveSession?.trainerId ?? null;
   const trainer = trainerId ? ((await getMeineTrainer()).get(trainerId) ?? null) : null;
 
-  // "Stärkt"-Pills wie auf Home (Anna 2026-10-20): Kompetenzen über
+  // "Stärkt"-Pills wie auf Home (Geschäftsführung 2026-10-20): Kompetenzen über
   // content_competency_mapping, in Lehrplan-Reihenfolge. Ohne Zuordnung leer.
   const staerkt =
     lesson.contentType === "live"
@@ -155,7 +155,7 @@ export default async function LessonPage({
       {begonnenSetzen(lesson.contentType, lesson.status) && <BegonnenMarker lessonId={lesson.id} />}
 
       {lesson.contentType === "scorm" && nativKurs && (
-        // Kein Umschalt-Link für Lernende (Anna 2026-10-17); das Team erreicht
+        // Kein Umschalt-Link für Lernende (Geschäftsführung 2026-10-17); das Team erreicht
         // den SCORM-Player zum Vergleich über ?ansicht=scorm.
         <NativeLektion lessonId={lesson.id} kurs={nativKurs} done={done} gespeichert={lesson.lernStand} vokabeln={vokabeln} />
       )}
@@ -180,7 +180,7 @@ export default async function LessonPage({
       )}
 
       {lesson.contentType === "live" && (
-        // Anker der Seite wie die Fokus-Karte auf Home (Anna 2026-10-12),
+        // Anker der Seite wie die Fokus-Karte auf Home (Geschäftsführung 2026-10-12),
         // "Beitreten" und "Wissen festigen" in derselben Karte.
         <TerminKarte
           termin={lesson.liveSession}

@@ -94,7 +94,7 @@ export async function getAgendaZeitraum(
 ): Promise<TagesAgenda[]> {
   const supabase = await createClient();
 
-  // Kein Filter auf den Betrieb (Anna 2026-10-20): Kohorten-Termine hängen
+  // Kein Filter auf den Betrieb (Geschäftsführung 2026-10-20): Kohorten-Termine hängen
   // am Betrieb der Kohorte, Team-Testkonten sind in einem eigenen Betrieb
   // eingeschrieben. Sichtbar ist ohnehin nur der eigene Plan (RLS
   // schedule_entry_learner_select: eigene Kohorte oder Einschreibung).
@@ -112,7 +112,7 @@ export async function getAgendaZeitraum(
   const feldEntries = rows.filter((r) => r.art === "feld" && r.field_job_id);
   const theorieEntries = rows.filter((r) => r.art !== "feld");
 
-  // Ladezeit (Anna 2026-10-21): Praxis- und Theorie-Zweig hängen nicht
+  // Ladezeit (Geschäftsführung 2026-10-21): Praxis- und Theorie-Zweig hängen nicht
   // voneinander ab und laufen gleichzeitig.
   const ladeFeld = async () => {
     const feld: (FeldEintrag & { datum: string })[] = [];
@@ -203,7 +203,7 @@ export async function getAgendaZeitraum(
         .map((s) => s.lesson_id)
         .filter((id): id is string => !!id && !lessonIds.includes(id));
       // Live-Termine, die an einem Kurs statt an einer Lektion hängen: Kursnamen
-      // nachladen, sonst stünde dort nur "Live-Termin" (Anna 2026-10-17).
+      // nachladen, sonst stünde dort nur "Live-Termin" (Geschäftsführung 2026-10-17).
       const sessionCourseIds = [
         ...new Set(
           (liveSessions ?? [])
@@ -212,7 +212,7 @@ export async function getAgendaZeitraum(
         ),
       ];
       const allLessonIdsForProgress = [...lessonIds, ...liveSessionLessonIds];
-      // Ladezeit (Anna 2026-10-21): die drei Nachlade-Abfragen gleichzeitig.
+      // Ladezeit (Geschäftsführung 2026-10-21): die drei Nachlade-Abfragen gleichzeitig.
       const [{ data: extraLessons }, { data: extraCourses }, { data: progress }, { data: ressourcen }] = await Promise.all([
         liveSessionLessonIds.length > 0
           ? supabase.from("lesson").select("id, name, thema, content_type, live_lektion_id").in("id", liveSessionLessonIds)

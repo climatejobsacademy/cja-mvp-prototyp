@@ -77,7 +77,7 @@ async function paketLesen(url: string): Promise<Paket> {
     };
     const lp = await Promise.all([...eintraege.values()].filter((e) => e.name.startsWith(`${KURS_ORDNER}LP_`)).map(json));
     const ergebnis = elephantZuLernkurs(await json(pflicht("course.json")), await json(pflicht("lesson_overviews.json")), lp);
-    // Inhalte vollständig wie geliefert (Anna 2026-10-17): Kennt der Übersetzer
+    // Inhalte vollständig wie geliefert (Geschäftsführung 2026-10-17): Kennt der Übersetzer
     // eine Modulart nicht, zeigt die Lektion den SCORM-Player statt einer
     // Ansicht mit Lücken.
     kurs = ergebnis.uebersprungen.length === 0 && ergebnis.kurs.kapitel.length > 0 ? ergebnis.kurs : null;

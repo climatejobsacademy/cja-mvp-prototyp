@@ -34,7 +34,7 @@ export async function getStundenplan(ctx: Ctx, von: string, bis: string): Promis
         .eq("learner_id", ctx.learnerId)
         .in("live_session_id", liveIds)
     : { data: [] as { live_session_id: string; status: string }[] };
-  // Entscheidung Anna 2026-10-10: Häkchen bei Live nur, wenn die Anwesenheit
+  // Entscheidung Geschäftsführung 2026-10-10: Häkchen bei Live nur, wenn die Anwesenheit
   // als "anwesend" bestätigt ist -- nicht schon, weil der Termin vorbei ist.
   const anwesend = new Set((anwesenheit ?? []).filter((a) => a.status === "anwesend").map((a) => a.live_session_id));
 
@@ -44,7 +44,7 @@ export async function getStundenplan(ctx: Ctx, von: string, bis: string): Promis
 /**
  * Start der eigenen Kohorte (cohort.start_datum, Lesen per RLS
  * cohort_learner_select) -- für "Woche x": Woche 1 ist die Startwoche der
- * Kohorte (Änderungsliste Anna 2026-10-10, Punkt 6).
+ * Kohorte (Änderungsliste Geschäftsführung 2026-10-10, Punkt 6).
  */
 export async function getKohortenStart(cohortId: string): Promise<string | null> {
   const supabase = await createClient();

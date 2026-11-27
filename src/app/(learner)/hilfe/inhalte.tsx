@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-// Hilfe-Seite (Anna 2026-11-01, SR folgt): dieselben Fragen und Antworten wie
+// Hilfe-Seite (Geschäftsführung 2026-11-01, SR folgt): dieselben Fragen und Antworten wie
 // die Kurzanleitung (docs/ux/hilfe/). Bilder in public/hilfe, mit den
 // Markierungen aus der Anleitung; die Zahl im Text zeigt auf die Markierung.
 

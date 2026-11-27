@@ -7,7 +7,7 @@ import { Wortmarke } from "@/components/nav/app-nav";
 
 // Kopf der rechtlichen Seiten (Impressum, Datenschutz, Barrierefreiheit,
 // SR-60): Sie haben keine Navigation; ohne diesen Kopf kam man nur über den
-// Zurück-Knopf des Browsers wieder heraus (Anna 2026-10-16). "Zurück" führt zur
+// Zurück-Knopf des Browsers wieder heraus (Geschäftsführung 2026-10-16). "Zurück" führt zur
 // vorherigen Seite, ohne Verlauf zur Startseite (dort entscheidet die
 // Anmeldung, ob Home oder Login erscheint).
 export function RechtsseiteKopf() {

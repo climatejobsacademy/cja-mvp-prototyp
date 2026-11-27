@@ -23,7 +23,7 @@ import type { TagModell } from "./plan-modell";
 
 // Stundenplan v2 (SR-13, SR-73):
 // Steuerleiste (Brief 2.3), Woche (2.4), Tag Desktop (2.5) und mobil (2.6),
-// Monat (Änderungsliste Anna 2026-10-10, Punkt 11, nur Desktop). Alles
+// Monat (Änderungsliste Geschäftsführung 2026-10-10, Punkt 11, nur Desktop). Alles
 // serverseitig; Navigation über Links mit ?ansicht=…&datum=… (Brief 3).
 
 export type Ansicht = "tag" | "woche" | "monat";
@@ -35,16 +35,16 @@ const PFEIL =
 const HEUTE_LINK =
   "rounded-sm text-sm font-semibold text-ink outline-none hover:text-brand focus-visible:ring-2 focus-visible:ring-brand";
 // Rasterhöhe: Desktop passt sich dem Fenster an, damit Woche bzw. Tag ohne
-// Scrollen ganz sichtbar sind (Entscheidung Anna 2026-10-10); der Abzug ist
+// Scrollen ganz sichtbar sind (Entscheidung Geschäftsführung 2026-10-10); der Abzug ist
 // die Höhe von Kopf, Steuerleiste und Tageskopf. Mobil fest 48 px/Stunde.
-// Ergänzt Anna 2026-10-16: Damit jeder Block einheitlich alles zeigt (Zeit,
+// Ergänzt Geschäftsführung 2026-10-16: Damit jeder Block einheitlich alles zeigt (Zeit,
 // Titel, Trainer:in, Aktion), wird das Raster höher, sobald der kürzeste
 // Termin der Woche sonst weniger als BLOCK_MIN px hätte -- dann scrollt die
 // Seite statt die Blöcke zu quetschen.
 const BLOCK_MIN = 140;
 const wochenHoehe = (von: number, bis: number, kuerzesterTermin: number) =>
   `max(300px, calc(100dvh - 400px), ${Math.ceil(((bis - von) * BLOCK_MIN) / kuerzesterTermin)}px)`;
-// Tagesansicht Desktop (Wunsch Anna 2026-10-10): schmal und lang -- immer
+// Tagesansicht Desktop (Wunsch Geschäftsführung 2026-10-10): schmal und lang -- immer
 // 07-19 Uhr (bei früheren/späteren Terminen mehr), feste 56 px pro Stunde.
 const tagesHoehe = (von: number, bis: number) => `${(bis - von) * 56}px`;
 const mobilHoehe = (von: number, bis: number) => `${(bis - von) * 48}px`;
@@ -55,7 +55,7 @@ const tagZahl = (datum: string) => String(Number(datum.slice(8, 10)));
 
 /**
  * "Heute" als Textlink. Zeigt die Ansicht schon heute, grau und nicht
- * klickbar -- sonst passiert beim Klick sichtbar nichts (Rückmeldung Anna
+ * klickbar -- sonst passiert beim Klick sichtbar nichts (Rückmeldung Geschäftsführung
  * 2026-10-11).
  */
 function HeuteLink({ href, className }: { href: string | null; className?: string }) {
@@ -96,7 +96,7 @@ function AnsichtUmschalter({ aktiv, href }: { aktiv: Ansicht; href: (a: Ansicht)
   );
 }
 
-// Entscheidung Anna 2026-10-12: kein "Heute"-Link mehr in der Steuerleiste.
+// Entscheidung Geschäftsführung 2026-10-12: kein "Heute"-Link mehr in der Steuerleiste.
 export function Steuerleiste({
   ansicht,
   zurueckHref,
@@ -136,7 +136,7 @@ export function Steuerleiste({
   );
 }
 
-/** Kreis mit Datumszahl: nur heute lila hinterlegt (der gewählte Tag nicht, Anna 2026-10-16). */
+/** Kreis mit Datumszahl: nur heute lila hinterlegt (der gewählte Tag nicht, Geschäftsführung 2026-10-16). */
 function DatumsKreis({ datum, heute, klein = false }: { datum: string; heute: boolean; klein?: boolean }) {
   return (
     <span
@@ -168,7 +168,7 @@ export function WochenAnsicht({
   const bloecke = tage.flatMap((t) => t.bloecke);
   const bereich = stundenBereich(bloecke);
   const { von } = bereich;
-  // Wunsch Anna 2026-10-11: unter dem letzten Termin nur eine halbe Stunde
+  // Wunsch Geschäftsführung 2026-10-11: unter dem letzten Termin nur eine halbe Stunde
   // Luft, damit "Flexibel" näher am Kalender steht.
   const bis = bloecke.length > 0 ? bereich.bis - 0.5 : bereich.bis;
   const raster = "grid grid-cols-[64px_repeat(5,minmax(0,1fr))]";
@@ -237,7 +237,7 @@ export function WochenAnsicht({
           <TagSpalte key={t.datum} tag={t} von={von} bis={bis} hoehe={hoehe} gross={false} jetzt={jetzt} simuliert={simuliert} heuteToenen />
         ))}
       </div>
-      {/* Anna 2026-10-11: Selbstlernen unter dem Kalender -- der Unterricht steht im Vordergrund. */}
+      {/* Geschäftsführung 2026-10-11: Selbstlernen unter dem Kalender -- der Unterricht steht im Vordergrund. */}
       <div className={raster}>
         <div className="pt-4 pr-2.5 text-right text-[11px] font-semibold tracking-[0.06em] text-ink-muted uppercase">
           Flexibel
@@ -257,7 +257,7 @@ export function WochenAnsicht({
 
 /**
  * Punkt 8: Tagesliste ohne Kästchen -- Datum im Kreis + Wochentag, nur heute
- * hinterlegt; der gewählte Tag nur fett (Anna 2026-10-16). Erledigte Tage mit
+ * hinterlegt; der gewählte Tag nur fett (Geschäftsführung 2026-10-16). Erledigte Tage mit
  * Häkchen. `quer` = mobiler Streifen.
  */
 export function TagesListe({
@@ -490,7 +490,7 @@ export function MobilAnsicht({
   jetzt: string;
   simuliert: boolean;
   tagHref: (datum: string) => string;
-  /** Umschalter Tag | Woche | Monat auch mobil (Vorschau Anna 2026-10-20) */
+  /** Umschalter Tag | Woche | Monat auch mobil (Vorschau Geschäftsführung 2026-10-20) */
   umschalterHref: (a: Ansicht) => string;
 }) {
   return (
@@ -530,7 +530,7 @@ export function inWochen(tage: TagModell[], montage: string[]): TagModell[][] {
 }
 
 // ---------------------------------------------------------------------------
-// Mobil Woche und Monat (Vorschau Anna 2026-10-20): auf dem Handy passen die
+// Mobil Woche und Monat (Vorschau Geschäftsführung 2026-10-20): auf dem Handy passen die
 // Raster vom Laptop nicht. Woche als Liste der Tage untereinander, Monat als
 // kleiner Kalender mit farbigen Punkten; Antippen öffnet den Tag.
 
