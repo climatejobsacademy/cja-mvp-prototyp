@@ -1,5 +1,6 @@
 import { plusTage } from "@/lib/date";
 import { lektionTitel } from "@/lib/lektion-titel";
+import { youtubeId } from "@/lib/youtube";
 import { requireCurrentLearner } from "@/lib/queries/session";
 import { createClient } from "@/lib/supabase/server";
 import type { ContentType, UnitProgressStatus } from "@/lib/database.types";
@@ -230,10 +231,12 @@ export async function getAgendaZeitraum(
         // Unterlagen je Lektion (SR-68): nur die Lektions-IDs, RLS wie auf der
         // Lektionsseite (fn_kann_lektion_lesen). Links zählen mit.
         allLessonIdsForProgress.length > 0
-          ? supabase.from("lesson_resource").select("lesson_id").in("lesson_id", allLessonIdsForProgress)
-          : Promise.resolve({ data: [] as { lesson_id: string }[] }),
+          ? supabase.from("lesson_resource").select("lesson_id, external_url").in("lesson_id", allLessonIdsForProgress)
+          : Promise.resolve({ data: [] as { lesson_id: string; external_url: string | null }[] }),
       ]);
-      const mitUnterlagen = new Set((ressourcen ?? []).map((r) => r.lesson_id));
+      // YouTube-Links zählen nicht als Unterlagen: sie erscheinen als Video
+      // unter dem Inhalt, nicht im Abschnitt #unterlagen (SR folgt).
+      const mitUnterlagen = new Set((ressourcen ?? []).filter((r) => !youtubeId(r.external_url)).map((r) => r.lesson_id));
       const allLessons = [...(lessons ?? []), ...(extraLessons ?? [])];
       const allCourses = [...(courses ?? []), ...(extraCourses ?? [])];
       const progressByLesson = new Map<string, UnitProgressStatus>((progress ?? []).map((p) => [p.lesson_id, p.status]));
