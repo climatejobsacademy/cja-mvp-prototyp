@@ -199,6 +199,22 @@ export function WochenAnsicht({
         ))}
       </div>
 
+      {/* Warm-up (SR-84, ergänzt 27.11.2026): Fachsprache zu Beginn des Tages, über dem Raster. */}
+      {tage.some((t) => t.fachsprache.length > 0) && (
+        <div className={raster}>
+          <div className="pt-2.5 pr-2.5 text-right text-[11px] font-semibold tracking-[0.06em] text-ink-muted uppercase">
+            Start
+          </div>
+          {tage.map((t) => (
+            <div key={t.datum} className={cn("flex min-w-0 flex-col gap-1.5 px-1.5 pt-1 pb-2", heute(t))}>
+              {t.fachsprache.map((e) => (
+                <FachspracheChip key={e.einheitId} eintrag={e} mitTitel={t.fachsprache.length > 1} />
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Praxistage ohne Uhrzeit (SR-13): ganztägig über dem Raster */}
       {tage.some((t) => t.ganztags.length > 0) && (
         <div className={raster}>
@@ -222,7 +238,6 @@ export function WochenAnsicht({
         ))}
       </div>
       {/* Anna 2026-10-11: Selbstlernen unter dem Kalender -- der Unterricht steht im Vordergrund. */}
-      {/* Fachsprache (SR-84) steht mit in "Flexibel", nach Selbstlernen bzw. "Wissen festigen" (Anna 2026-10-17). */}
       <div className={raster}>
         <div className="pt-4 pr-2.5 text-right text-[11px] font-semibold tracking-[0.06em] text-ink-muted uppercase">
           Flexibel
@@ -231,9 +246,6 @@ export function WochenAnsicht({
           <div key={t.datum} className={cn("flex min-w-0 flex-col gap-1.5 px-1.5 pt-2 pb-1.5", heute(t))}>
             {t.chips.map((c) => (
               <FlexChip key={c.id} chip={c} />
-            ))}
-            {t.fachsprache.map((e) => (
-              <FachspracheChip key={e.einheitId} eintrag={e} mitTitel={t.fachsprache.length > 1} />
             ))}
           </div>
         ))}
@@ -310,6 +322,19 @@ export function TagesKarte({ tag, jetzt, simuliert, mobil }: { tag: TagModell; j
   const hoehe = mobil ? mobilHoehe(von, bis) : tagesHoehe(von, bis);
   return (
     <div className="flex flex-col gap-3 text-ink">
+      {/* Warm-up (SR-84, ergänzt 27.11.2026): erste Zeile des Tages. */}
+      {tag.fachsprache.length > 0 && (
+        <div className={raster}>
+          <div className="pt-2.5 pr-2.5 text-right text-[11px] font-semibold tracking-[0.06em] text-ink-muted uppercase">
+            Start
+          </div>
+          <div className="flex min-w-0 flex-col gap-1.5">
+            {tag.fachsprache.map((e) => (
+              <FachspracheLeiste key={e.einheitId} eintrag={e} gross={!mobil} mitTitel={tag.fachsprache.length > 1} />
+            ))}
+          </div>
+        </div>
+      )}
       {tag.ganztags.length > 0 && (
         <div className={raster}>
           <div className="pt-2.5 pr-2.5 text-right text-[11px] font-semibold tracking-[0.06em] text-ink-muted uppercase">
@@ -326,7 +351,7 @@ export function TagesKarte({ tag, jetzt, simuliert, mobil }: { tag: TagModell; j
         <StundenSpalte von={von} bis={bis} hoehe={hoehe} />
         <TagSpalte tag={tag} von={von} bis={bis} hoehe={hoehe} gross={!mobil} jetzt={jetzt} simuliert={simuliert} tagesansicht />
       </div>
-      {(tag.chips.length > 0 || tag.fachsprache.length > 0) && (
+      {tag.chips.length > 0 && (
         <div className={raster}>
           <div className="pt-2.5 pr-2.5 text-right text-[11px] font-semibold tracking-[0.06em] text-ink-muted uppercase">
             {mobil ? "Flex" : "Flexibel"}
@@ -334,9 +359,6 @@ export function TagesKarte({ tag, jetzt, simuliert, mobil }: { tag: TagModell; j
           <div className="flex min-w-0 flex-col gap-1.5">
             {tag.chips.map((c) => (
               <FlexLeiste key={c.id} chip={c} gross={!mobil} />
-            ))}
-            {tag.fachsprache.map((e) => (
-              <FachspracheLeiste key={e.einheitId} eintrag={e} gross={!mobil} mitTitel={tag.fachsprache.length > 1} />
             ))}
           </div>
         </div>

@@ -143,6 +143,17 @@ type FachspracheEinheitRow = Flatten<
   }
 >;
 
+// SR-84 (0074): Fachsprache-Einheit von einer Person bis zum Ende durchgearbeitet.
+type FachspracheErledigtRow = Flatten<
+  Timestamps & {
+    id: string;
+    organisation_id: string;
+    learner_id: string;
+    einheit_id: string;
+    erledigt_am: string;
+  }
+>;
+
 type PersonRow = Flatten<
   Timestamps & {
     id: string;
@@ -708,6 +719,7 @@ export type Database = {
         >,
         Partial<FachspracheEinheitRow>
       >;
+      fachsprache_erledigt: Table<FachspracheErledigtRow, never, never>;
       person: Table<
         PersonRow,
         Flatten<
@@ -1219,6 +1231,7 @@ export type Database = {
       fn_praxis_codewort_entsperren: { Args: { p_job: string; p_gate: PraxisGate }; Returns: undefined };
       // 0061 (SR-89, SR-03): Einschätzung speichern, Abschluss mit automatischer Verifizierung.
       fn_praxis_ereignis_melden: { Args: { p_job: string; p_ereignisse: unknown }; Returns: number };
+      fn_fachsprache_erledigt_setzen: { Args: { p_einheit: string }; Returns: boolean };
       fn_praxis_einschaetzen: {
         Args: { p_job: string; p_rolle: "selbst" | "peer"; p_werte: Record<string, number> };
         Returns: PraxisFortschritt;

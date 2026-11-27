@@ -11,11 +11,14 @@ import type { SeitenEinheit } from "@/lib/fachsprache-laden";
 import { erklaerungSichtbar, quizSchritt, quizStart, weiterMoeglich, weiterText, type QuizAktion, type QuizZustand } from "@/lib/fachsprache-quiz";
 import { cn } from "@/lib/utils";
 
+import { fachspracheErledigt } from "./actions";
+
 // Fachsprache-Einheit (Stufe 2, Migration 0051, SR-84), Oberfläche nach dem
 // Muster der Sprachtraining-Demo: Wörter, Quiz, Sätze, schlichter Abschluss.
-// Der Zustand lebt nur im Browser-State dieser Seite: nichts wird gespeichert
-// oder gezählt, kein Ergebnis, kein Ring, keine competency_evidence (Regel 6,
-// docs/decisions.md 2026-10-16). Das Quiz ist freiwillig und beliebig oft
+// Der Zustand lebt im Browser-State dieser Seite. Gespeichert wird nur, dass
+// die Person beim Abschluss angekommen ist („erledigt“, SR-84 ergänzt
+// 27.11.2026, Migration 0074); kein Ergebnis, kein Ring, keine
+// competency_evidence (Regel 6). Das Quiz ist freiwillig und beliebig oft
 // wiederholbar. Tastatur, Focus-Ringe, Ziele ab 44 px, motion-reduce.
 
 const FOKUS = "outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2";
@@ -52,6 +55,17 @@ export function FachspracheEinheit({ einheit, zurueck }: { einheit: SeitenEinhei
     }
     kopf.current?.focus();
   }, [schritt]);
+
+  // Beim ersten Erreichen des Abschlusses „erledigt“ speichern (SR-84). Ein
+  // Aufruf je Seitenaufruf; die Datenbank ignoriert Wiederholungen.
+  const gemeldet = useRef(false);
+  const zuSchritt = (s: Schritt) => {
+    if (s === "fertig" && !gemeldet.current) {
+      gemeldet.current = true;
+      void fachspracheErledigt(einheit.id);
+    }
+    setSchritt(s);
+  };
 
   const nr = schritt === "fertig" ? schritte.length : schritte.indexOf(schritt);
   const danach = (von: Exclude<Schritt, "fertig">): Schritt => schritte[schritte.indexOf(von) + 1] ?? "fertig";
@@ -92,14 +106,14 @@ export function FachspracheEinheit({ einheit, zurueck }: { einheit: SeitenEinhei
       </ol>
 
       <div key={schritt} className={EIN}>
-        {schritt === "woerter" && <Woerter einheit={einheit} kopf={kopf} onFertig={() => setSchritt(danach("woerter"))} />}
+        {schritt === "woerter" && <Woerter einheit={einheit} kopf={kopf} onFertig={() => zuSchritt(danach("woerter"))} />}
         {schritt === "quiz" && (
           <Quiz
             einheit={einheit}
             kopf={kopf}
             zustand={quiz}
             aktion={quizAktion}
-            onFertig={() => setSchritt(danach("quiz"))}
+            onFertig={() => zuSchritt(danach("quiz"))}
             onZurueck={() => setSchritt(davor("quiz") ?? "woerter")}
           />
         )}
@@ -107,7 +121,7 @@ export function FachspracheEinheit({ einheit, zurueck }: { einheit: SeitenEinhei
           <Saetze
             einheit={einheit}
             kopf={kopf}
-            onFertig={() => setSchritt("fertig")}
+            onFertig={() => zuSchritt("fertig")}
             onZurueck={() => setSchritt(davor("saetze") ?? "quiz")}
           />
         )}

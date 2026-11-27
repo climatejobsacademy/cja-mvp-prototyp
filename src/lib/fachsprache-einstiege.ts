@@ -6,8 +6,9 @@
 // "Tagesaktuelle Lektion" ist die Lektion eines Live-Termins des Tages: wie die
 // Liste "live" auf Home (aktivitaeten) und getTagesAgenda nur Termine mit
 // Live-Sitzung und Lektion (Entscheidung 2026-10-16, O2); Tage nur mit
-// Selbstlernen bekommen keinen Einstieg. Nur Lesen: kein Lernstand, kein
-// Ergebnis, keine competency_evidence (Regel 6).
+// Selbstlernen bekommen keinen Einstieg. Ob die Person die Einheit schon
+// durchgearbeitet hat (SR-84, „erledigt“, 0074), kommt als Menge hinein;
+// kein Ergebnis, keine competency_evidence (Regel 6).
 
 // @ts-expect-error TS5097: .ts-Endung für node:test nötig
 import { einheitenJeTag, liveLektionIds, type EinheitKurz, type TerminLektion } from "./fachsprache.ts";
@@ -23,7 +24,16 @@ export type EinstiegTheorie = {
 
 export type TagMitTerminen = { datum: string; theorie: EinstiegTheorie[] };
 
-export type EinstiegEintrag = { einheitId: string; lessonId: string; titel: string; href: string };
+export type EinstiegEintrag = {
+  einheitId: string;
+  lessonId: string;
+  titel: string;
+  href: string;
+  /** Dauer laut Einheit (Minuten), sonst null */
+  dauerMinuten: number | null;
+  /** Von der angemeldeten Person bis zum Ende durchgearbeitet (SR-84, 0074) */
+  erledigt: boolean;
+};
 
 /** Live-Termine mit Lektion; alles andere (Selbstlernen, Termin ohne Live-Sitzung) zählt nicht. */
 export function termineAus(tage: TagMitTerminen[]): TerminLektion[] {
@@ -48,7 +58,8 @@ export function lektionIdsFuerEinstiege(tage: TagMitTerminen[]): string[] {
 export function einstiegeJeTag(
   tage: TagMitTerminen[],
   links: Map<string, EinheitLink>,
-  von?: "stundenplan" | "home"
+  von?: "stundenplan" | "home",
+  erledigt: ReadonlySet<string> = new Set()
 ): Map<string, EinstiegEintrag[]> {
   const ergebnis = new Map<string, EinstiegEintrag[]>();
   if (links.size === 0) return ergebnis;
@@ -61,7 +72,14 @@ export function einstiegeJeTag(
   for (const [datum, liste] of einheitenJeTag(termineAus(tage), einheiten)) {
     ergebnis.set(
       datum,
-      liste.map((e) => ({ einheitId: e.einheitId, lessonId: e.lessonId, titel: e.titel, href: einheitHref(e.einheitId, von, datum) }))
+      liste.map((e) => ({
+        einheitId: e.einheitId,
+        lessonId: e.lessonId,
+        titel: e.titel,
+        href: einheitHref(e.einheitId, von, datum),
+        dauerMinuten: links.get(e.lessonId)?.dauerMinuten ?? null,
+        erledigt: erledigt.has(e.einheitId),
+      }))
     );
   }
   return ergebnis;

@@ -116,3 +116,24 @@ test("einheitHref: nur gültiges Datum kommt in die URL", () => {
   assert.equal(einheitHref("x", "stundenplan", "//evil.example"), "/fachsprache/x?von=stundenplan");
   assert.equal(einheitHref("x", "home", "2026-11-02"), "/fachsprache/x");
 });
+
+// SR-84 (ergänzt 27.11.2026): Warm-up zeigt Dauer und, wenn durchgearbeitet, „erledigt“.
+test("SR-84 Einstiege: Dauer aus der Einheit, erledigt nur für Einheiten in der Menge", async () => {
+  const tage = [tag("2026-11-02", live(L1, "09:00:00"), live(L2, "13:00:00"))];
+  const { q } = quelle([
+    { ...E("e1", L1), dauer_minuten: 5 } as ReturnType<typeof E>,
+    E("e2", L2),
+  ]);
+  const links = await einheitenFuerLektionen({ schalterAn: true, lessonIds: lektionIdsFuerEinstiege(tage), von: "stundenplan" }, q);
+  const karte = einstiegeJeTag(tage, links, "stundenplan", new Set(["e1"]));
+  const liste = karte.get("2026-11-02")!;
+  assert.deepEqual(
+    liste.map((e: { einheitId: string; dauerMinuten: number | null; erledigt: boolean }) => [e.einheitId, e.dauerMinuten, e.erledigt]),
+    [["e1", 5, true], ["e2", null, false]]
+  );
+});
+
+test("SR-84 Einstiege: ohne Menge ist nichts erledigt", async () => {
+  const { karte } = await einstiege([tag("2026-11-02", live(L1))], [E("e1", L1)]);
+  assert.equal(karte.get("2026-11-02")![0].erledigt, false);
+});

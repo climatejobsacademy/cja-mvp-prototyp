@@ -1,9 +1,13 @@
 import Link from "next/link";
 import { ArrowRight, MessageCircle } from "lucide-react";
 
+import { GeschafftZeichen } from "@/components/geschafft-zeichen";
+
 import type { EinstiegEintrag } from "@/lib/fachsprache-einstiege";
 import { cn } from "@/lib/utils";
 
+// Warm-up (SR-84, ergänzt 27.11.2026): steht auf Home vor dem Live-Termin,
+// mit Dauer und, wenn durchgearbeitet, Haken („erledigt“, 0074).
 // Fachsprache-Einheit (Etappe 2, SR-84): Kästchen "Fachsprache" auf Home, wenn
 // an einer Live-Lektion des Tages eine veröffentlichte Einheit hängt (wie in der
 // Demo). Mehrere Einheiten am Tag erscheinen alle. Ohne Einheit (Schalter aus,
@@ -19,7 +23,7 @@ export function FachspracheKaestchen({ einheiten }: { einheiten: EinstiegEintrag
   return (
     <section aria-labelledby="fachsprache-heute" className="flex flex-col gap-3">
       <h2 id="fachsprache-heute" className="text-lg font-bold text-ink">
-        Fachsprache
+        Zum Start: Fachsprache
       </h2>
       <ul className="flex flex-col gap-3">
         {einheiten.map((e) => (
@@ -35,12 +39,18 @@ export function FachspracheKaestchen({ einheiten }: { einheiten: EinstiegEintrag
                 <MessageCircle className="size-5" />
               </span>
               <span className="flex min-w-0 flex-1 flex-col">
-                <span className="text-sm text-ink-muted">Fachsprache zu heute</span>
+                <span className="text-sm text-ink-muted">
+                  Fachsprache zu heute{e.dauerMinuten ? ` · ${e.dauerMinuten} Min` : ""}
+                </span>
                 <span className="text-[17px] leading-snug font-semibold">{e.titel}</span>
               </span>
-              <span className="inline-flex flex-none items-center gap-1 text-[15px] font-semibold text-brand">
-                Öffnen <ArrowRight className="size-4" aria-hidden="true" />
-              </span>
+              {e.erledigt ? (
+                <GeschafftZeichen wort />
+              ) : (
+                <span className="inline-flex flex-none items-center gap-1 text-[15px] font-semibold text-brand">
+                  Öffnen <ArrowRight className="size-4" aria-hidden="true" />
+                </span>
+              )}
             </Link>
           </li>
         ))}

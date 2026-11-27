@@ -89,9 +89,9 @@ Seit Migration 0058–0068 (SR-64, SR-65, SR-88 bis SR-92, SR-03). Technischer S
 
 - **Zweck:** Lernen der Fachsprache.
 - **Betroffene:** Lernende.
-- **Daten:** keine personenbezogenen Daten gespeichert (Quiz wird nicht gespeichert). Beim Vorlesen kann der Browser den Übungstext und Verbindungsdaten an den Browser-Anbieter senden (nicht durch die Akademie veranlasst).
+- **Daten:** gespeichert wird nur, dass eine Person eine Einheit bis zum Ende durchgearbeitet hat, mit Zeitpunkt (`fachsprache_erledigt`, SR-84, 0074); sichtbar nur für die Person selbst und AfCJ admin, nicht für Trainer:innen. Quizantworten werden nicht gespeichert. Beim Vorlesen kann der Browser den Übungstext und Verbindungsdaten an den Browser-Anbieter senden (nicht durch die Akademie veranlasst).
 - **Rechtsgrundlage:** Art. 6 Abs. 1 lit. b DSGVO.
-- **Löschfrist:** entfällt.
+- **Löschfrist:** mit dem Konto der Person (`on delete cascade`, `loeschweg.md`).
 
 ### 7. Betrieb, Sicherheit und Backups
 

@@ -162,11 +162,11 @@ export function einheitHref(einheitId: string, von?: "stundenplan" | "home", dat
   return `/fachsprache/${einheitId}?von=stundenplan${tag}`;
 }
 
-export type EinheitLink = { einheitId: string; lessonId: string; titel: string; href: string };
+export type EinheitLink = { einheitId: string; lessonId: string; titel: string; href: string; dauerMinuten?: number | null };
 
 /** Datenquelle der Einstiege: Einheiten zu Lektionen (die RLS entscheidet, was lesbar ist). */
 export interface EinheitenListeQuelle {
-  fuerLektionen(lessonIds: string[]): Promise<{ id: string; lesson_id: string; titel: string; status: string }[]>;
+  fuerLektionen(lessonIds: string[]): Promise<{ id: string; lesson_id: string; titel: string; status: string; dauer_minuten?: number | null }[]>;
 }
 
 /**
@@ -184,7 +184,7 @@ export async function einheitenFuerLektionen(
   if (!optionen.schalterAn || ids.length === 0) return ergebnis;
   for (const z of await quelle.fuerLektionen(ids)) {
     if (z.status !== "veroeffentlicht" || !ids.includes(z.lesson_id) || ergebnis.has(z.lesson_id)) continue;
-    ergebnis.set(z.lesson_id, { einheitId: z.id, lessonId: z.lesson_id, titel: z.titel, href: einheitHref(z.id, optionen.von) });
+    ergebnis.set(z.lesson_id, { einheitId: z.id, lessonId: z.lesson_id, titel: z.titel, href: einheitHref(z.id, optionen.von), dauerMinuten: z.dauer_minuten ?? null });
   }
   return ergebnis;
 }

@@ -190,7 +190,7 @@ test("Einstiege: nur Veröffentlichtes, Link je Lektion, Entwürfe und fremde Le
   const karte = await einheitenFuerLektionen({ schalterAn: true, lessonIds: [A, B, A], von: "stundenplan" }, l.q);
   assert.deepEqual(l.ids(), [A, B], "doppelte Lektionen nur einmal erfragt");
   assert.deepEqual([...karte.keys()], [A]);
-  assert.deepEqual(karte.get(A), { einheitId: "e1", lessonId: A, titel: "ta", href: "/fachsprache/e1?von=stundenplan" });
+  assert.deepEqual(karte.get(A), { einheitId: "e1", lessonId: A, titel: "ta", href: "/fachsprache/e1?von=stundenplan", dauerMinuten: null });
   assert.equal(await einheitFuerLektion({ schalterAn: true, lessonId: B }, l.q), null);
 });
 

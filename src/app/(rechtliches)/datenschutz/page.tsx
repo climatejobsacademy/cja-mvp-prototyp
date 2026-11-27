@@ -217,7 +217,10 @@ export default function DatenschutzPage() {
         Wenn diese Funktion freigeschaltet ist, bieten wir zu einzelnen
         Lektionen Übungen zur Fachsprache an (Wörter, Quiz, Beispielsätze).
         Ihre Antworten im Quiz werden nicht gespeichert und nicht ausgewertet;
-        sie zählen nicht für Ihren Lernfortschritt. Bilder zu den Übungen rufen
+        sie zählen nicht für Ihren Lernfortschritt. Wenn Sie eine Übung bis
+        zum Ende durchgearbeitet haben, speichern wir dies mit Datum, damit
+        Stundenplan und Startseite sie als erledigt anzeigen. Diese Angabe
+        sehen nur Sie selbst; sie wird mit Ihrem Konto gelöscht. Bilder zu den Übungen rufen
         wir über zeitlich begrenzte Links aus unserem Datenbankdienst ab. Über
         das Lautsprecher-Symbol können Sie sich Wörter und Sätze vorlesen
         lassen. Dafür nutzt die Plattform die Sprachausgabe Ihres Browsers. Je

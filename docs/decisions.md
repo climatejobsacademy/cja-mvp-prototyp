@@ -516,6 +516,14 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Status:** gültig
 - **Belegt:** SR-99
 
+### 2026-11-27 – Fachsprache als Warm-up, „erledigt“ gespeichert
+
+- **Entscheidung:** (Produkt-Lead) Die Fachsprache-Einheit des Tages steht zu Beginn des Tages: Tagesansicht als erste Zeile „Zum Start: Fachsprache“ über dem Zeitraster, Wochenansicht in der Zeile „Start“, Home vor dem Live-Termin. Wer sie bis zum Ende durcharbeitet, ist in der Datenbank als „erledigt“ gespeichert (einmal je Person und Einheit), damit der Haken auf allen Geräten erscheint. Den Stand sieht nur die Person selbst; Trainer:innen nicht.
+- **Begründung:** Sprache ist im Pilot eine Hürde (3 von 8 finden die Wörter zu schwer); als Einstieg in den Unterrichtstag soll die Einheit sichtbar vorne stehen statt in „Flexibel“. Ein Haken nur im Browser hätte auf dem zweiten Gerät gefehlt.
+- **Folgen:** Löst „Fachsprache steht mit in Flexibel“ (2026-10-17) und den Satz „speichert keinen Lernstand“ aus SR-84 ab. Migration 0074 mit eigener Tabelle; kein `unit_progress`, keine `competency_evidence` (Regel 6). Datenschutzerklärung und Verarbeitungsverzeichnis nennen den Stand.
+- **Status:** gültig
+- **Belegt:** SR-84
+
 ## Offene technische Schulden
 
 Diese Punkte sind keine Entscheidungen, sondern bekannte Lücken; was daraus wird, steht in Asana.

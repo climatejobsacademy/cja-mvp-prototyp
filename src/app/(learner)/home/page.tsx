@@ -165,6 +165,8 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     <div data-breit className="flex flex-col gap-10">
       {simuliert && <TestzeitHinweis heute={heute} jetzt={jetzt} />}
       {begruessung}
+      {/* Warm-up (SR-84, ergänzt 27.11.2026): Fachsprache vor dem Live-Termin. */}
+      <FachspracheKaestchen einheiten={fachsprache.get(tag.datum) ?? []} />
       <DeinTag
         zustand={zustand}
         heute={heute}
@@ -177,7 +179,6 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
         stil={stil}
         abends={abends}
       />
-      <FachspracheKaestchen einheiten={fachsprache.get(tag.datum) ?? []} />
       {modul && <ModulFortschritt modul={modul} kompetenzen={ringe} />}
     </div>
   );

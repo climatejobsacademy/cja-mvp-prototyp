@@ -57,7 +57,7 @@ function listeQuelle(supabase: SupabaseServer): EinheitenListeQuelle {
     async fuerLektionen(lessonIds) {
       const { data } = await supabase
         .from("fachsprache_einheit")
-        .select("id, lesson_id, titel, status")
+        .select("id, lesson_id, titel, status, dauer_minuten")
         .in("lesson_id", lessonIds)
         .eq("status", "veroeffentlicht");
       return data ?? [];
@@ -112,5 +112,12 @@ export async function getEinstiegeJeTag(
   const lessonIds = lektionIdsFuerEinstiege(tage);
   if (lessonIds.length === 0) return new Map();
   const links = await getEinheitenFuerLektionen(lessonIds);
-  return einstiegeJeTag(tage, links, von);
+  if (links.size === 0) return new Map();
+  // SR-84 (0074): erledigt nur für die angemeldete Person (RLS: eigene Zeilen).
+  const supabase = await createClient();
+  const { data: erledigt } = await supabase
+    .from("fachsprache_erledigt")
+    .select("einheit_id")
+    .in("einheit_id", [...links.values()].map((l) => l.einheitId));
+  return einstiegeJeTag(tage, links, von, new Set((erledigt ?? []).map((e) => e.einheit_id)));
 }
