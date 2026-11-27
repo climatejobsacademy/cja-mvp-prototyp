@@ -2,7 +2,9 @@
 // Regeln) nur liest: keine Schreibzugriffe auf die Datenbank oder den Speicher,
 // kein Lernstand, keine competency_evidence (Regel 6), kein Tracking, kein
 // Service-Role-Key, keine Ablage von Ergebnissen im Browser (Beschluss
-// 2026-10-16). Prüft den Quelltext ohne Kommentare. Ausführen mit `npm test`.
+// 2026-10-16). Einzige Ausnahme seit SR-84 (ergänzt 27.11.2026, 0074): die
+// Server Action, die „erledigt“ über fn_fachsprache_erledigt_setzen speichert
+// (eigene Prüfung unten). Prüft den Quelltext ohne Kommentare. Ausführen mit `npm test`.
 
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync, statSync } from "node:fs";
@@ -44,8 +46,11 @@ const VERBOTEN: [string, RegExp][] = [
   ["Service-Role-Key", /service_role|SERVICE_ROLE|createServiceClient/],
 ];
 
+// SR-84 (0074): einzige schreibende Stelle, eigens geprüft.
+const ERLEDIGT_AKTION = "src/app/(learner)/fachsprache/[einheitId]/actions.ts";
+
 test("Fachsprache-Code: nur Lesen, kein Lernstand, kein Tracking", () => {
-  const alle = ORTE.flatMap(dateien).filter((d) => /\.(ts|tsx)$/.test(d) && !/\.test\.ts$/.test(d));
+  const alle = ORTE.flatMap(dateien).filter((d) => /\.(ts|tsx)$/.test(d) && !/\.test\.ts$/.test(d) && d !== ERLEDIGT_AKTION);
   assert.ok(alle.length >= 11, `zu wenige Dateien geprüft: ${alle.length}`);
   const funde: string[] = [];
   for (const datei of alle) {
@@ -66,4 +71,13 @@ test("Query: nur der Client der angemeldeten Person, kein Service-Role", () => {
   const q = readFileSync(join(WURZEL, "src/lib/queries/fachsprache.ts"), "utf8");
   assert.match(q, /createClient\(\)/);
   assert.match(q, /@\/lib\/supabase\/server/);
+});
+
+test("SR-84 erledigt: die Server Action ruft nur fn_fachsprache_erledigt_setzen auf, sonst nichts Verbotenes", () => {
+  const quelltext = ohneKommentare(readFileSync(join(WURZEL, ERLEDIGT_AKTION), "utf8"));
+  const rpcs = [...quelltext.matchAll(/\.rpc\s*\(\s*"([a-z_]+)"/g)].map((m) => m[1]);
+  assert.deepEqual(rpcs, ["fn_fachsprache_erledigt_setzen"]);
+  const ausnahmen = new Set(["rpc-Aufruf", "Server Action"]);
+  const funde = VERBOTEN.filter(([name, m]) => !ausnahmen.has(name) && m.test(quelltext)).map(([name]) => name);
+  assert.deepEqual(funde, []);
 });

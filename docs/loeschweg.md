@@ -70,6 +70,7 @@ Stand 18.10.2026 · Ablauf für den Pilot, Entscheidungen Geschäftsführung 18.
 | Storage `profilfotos` | Profilfoto, Ordner `<person_id>/` | bleibt liegen (Storage kaskadiert nicht, `0030`) | Schritt 6, von Hand |
 | `field_job_datei` | Dateien im Praxisflow (Zeilen) | wird gelöscht (`cascade`, `0059`) | — |
 | `praxis_ereignis` | Ereignisse im Praxisflow ohne Inhalte (SR-92) | wird gelöscht (`cascade`, `0064`) | — |
+| `fachsprache_erledigt` | Fachsprache-Einheit durchgearbeitet (SR-84) | wird gelöscht (`cascade`, `0074`) | — |
 | Storage `praxis-dateien` | Dateien im Praxisflow, Ordner `<person_id>/` | bleibt liegen (Storage kaskadiert nicht, `0059`) | Schritt 6, von Hand |
 
 Nicht personenbezogen: Buckets `scorm-packages`, `lesson-resources`, `fachsprache-bilder` und das Organisationslogo (`0016`, `0023`, `0051`, `0025`). Die Prüf-Spalten in `fachsprache_einheit` (`restrict`) sind mit `0053` entfernt.
@@ -114,6 +115,7 @@ union all select 'chat_meldung', count(*) from chat_meldung where person_id = :p
 union all select 'profilfotos (Dateien)', count(*) from storage.objects where bucket_id = 'profilfotos' and (storage.foldername(name))[1] = :pid::text
 union all select 'field_job_datei', count(*) from field_job_datei where learner_id = :pid
 union all select 'praxis_ereignis', count(*) from praxis_ereignis where learner_id = :pid
+union all select 'fachsprache_erledigt', count(*) from fachsprache_erledigt where learner_id = :pid
 union all select 'praxis-dateien (Dateien)', count(*) from storage.objects where bucket_id = 'praxis-dateien' and (storage.foldername(name))[1] = :pid::text;
 
 -- B) Blockaden lösen, nur nach Entscheidung E3 (UNGETESTET)
