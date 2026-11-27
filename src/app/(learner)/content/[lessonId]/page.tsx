@@ -14,6 +14,7 @@ import { getKompetenzFortschritt } from "@/lib/queries/competencies";
 import { getLessonDetail } from "@/lib/queries/content";
 import { getHeutigeKompetenzen } from "@/lib/queries/home";
 import { getLektionThread } from "@/lib/queries/lektion-thread";
+import { getVokabelnFuerLektion } from "@/lib/queries/fachsprache";
 import { getLessonMaterialien } from "@/lib/queries/materialien";
 import { getMeineTrainer } from "@/lib/queries/trainer";
 import { begonnenSetzen } from "@/lib/lektion-begonnen";
@@ -101,6 +102,8 @@ export default async function LessonPage({
     NATIVE_SELBSTLERNEN && lesson.contentType === "scorm" && lesson.scorm && ansicht !== "scorm"
       ? await lernkursLaden(lesson.scorm.speicherPfad, lesson.scorm.zipSignedUrl)
       : null;
+  // Vokabelklick (SR-24): Fachwörter des Moduls, nur für die native Ansicht.
+  const vokabeln = nativKurs ? await getVokabelnFuerLektion(lesson.id) : [];
   if (nativKurs) {
     // Der Browser fragt die ersten Bilder schon aus dem Seitenkopf an.
     const ersteBilder = nativKurs.kapitel.flatMap((k) => k.schritte).slice(0, 2).flatMap(schrittBilder).slice(0, 4);
@@ -154,7 +157,7 @@ export default async function LessonPage({
       {lesson.contentType === "scorm" && nativKurs && (
         // Kein Umschalt-Link für Lernende (Anna 2026-10-17); das Team erreicht
         // den SCORM-Player zum Vergleich über ?ansicht=scorm.
-        <NativeLektion lessonId={lesson.id} kurs={nativKurs} done={done} gespeichert={lesson.lernStand} />
+        <NativeLektion lessonId={lesson.id} kurs={nativKurs} done={done} gespeichert={lesson.lernStand} vokabeln={vokabeln} />
       )}
 
       {lesson.contentType === "scorm" && !nativKurs && (

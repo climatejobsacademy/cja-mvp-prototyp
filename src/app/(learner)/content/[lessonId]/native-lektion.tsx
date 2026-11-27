@@ -5,8 +5,11 @@
    den Bild-Optimierer ohne Session laden. */
 
 import {
+  createContext,
+  useContext,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
   useSyncExternalStore,
@@ -17,11 +20,13 @@ import {
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Check, Pause, PartyPopper, ThumbsDown, ThumbsUp, Volume2, X } from "lucide-react";
 
 import { ZoomFenster } from "@/components/bild-zoom";
+import { VokabelFenster } from "@/components/fachsprache/vokabel-fenster";
 import { FormelText } from "@/components/formel-text";
 import { jetztInBerlin } from "@/lib/date";
 import { schrittAufgabe, schrittBilder, type Baustein, type Lernkurs, type Schritt, type TextKnoten } from "@/lib/lernkurs";
 import { neuererStand, standPruefen, standSchluessel, type LernStand } from "@/lib/lernstand";
 import { cn } from "@/lib/utils";
+import { knotenMarkieren, sucheAus, type MarkKnoten, type Suche, type Vokabel } from "@/lib/vokabeln";
 
 import { markLessonComplete } from "./actions";
 
@@ -70,12 +75,15 @@ export function NativeLektion({
   kurs,
   done,
   gespeichert,
+  vokabeln = [],
 }: {
   lessonId: string;
   kurs: Lernkurs;
   done: boolean;
   /** unit_progress.stand (ungeprüft) */
   gespeichert: unknown;
+  /** Vokabelklick (SR-24): Fachwörter des Moduls, leer = keine Markierung */
+  vokabeln?: Vokabel[];
 }) {
   const imBrowser = useSyncExternalStore(
     nichts,
@@ -85,7 +93,7 @@ export function NativeLektion({
   if (!imBrowser) return <p className="text-sm text-ink-muted">Lektion wird geladen …</p>;
   const form = kurs.kapitel.map((k) => k.schritte.length);
   const start = done ? null : neuererStand(standPruefen(gespeichert, form), standPruefen(lokalLesen(lessonId), form));
-  return <LektionAblauf lessonId={lessonId} kurs={kurs} done={done} start={start} />;
+  return <LektionAblauf lessonId={lessonId} kurs={kurs} done={done} start={start} vokabeln={vokabeln} />;
 }
 
 function LektionAblauf({
@@ -93,12 +101,21 @@ function LektionAblauf({
   kurs,
   done,
   start,
+  vokabeln,
 }: {
   lessonId: string;
   kurs: Lernkurs;
   done: boolean;
   start: LernStand | null;
+  vokabeln: Vokabel[];
 }) {
+  // Vokabelklick (SR-24): ein Suchmuster für die ganze Lektion, ein Fenster.
+  const suche = useMemo(() => sucheAus(vokabeln), [vokabeln]);
+  const [offeneVokabel, setOffeneVokabel] = useState<string | null>(null);
+  const vokabelKontext = useMemo<VokabelKontextWert>(
+    () => ({ suche, oeffnen: setOffeneVokabel, titel: (id) => vokabeln.find((v) => v.id === id)?.wort ?? "" }),
+    [suche, vokabeln]
+  );
   const [kap, setKap] = useState(start?.kap ?? 0);
   const [schritt, setSchritt] = useState(start?.schritt ?? 0);
   const [geloest, setGeloest] = useState<Set<string>>(() => new Set(start?.geloest ?? []));
@@ -216,6 +233,8 @@ function LektionAblauf({
   }, [kurs, kap, schritt, lessonId]);
 
   return (
+    <VokabelKontext.Provider value={vokabelKontext}>
+    <VokabelFenster vokabel={vokabeln.find((v) => v.id === offeneVokabel) ?? null} onSchliessen={() => setOffeneVokabel(null)} />
     <div ref={oben} className="flex scroll-mt-24 flex-col gap-5">
       {/* Fortschritt: Kapitel-Leiste (erledigt Dunkelgrün, aktuell Lime) + Prozent */}
       <div className="flex flex-col gap-3">
@@ -279,6 +298,7 @@ function LektionAblauf({
         </section>
       )}
     </div>
+    </VokabelKontext.Provider>
   );
 }
 
@@ -295,23 +315,36 @@ function SchrittAnzeige({ s, ...fp }: { s: Schritt } & FrageProps) {
   const audio = s.bausteine.find((b) => b.art === "audio");
   const titelkarte = s.bausteine.some((b) => b.art === "ueberschrift");
   const inhalt = s.bausteine.filter((b) => b.art !== "audio");
+  // Vokabelklick (SR-24): Texte des Schritts in Lesereihenfolge markieren,
+  // jedes Fachwort nur beim ersten Vorkommen im Schritt.
+  const { suche } = useContext(VokabelKontext);
+  const markiert = useMemo(() => {
+    const gesehen = new Set<string>();
+    return inhalt.map((b) => (b.art === "text" && suche.muster ? knotenMarkieren(b.inhalt, suche, gesehen) : null));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- inhalt hängt nur an s
+  }, [s, suche]);
   return (
     <div className={titelkarte ? cn(FLAECHE, "items-center py-10 text-center") : "flex flex-col gap-5"}>
       {audio && <AudioKnopf src={fp.medium(audio.quelle)} className="self-end" />}
       {inhalt.map((b, i) => (
-        <BausteinAnzeige key={i} b={b} schrittId={s.id} {...fp} />
+        <BausteinAnzeige key={i} b={b} schrittId={s.id} markiert={markiert[i]} {...fp} />
       ))}
     </div>
   );
 }
 
-function BausteinAnzeige({ b, schrittId, ...fp }: { b: Baustein; schrittId: string } & FrageProps) {
+function BausteinAnzeige({
+  b,
+  schrittId,
+  markiert,
+  ...fp
+}: { b: Baustein; schrittId: string; markiert?: MarkKnoten<string>[] | null } & FrageProps) {
   const { medium } = fp;
   switch (b.art) {
     case "ueberschrift":
       return <h2 className="font-heading text-[30px] leading-tight md:text-[38px]">{b.text}</h2>;
     case "text":
-      return <HtmlInhalt knoten={b.inhalt} />;
+      return markiert ? <MarkiertInhalt knoten={markiert} /> : <HtmlInhalt knoten={b.inhalt} />;
     case "bild":
       return <Bild src={medium(b.quelle)} alt={b.beschreibung} />;
     case "audio":
@@ -836,6 +869,54 @@ const HTML_KLASSE: Record<string, string> = {
 
 function HtmlInhalt({ knoten, klein }: { knoten: TextKnoten[]; klein?: boolean }) {
   return <div className={cn("flex flex-col gap-3 text-ink", klein ? "text-[15px]" : "text-[17px]")}>{knotenZeigen(knoten)}</div>;
+}
+
+// ---------- Vokabelklick (SR-24) ----------
+
+type VokabelKontextWert = { suche: Suche; oeffnen: (id: string) => void; titel: (id: string) => string };
+
+const VokabelKontext = createContext<VokabelKontextWert>({
+  suche: { muster: null, jeBegriff: new Map() },
+  oeffnen: () => {},
+  titel: () => "",
+});
+
+/** Text mit markierten Fachwörtern (gleiche Gestaltung wie HtmlInhalt). */
+function MarkiertInhalt({ knoten }: { knoten: MarkKnoten<string>[] }) {
+  return <div className="flex flex-col gap-3 text-[17px] text-ink">{markiertZeigen(knoten)}</div>;
+}
+
+function markiertZeigen(knoten: MarkKnoten<string>[]): ReactNode[] {
+  return knoten.map((k, i) => {
+    if ("abschnitte" in k) {
+      return k.abschnitte.map((a, j) =>
+        "vokabelId" in a ? <VokabelKnopf key={`${i}-${j}`} id={a.vokabelId} text={a.text} /> : <FormelText key={`${i}-${j}`} text={a.text} />
+      );
+    }
+    if (k.tag === "br") return <br key={i} />;
+    const Tag = k.tag as keyof typeof HTML_KLASSE & keyof React.JSX.IntrinsicElements;
+    return (
+      <Tag key={i} className={HTML_KLASSE[k.tag]}>
+        {markiertZeigen(k.kinder)}
+      </Tag>
+    );
+  });
+}
+
+/** Markiertes Fachwort: gepunktet unterstrichen, öffnet das Erklärfenster. */
+function VokabelKnopf({ id, text }: { id: string; text: string }) {
+  const { oeffnen, titel } = useContext(VokabelKontext);
+  return (
+    <button
+      type="button"
+      aria-haspopup="dialog"
+      aria-label={`${text}, Fachwort erklären${titel(id) && titel(id) !== text ? ` (${titel(id)})` : ""}`}
+      onClick={() => oeffnen(id)}
+      className="inline cursor-help rounded-sm font-[inherit] text-inherit underline decoration-self decoration-dotted decoration-2 underline-offset-4 outline-none hover:bg-self-tint focus-visible:ring-2 focus-visible:ring-brand"
+    >
+      {text}
+    </button>
+  );
 }
 
 function knotenZeigen(knoten: TextKnoten[]): ReactNode[] {

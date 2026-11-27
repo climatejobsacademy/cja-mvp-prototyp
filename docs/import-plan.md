@@ -163,7 +163,7 @@ Pflicht ist **P**; unbekannte Spalten (z. B. Quellen, Hinweise) und unbekannte T
 | Tab | Spalten |
 |---|---|
 | Einheit | `Kennung` P (eindeutig), `Titel` P, `Dauer` (ganze Minuten 1–60) |
-| Wörter | `Kennung` P, `Nr` P, `Wort` P, `Erklärung` P, `Beispiel` P, `Bild`, `Bildbeschreibung` (Pflicht, wenn `Bild`) |
+| Wörter | `Kennung` P, `Nr` P, `Wort` P, `Erklärung` P, `Beispiel` P, `Bild`, `Bildbeschreibung` (Pflicht, wenn `Bild`), `Formen` (weitere Schreibweisen für den Vokabelklick, kommagetrennt, z. B. Plural; SR-24) |
 | Fragen | `Kennung` P, `Nr` P, `Frage` P, `Antwort A` P, `Antwort B` P, `Antwort C`, `Antwort D`, `Richtig` P (A–D), `Erklärung` P, `Bild`, `Bildbeschreibung` |
 | Sätze | `Kennung` P, `Nr` P, `Satz` P |
 

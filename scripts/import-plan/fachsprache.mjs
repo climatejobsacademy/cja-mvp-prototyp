@@ -133,7 +133,7 @@ export function erstelleFachsprache(fsTabs, plan) {
   };
 
   // ---------- Wörter ----------
-  const wortSpalten = ["Kennung", "Nr", "Wort", "Erklärung", "Beispiel", "Bild", "Bildbeschreibung"];
+  const wortSpalten = ["Kennung", "Nr", "Wort", "Erklärung", "Beispiel", "Bild", "Bildbeschreibung", "Formen"];
   const woerter = [];
   for (const z of fsTabs["Wörter"] ?? []) {
     if (leer(z, wortSpalten)) continue;
@@ -153,7 +153,10 @@ export function erstelleFachsprache(fsTabs, plan) {
       fehl(`Wörter ${kennung} Nr ${nr}: Wort, Erklärung oder Beispiel leer (${ort("Wörter", z)}).`);
       continue;
     }
-    woerter.push({ e, nr, karte: { wort, erklaerung, beispiel, ...bildFelder("Wörter", z, kennung, nr) } });
+    // Vokabelklick (SR-24): weitere Schreibweisen des Worts im Lektionstext,
+    // kommagetrennt (z. B. Plural); optional, nur gesetzt, wenn vorhanden.
+    const formen = formenAus(z["Formen"]);
+    woerter.push({ e, nr, karte: { wort, erklaerung, beispiel, ...bildFelder("Wörter", z, kennung, nr), ...(formen.length > 0 ? { formen } : {}) } });
   }
 
   // ---------- Fragen ----------
@@ -275,4 +278,23 @@ export function erstelleFachsprache(fsTabs, plan) {
     throw new Error(`${fehler.length} Fehler in den Fachsprache-Tabs:\n  - ${fehler.join("\n  - ")}`);
   }
   return { einheiten: [...nachKurs.values()], meldungen };
+}
+
+/**
+ * Spalte „Formen“ (SR-24, Vokabelklick): kommagetrennte weitere Schreibweisen
+ * eines Worts, z. B. „Leitern, Leiters“. Leerraum am Rand fällt weg, leere
+ * Einträge und doppelte (ohne Groß-/Kleinschreibung) auch.
+ */
+export function formenAus(wert) {
+  if (wert === null || wert === undefined) return [];
+  const gesehen = new Set();
+  const formen = [];
+  for (const teil of String(wert).split(/[,;]/)) {
+    const form = teil.trim().replace(/\s+/g, " ");
+    const schluessel = form.toLocaleLowerCase("de");
+    if (form === "" || gesehen.has(schluessel)) continue;
+    gesehen.add(schluessel);
+    formen.push(form);
+  }
+  return formen;
 }
