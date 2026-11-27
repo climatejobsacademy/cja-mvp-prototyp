@@ -37,8 +37,8 @@ insert into programme (id, name, kuerzel, status) values
   ('00000000-0000-0000-0000-000000000422', 'EFK für festgelegte Tätigkeiten', 'EFKffT', 'published'),
   ('00000000-0000-0000-0000-000000000423', 'Unveröffentlichtes Programm', 'TQ-EGT', 'unpublished');
 
-insert into competency (id, name, kompetenzbereich, quelle) values
-  ('00000000-0000-0000-0000-000000000431', 'Testkompetenz Cp', 'Elektro', 'EFK-EE');
+insert into competency (id, name, kompetenzbereich) values
+  ('00000000-0000-0000-0000-000000000431', 'Testkompetenz Cp', 'Elektro');
 
 -- Dieselbe Kompetenz an zwei veröffentlichten und einem unveröffentlichten
 -- Programm -- mit dem alten Schema (competency.quelle, ein Wert) nicht

@@ -63,10 +63,10 @@ insert into course (id, programme_id, name, typ, reihenfolge, status) values
 insert into field_job_type (id, titel, programme_id, reihenfolge, status) values
   ('00000000-0000-0000-0000-000000021041', 'Praxisauftrag', '00000000-0000-0000-0000-000000021021', 1, 'published');
 
-insert into competency (id, name, kompetenzbereich, quelle) values
-  ('00000000-0000-0000-0000-000000021045', 'Kompetenz', 'Test', 'EFK-EE');
-insert into competency_step (id, competency_id, name, typ) values
-  ('00000000-0000-0000-0000-000000021046', '00000000-0000-0000-0000-000000021045', 'Praktischer Schritt', 'praktisch');
+insert into competency (id, name, kompetenzbereich) values
+  ('00000000-0000-0000-0000-000000021045', 'Kompetenz', 'Test');
+insert into competency_step (id, name, typ) values
+  ('00000000-0000-0000-0000-000000021046', 'Praktischer Schritt', 'praktisch');
 insert into field_job_type_competency_mapping (field_job_type_id, competency_step_id) values
   ('00000000-0000-0000-0000-000000021041', '00000000-0000-0000-0000-000000021046');
 

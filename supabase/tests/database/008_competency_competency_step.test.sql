@@ -31,14 +31,14 @@ insert into role_assignment (person_id, organisation_id, rolle) values
   ('00000000-0000-0000-0000-000000000301', '00000000-0000-0000-0000-000000000311', 'learner'),
   ('00000000-0000-0000-0000-000000000302', '00000000-0000-0000-0000-000000000312', 'afcj_admin');
 
-insert into competency (id, name, kompetenzbereich, quelle) values
-  ('00000000-0000-0000-0000-000000000321', 'Testkompetenz A', 'Elektro', 'EFK-EE'),
-  ('00000000-0000-0000-0000-000000000322', 'Testkompetenz B', 'Elektro', 'EFK-EE');
+insert into competency (id, name, kompetenzbereich) values
+  ('00000000-0000-0000-0000-000000000321', 'Testkompetenz A', 'Elektro'),
+  ('00000000-0000-0000-0000-000000000322', 'Testkompetenz B', 'Elektro');
 
 -- competency_id ist bis zur Drop-Column-Folgemigration noch not null und
 -- muss deshalb gesetzt werden, ist aber nicht mehr maßgeblich (SR-69).
-insert into competency_step (id, competency_id, name, typ) values
-  ('00000000-0000-0000-0000-000000000331', '00000000-0000-0000-0000-000000000321', 'Geteilter Teilschritt', 'theoretisch');
+insert into competency_step (id, name, typ) values
+  ('00000000-0000-0000-0000-000000000331', 'Geteilter Teilschritt', 'theoretisch');
 
 -- Derselbe Teilschritt an zwei Kompetenzen -- mit dem alten 1:N-Schema
 -- (competency_step.competency_id) nicht abbildbar.

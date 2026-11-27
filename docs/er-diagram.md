@@ -108,11 +108,9 @@ erDiagram
         uuid id PK
         text name
         text kompetenzbereich
-        text quelle "veraltet seit 0020 (SR-70), entfällt"
     }
     competency_step {
         uuid id PK
-        uuid competency_id FK "veraltet seit 0019 (SR-69), entfällt"
         text name
         text typ
         text nachweistyp

@@ -48,13 +48,13 @@ insert into lesson (id, course_id, name, content_type, reihenfolge, status) valu
   ('00000000-0000-0000-0000-000000000031', '00000000-0000-0000-0000-000000000022', 'Veröffentlichte Lektion', 'repository', 1, 'published'),
   ('00000000-0000-0000-0000-000000000032', '00000000-0000-0000-0000-000000000023', 'Unveröffentlichte Lektion', 'repository', 1, 'unpublished');
 
-insert into competency (id, name, kompetenzbereich, quelle) values
-  ('00000000-0000-0000-0000-000000000041', 'Testkompetenz', 'Elektro', 'EFK-EE');
+insert into competency (id, name, kompetenzbereich) values
+  ('00000000-0000-0000-0000-000000000041', 'Testkompetenz', 'Elektro');
 
 -- competency_id nur noch, weil die Spalte bis zur Drop-Column-Folgemigration
 -- not null ist -- maßgeblich ist competency_competency_step (SR-69, 0019).
-insert into competency_step (id, competency_id, name, typ) values
-  ('00000000-0000-0000-0000-000000000042', '00000000-0000-0000-0000-000000000041', 'Teilschritt', 'theoretisch');
+insert into competency_step (id, name, typ) values
+  ('00000000-0000-0000-0000-000000000042', 'Teilschritt', 'theoretisch');
 
 insert into competency_competency_step (id, competency_id, competency_step_id, reihenfolge) values
   ('00000000-0000-0000-0000-000000000043', '00000000-0000-0000-0000-000000000041', '00000000-0000-0000-0000-000000000042', 1);
