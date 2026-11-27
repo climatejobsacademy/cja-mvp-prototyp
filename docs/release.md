@@ -11,7 +11,7 @@ Ergänzt `docs/runbook.md` (was tun, wenn etwas bricht). Diese Seite beschreibt 
 5. **Smoke-Test** auf learn.climatejobsacademy.com.
 6. **Inhalte** (Import, SCORM, Fachsprache, Teams-Links), je mit Probelauf und Freigabe.
 
-Migrationen kommen **vor** dem Merge: Die neue App erwartet die neuen Tabellen. Alle Migrationen sind bisher additiv (neue Tabellen, Spalten, Funktionen), die alte App läuft mit ihnen weiter. Ist eine Migration **nicht additiv** (löscht oder benennt etwas um), wird die Reihenfolge für diesen Release eigens festgelegt.
+Migrationen kommen **vor** dem Merge: Die neue App erwartet die neuen Tabellen. Fast alle Migrationen sind additiv (neue Tabellen, Spalten, Funktionen), die alte App läuft mit ihnen weiter. Ist eine Migration **nicht additiv** (löscht oder benennt etwas um), wird die Reihenfolge für diesen Release eigens festgelegt; die Migration sagt das in ihrem Kopfkommentar. Erste nicht additive Migration ist `0075` (entfernt zwei veraltete Spalten): dort erst den Code mergen und den Release-Ordner aktualisieren, dann die Migration einspielen.
 
 ## Regeln
 

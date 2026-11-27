@@ -34,9 +34,9 @@ insert into role_assignment (person_id, organisation_id, rolle) values
   ('00000000-0000-0000-0000-000000020001', '00000000-0000-0000-0000-000000020011', 'learner'),
   ('00000000-0000-0000-0000-000000020003', '00000000-0000-0000-0000-000000020012', 'afcj_admin');
 
-insert into competency (id, name, kompetenzbereich, quelle, kann_satz) values
-  ('00000000-0000-0000-0000-000000020021', 'Sicher löten', 'Löttechnik', 'EFK-EE', 'Kann sicher löten.'),
-  ('00000000-0000-0000-0000-000000020022', 'Ohne Kann-Satz', 'Test', 'EFK-EE', null);
+insert into competency (id, name, kompetenzbereich, kann_satz) values
+  ('00000000-0000-0000-0000-000000020021', 'Sicher löten', 'Löttechnik', 'Kann sicher löten.'),
+  ('00000000-0000-0000-0000-000000020022', 'Ohne Kann-Satz', 'Test', null);
 
 -- ------------------------------------------------------------
 -- Schema
@@ -45,7 +45,7 @@ select has_column('public', 'competency', 'kann_satz', 'competency.kann_satz exi
 select col_is_null('public', 'competency', 'kann_satz', 'kann_satz ist nullable');
 
 select throws_ok(
-  $$ insert into competency (name, kompetenzbereich, quelle, kann_satz) values ('Leer', 'Test', 'EFK-EE', '  ') $$,
+  $$ insert into competency (name, kompetenzbereich, kann_satz) values ('Leer', 'Test', '  ') $$,
   '23514', null, 'leerer Kann-Satz wird abgelehnt'
 );
 

@@ -37,7 +37,6 @@ export type Rolle = "learner" | "afcj_admin" | "trainer"; // trainer seit 0030 (
 export type CourseTyp = "synchron" | "asynchron";
 export type ContentType = "scorm" | "live" | "repository";
 export type LessonResourceTyp = "datei" | "link";
-export type CompetencyQuelle = "TQ-ARP" | "EFKffT" | "EFK-EE";
 // Woche (Tabelle module, seit 0028)
 export type Wochentyp = "theorie" | "praxis";
 export type WochenLage = "online" | "praesenz" | "betrieb";
@@ -367,24 +366,14 @@ type CompetencyRow = Flatten<
     id: string;
     name: string;
     kompetenzbereich: string;
-    /**
-     * @deprecated Seit 0020 (SR-70) nicht mehr als Programm-Zuordnung lesen --
-     * die läuft über `competency_programme` (N:M). Spalte entfällt mit der
-     * Drop-Column-Folgemigration.
-     */
-    quelle: CompetencyQuelle;
+    // competency.quelle mit 0075 entfernt; Programm-Zuordnung über competency_programme (0020).
   }
 >;
 
 type CompetencyStepRow = Flatten<
   Timestamps & {
     id: string;
-    /**
-     * @deprecated Seit 0019 (SR-69) nicht mehr lesen -- Zuordnung zur
-     * Kompetenz läuft über `competency_competency_step` (N:M). Spalte
-     * entfällt mit der Drop-Column-Folgemigration.
-     */
-    competency_id: string;
+    // competency_step.competency_id mit 0075 entfernt; Zuordnung über competency_competency_step.
     name: string;
     typ: CompetencyStepTyp;
     nachweistyp: "binär";
@@ -880,7 +869,7 @@ export type Database = {
       >;
       competency: Table<
         CompetencyRow,
-        Flatten<Partial<Timestamps> & { id?: string; name: string; kompetenzbereich: string; quelle: CompetencyQuelle }>,
+        Flatten<Partial<Timestamps> & { id?: string; name: string; kompetenzbereich: string }>,
         Partial<CompetencyRow>
       >;
       competency_step: Table<
@@ -888,7 +877,6 @@ export type Database = {
         Flatten<
           Partial<Timestamps> & {
             id?: string;
-            competency_id: string;
             name: string;
             typ: CompetencyStepTyp;
             nachweistyp?: "binär";

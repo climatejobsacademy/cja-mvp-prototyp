@@ -84,9 +84,9 @@ insert into schedule_entry (organisation_id, datum, art, reihenfolge, cohort_id,
   ('00000000-0000-0000-0000-000000017011', '2026-11-16', 'feld', 1, null, '00000000-0000-0000-0000-000000017081', null, null, '00000000-0000-0000-0000-000000017091'),
   ('00000000-0000-0000-0000-000000017011', '2026-11-27', 'feld', 1, null, '00000000-0000-0000-0000-000000017082', null, null, '00000000-0000-0000-0000-000000017092');
 
-insert into competency (id, name, kompetenzbereich, quelle) values
-  ('00000000-0000-0000-0000-000000017101', 'Kompetenz 1', 'Bereich', 'EFK-EE'),
-  ('00000000-0000-0000-0000-000000017102', 'Kompetenz 2', 'Bereich', 'EFK-EE');
+insert into competency (id, name, kompetenzbereich) values
+  ('00000000-0000-0000-0000-000000017101', 'Kompetenz 1', 'Bereich'),
+  ('00000000-0000-0000-0000-000000017102', 'Kompetenz 2', 'Bereich');
 
 insert into modul_competency (modul_id, competency_id, kuerzel, reihenfolge) values
   ('00000000-0000-0000-0000-000000017031', '00000000-0000-0000-0000-000000017101', 'M1.01', 1),

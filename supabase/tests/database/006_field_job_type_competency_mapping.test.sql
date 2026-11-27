@@ -37,13 +37,13 @@ insert into role_assignment (person_id, organisation_id, rolle) values
 insert into programme (id, name, kuerzel) values
   ('00000000-0000-0000-0000-000000000221', 'EFK Erneuerbare Energien', 'EFK-EE');
 
-insert into competency (id, name, kompetenzbereich, quelle) values
-  ('00000000-0000-0000-0000-000000000231', 'Testkompetenz Fjtcm', 'Elektro', 'EFK-EE');
+insert into competency (id, name, kompetenzbereich) values
+  ('00000000-0000-0000-0000-000000000231', 'Testkompetenz Fjtcm', 'Elektro');
 
--- competency_id nur noch, weil die Spalte bis zur Drop-Column-Folgemigration
--- not null ist -- maßgeblich ist competency_competency_step (SR-69, 0019).
-insert into competency_step (id, competency_id, name, typ) values
-  ('00000000-0000-0000-0000-000000000232', '00000000-0000-0000-0000-000000000231', 'Praktischer Teilschritt', 'praktisch');
+-- Zuordnung Teilschritt -> Kompetenz nur über competency_competency_step
+-- (SR-69, 0019); die alte Spalte competency_step.competency_id ist mit 0075 entfernt.
+insert into competency_step (id, name, typ) values
+  ('00000000-0000-0000-0000-000000000232', 'Praktischer Teilschritt', 'praktisch');
 
 insert into competency_competency_step (id, competency_id, competency_step_id, reihenfolge) values
   ('00000000-0000-0000-0000-000000000233', '00000000-0000-0000-0000-000000000231', '00000000-0000-0000-0000-000000000232', 1);
