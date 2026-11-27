@@ -540,6 +540,14 @@ einen neuen Eintrag, und der alte wird auf `ersetzt` gesetzt, nicht gelöscht.
 - **Status:** gültig
 - **Belegt:** SR-102
 
+### 2026-11-27 – Wartungsseite per Schalter umgesetzt
+
+- **Entscheidung:** (Geschäftsführung 18.10.2026, umgesetzt 27.11.2026) Die App lässt sich im Notfall vom Netz nehmen: Mit `WARTUNG=an` in Vercel Production und neuem Deployment beantwortet die Middleware jede Anfrage mit einer festen Wartungsseite (Status 503). Impressum, Datenschutz und Barrierefreiheit bleiben erreichbar.
+- **Begründung:** Bei einem Datenschutzvorfall (Runbook Abschnitt 6) muss die Geschäftsführung die App ohne Entwickler:in abschalten können. Die Seite ist fertiges HTML ohne Login und ohne Datenbank, damit sie auch steht, wenn der Fehler dort liegt.
+- **Folgen:** Schalter in `src/lib/schalter.ts`, Seite in `src/lib/wartungsseite.ts`, Prüfung in `middleware.ts`. Kein Verhalten im Alltag (Production `WARTUNG=aus`). Betriebsthema ohne SR.
+- **Status:** gültig
+- **Belegt:** keine SR (Betrieb)
+
 ## Offene technische Schulden
 
 Diese Punkte sind keine Entscheidungen, sondern bekannte Lücken; was daraus wird, steht in Asana.
