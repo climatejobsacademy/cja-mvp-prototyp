@@ -1,8 +1,10 @@
-import { FlaskConical } from "lucide-react";
+import Link from "next/link";
+import { FlaskConical, Printer } from "lucide-react";
 
 import { ModulZeichen } from "@/components/modul-zeichen";
 import { ProgrammZeile } from "@/components/programm-zeile";
 import { datumKurz, datumLang, heuteInBerlin, jetztInBerlin, montagDerWoche, plusTage } from "@/lib/date";
+import { glossarHref } from "@/lib/glossar";
 import { getEinstiegeJeTag } from "@/lib/queries/fachsprache";
 import { getModuleDerKohorte } from "@/lib/queries/modul";
 import { requireCurrentLearner } from "@/lib/queries/session";
@@ -98,6 +100,17 @@ export default async function SchedulePage({
 
   const wocheNr = wocheSeit(kohortenStart, datum);
   const haupt = haupttyp(wochenTage.map((t) => t.typ));
+  // Glossar der Woche (SR-101): nur, wenn in der Woche mindestens eine
+  // veröffentlichte Fachsprache-Einheit liegt (Schalter aus: keine Einstiege).
+  const glossar = wochenTage.some((t) => t.fachsprache.length > 0) ? (
+    <Link
+      href={glossarHref(montag)}
+      className="inline-flex min-h-11 items-center gap-2 self-start rounded-full bg-subtle px-4 text-sm font-semibold text-ink outline-none hover:bg-brand-tint hover:text-brand focus-visible:ring-2 focus-visible:ring-brand"
+    >
+      <Printer className="size-4" aria-hidden="true" />
+      Glossar der Woche
+    </Link>
+  ) : null;
 
   const nowZusatz = simuliert && now ? `&now=${encodeURIComponent(now)}` : "";
   // "Heute"-Link nur noch mobil; am Desktop entfällt er (Entscheidung Anna
@@ -148,6 +161,7 @@ export default async function SchedulePage({
               zusatz={zusatz}
               umschalterHref={(a) => href(a, woche.includes(heute) && a === "tag" ? heute : datum)}
             />
+            {glossar}
             <WochenAnsicht tage={wochenTage} haupt={haupt} jetzt={jetzt} simuliert={!!simuliert} tagHref={tagHref} />
           </div>
         )}
@@ -214,6 +228,7 @@ export default async function SchedulePage({
           vorLabel={mobilAnsicht === "monat" ? "Nächster Monat" : "Nächste Woche"}
           titel={mobilAnsicht === "monat" ? monatText(datum) : wocheNr ? `Woche ${wocheNr} · ${zeitraumText(montag, true)}` : zeitraumText(montag, true)}
         />
+        {mobilAnsicht === "woche" && glossar}
         {mobilAnsicht === "woche" && <MobilWoche tage={wochenTage} tagHref={tagHref} />}
         {mobilAnsicht === "monat" && <MobilMonat wochen={inWochen(modelle, monatsMontage)} monat={datum.slice(0, 7)} tagHref={tagHref} />}
       </div>

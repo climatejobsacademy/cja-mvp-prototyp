@@ -18,6 +18,10 @@ Veröffentlicht wird von Hand durch eine Person mit Admin-Rechten: In der Tabell
 
 Am Tag ihrer Live-Lektion erscheint die veröffentlichte Einheit als Warm-up zu Beginn des Tages (SR-84, ergänzt 27.11.2026): in der Tagesansicht als erste Zeile „Zum Start: Fachsprache“ mit Dauer über dem Zeitraster, in der Wochenansicht in der Zeile „Start“ über dem Raster und auf Home vor dem Live-Termin. Am Ende der Einheit ruft die Seite `fn_fachsprache_erledigt_setzen` auf; danach zeigen Stundenplan und Home auf allen Geräten den grünen Haken. Ein zweiter Durchgang ändert nichts. Lektionsabschluss, Kompetenzring und Nachweise bleiben unberührt.
 
+## Glossar der Woche
+
+Der Stundenplan zeigt in der Wochenansicht (Desktop und mobil) den Knopf „Glossar der Woche“, wenn in der Woche mindestens eine veröffentlichte Einheit zu einer Live-Lektion liegt (SR-101). Er führt zur Seite `/fachsprache/glossar?woche=<Datum>`: alle Wortkarten dieser Einheiten, alphabetisch nach dem Wort ohne Artikel („die Diode“ steht unter D), jedes Wort einmal, mit Erklärung und Beispielsatz, ohne Bilder. „Drucken / als PDF speichern“ öffnet den Druckdialog des Browsers; Navigation, Knöpfe und Chat erscheinen nicht im Druck. Es wird nicht erfasst, wer druckt. Mit ausgeschaltetem Schalter liefert die Seite 404. Die Liste entsteht aus denselben Wortkarten wie die Einheit; neue Inhalte braucht das Glossar nicht.
+
 ## Der Schalter FACHSPRACHE_EINHEIT
 
 Ob die Fachsprache in einer Umgebung überhaupt erscheint, entscheidet die serverseitige Umgebungsvariable `FACHSPRACHE_EINHEIT`. Sie ist eine Variable je Vercel-Umgebung (Production, Preview, Development) und hat bewusst kein `NEXT_PUBLIC_`-Präfix, damit der Wert nicht ins Browser-Bundle gelangt. Die Logik steht in `src/lib/schalter.ts` mit Test in `src/lib/schalter.test.ts`. Die Funktion ist nur dann an, wenn der Wert `an` lautet, wobei Groß- und Kleinschreibung und Leerzeichen keine Rolle spielen; `true`, `1`, `ja` oder `on` zählen als aus, ebenso eine fehlende Variable. Eine Änderung wirkt erst nach einem neuen Deployment (Redeploy).
