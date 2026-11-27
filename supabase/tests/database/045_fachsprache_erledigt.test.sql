@@ -9,7 +9,7 @@ begin;
 
 create extension if not exists pgtap schema extensions;
 
-select plan(12);
+select plan(13);
 
 -- Fixtures (als Superuser): 45001 L1 (Kohorte K1), 45002 L2 (Kohorte K1),
 -- 45003 L3 (Kohorte K2, anderes Programm), 45004 Trainer:in.
@@ -17,28 +17,33 @@ insert into auth.users (id, email) values
   ('00000000-0000-0000-0000-000000045001', 'fe-l1@example.test'),
   ('00000000-0000-0000-0000-000000045002', 'fe-l2@example.test'),
   ('00000000-0000-0000-0000-000000045003', 'fe-l3@example.test'),
-  ('00000000-0000-0000-0000-000000045004', 'fe-tr@example.test');
+  ('00000000-0000-0000-0000-000000045004', 'fe-tr@example.test'),
+  ('00000000-0000-0000-0000-000000045005', 'fe-adm@example.test');
 
 insert into organisation (id, name, typ, status) values
-  ('00000000-0000-0000-0000-000000045011', 'Betrieb A', 'employer', 'aktiv');
+  ('00000000-0000-0000-0000-000000045011', 'Betrieb A', 'employer', 'aktiv'),
+  ('00000000-0000-0000-0000-000000045013', 'AfCJ', 'afcj', 'aktiv');
 
 insert into person (id, email, name, username, sprache) values
   ('00000000-0000-0000-0000-000000045001', 'fe-l1@example.test', 'Lernende Eins', 'fe_l1', 'DE'),
   ('00000000-0000-0000-0000-000000045002', 'fe-l2@example.test', 'Lernende Zwei', 'fe_l2', 'DE'),
   ('00000000-0000-0000-0000-000000045003', 'fe-l3@example.test', 'Lernende Drei', 'fe_l3', 'DE'),
-  ('00000000-0000-0000-0000-000000045004', 'fe-tr@example.test', 'Trainerin', 'fe_tr', 'DE');
+  ('00000000-0000-0000-0000-000000045004', 'fe-tr@example.test', 'Trainerin', 'fe_tr', 'DE'),
+  ('00000000-0000-0000-0000-000000045005', 'fe-adm@example.test', 'Admin', 'fe_adm', 'DE');
 
 insert into org_membership (person_id, organisation_id) values
   ('00000000-0000-0000-0000-000000045001', '00000000-0000-0000-0000-000000045011'),
   ('00000000-0000-0000-0000-000000045002', '00000000-0000-0000-0000-000000045011'),
   ('00000000-0000-0000-0000-000000045003', '00000000-0000-0000-0000-000000045011'),
-  ('00000000-0000-0000-0000-000000045004', '00000000-0000-0000-0000-000000045011');
+  ('00000000-0000-0000-0000-000000045004', '00000000-0000-0000-0000-000000045011'),
+  ('00000000-0000-0000-0000-000000045005', '00000000-0000-0000-0000-000000045013');
 
 insert into role_assignment (person_id, organisation_id, rolle) values
   ('00000000-0000-0000-0000-000000045001', '00000000-0000-0000-0000-000000045011', 'learner'),
   ('00000000-0000-0000-0000-000000045002', '00000000-0000-0000-0000-000000045011', 'learner'),
   ('00000000-0000-0000-0000-000000045003', '00000000-0000-0000-0000-000000045011', 'learner'),
-  ('00000000-0000-0000-0000-000000045004', '00000000-0000-0000-0000-000000045011', 'trainer');
+  ('00000000-0000-0000-0000-000000045004', '00000000-0000-0000-0000-000000045011', 'trainer'),
+  ('00000000-0000-0000-0000-000000045005', '00000000-0000-0000-0000-000000045013', 'afcj_admin');
 
 insert into programme (id, name, kuerzel, status) values
   ('00000000-0000-0000-0000-000000045021', 'Programm 1', 'FE-P1', 'published'),
@@ -124,6 +129,12 @@ select set_config('request.jwt.claims',
   json_build_object('sub', '00000000-0000-0000-0000-000000045004', 'role', 'authenticated')::text, true);
 select is_empty($$select 1 from fachsprache_erledigt$$,
   'SR-84: Trainer:innen sehen den Stand nicht');
+
+-- AfCJ admin liest alles (Access-Matrix: read All)
+select set_config('request.jwt.claims',
+  json_build_object('sub', '00000000-0000-0000-0000-000000045005', 'role', 'authenticated')::text, true);
+select is((select count(*)::int from fachsprache_erledigt), 1,
+  'SR-84: AfCJ admin liest alle Zeilen');
 
 reset role;
 
